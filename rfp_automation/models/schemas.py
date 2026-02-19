@@ -35,6 +35,11 @@ class RFPMetadata(BaseModel):
     source_file_path: str = ""
     page_count: int = 0
     word_count: int = 0
+    file_hash: str = ""
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    issue_date: Optional[str] = None
+    deadline_text: Optional[str] = None
     received_at: datetime = Field(default_factory=datetime.utcnow)
 
 
