@@ -186,6 +186,41 @@ class RFPVectorStore:
             })
         return chunks
 
+    def query_all(
+        self,
+        rfp_id: str,
+        top_k: int = 100,
+    ) -> list[dict[str, Any]]:
+        """
+        Retrieve all chunks for an RFP namespace (broad retrieval).
+        Uses a generic query to pull as many chunks as possible.
+        Results are sorted by chunk_index for document order.
+        """
+        index = self._get_index()
+        # Use a generic query to get broad coverage of the namespace
+        query_embedding = self._embedder.embed_single("document contents overview")
+
+        results = index.query(
+            vector=query_embedding,
+            top_k=top_k,
+            namespace=rfp_id,
+            include_metadata=True,
+        )
+
+        chunks = []
+        for match in results.get("matches", []):
+            chunks.append({
+                "id": match["id"],
+                "score": match["score"],
+                "text": match.get("metadata", {}).get("text", ""),
+                "chunk_index": match.get("metadata", {}).get("chunk_index", -1),
+                "metadata": match.get("metadata", {}),
+            })
+
+        # Sort by chunk_index to preserve document order
+        chunks.sort(key=lambda c: c.get("chunk_index", -1))
+        return chunks
+
     def delete_document(self, rfp_id: str) -> bool:
         """Delete all vectors for an RFP by deleting its namespace."""
         index = self._get_index()

@@ -99,6 +99,16 @@ class MCPService:
         """Convenience: semantic search over RFP chunks."""
         return self.rfp_store.query(query, rfp_id, top_k)
 
+    # ── Convenience: RFP full retrieval ────────────────────
+
+    def query_rfp_all_chunks(
+        self,
+        rfp_id: str,
+        top_k: int = 100,
+    ) -> list[dict[str, Any]]:
+        """Retrieve all chunks for an RFP (for full-document classification)."""
+        return self.rfp_store.query_all(rfp_id, top_k)
+
     # ── Convenience: Knowledge query ─────────────────────
 
     def query_knowledge(
