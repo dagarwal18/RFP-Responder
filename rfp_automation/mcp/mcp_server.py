@@ -115,9 +115,67 @@ class MCPService:
         self,
         query: str,
         top_k: int = 5,
+        doc_type: str = "",
     ) -> list[dict[str, Any]]:
-        """Convenience: semantic search over company capabilities."""
-        return self.knowledge_base.query_capabilities(query, top_k)
+        """Convenience: semantic search over company knowledge. If doc_type is empty, search all."""
+        if doc_type:
+            return self.knowledge_base.query_by_type(query, doc_type, top_k)
+        return self.knowledge_base.query_all_types(query, top_k)
+
+    # ── Knowledge base admin ─────────────────────────────
+
+    def ingest_knowledge_doc(
+        self,
+        doc_type: str,
+        texts: list[str],
+        metadatas: list[dict[str, Any]] | None = None,
+    ) -> int:
+        """Ingest company documents into the knowledge namespace."""
+        return self.knowledge_base.ingest_company_docs(texts, metadatas, doc_type)
+
+    def store_knowledge_config(
+        self,
+        config_type: str,
+        data: dict[str, Any],
+    ) -> None:
+        """Store structured config (certifications, pricing, legal) in MongoDB."""
+        db = self.knowledge_base._get_db()
+        db.company_config.update_one(
+            {"config_type": config_type},
+            {"$set": {"config_type": config_type, **data}},
+            upsert=True,
+        )
+        logger.info(f"[MCPService] Stored {config_type} config in MongoDB")
+
+    def get_knowledge_stats(self) -> dict[str, Any]:
+        """Return knowledge base stats: Pinecone vectors + MongoDB configs."""
+        stats: dict[str, Any] = {
+            "pinecone": {"total_vectors": 0, "namespaces": {}},
+            "mongodb": {"configs": []},
+        }
+
+        try:
+            index = self.knowledge_base._get_index()
+            idx_stats = index.describe_index_stats()
+            total = getattr(idx_stats, "total_vector_count", 0)
+            namespaces_raw = getattr(idx_stats, "namespaces", {})
+
+            ns_dict = {}
+            if isinstance(namespaces_raw, dict):
+                for k, v in namespaces_raw.items():
+                    ns_dict[k] = getattr(v, "vector_count", 0) if not isinstance(v, dict) else v.get("vector_count", 0)
+            stats["pinecone"] = {"total_vectors": total, "namespaces": ns_dict}
+        except Exception as e:
+            stats["pinecone"]["error"] = str(e)
+
+        try:
+            db = self.knowledge_base._get_db()
+            configs = list(db.company_config.find({}, {"_id": 0, "config_type": 1}))
+            stats["mongodb"]["configs"] = [c["config_type"] for c in configs]
+        except Exception as e:
+            stats["mongodb"]["error"] = str(e)
+
+        return stats
 
     # ── Health check ─────────────────────────────────────
 

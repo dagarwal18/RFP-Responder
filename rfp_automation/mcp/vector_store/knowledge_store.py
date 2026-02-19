@@ -109,10 +109,10 @@ class KnowledgeStore:
         logger.info(f"Ingested {len(texts)} {doc_type} docs into knowledge store")
         return len(texts)
 
-    # ── Query: capabilities (Pinecone) ───────────────────
+    # ── Query: all types (no filter) ─────────────────────
 
-    def query_capabilities(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
-        """Semantic search over company capabilities."""
+    def query_all_types(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
+        """Semantic search over ALL knowledge documents (no doc_type filter)."""
         index = self._get_index()
         query_emb = self._embedder.embed_single(query)
 
@@ -121,7 +121,6 @@ class KnowledgeStore:
             top_k=top_k,
             namespace=KNOWLEDGE_NAMESPACE,
             include_metadata=True,
-            filter={"doc_type": "capability"},
         )
 
         return [
@@ -129,35 +128,49 @@ class KnowledgeStore:
                 "id": m["id"],
                 "score": m["score"],
                 "text": m.get("metadata", {}).get("text", ""),
+                "doc_type": m.get("metadata", {}).get("doc_type", ""),
                 "metadata": m.get("metadata", {}),
             }
             for m in results.get("matches", [])
         ]
+
+    # ── Query: by specific type ──────────────────────────
+
+    def query_by_type(self, query: str, doc_type: str, top_k: int = 5) -> list[dict[str, Any]]:
+        """Semantic search filtered by a specific doc_type."""
+        index = self._get_index()
+        query_emb = self._embedder.embed_single(query)
+
+        results = index.query(
+            vector=query_emb,
+            top_k=top_k,
+            namespace=KNOWLEDGE_NAMESPACE,
+            include_metadata=True,
+            filter={"doc_type": doc_type},
+        )
+
+        return [
+            {
+                "id": m["id"],
+                "score": m["score"],
+                "text": m.get("metadata", {}).get("text", ""),
+                "doc_type": doc_type,
+                "metadata": m.get("metadata", {}),
+            }
+            for m in results.get("matches", [])
+        ]
+
+    # ── Query: capabilities (Pinecone) ───────────────────
+
+    def query_capabilities(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
+        """Semantic search over company capabilities."""
+        return self.query_by_type(query, "capability", top_k)
 
     # ── Query: past proposals (Pinecone) ─────────────────
 
     def query_past_proposals(self, query: str, top_k: int = 3) -> list[dict[str, Any]]:
         """Semantic search over past winning proposals."""
-        index = self._get_index()
-        query_emb = self._embedder.embed_single(query)
-
-        results = index.query(
-            vector=query_emb,
-            top_k=top_k,
-            namespace=KNOWLEDGE_NAMESPACE,
-            include_metadata=True,
-            filter={"doc_type": "past_proposal"},
-        )
-
-        return [
-            {
-                "id": m["id"],
-                "score": m["score"],
-                "text": m.get("metadata", {}).get("text", ""),
-                "metadata": m.get("metadata", {}),
-            }
-            for m in results.get("matches", [])
-        ]
+        return self.query_by_type(query, "past_proposal", top_k)
 
     # ── Query: certifications (MongoDB) ──────────────────
 

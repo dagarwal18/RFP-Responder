@@ -38,6 +38,24 @@ class BaseAgent(ABC):
         graph_state = RFPGraphState(**state)
         graph_state.current_agent = self.name.value
 
+        # Broadcast real-time progress
+        rfp_id = ""
+        meta = state.get("rfp_metadata")
+        if isinstance(meta, dict):
+            rfp_id = meta.get("rfp_id", "")
+        elif hasattr(meta, "rfp_id"):
+            rfp_id = meta.rfp_id or ""
+        # Also check the tracking id stored at top level by the route
+        rfp_id = rfp_id or state.get("_tracking_rfp_id", "")
+
+        progress = None
+        try:
+            from rfp_automation.api.websocket import PipelineProgress
+            progress = PipelineProgress.get()
+            progress.on_node_start(rfp_id, self.name.value)
+        except Exception:
+            pass
+
         try:
             updated = self._real_process(graph_state)
 
@@ -48,6 +66,13 @@ class BaseAgent(ABC):
             )
             logger.info(f"[{self.name.value}] Completed successfully")
 
+            try:
+                if progress:
+                    status = updated.status.value if hasattr(updated.status, 'value') else str(updated.status)
+                    progress.on_node_end(rfp_id, self.name.value, status)
+            except Exception:
+                pass
+
         except Exception as exc:
             graph_state.error_message = f"[{self.name.value}] {exc}"
             graph_state.add_audit(
@@ -56,6 +81,13 @@ class BaseAgent(ABC):
                 details=str(exc),
             )
             logger.exception(f"[{self.name.value}] Failed: {exc}")
+
+            try:
+                if progress:
+                    progress.on_error(rfp_id, self.name.value, str(exc))
+            except Exception:
+                pass
+
             raise
 
         return updated.model_dump()

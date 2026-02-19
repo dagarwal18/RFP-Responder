@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RFP Responder — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.8);
+      --bg-card-hover: rgba(31, 41, 55, 0.9);
+      --border: rgba(75, 85, 99, 0.4);
+      --border-accent: rgba(99, 102, 241, 0.5);
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.15);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --info: #3b82f6;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* background gradient */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(ellipse at 30% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+      z-index: 0; pointer-events: none;
+    }
+
+    /* ── Header ────────────────────────────────────── */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 14, 26, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .header h1 {
+      font-size: 18px; font-weight: 600;
+      background: linear-gradient(135deg, var(--accent-light), var(--success));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      display: inline-block; margin-right: 8px;
+    }
+    .header .api-status {
+      font-size: 13px; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── Main layout ───────────────────────────────── */
+    .main {
+      position: relative; z-index: 1;
+      max-width: 1400px; margin: 0 auto;
+      padding: 24px 32px 64px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; }
+    }
+
+    /* ── Cards ──────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      overflow: hidden;
+    }
+    .card:hover { border-color: var(--border-accent); }
+
+    .card-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-header h2 {
+      font-size: 16px; font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-header .badge {
+      font-size: 11px; font-weight: 500;
+      padding: 3px 10px; border-radius: 20px;
+      background: var(--accent-glow); color: var(--accent-light);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .card-body { padding: 20px 24px; }
+
+    /* ── Dropzone ───────────────────────────────────── */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+    .dropzone input { display: none; }
+    .dropzone .icon { font-size: 32px; margin-bottom: 8px; opacity: 0.6; }
+    .dropzone .label {
+      font-size: 14px; color: var(--text-secondary);
+    }
+    .dropzone .label strong { color: var(--accent-light); }
+
+    /* ── Select / Buttons ──────────────────────────── */
+    .form-row {
+      display: flex; gap: 10px; margin-top: 14px; align-items: center;
+    }
+    select, .btn {
+      font-family: inherit; font-size: 13px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg-secondary); color: var(--text-primary);
+      padding: 8px 14px; outline: none;
+      transition: var(--transition);
+    }
+    select:focus { border-color: var(--accent); }
+    .btn {
+      cursor: pointer; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+      border-color: transparent; color: #fff;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;
+    }
+    .btn-outline { background: transparent; }
+    .btn-outline:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: var(--accent);
+    }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* ── Stats grid ─────────────────────────────────── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-top: 16px;
+    }
+    .stat-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px; text-align: center;
+    }
+    .stat-box .stat-value {
+      font-size: 22px; font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-light), var(--success));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-box .stat-label {
+      font-size: 11px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+    }
+
+    /* ── Query input ────────────────────────────────── */
+    .query-row {
+      display: flex; gap: 10px; margin-top: 16px;
+    }
+    .query-row input {
+      flex: 1; font-family: inherit; font-size: 13px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg-secondary); color: var(--text-primary);
+      padding: 8px 14px; outline: none;
+    }
+    .query-row input:focus { border-color: var(--accent); }
+
+    /* ── Pipeline stepper ──────────────────────────── */
+    .pipeline-stepper {
+      display: flex; flex-direction: column;
+      gap: 0; margin-top: 16px;
+    }
+    .step {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px;
+      border-left: 2px solid var(--border);
+      position: relative;
+      transition: var(--transition);
+    }
+    .step::before {
+      content: '';
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg-primary);
+      flex-shrink: 0;
+      transition: var(--transition);
+      margin-left: -6px;
+    }
+    .step.active { border-left-color: var(--accent); }
+    .step.active::before {
+      border-color: var(--accent);
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+    .step.complete { border-left-color: var(--success); }
+    .step.complete::before {
+      border-color: var(--success);
+      background: var(--success);
+    }
+    .step.failed { border-left-color: var(--error); }
+    .step.failed::before {
+      border-color: var(--error);
+      background: var(--error);
+    }
+    .step-label {
+      font-size: 13px; font-weight: 500; color: var(--text-secondary);
+    }
+    .step.active .step-label { color: var(--text-primary); }
+    .step.complete .step-label { color: var(--success); }
+    .step.failed .step-label { color: var(--error); }
+    .step-detail {
+      font-size: 11px; color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Logs ───────────────────────────────────────── */
+    .log-box {
+      margin-top: 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      max-height: 200px; overflow-y: auto;
+      font-size: 12px; line-height: 1.7;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      color: var(--text-secondary);
+    }
+    .log-box:empty::after {
+      content: 'No activity yet...';
+      color: var(--text-muted); font-style: italic;
+    }
+    .log-entry { display: flex; gap: 8px; }
+    .log-time { color: var(--text-muted); flex-shrink: 0; }
+    .log-msg { word-break: break-word; }
+    .log-msg.success { color: var(--success); }
+    .log-msg.error { color: var(--error); }
+    .log-msg.info { color: var(--info); }
+
+    /* ── Query results ─────────────────────────────── */
+    .query-results {
+      margin-top: 12px;
+      max-height: 200px; overflow-y: auto;
+    }
+    .query-result-item {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      background: var(--bg-secondary);
+      font-size: 12px; line-height: 1.5;
+    }
+    .query-result-item .score {
+      color: var(--accent-light); font-weight: 600;
+    }
+    .query-result-item .text {
+      color: var(--text-secondary); margin-top: 4px;
+    }
+
+    /* ── Spinner ────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: var(--accent-light);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* fade in */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card { animation: fadeUp 0.4s ease-out; }
+    .card:nth-child(2) { animation-delay: 0.1s; }
+
+    /* ── Runs list ──────────────────────────────────── */
+    .runs-list { margin-top: 16px; }
+
+    /* ── Auto-classified badge ──────────────────────── */
+    .classified-badge {
+      font-size: 11px; font-weight: 600;
+      padding: 4px 12px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .classified-badge.type-capability     { background: rgba(99,102,241,0.15); color: var(--accent-light); }
+    .classified-badge.type-past_proposal  { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .classified-badge.type-certification  { background: rgba(16,185,129,0.15); color: var(--success); }
+    .classified-badge.type-pricing        { background: rgba(59,130,246,0.15); color: var(--info); }
+    .classified-badge.type-legal          { background: rgba(239,68,68,0.15); color: var(--error); }
+
+    /* ── Filename display ──────────────────────────── */
+    .file-info {
+      font-size: 12px; color: var(--text-secondary);
+      margin-top: 8px; padding: 6px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .file-info .fname { font-weight: 500; color: var(--text-primary); }
+    .file-info .fsize { color: var(--text-muted); }
+
+    /* ── Uploaded files list ────────────────────────── */
+    .kb-files-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 16px; margin-bottom: 8px;
+    }
+    .kb-files-header h3 {
+      font-size: 13px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .kb-file-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      background: var(--bg-secondary);
+      font-size: 12px;
+    }
+    .kb-file-item .kb-file-name {
+      font-weight: 500; color: var(--text-primary);
+      flex: 1; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .kb-file-item .kb-file-meta {
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0; margin-left: 8px;
+    }
+    .kb-file-item .kb-file-chunks {
+      font-size: 11px; color: var(--text-muted);
+    }
+    .type-badge {
+      font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 12px;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .type-badge.type-capability     { background: rgba(99,102,241,0.15); color: var(--accent-light); }
+    .type-badge.type-past_proposal  { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .type-badge.type-certification  { background: rgba(16,185,129,0.15); color: var(--success); }
+    .type-badge.type-pricing        { background: rgba(59,130,246,0.15); color: var(--info); }
+    .type-badge.type-legal          { background: rgba(239,68,68,0.15); color: var(--error); }
+    .kb-files-list { max-height: 200px; overflow-y: auto; }
+    .run-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      background: var(--bg-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .run-item:hover { border-color: var(--accent); }
+    .run-item .run-id { font-size: 13px; font-weight: 500; }
+    .run-item .run-file { font-size: 12px; color: var(--text-muted); }
+    .run-item .run-status {
+      font-size: 11px; font-weight: 500;
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .run-status.INTAKE_COMPLETE { background: rgba(16,185,129,0.15); color: var(--success); }
+    .run-status.FAILED { background: rgba(239,68,68,0.15); color: var(--error); }
+    .run-status.RUNNING { background: rgba(99,102,241,0.15); color: var(--accent-light); }
+    .run-status.STRUCTURING { background: rgba(245,158,11,0.15); color: var(--warning); }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ────────────────────────────────── -->
+  <header class="header">
+    <h1>⚡ RFP Responder</h1>
+    <div class="api-status">
+      <span class="status-dot" id="apiDot"></span>
+      <span id="apiLabel">Connecting…</span>
+    </div>
+  </header>
+
+  <!-- ── Main grid ─────────────────────────────── -->
+  <main class="main">
+
+    <!-- ═══════════ LEFT: Knowledge Base ═══════════ -->
+    <div class="card">
+      <div class="card-header">
+        <h2>📚 Knowledge Base</h2>
+        <span class="badge" id="kbBadge">—</span>
+      </div>
+      <div class="card-body">
+
+        <!-- Upload -->
+        <div class="dropzone" id="kbDropzone" onclick="document.getElementById('kbFile').click()">
+          <input type="file" id="kbFile" accept=".pdf" />
+          <div class="icon">📄</div>
+          <div class="label">Drop a company doc or <strong>click to browse</strong></div>
+        </div>
+        <div class="file-info" id="kbFileInfo" style="display:none">
+          📄 <span class="fname" id="kbFileName"></span>
+          <span class="fsize" id="kbFileSize"></span>
+        </div>
+        <div class="form-row">
+          <span id="kbClassifiedType" class="classified-badge" style="display:none"></span>
+          <button class="btn btn-primary" id="kbUploadBtn" disabled>
+            Upload to KB
+          </button>
+          <button class="btn btn-outline btn-sm" id="kbSeedBtn">
+            🌱 Seed from JSON
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="kbStats">
+          <div class="stat-box">
+            <div class="stat-value" id="kbVectors">—</div>
+            <div class="stat-label">Vectors</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="kbNamespaces">—</div>
+            <div class="stat-label">Namespaces</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="kbConfigs">—</div>
+            <div class="stat-label">Configs</div>
+          </div>
+        </div>
+
+        <!-- Uploaded Files -->
+        <div class="kb-files-header">
+          <h3>📁 Uploaded Documents</h3>
+          <button class="btn btn-outline btn-sm" id="kbRefreshFilesBtn" style="padding:3px 8px;font-size:11px">🔄</button>
+        </div>
+        <div class="kb-files-list" id="kbFilesList">
+          <div style="padding:8px;color:var(--text-muted);font-size:12px">No uploads yet.</div>
+        </div>
+
+        <!-- Query -->
+        <div class="query-row">
+          <input type="text" id="kbQueryInput" placeholder="Test query against knowledge base…" />
+          <select id="kbQueryType" style="width:auto;min-width:90px">
+            <option value="">All Types</option>
+            <option value="capability">Capability</option>
+            <option value="past_proposal">Past Proposal</option>
+            <option value="certification">Certification</option>
+            <option value="pricing">Pricing</option>
+            <option value="legal">Legal</option>
+          </select>
+          <button class="btn btn-outline btn-sm" id="kbQueryBtn">🔍 Query</button>
+        </div>
+        <div class="query-results" id="kbQueryResults"></div>
+
+        <!-- Log -->
+        <div class="log-box" id="kbLog"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════ RIGHT: RFP Pipeline ═══════════ -->
+    <div class="card">
+      <div class="card-header">
+        <h2>🚀 RFP Pipeline</h2>
+        <span class="badge" id="rfpBadge">Ready</span>
+      </div>
+      <div class="card-body">
+
+        <!-- Upload -->
+        <div class="dropzone" id="rfpDropzone" onclick="document.getElementById('rfpFile').click()">
+          <input type="file" id="rfpFile" accept=".pdf" />
+          <div class="icon">📑</div>
+          <div class="label">Drop an RFP document or <strong>click to browse</strong></div>
+        </div>
+        <div class="file-info" id="rfpFileInfo" style="display:none">
+          📑 <span class="fname" id="rfpFileName"></span>
+          <span class="fsize" id="rfpFileSize"></span>
+        </div>
+        <div class="form-row">
+          <button class="btn btn-primary" id="rfpUploadBtn" disabled>
+            Run Pipeline
+          </button>
+          <button class="btn btn-outline btn-sm" id="rfpRefreshBtn">
+            🔄 Refresh Runs
+          </button>
+        </div>
+
+        <!-- Pipeline progress -->
+        <div class="pipeline-stepper" id="pipelineStepper">
+          <!-- steps injected by JS -->
+        </div>
+
+        <!-- Recent runs -->
+        <div class="runs-list" id="runsList"></div>
+
+        <!-- Log -->
+        <div class="log-box" id="rfpLog"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ── Config ─────────────────────────────────────
+    const API = 'http://localhost:8000';
+    const WS_BASE = API.replace(/^http/, 'ws');
+
+    // ── Pipeline stages ────────────────────────────
+    const STAGES = [
+      { key: 'A1_INTAKE',                label: 'A1 — Intake',              status: 'INTAKE_COMPLETE' },
+      { key: 'A2_STRUCTURING',            label: 'A2 — Structuring',         status: 'STRUCTURING' },
+      { key: 'A3_GO_NO_GO',              label: 'A3 — Go / No-Go',         status: 'GO_NO_GO' },
+      { key: 'B1_REQUIREMENTS_EXTRACTION',label: 'B1 — Requirement Extract', status: 'EXTRACTING_REQUIREMENTS' },
+      { key: 'B2_REQUIREMENTS_VALIDATION',label: 'B2 — Requirement Valid.',  status: 'VALIDATING_REQUIREMENTS' },
+      { key: 'C1_ARCHITECTURE_PLANNING',  label: 'C1 — Architecture Plan',   status: 'ARCHITECTURE_PLANNING' },
+      { key: 'C2_REQUIREMENT_WRITING',    label: 'C2 — Response Writing',    status: 'WRITING_RESPONSES' },
+      { key: 'C3_NARRATIVE_ASSEMBLY',     label: 'C3 — Narrative Assembly',  status: 'ASSEMBLING_NARRATIVE' },
+      { key: 'D1_TECHNICAL_VALIDATION',   label: 'D1 — Technical Validation',status: 'TECHNICAL_VALIDATION' },
+      { key: 'E1_COMMERCIAL',             label: 'E1 — Commercial Review',   status: 'COMMERCIAL_LEGAL_REVIEW' },
+      { key: 'E2_LEGAL',                  label: 'E2 — Legal Review',        status: 'COMMERCIAL_LEGAL_REVIEW' },
+      { key: 'F1_FINAL_READINESS',        label: 'F1 — Final Readiness',     status: 'FINAL_READINESS' },
+      { key: 'F2_SUBMISSION',             label: 'F2 — Submission',          status: 'SUBMITTED' },
+    ];
+
+    // ── Stepper state ──────────────────────────────
+    // Maps stage key → 'pending' | 'active' | 'complete' | 'failed'
+    let stepperState = {};
+    function resetStepperState() {
+      stepperState = {};
+      STAGES.forEach(s => stepperState[s.key] = 'pending');
+    }
+    resetStepperState();
+
+    // ── Helper: format file size ───────────────────
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    // ── Helper: log to a log-box ───────────────────
+    function addLog(boxId, msg, cls = '') {
+      const box = document.getElementById(boxId);
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="log-time">${time}</span><span class="log-msg ${cls}">${msg}</span>`;
+      box.appendChild(entry);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // ── Helper: fetch with error handling ──────────
+    async function apiFetch(path, opts = {}) {
+      try {
+        const res = await fetch(`${API}${path}`, opts);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: res.statusText }));
+          throw new Error(err.detail || res.statusText);
+        }
+        return await res.json();
+      } catch (e) {
+        throw e;
+      }
+    }
+
+    // ── Health check ───────────────────────────────
+    async function checkHealth() {
+      const dot = document.getElementById('apiDot');
+      const label = document.getElementById('apiLabel');
+      try {
+        await apiFetch('/health');
+        dot.style.background = 'var(--success)';
+        dot.style.boxShadow = '0 0 8px var(--success)';
+        label.textContent = 'API Connected';
+      } catch {
+        dot.style.background = 'var(--error)';
+        dot.style.boxShadow = '0 0 8px var(--error)';
+        label.textContent = 'API Offline';
+      }
+    }
+
+    // ══════════════════════════════════════════════
+    //  KNOWLEDGE BASE
+    // ══════════════════════════════════════════════
+
+    const kbFile = document.getElementById('kbFile');
+    const kbUploadBtn = document.getElementById('kbUploadBtn');
+    const kbDropzone = document.getElementById('kbDropzone');
+    const kbFileInfo = document.getElementById('kbFileInfo');
+
+    function showKBFile(file) {
+      document.getElementById('kbFileName').textContent = file.name;
+      document.getElementById('kbFileSize').textContent = `(${formatSize(file.size)})`;
+      kbFileInfo.style.display = 'flex';
+    }
+
+    function hideKBFile() {
+      kbFileInfo.style.display = 'none';
+    }
+
+    kbFile.addEventListener('change', () => {
+      kbUploadBtn.disabled = !kbFile.files.length;
+      if (kbFile.files.length) {
+        showKBFile(kbFile.files[0]);
+        kbDropzone.querySelector('.label').innerHTML =
+          `<strong>${kbFile.files[0].name}</strong> selected`;
+      } else {
+        hideKBFile();
+      }
+    });
+
+    // Drag & drop
+    kbDropzone.addEventListener('dragover', e => { e.preventDefault(); kbDropzone.classList.add('drag-over'); });
+    kbDropzone.addEventListener('dragleave', () => kbDropzone.classList.remove('drag-over'));
+    kbDropzone.addEventListener('drop', e => {
+      e.preventDefault(); kbDropzone.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) {
+        kbFile.files = e.dataTransfer.files;
+        kbFile.dispatchEvent(new Event('change'));
+      }
+    });
+
+    // Upload — no doc_type sent ⇒ backend auto-classifies
+    kbUploadBtn.addEventListener('click', async () => {
+      const file = kbFile.files[0];
+      if (!file) return;
+
+      const typeBadge = document.getElementById('kbClassifiedType');
+      typeBadge.style.display = 'none';
+
+      kbUploadBtn.disabled = true;
+      kbUploadBtn.innerHTML = '<span class="spinner"></span> Uploading…';
+      addLog('kbLog', `Uploading ${file.name} — auto-classifying…`, 'info');
+
+      // Pause background polling so it doesn't compete with the upload
+      pausePolling();
+
+      const form = new FormData();
+      form.append('file', file);
+      // No doc_type → backend auto-classifies
+
+      try {
+        const data = await apiFetch('/api/knowledge/upload', { method: 'POST', body: form });
+
+        // Show auto-classified type badge
+        const classLabel = data.auto_classified ? `Auto: ${data.doc_type}` : data.doc_type;
+        typeBadge.textContent = classLabel;
+        typeBadge.className = `classified-badge type-${data.doc_type}`;
+        typeBadge.style.display = 'inline-block';
+
+        addLog('kbLog', `✓ ${data.message}`, 'success');
+        if (data.auto_classified) {
+          addLog('kbLog', `📋 Auto-classified as "${data.doc_type}"`, 'info');
+        }
+        loadKBStats();
+        loadKBFiles();
+      } catch (e) {
+        addLog('kbLog', `✗ Upload failed: ${e.message}`, 'error');
+      } finally {
+        kbUploadBtn.innerHTML = 'Upload to KB';
+        kbUploadBtn.disabled = false;
+        kbFile.value = '';
+        kbDropzone.querySelector('.label').innerHTML =
+          'Drop a company doc or <strong>click to browse</strong>';
+        hideKBFile();
+        resumePolling();
+      }
+    });
+
+    // Seed
+    document.getElementById('kbSeedBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('kbSeedBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Seeding…';
+      addLog('kbLog', 'Seeding knowledge base from JSON files…', 'info');
+      pausePolling();
+
+      try {
+        const data = await apiFetch('/api/knowledge/seed', { method: 'POST' });
+        addLog('kbLog', `✓ ${data.message}`, 'success');
+        loadKBStats();
+      } catch (e) {
+        addLog('kbLog', `✗ Seed failed: ${e.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🌱 Seed from JSON';
+        resumePolling();
+      }
+    });
+
+    // Stats
+    async function loadKBStats() {
+      try {
+        const data = await apiFetch('/api/knowledge/status');
+        document.getElementById('kbVectors').textContent = data.pinecone.total_vectors ?? '—';
+        const nsCount = data.pinecone.namespaces ? Object.keys(data.pinecone.namespaces).length : 0;
+        document.getElementById('kbNamespaces').textContent = nsCount;
+        document.getElementById('kbConfigs').textContent =
+          data.mongodb.configs ? data.mongodb.configs.length : 0;
+        document.getElementById('kbBadge').textContent =
+          `${data.pinecone.total_vectors ?? 0} vectors`;
+      } catch {
+        document.getElementById('kbBadge').textContent = 'Offline';
+      }
+    }
+
+    // Query — with optional doc_type filter
+    document.getElementById('kbQueryBtn').addEventListener('click', async () => {
+      const q = document.getElementById('kbQueryInput').value.trim();
+      if (!q) return;
+      const docType = document.getElementById('kbQueryType').value;
+      const box = document.getElementById('kbQueryResults');
+      box.innerHTML = '<div style="padding:8px;color:var(--text-muted)"><span class="spinner"></span> Querying…</div>';
+
+      try {
+        const payload = { query: q, top_k: 5 };
+        if (docType) payload.doc_type = docType;
+
+        const data = await apiFetch('/api/knowledge/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!data.results.length) {
+          box.innerHTML = '<div style="padding:8px;color:var(--text-muted)">No results.</div>';
+          return;
+        }
+        box.innerHTML = data.results.map(r => `
+          <div class="query-result-item">
+            <span class="score">[${(r.score || 0).toFixed(3)}]</span>
+            ${r.id || ''}
+            <div class="text">${(r.text || '').substring(0, 200)}…</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        box.innerHTML = `<div style="padding:8px;color:var(--error)">Query failed: ${e.message}</div>`;
+      }
+    });
+
+    // ── Uploaded KB files list ───────────────────────
+    async function loadKBFiles() {
+      try {
+        const files = await apiFetch('/api/knowledge/files');
+        const box = document.getElementById('kbFilesList');
+        if (!files.length) {
+          box.innerHTML = '<div style="padding:8px;color:var(--text-muted);font-size:12px">No uploads yet.</div>';
+          return;
+        }
+        box.innerHTML = files.map(f => {
+          const autoTag = f.auto_classified ? ' (auto)' : '';
+          return `
+            <div class="kb-file-item">
+              <span class="kb-file-name" title="${f.filename}">📄 ${f.filename}</span>
+              <div class="kb-file-meta">
+                <span class="kb-file-chunks">${f.chunks_stored} chunks</span>
+                <span class="type-badge type-${f.doc_type}">${f.doc_type}${autoTag}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch {
+        // silently ignore
+      }
+    }
+
+    document.getElementById('kbRefreshFilesBtn').addEventListener('click', loadKBFiles);
+
+    // ══════════════════════════════════════════════
+    //  RFP PIPELINE
+    // ══════════════════════════════════════════════
+
+    const rfpFile = document.getElementById('rfpFile');
+    const rfpUploadBtn = document.getElementById('rfpUploadBtn');
+    const rfpDropzone = document.getElementById('rfpDropzone');
+    const rfpFileInfo = document.getElementById('rfpFileInfo');
+    let activeWS = null;
+    let activeRfpId = null;
+
+    function showRFPFile(file) {
+      document.getElementById('rfpFileName').textContent = file.name;
+      document.getElementById('rfpFileSize').textContent = `(${formatSize(file.size)})`;
+      rfpFileInfo.style.display = 'flex';
+    }
+
+    function hideRFPFile() {
+      rfpFileInfo.style.display = 'none';
+    }
+
+    rfpFile.addEventListener('change', () => {
+      rfpUploadBtn.disabled = !rfpFile.files.length;
+      if (rfpFile.files.length) {
+        showRFPFile(rfpFile.files[0]);
+        rfpDropzone.querySelector('.label').innerHTML =
+          `<strong>${rfpFile.files[0].name}</strong> selected`;
+      } else {
+        hideRFPFile();
+      }
+    });
+
+    rfpDropzone.addEventListener('dragover', e => { e.preventDefault(); rfpDropzone.classList.add('drag-over'); });
+    rfpDropzone.addEventListener('dragleave', () => rfpDropzone.classList.remove('drag-over'));
+    rfpDropzone.addEventListener('drop', e => {
+      e.preventDefault(); rfpDropzone.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) {
+        rfpFile.files = e.dataTransfer.files;
+        rfpFile.dispatchEvent(new Event('change'));
+      }
+    });
+
+    // Build pipeline stepper from stepperState
+    function renderStepper() {
+      const box = document.getElementById('pipelineStepper');
+      box.innerHTML = STAGES.map(s => {
+        const state = stepperState[s.key] || 'pending';
+        let cls = '';
+        if (state === 'active')   cls = 'active';
+        if (state === 'complete') cls = 'complete';
+        if (state === 'failed')   cls = 'failed';
+        return `<div class="step ${cls}"><div><div class="step-label">${s.label}</div></div></div>`;
+      }).join('');
+    }
+    renderStepper(); // initial empty
+
+    // ── WebSocket connection for real-time progress ─────
+    function connectPipelineWS(rfpId) {
+      // Close any existing connection
+      if (activeWS) {
+        try { activeWS.close(); } catch {}
+      }
+      activeRfpId = rfpId;
+
+      const url = `${WS_BASE}/api/rfp/ws/${rfpId}`;
+      addLog('rfpLog', `Connecting to live progress…`, 'info');
+      const ws = new WebSocket(url);
+      activeWS = ws;
+
+      ws.onopen = () => {
+        addLog('rfpLog', `🔗 Live progress connected`, 'info');
+      };
+
+      ws.onmessage = (evt) => {
+        let data;
+        try { data = JSON.parse(evt.data); } catch { return; }
+
+        switch (data.event) {
+          case 'node_start':
+            stepperState[data.agent] = 'active';
+            addLog('rfpLog', `▶ Starting ${data.agent}`, 'info');
+            renderStepper();
+            break;
+
+          case 'node_end':
+            stepperState[data.agent] = 'complete';
+            addLog('rfpLog', `✓ ${data.agent} → ${data.status || 'done'}`, 'success');
+            renderStepper();
+            break;
+
+          case 'error':
+            stepperState[data.agent] = 'failed';
+            addLog('rfpLog', `✗ ${data.agent}: ${data.message}`, 'error');
+            renderStepper();
+            break;
+
+          case 'pipeline_end':
+            const endStatus = data.status || 'UNKNOWN';
+            document.getElementById('rfpBadge').textContent = endStatus;
+            addLog('rfpLog', `══ Pipeline finished: ${endStatus}`,
+              endStatus === 'FAILED' ? 'error' : 'success');
+
+            // Re-enable upload button
+            rfpUploadBtn.innerHTML = 'Run Pipeline';
+            rfpUploadBtn.disabled = false;
+
+            // Refresh runs list
+            loadRuns();
+            break;
+        }
+      };
+
+      ws.onclose = () => {
+        addLog('rfpLog', `WebSocket closed`, '');
+        if (activeWS === ws) activeWS = null;
+      };
+
+      ws.onerror = () => {
+        addLog('rfpLog', `WebSocket error — falling back to polling`, 'error');
+        if (activeWS === ws) activeWS = null;
+        // Fallback: poll status until done
+        startPolling(rfpId);
+      };
+    }
+
+    // ── Polling fallback ────────────────────────────
+    function startPolling(rfpId) {
+      const interval = setInterval(async () => {
+        try {
+          const status = await apiFetch(`/api/rfp/${rfpId}/status`);
+          if (status.status !== 'RUNNING') {
+            clearInterval(interval);
+            document.getElementById('rfpBadge').textContent = status.status;
+            updateStepperFromStatus(status);
+            rfpUploadBtn.innerHTML = 'Run Pipeline';
+            rfpUploadBtn.disabled = false;
+            loadRuns();
+          }
+        } catch {
+          clearInterval(interval);
+        }
+      }, 2000);
+    }
+
+    // ── Update stepper from a status response (for polling/viewRun) ──
+    function updateStepperFromStatus(status) {
+      resetStepperState();
+      const currentAgent = status.current_agent || '';
+      const failed = status.status === 'FAILED';
+      let hitCurrent = false;
+
+      for (const s of STAGES) {
+        if (s.key === currentAgent) {
+          stepperState[s.key] = failed ? 'failed' : 'active';
+          hitCurrent = true;
+        } else if (!hitCurrent && currentAgent) {
+          stepperState[s.key] = 'complete';
+        }
+      }
+      renderStepper();
+    }
+
+    // Upload & run pipeline (returns immediately, progress via WS)
+    rfpUploadBtn.addEventListener('click', async () => {
+      const file = rfpFile.files[0];
+      if (!file) return;
+
+      rfpUploadBtn.disabled = true;
+      rfpUploadBtn.innerHTML = '<span class="spinner"></span> Starting…';
+      document.getElementById('rfpBadge').textContent = 'Running';
+      addLog('rfpLog', `Uploading ${file.name}…`, 'info');
+
+      // Reset stepper for a new run
+      resetStepperState();
+      renderStepper();
+
+      const form = new FormData();
+      form.append('file', file);
+
+      try {
+        const data = await apiFetch('/api/rfp/upload', { method: 'POST', body: form });
+        addLog('rfpLog', `Pipeline started → ${data.rfp_id}`, 'info');
+        document.getElementById('rfpBadge').textContent = 'Running';
+
+        // Keep filename visible during pipeline execution
+        rfpUploadBtn.innerHTML = '<span class="spinner"></span> Running…';
+
+        // Connect WebSocket for live progress
+        connectPipelineWS(data.rfp_id);
+
+        // Clear file input but keep filename info visible
+        rfpFile.value = '';
+        rfpDropzone.querySelector('.label').innerHTML =
+          'Drop an RFP document or <strong>click to browse</strong>';
+
+      } catch (e) {
+        addLog('rfpLog', `✗ Upload failed: ${e.message}`, 'error');
+        document.getElementById('rfpBadge').textContent = 'Failed';
+        rfpUploadBtn.innerHTML = 'Run Pipeline';
+        rfpUploadBtn.disabled = false;
+      }
+    });
+
+    // Load runs list
+    async function loadRuns() {
+      try {
+        const data = await apiFetch('/api/rfp/list');
+        const box = document.getElementById('runsList');
+        if (!data.length) {
+          box.innerHTML = '<div style="padding:8px;color:var(--text-muted);font-size:13px">No pipeline runs yet.</div>';
+          return;
+        }
+        box.innerHTML = data.map(r => `
+          <div class="run-item" onclick="viewRun('${r.rfp_id}')">
+            <div>
+              <div class="run-id">${r.rfp_id}</div>
+              <div class="run-file">${r.filename || '—'}</div>
+            </div>
+            <div class="run-status ${r.status}">${r.status}</div>
+          </div>
+        `).join('');
+      } catch {}
+    }
+
+    async function viewRun(rfpId) {
+      try {
+        const status = await apiFetch(`/api/rfp/${rfpId}/status`);
+        document.getElementById('rfpBadge').textContent = status.status;
+        addLog('rfpLog', `Viewing run ${rfpId}: ${status.status}`, 'info');
+
+        updateStepperFromStatus(status);
+
+        // If it's still running, connect the WebSocket
+        if (status.status === 'RUNNING') {
+          connectPipelineWS(rfpId);
+        }
+      } catch (e) {
+        addLog('rfpLog', `Failed to load run: ${e.message}`, 'error');
+      }
+    }
+
+    document.getElementById('rfpRefreshBtn').addEventListener('click', loadRuns);
+
+    // ── Init ───────────────────────────────────────
+    let _healthInterval = null;
+    let _statsInterval = null;
+
+    function pausePolling() {
+      if (_healthInterval) { clearInterval(_healthInterval); _healthInterval = null; }
+      if (_statsInterval) { clearInterval(_statsInterval); _statsInterval = null; }
+    }
+    function resumePolling() {
+      if (!_healthInterval) _healthInterval = setInterval(checkHealth, 60000);
+      if (!_statsInterval) _statsInterval = setInterval(loadKBStats, 60000);
+    }
+
+    checkHealth();
+    loadKBStats();
+    loadKBFiles();
+    loadRuns();
+    resumePolling();
+  </script>
+</body>
+</html>
