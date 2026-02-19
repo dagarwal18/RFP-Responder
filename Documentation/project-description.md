@@ -58,14 +58,19 @@ A multi-agent AI system that automates the end-to-end process of responding to R
 ## Project Structure
 
 ```
-rfp-automation/
-├── agents/              # One file per agent (A1, A2, A3, B1, B2, C1, C2, C3, D1, E1, E2, F1, F2)
-├── orchestration/       # LangGraph state machine
-├── mcp_server/          # MCP server — vector stores, knowledge base, rule layers
-├── tools/               # PDF reader, DB client, embedding utilities
-├── prompts/             # All LLM prompts
-├── storage/             # File & state management
-└── tests/               # Test data and cases
+rfp_automation/
+├── main.py
+├── config.py
+├── api/                 # Routes and WebSocket endpoints
+├── orchestration/       # LangGraph state machine and transitions
+├── agents/              # Individual agent implementations (Intake, Structuring, etc.)
+├── mcp/                 # MCP Server (Vector Store, Rules, Schema, Embeddings)
+├── models/              # Pydantic models and Enums
+├── services/            # File, Parsing, Storage, and Audit services
+├── persistence/         # Database clients and repositories
+├── prompts/             # LLM prompts
+├── utils/               # Logger, hashing, and utilities
+└── tests/               # Unit and integration tests
 ```
 
 ---
