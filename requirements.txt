@@ -1,34 +1,36 @@
 # ── Core ─────────────────────────────────────────────────
-pydantic>=2.12.0,<3.0
+pydantic>=2.12.5,<3.0
 pydantic-settings>=2.13.0,<3.0
 
 # ── API Server ───────────────────────────────────────────
 fastapi>=0.129.0
 uvicorn[standard]>=0.41.0
 python-multipart>=0.0.22        # required for FastAPI file uploads
+websockets>=16.0                # WebSocket support for uvicorn
 
 # ── Orchestration ────────────────────────────────────────
-langgraph>=1.0.0
-langchain>=1.2.0
+langgraph>=1.0.8
+langchain>=1.2.10
 
 # ── LLM Provider (Groq Cloud) ───────────────────────────
 langchain-groq>=0.2.0           # lazy-loaded in llm_service.py
 
 # ── Document Parsing ────────────────────────────────────
-PyMuPDF>=1.27.0                 # PDF text extraction (used by ParsingService)
+PyMuPDF>=1.27.1                 # PDF text extraction (used by ParsingService)
 python-docx>=1.1.0              # DOCX text extraction (lazy-loaded in ParsingService)
 
 # ── Embeddings ───────────────────────────────────────────
-sentence-transformers>=5.0.0    # used by EmbeddingModel (all-MiniLM-L6-v2)
+sentence-transformers>=5.2.3    # used by EmbeddingModel (all-MiniLM-L6-v2)
+torch>=2.10.0                   # PyTorch backend for sentence-transformers
 
 # ── Vector DB (Pinecone) ────────────────────────────────
-pinecone>=8.0.0                 # renamed from pinecone-client in v8
+pinecone>=8.0.1                 # renamed from pinecone-client in v8
 
 # ── Persistence ──────────────────────────────────────────
 pymongo>=4.8.0                  # MongoDB (KnowledgeStore, rules_config, mongo_client)
 
 # ── Utilities ────────────────────────────────────────────
-python-dotenv>=1.0.0            # .env file loading for pydantic-settings
+python-dotenv>=1.2.1            # .env file loading for pydantic-settings
 
 # ── Testing ──────────────────────────────────────────────
-pytest>=9.0.0
+pytest>=9.0.2
