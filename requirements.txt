@@ -13,7 +13,7 @@ langgraph>=1.0.8
 langchain>=1.2.10
 
 # ── LLM Provider (Groq Cloud) ───────────────────────────
-langchain-groq>=0.2.0           # lazy-loaded in llm_service.py
+langchain-groq>=1.1.2           # lazy-loaded in llm_service.py
 
 # ── Document Parsing ────────────────────────────────────
 PyMuPDF>=1.27.1                 # PDF text extraction (used by ParsingService)
