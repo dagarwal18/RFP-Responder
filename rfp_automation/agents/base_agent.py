@@ -38,15 +38,15 @@ class BaseAgent(ABC):
         graph_state = RFPGraphState(**state)
         graph_state.current_agent = self.name.value
 
-        # Broadcast real-time progress
-        rfp_id = ""
-        meta = state.get("rfp_metadata")
-        if isinstance(meta, dict):
-            rfp_id = meta.get("rfp_id", "")
-        elif hasattr(meta, "rfp_id"):
-            rfp_id = meta.rfp_id or ""
-        # Also check the tracking id stored at top level by the route
-        rfp_id = rfp_id or state.get("_tracking_rfp_id", "")
+        # Broadcast real-time progress — prefer the tracking id the
+        # frontend connected to, fall back to rfp_metadata.rfp_id
+        rfp_id = state.get("tracking_rfp_id", "")
+        if not rfp_id:
+            meta = state.get("rfp_metadata")
+            if isinstance(meta, dict):
+                rfp_id = meta.get("rfp_id", "")
+            elif hasattr(meta, "rfp_id"):
+                rfp_id = meta.rfp_id or ""
 
         progress = None
         try:

@@ -47,6 +47,9 @@ class RFPGraphState(BaseModel):
     error_message: str = ""
     state_version: int = 0
 
+    # ── Tracking (set by API route, used for WebSocket) ──
+    tracking_rfp_id: str = ""
+
     # ── A1 Intake (owner: A1) ────────────────────────────
     rfp_metadata: RFPMetadata = Field(default_factory=RFPMetadata)
     uploaded_file_path: str = ""

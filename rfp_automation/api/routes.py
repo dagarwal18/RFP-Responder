@@ -87,7 +87,7 @@ def _run_pipeline_thread(rfp_id: str, local_path: str) -> None:
     try:
         result = run_pipeline(
             uploaded_file_path=local_path,
-            initial_state={"_tracking_rfp_id": rfp_id},
+            initial_state={"tracking_rfp_id": rfp_id},
         )
         status = str(result.get("status", "UNKNOWN"))
 
