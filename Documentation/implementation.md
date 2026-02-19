@@ -83,3 +83,37 @@ To handle 300 pages, the state is structured as a **Matrix**, not a string.
 2. **Phase 2:** Implement Hierarchical PDF Parser for long-document context management.
 3. **Phase 3:** Build the MCP CBR Engine for similarity matching.
 4. **Phase 4:** Integrate Symbolic Logic rules for hard-constraint validation.
+
+---
+
+## 7. Scaffolded Files (created)
+The repository now contains a minimal scaffold to iterate from:
+
+- main.py — FastAPI entrypoint + LangGraph placeholder
+- orchestration/supervisor.py — Supervisor (Task planner / delegator) stub
+- orchestration/graph.py — LangGraph state machine stub
+- orchestration/state.py — Pydantic Requirement / RequirementMatrix schema
+- agents/workers/extractor.py — Hierarchical PDF extractor stub
+- agents/workers/cbr_adaptor.py — CBR adaptor stub (retrieve + adapt)
+- agents/workers/validator.py — Validator stub (neuro-symbolic checks)
+- agents/prompts/templates.py — Prompt templates constants
+- mcp/reasoning/cbr_engine.py — Similarity search stub
+- mcp/reasoning/logic_rules.py — Symbolic rule checker
+- mcp/reasoning/knowledge_graph.py — Fact-store stub
+- mcp/mcp_server.py — Thin API wrapper for MCP calls
+- services/file_service.py — S3 / PDF parse stub
+- services/audit_service.py — Reasoning trace logger
+- persistence/mongo_client.py — Mongo client wrapper (async)
+- persistence/state_repo.py — State persistence repository
+
+## 8. How to run (dev)
+1. Create a virtualenv and install: fastapi, uvicorn, pydantic, pymongo (or motor) as needed.
+2. Start dev server:
+   - uvicorn main:app --reload
+3. Use endpoints in main.py to trigger extraction / preview flow.
+
+## 9. Next tasks (priority)
+1. Implement extractor parsing for long PDFs (hierarchical headings).
+2. Wire CBR engine to a vector DB (Faiss, Milvus) and seed KB.
+3. Implement logic_rules and connect validator to override drafts.
+4. Add tests and CI.
