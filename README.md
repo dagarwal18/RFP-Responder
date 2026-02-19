@@ -24,21 +24,21 @@ Two separately deployed units — the backend is a single Docker container, the 
 │       │    │  │ RFP Store   │ │                                 │
 │       │    │  │ KB          │ │                                 │
 │       │    │  │ Rules       │ │                                 │
-│       │    │  │ _internal/  │ │  ← embedding, chunking, vecDB  │
+│       │    │  │ Embeddings  │ │  ← embedding, chunking, vecDB  │
 │       │    │  └─────────────┘ │                                 │
 │       │    └──────────────────┘                                 │
 │       │                                                         │
 │       ▼                                                         │
-│  ┌──────────┐  ┌───────────┐  ┌───────────┐                    │
-│  │ Storage  │  │  MongoDB  │  │   Redis   │                    │
-│  │ (S3)     │  │  (state)  │  │  (queue)  │                    │
-│  └──────────┘  └───────────┘  └───────────┘                    │
+│  ┌──────────┐  ┌───────────┐                                    │
+│  │ Storage  │  │  MongoDB  │                                    │
+│  │ (local)  │  │  (state)  │                                    │
+│  └──────────┘  └───────────┘                                    │
 └─────────────────────────────────────────────────────────────────┘
         ▲  REST + WebSocket
         │
         ▼
 ┌─────────────────────────────────┐
-│  FRONTEND (Vercel)              │
+│  FRONTEND (Vercel — planned)    │
 │  Next.js + TypeScript + Tailwind│
 │                                 │
 │  Pages:                         │
@@ -63,64 +63,95 @@ extracting it into its own service is straightforward because the boundary is al
 RFP-Responder/
 ├── Documentation/
 │   ├── project-description.md           # Full system spec
-│   └── implementation-plan.md           # 13-week phased plan
+│   ├── data-flow.md                     # Pipeline walkthrough (file by file)
+│   └── implementation-plan.md           # Phased plan + current status
 │
-├── src/                                 # ═══ BACKEND (all in one Docker) ═══
-│   ├── main.py                          # CLI pipeline runner + API server launcher
+├── rfp_automation/                      # ═══ BACKEND (all in one Docker) ═══
+│   ├── __init__.py                      # Package marker
+│   ├── __main__.py                      # CLI entry: python -m rfp_automation
+│   ├── config.py                        # Centralised config (pydantic-settings + .env)
+│   ├── main.py                          # run() + serve() entry points
 │   │
 │   ├── api/                             # ── HTTP Layer (frontend talks to this) ──
-│   │   ├── app.py                       # FastAPI application factory
-│   │   └── routes.py                    # REST endpoints (upload, status, approve)
-│   │
-│   ├── config/
-│   │   └── settings.py                  # Centralised config (env vars / .env)
+│   │   ├── __init__.py                  # FastAPI app factory (create_app + app instance)
+│   │   ├── routes.py                    # REST endpoints (upload, status, approve, list)
+│   │   └── websocket.py                 # PipelineCallbacks (logging, future WebSocket)
 │   │
 │   ├── models/                          # ── Data Layer ──
 │   │   ├── enums.py                     # Status codes, decision types, categories
 │   │   ├── state.py                     # RFPGraphState — the shared LangGraph state
-│   │   └── schemas.py                   # Pydantic models for each agent's output
+│   │   └── schemas.py                   # 20+ Pydantic models for each agent's output
 │   │
 │   ├── agents/                          # ── Agent Layer (imports MCPService only) ──
-│   │   ├── base.py                      # BaseAgent — mock/real switching, audit
-│   │   ├── a1_intake.py → f2_submission.py  # 13 agents
-│   │   └── ...
+│   │   ├── base_agent.py                # BaseAgent — mock/real switching, audit
+│   │   ├── intake_agent.py              # A1 — IntakeAgent
+│   │   ├── structuring_agent.py         # A2 — StructuringAgent
+│   │   ├── go_no_go_agent.py            # A3 — GoNoGoAgent
+│   │   ├── requirement_extraction_agent.py  # B1 — RequirementsExtractionAgent
+│   │   ├── requirement_validation_agent.py  # B2 — RequirementsValidationAgent
+│   │   ├── architecture_agent.py        # C1 — ArchitecturePlanningAgent
+│   │   ├── writing_agent.py             # C2 — RequirementWritingAgent
+│   │   ├── narrative_agent.py           # C3 — NarrativeAssemblyAgent
+│   │   ├── technical_validation_agent.py    # D1 — TechnicalValidationAgent
+│   │   ├── commercial_agent.py          # E1 — CommercialAgent
+│   │   ├── legal_agent.py               # E2 — LegalAgent
+│   │   ├── final_readiness_agent.py     # F1 — FinalReadinessAgent
+│   │   └── submission_agent.py          # F2 — SubmissionAgent
 │   │
-│   ├── mcp_server/                      # ── MCP Server (in-process module) ──
-│   │   ├── server.py                    # MCPService facade — single entry point
-│   │   ├── rfp_store.py                 # RFP Vector Store (embed / query)
-│   │   ├── knowledge_base.py            # Company KB (capabilities, certs, pricing)
-│   │   ├── rules_engine.py              # Policy / validation / legal rules
-│   │   └── _internal/                   # Implementation details (agents NEVER import)
-│   │       ├── embedding.py             # Sentence Transformers wrapper
-│   │       ├── chunker.py              # Text splitting for vector embedding
-│   │       └── vector_db.py            # Chroma / Pinecone client abstraction
+│   ├── mcp/                             # ── MCP Server (in-process module) ──
+│   │   ├── mcp_server.py                # MCPService facade — single entry point
+│   │   ├── vector_store/
+│   │   │   ├── rfp_store.py             # RFP Vector Store (embed / query)
+│   │   │   └── knowledge_store.py       # Company KB (capabilities, certs, pricing)
+│   │   ├── rules/
+│   │   │   ├── policy_rules.py          # Hard disqualification rules (A3)
+│   │   │   ├── validation_rules.py      # Prohibited language checks (D1)
+│   │   │   ├── commercial_rules.py      # Pricing validation (E1)
+│   │   │   └── legal_rules.py           # Commercial+Legal gate logic (E1+E2)
+│   │   ├── schema/
+│   │   │   ├── capability_schema.py     # Capability model
+│   │   │   ├── pricing_schema.py        # PricingParameters model
+│   │   │   └── requirement_schema.py    # ExtractedRequirement model
+│   │   └── embeddings/
+│   │       └── embedding_model.py       # Sentence Transformers wrapper
 │   │
-│   ├── storage/                         # ── Persistence (orchestration only) ──
-│   │   ├── file_storage.py              # Local / S3 file ops
+│   ├── services/                        # ── Business Services ──
+│   │   ├── file_service.py              # Local / S3 file operations
+│   │   ├── parsing_service.py           # PDF / DOCX text extraction + chunking
+│   │   ├── storage_service.py           # Coordinates file + state persistence
+│   │   └── audit_service.py             # Audit trail recording
+│   │
+│   ├── persistence/                     # ── Data Persistence ──
+│   │   ├── mongo_client.py              # MongoDB connection wrapper
 │   │   └── state_repository.py          # State persistence (in-memory / MongoDB)
 │   │
-│   ├── document/                        # ── One-time parsing (A1 Intake only) ──
-│   │   └── parser.py                    # PDF / DOCX text extraction
-│   │
 │   ├── orchestration/                   # ── LangGraph Pipeline ──
-│   │   ├── graph.py                     # State machine (nodes + edges)
-│   │   ├── routing.py                   # Conditional routing
-│   │   └── callbacks.py                 # Lifecycle hooks
+│   │   ├── graph.py                     # State machine (nodes + edges + run_pipeline)
+│   │   └── transitions.py              # Conditional routing (5 decision functions)
 │   │
-│   ├── prompts/
-│   │   └── templates.py                 # All LLM prompt templates
+│   ├── prompts/                         # ── LLM Prompt Templates ──
+│   │   ├── extraction_prompt.txt        # B1 requirement extraction
+│   │   ├── architecture_prompt.txt      # C1 architecture planning
+│   │   ├── go_no_go_prompt.txt          # A3 go/no-go analysis
+│   │   ├── structuring_prompt.txt       # A2 section classification
+│   │   ├── legal_prompt.txt             # E2 legal review
+│   │   ├── writing_prompt.txt           # C2 response writing
+│   │   └── validation_prompt.txt        # D1 technical validation
+│   │
+│   ├── utils/
+│   │   ├── logger.py                    # Logging setup
+│   │   └── hashing.py                   # SHA-256 hashing
 │   │
 │   └── tests/
-│       ├── test_graph_flow.py           # End-to-end pipeline tests
 │       ├── test_agents.py               # Per-agent unit tests
-│       └── fixtures/
-│           └── mock_data.py
+│       ├── test_pipeline.py             # End-to-end pipeline tests
+│       └── test_rules.py                # MCP rule layer tests
 │
-├── frontend/                            # ═══ FRONTEND (Vercel — Phase 4) ═══
-│   └── README.md                        # Planned stack + pages (not started)
+├── frontend/                            # ═══ FRONTEND (Vercel — not started) ═══
+│   └── README.md                        # Planned stack + pages
 │
+├── storage/                             # Local file storage directory
 ├── requirements.txt
-├── .env.example
 └── README.md
 ```
 
@@ -135,18 +166,28 @@ python -m venv .venv
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Copy environment file
+# 3. Copy environment file (optional — defaults work in mock mode)
 copy .env.example .env
 
 # 4. Run the pipeline directly (mock mode — no LLM keys needed)
-python -m src.main
+python -m rfp_automation
 
 # 5. Or start the API server (for frontend integration)
-python -m src.main --serve      # → http://localhost:8000/docs
+python -m rfp_automation --serve      # → http://localhost:8000/docs
 
 # 6. Run tests
-pytest src/tests/ -v
+pytest rfp_automation/tests/ -v
 ```
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/health` | Health check (status, mock_mode, timestamp) |
+| POST | `/api/rfp/upload` | Upload RFP file + run pipeline |
+| GET | `/api/rfp/{rfp_id}/status` | Get pipeline status for an RFP |
+| POST | `/api/rfp/{rfp_id}/approve` | Human approval gate action |
+| GET | `/api/rfp/list` | List all pipeline runs |
 
 ## Pipeline Flow
 
@@ -162,8 +203,9 @@ B1 Req Extraction → B2 Req Validation → C1 Architecture → C2 Writing → C
                                                                     ├──→ C3 (retry)
                                                                     │ PASS
                                                                     ▼
+                                                    commercial_legal_parallel
                                                             E1 Commercial ┐
-                                                            E2 Legal      ┤ parallel
+                                                            E2 Legal      ┤
                                                                           │
                                                                     BLOCK → END
                                                                     CLEAR ↓
@@ -179,15 +221,15 @@ B1 Req Extraction → B2 Req Validation → C1 Architecture → C2 Writing → C
 
 Every agent inherits from `BaseAgent` which provides:
 
-1. **`mock_mode` toggle** — reads from `Settings.mock_mode` (default: `True`)
-2. **`_mock_process(state)`** — returns hardcoded data (already implemented)
+1. **`mock_mode` toggle** — reads from `get_settings()` in `rfp_automation/config.py` (default: `True`)
+2. **`_mock_process(state)`** — returns hardcoded data (already implemented for all agents)
 3. **`_real_process(state)`** — override this to connect LLM + MCP
 
 **To graduate an agent from mock to real:**
 
 ```python
-# In any agent file, e.g. agents/b1_requirements_extraction.py:
-from src.mcp_server import MCPService
+# In any agent file, e.g. rfp_automation/agents/requirement_extraction_agent.py:
+from rfp_automation.mcp import MCPService
 
 class RequirementsExtractionAgent(BaseAgent):
     name = AgentName.B1_REQUIREMENTS_EXTRACTION
@@ -200,11 +242,14 @@ class RequirementsExtractionAgent(BaseAgent):
         mcp = MCPService()
         chunks = mcp.rfp_store.query("requirements", rfp_id=state.rfp_metadata.rfp_id)
 
-        # 2. Call LLM with prompt template
-        from src.prompts.templates import B1_REQUIREMENTS_PROMPT
+        # 2. Load prompt template
+        prompt_path = Path(__file__).parent.parent / "prompts" / "extraction_prompt.txt"
+        prompt_template = prompt_path.read_text()
+
+        # 3. Call LLM with prompt
         # ... LangChain chain here ...
 
-        # 3. Parse structured output, write to state
+        # 4. Parse structured output, write to state
         state.requirements = parsed_requirements
         return state
 ```
@@ -217,13 +262,17 @@ Then set `MOCK_MODE=false` in `.env` (or per-agent via constructor).
 |---|---|---|
 | `MCPService` | Facade over all MCP layers | Routes to mock sub-services |
 | `RFPVectorStore` | Embed + query incoming RFP chunks | Returns canned chunks |
-| `KnowledgeBase` | Company capabilities, certs, pricing, legal templates | Returns hardcoded dictionaries |
-| `RulesEngine` | Policy gate (A3), validation rules (D1), legal gate (E1+E2) | Simple rule checks |
-| `FileStorageService` | Save/load files (local or S3) | Writes to `./storage/` |
+| `KnowledgeStore` | Company capabilities, certs, pricing, legal templates | Returns hardcoded dictionaries |
+| `PolicyRules` | Hard disqualification rules (A3 gate) | Simple rule checks |
+| `ValidationRules` | Prohibited language + SLA checks (D1 gate) | Pattern matching |
+| `CommercialRules` | Pricing margin validation | Threshold checks |
+| `LegalRules` | Combined E1+E2 gate decision | Decision evaluation |
+| `FileService` | Save/load files (local or S3) | Writes to `./storage/` |
+| `ParsingService` | PDF/DOCX → text + chunking | Static methods |
+| `StorageService` | Coordinate file + state persistence | Via FileService + StateRepository |
+| `AuditService` | Record audit trail entries | In-memory list |
 | `StateRepository` | Persist graph state with versioning | In-memory dict |
-| `DocumentParser` | PDF/DOCX → text | Returns placeholder text |
-| `TextChunker` | Split text into overlapping chunks | Works normally |
-| `EmbeddingService` | Text → vector embeddings | Random vectors |
+| `EmbeddingModel` | Text → vector embeddings | Random 384-dim vectors |
 
 ## Governance Checkpoints
 

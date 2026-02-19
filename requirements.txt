@@ -1,34 +1,35 @@
 # ── Core ─────────────────────────────────────────────────
-pydantic>=2.0,<3.0
-pydantic-settings>=2.0,<3.0
+pydantic>=2.12.0,<3.0
+pydantic-settings>=2.13.0,<3.0
 
 # ── API Server ───────────────────────────────────────────
-fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
-python-multipart>=0.0.12        # required for file uploads
+fastapi>=0.129.0
+uvicorn[standard]>=0.41.0
+python-multipart>=0.0.22        # required for FastAPI file uploads
 
 # ── Orchestration ────────────────────────────────────────
-langgraph>=0.2.0
-langchain>=0.3.0
+langgraph>=1.0.0
+langchain>=1.2.0
+
+# ── LLM Providers (needed for real mode) ─────────────────
 langchain-openai>=0.2.0
 langchain-anthropic>=0.2.0
 
 # ── Document Parsing ────────────────────────────────────
-PyMuPDF>=1.24.0
-python-docx>=1.1.0
+PyMuPDF>=1.24.0                 # PDF text extraction (used by ParsingService)
+python-docx>=1.1.0              # DOCX text extraction (used by ParsingService)
 
 # ── Embeddings & Vector Store ────────────────────────────
-sentence-transformers>=3.0.0
-chromadb>=0.5.0
+sentence-transformers>=3.0.0    # used by EmbeddingModel (real mode)
+chromadb>=0.5.0                 # vector database backend
 
-# ── Storage ──────────────────────────────────────────────
-pymongo>=4.8.0
-boto3>=1.35.0
+# ── Storage & Persistence ────────────────────────────────
+pymongo>=4.8.0                  # MongoDB state persistence (real mode)
+boto3>=1.35.0                   # AWS S3 file storage (real mode)
 
 # ── Utilities ────────────────────────────────────────────
-python-dotenv>=1.0.0
-dateparser>=1.2.0
+python-dotenv>=1.0.0            # .env file loading for pydantic-settings
 
 # ── Testing ──────────────────────────────────────────────
-pytest>=8.0.0
+pytest>=9.0.0
 pytest-asyncio>=0.24.0

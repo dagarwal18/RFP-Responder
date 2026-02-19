@@ -32,7 +32,7 @@
 
 #### State Schema (Pydantic)
 
-The shared graph state object fields:
+The shared graph state object fields (defined in `rfp_automation/models/state.py`):
 
 - RFP metadata (ID, client, deadline, status)
 - Uploaded files (paths, metadata)
@@ -45,7 +45,9 @@ The shared graph state object fields:
 - Validation results (pass/fail + issues + retry count)
 - Commercial response (pricing breakdown)
 - Legal status (approved/conditional/blocked + reasoning + risk register)
+- Commercial/legal gate result (combined decision)
 - Approval package (decision brief for leadership)
+- Submission record (archive details + file hash)
 - Audit trail (every action logged)
 
 **Deliverable:** Clear state schema + project skeleton + MCP server scaffold ready.
@@ -59,13 +61,17 @@ The shared graph state object fields:
 **Goal:** Build the foundation for state handling and the MCP server.
 
 #### 1. State Schema (Pydantic)
-- Define every field with types and validation
+- Define every field with types and validation in `rfp_automation/models/`
+- `enums.py` — all enum types (`PipelineStatus`, `GoNoGoDecision`, etc.)
+- `schemas.py` — 20+ sub-models (`RFPMetadata`, `Requirement`, `GoNoGoResult`, etc.)
+- `state.py` — `RFPGraphState` with all fields, `add_audit()` method
 - Each agent "owns" specific sections
 - Prevents agents from overwriting each other
 
 #### 2. State Repository
-- Save/load operations to MongoDB
-- Version tracking (keep history of changes)
+- `rfp_automation/persistence/state_repository.py` — in-memory dict in mock mode
+- Save/load operations with versioned snapshots
+- Version tracking via `state_version` counter
 - Handle concurrent updates safely
 
 #### 3. State Versioning
@@ -73,9 +79,12 @@ The shared graph state object fields:
 - Essential for audit trail
 
 #### 4. MCP Server Scaffold
-- Set up vector store for incoming RFPs (chunking + embedding pipeline)
-- Set up knowledge base store (company capabilities, past proposals, certs)
-- Initialize rule layers (policy, validation, commercial/legal — empty for now)
+- `rfp_automation/mcp/mcp_server.py` — `MCPService` facade (single entry point for agents)
+- `rfp_automation/mcp/vector_store/rfp_store.py` — RFP Vector Store (chunking + embedding pipeline)
+- `rfp_automation/mcp/vector_store/knowledge_store.py` — Company Knowledge Store
+- `rfp_automation/mcp/rules/` — Policy, validation, commercial, legal rule layers
+- `rfp_automation/mcp/schema/` — Pydantic models for MCP data types
+- `rfp_automation/mcp/embeddings/embedding_model.py` — Sentence Transformers wrapper
 
 **Deliverable:** Can create, save, load, and version state objects; MCP server accepts embeddings and returns queries.
 
@@ -89,34 +98,36 @@ The shared graph state object fields:
 START → A1 Intake → A2 Structuring → A3 Go/No-Go →
 B1 Req Extraction → B2 Req Validation →
 C1 Architecture Planning → C2 Requirement Writing → C3 Narrative Assembly →
-D1 Technical Validation → E1+E2 Commercial+Legal (parallel) →
+D1 Technical Validation → commercial_legal_parallel (E1+E2) →
 F1 Final Readiness → Human Approval Gate → F2 Submission → END
 ```
 
 #### Routing Logic
 
-| Decision Point | Condition | Outcome |
-|---|---|---|
-| A2 Structuring | Confidence too low after 3 retries | Escalate to human review |
-| A3 Go/No-Go | NO_GO (LLM score or MCP policy violation) | → END |
-| D1 Validation | REJECT | → Loop back to C3 (max 3 retries, then escalate) |
-| E1+E2 fan-in | E2 Legal BLOCK | → END (veto regardless of E1) |
-| Human Approval | REJECT | → END |
+Defined in `rfp_automation/orchestration/transitions.py`:
+
+| Decision Point | Function | Condition | Outcome |
+|---|---|---|---|
+| A2 Structuring | `route_after_structuring` | Confidence < 0.6 after max retries | Escalate to human review |
+| A3 Go/No-Go | `route_after_go_no_go` | NO_GO | → END |
+| D1 Validation | `route_after_validation` | REJECT | → Loop back to C3 (max 3 retries, then escalate) |
+| E1+E2 fan-in | `route_after_commercial_legal` | E2 Legal BLOCK | → END (veto regardless of E1) |
+| Human Approval | `route_after_approval` | REJECT | → END |
 
 #### Implementation Steps
-- Define StateGraph with Pydantic schema
-- Add 12 nodes (stub functions returning hardcoded data)
-- Add edges (simple, conditional, parallel fan-out/fan-in for E1+E2)
-- Create routing functions for decision points
-- Set entry/exit points
+- Define `StateGraph(dict)` in `rfp_automation/orchestration/graph.py`
+- Add 17 nodes (12 agents + `commercial_legal_parallel` + 5 terminal nodes)
+- Add edges (simple, conditional; E1+E2 run sequentially within `commercial_legal_parallel`)
+- Create 5 routing functions in `transitions.py`
+- Set entry point = `a1_intake`, terminal nodes → `END`
 
 #### Test All Conditional Paths with Stubs
 - Happy path: GO → PASS → CLEAR → APPROVE → SUBMITTED
 - A3 No-Go: NO_GO → END
+- A2 Structuring escalation: low confidence → escalate → END
 - D1 Validation loop: REJECT → C3 → D1 (up to 3 retries)
 - E2 Legal block: BLOCK → END
 - Human rejection: REJECT → END
-- Visualize the graph
 
 **Deliverable:** Working 12-stage state machine that executes end-to-end with dummy data.
 
@@ -124,42 +135,50 @@ F1 Final Readiness → Human Approval Gate → F2 Submission → END
 
 ## Phase 3: Build Intelligent Agents (Weeks 5–9)
 
+All agents inherit from `BaseAgent` (`rfp_automation/agents/base_agent.py`) which provides mock/real mode switching. Each agent implements `_mock_process()` (hardcoded data) and `_real_process()` (LLM + MCP queries).
+
 ### Week 5 — Intake Agent (A1)
+
+**File:** `rfp_automation/agents/intake_agent.py` — `IntakeAgent`
 
 **Responsibilities:** Process uploaded files, embed RFP into MCP server.
 
 - File Validation — Check size, type (PDF/DOCX), not corrupted
-- Text Extraction — PyMuPDF (PDFs) or python-docx (DOCX)
+- Text Extraction — `rfp_automation/services/parsing_service.py` handles PDF (PyMuPDF) and DOCX (python-docx)
 - Metadata Extraction — Client name, deadline, RFP number via pattern matching
-- Storage — Upload original file to S3/MinIO, save path in state
+- Storage — Upload original file via `rfp_automation/services/file_service.py`
 - Chunk & Embed — Split extracted text into chunks, embed into MCP RFP Vector Store
-- Initialize State — Create RFP record with status "RECEIVED"
+- Initialize State — Create `RFPMetadata` with status "RECEIVED"
 
 From this point forward, no agent reads the raw file — all RFP retrieval goes through MCP.
 
-**Tech:** PyMuPDF, python-docx, boto3, dateparser, Sentence Transformers
+**Tech:** PyMuPDF, python-docx, Sentence Transformers
 
 ### Week 5 — RFP Structuring Agent (A2)
+
+**File:** `rfp_automation/agents/structuring_agent.py` — `StructuringAgent`
 
 **Responsibilities:** Classify RFP document into logical sections.
 
 - Query MCP RFP Store — Retrieve document chunks
 - Section Classification — Identify and label: scope, technical requirements, compliance, legal terms, submission instructions, evaluation criteria
 - Assign Confidence Score — Rate how reliably sections were identified
-- Retry Logic — If confidence too low, re-query with different chunking strategy (up to 3 retries)
+- Retry Logic — If confidence < 0.6, re-query with different chunking strategy (up to 3 retries)
 - Escalation — If still low confidence after retries, flag for human review
 
-**Output:** Structured section map with confidence scores written to state.
-**Tech:** LangChain, MCP RFP Store queries
+**Output:** `StructuringResult` with `RFPSection` list and `overall_confidence` score.
+**Prompt:** `rfp_automation/prompts/structuring_prompt.txt`
 
 ### Weeks 5–6 — Go/No-Go Agent (A3)
 
+**File:** `rfp_automation/agents/go_no_go_agent.py` — `GoNoGoAgent`
+
 **Responsibilities:** Decide if we should respond.
 
-- Retrieve from MCP RFP Store: scope and compliance sections (via A2 structure)
-- Retrieve from MCP Knowledge Base: company capabilities, certifications held, contract history
+- Retrieve from MCP RFP Store: scope and compliance sections
+- Retrieve from MCP Knowledge Store: company capabilities, certifications held, contract history
 - LLM Analysis — Score strategic fit, technical feasibility, regulatory risk (1–10 each)
-- MCP Policy Rules — Hard disqualification checks:
+- MCP Policy Rules (`rfp_automation/mcp/rules/policy_rules.py`):
   - Required certifications not held → auto NO_GO
   - Geography restrictions violated → auto NO_GO
   - Contract value outside limits → auto NO_GO
@@ -170,10 +189,12 @@ From this point forward, no agent reads the raw file — all RFP retrieval goes 
   - 2+ red flags → NO_GO
 - Generate executive summary of decision reasoning
 
-**Output:** GO / NO_GO with detailed justification.
-**Tech:** LangChain, MCP RFP Store + Knowledge Base + Policy Rules
+**Output:** `GoNoGoResult` with GO/NO_GO decision, scores, and reasoning.
+**Prompt:** `rfp_automation/prompts/go_no_go_prompt.txt`
 
 ### Weeks 6–7 — Requirements Extraction Agent (B1)
+
+**File:** `rfp_automation/agents/requirement_extraction_agent.py` — `RequirementsExtractionAgent`
 
 **Responsibilities:** Extract and classify all requirements from the RFP.
 
@@ -183,16 +204,18 @@ From this point forward, no agent reads the raw file — all RFP retrieval goes 
    - Signal words: "must", "shall" (mandatory); "should", "prefer" (optional)
    - Output structured JSON with requirement text, type, category
 3. Classify each requirement:
-   - Type: mandatory vs optional
-   - Category: technical, functional, security, compliance
-   - Impact: critical, high, medium, low
-4. Assign unique IDs to each requirement
+   - Type: `MANDATORY` vs `OPTIONAL`
+   - Category: `TECHNICAL`, `FUNCTIONAL`, `SECURITY`, `COMPLIANCE`, `COMMERCIAL`, `OPERATIONAL`
+   - Impact: `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`
+4. Assign unique IDs (REQ-001, REQ-002, ...) to each requirement
 5. Extract evaluation criteria separately
 
-**Output:** Complete requirement list with unique IDs (typically 50–150 items), each classified by type, category, and impact.
-**Tech:** LangChain, MCP RFP Store, Sentence Transformers
+**Output:** Complete `Requirement` list with unique IDs (typically 50–150 items in real mode, 12 in mock).
+**Prompt:** `rfp_automation/prompts/extraction_prompt.txt`
 
 ### Week 7 — Requirements Validation Agent (B2)
+
+**File:** `rfp_automation/agents/requirement_validation_agent.py` — `RequirementsValidationAgent`
 
 **Responsibilities:** Quality-check the extracted requirements list.
 
@@ -203,102 +226,107 @@ From this point forward, no agent reads the raw file — all RFP retrieval goes 
 
 Issues do not block the pipeline — they are passed forward as context to downstream agents.
 
-**Output:** Validated requirements list + issues log (duplicates, contradictions, ambiguities).
-**Tech:** Sentence Transformers (semantic similarity), LangChain
+**Output:** `RequirementsValidationResult` with `ValidationIssue` list (duplicates, contradictions, ambiguities).
 
 ### Weeks 7–8 — Architecture Planning Agent (C1)
+
+**File:** `rfp_automation/agents/architecture_agent.py` — `ArchitecturePlanningAgent`
 
 **Responsibilities:** Plan the response structure and map capabilities.
 
 - Query both MCP stores simultaneously:
   - RFP Store: requirement groupings from B1/B2
-  - Knowledge Base: relevant company solutions, products, certifications
+  - Knowledge Store: relevant company solutions, products, certifications
 - Group requirements into 5–8 logical response sections
 - Map each section to specific company capabilities
-- Coverage validation: verify every mandatory requirement appears in the plan before proceeding
+- Coverage validation: verify every mandatory requirement appears in the plan
 
-**Output:** Response architecture plan with section-to-requirement-to-capability mappings.
-**Tech:** LangChain, MCP RFP Store + Knowledge Base
+**Output:** `ArchitecturePlan` with `ResponseSection` list (section → requirements → capabilities).
+**Prompt:** `rfp_automation/prompts/architecture_prompt.txt`
 
 ### Week 8 — Requirement Writing Agent (C2)
+
+**File:** `rfp_automation/agents/writing_agent.py` — `RequirementWritingAgent`
 
 **Responsibilities:** Generate prose responses per section.
 
 For each response section from C1's plan:
 - Retrieve relevant requirements from MCP RFP Store
-- Retrieve matching capability evidence from MCP Knowledge Base
-- LLM generates response per section:
-  1. Confirms understanding of requirements
-  2. Explains solution approach
-  3. Provides specific details (no vague claims)
-  4. References actual products/services/certifications
-  5. Highlights benefits and differentiators
-  - Length: 150–200 words per requirement, professional tone
-- Build requirement coverage matrix — track which requirements are addressed and where
+- Retrieve matching capability evidence from MCP Knowledge Store
+- LLM generates response per section
+- Build requirement coverage matrix — `CoverageEntry` per requirement
 
-**Output:** Section-level responses + coverage matrix.
-**Tech:** LangChain RAG, MCP RFP Store + Knowledge Base
+**Output:** `WritingResult` with `SectionResponse` list + `CoverageEntry` list.
+**Prompt:** `rfp_automation/prompts/writing_prompt.txt`
 
 ### Week 8 — Narrative Assembly Agent (C3)
+
+**File:** `rfp_automation/agents/narrative_agent.py` — `NarrativeAssemblyAgent`
 
 **Responsibilities:** Combine section responses into a cohesive proposal document.
 
 - Assemble all C2 section responses into cohesive narrative
-- Add executive summary (2-page overview)
+- Add executive summary
 - Add transitions between sections
 - Add coverage appendix (full requirement coverage matrix)
 - Quality check: no placeholder text, within submission length limits
 
-**Output:** Complete assembled proposal document.
-**Tech:** LangChain
+**Output:** `AssembledProposal` with executive summary, full narrative, and word count.
 
 ### Weeks 8–9 — Technical Validation Agent (D1)
 
+**File:** `rfp_automation/agents/technical_validation_agent.py` — `TechnicalValidationAgent`
+
 **Responsibilities:** Quality-check the assembled proposal against original requirements.
 
-Retrieves original requirements from MCP RFP Store and checks assembled proposal.
-
-**Checks:**
+**Checks** (4 `ValidationCheckResult` entries):
 - Completeness — All mandatory requirements addressed
-- Alignment — Responses genuinely answer requirements (not just keyword mentions)
-- Realism — No overpromising (MCP Validation Rules checks SLA thresholds, prohibited language)
+- Alignment — Responses genuinely answer requirements
+- Realism — No overpromising (MCP Validation Rules checks prohibited language)
 - Consistency — No contradictions between sections
-- Quality — Professional tone, no typos
 
 **Decision Logic:**
 - critical_failures > 0 → REJECT
 - warnings > 5 → REJECT
 - Otherwise → PASS
 
-**On REJECT:** Increment retry counter, attach specific feedback for C3, route back to C3 Narrative Assembly. Max 3 retries, then escalate to human review.
+**On REJECT:** Increment retry counter, route back to C3. Max 3 retries, then escalate.
 
-**Output:** PASS / REJECT with detailed feedback.
+**Output:** `TechnicalValidationResult` with PASS/REJECT + checks + retry count.
+**Prompt:** `rfp_automation/prompts/validation_prompt.txt`
 
-### Week 9 — Commercial & Legal Agents (E1 + E2 — Parallel)
+### Week 9 — Commercial & Legal Agents (E1 + E2)
 
-Both agents execute simultaneously. Results are combined at the MCP Commercial & Legal Rules fan-in gate.
+Both agents execute within `commercial_legal_parallel()` in `rfp_automation/orchestration/graph.py`. Results are combined via `rfp_automation/mcp/rules/legal_rules.py` → `evaluate_commercial_legal_gate()`.
 
 #### E1 — Commercial Agent
-- Queries MCP Knowledge Base for pricing rules
-- Applies formula: base cost + per-requirement cost + complexity multiplier + risk margin
-- Defines payment terms (30/40/30 milestones)
+
+**File:** `rfp_automation/agents/commercial_agent.py` — `CommercialAgent`
+
+- Queries MCP Knowledge Store for pricing rules
+- Applies formula: base cost + (per-requirement cost × complexity multiplier) + risk margin
+- Defines payment terms
 - Lists assumptions and exclusions
-- **Output:** Commercial response section with pricing breakdown
+
+**Output:** `CommercialResult` with `PricingBreakdown` (total price, line items, margin).
 
 #### E2 — Legal Agent
+
+**File:** `rfp_automation/agents/legal_agent.py` — `LegalAgent`
+
 - Queries MCP RFP Store for contract clauses
-- Queries MCP Knowledge Base for legal templates and certifications
-- Compliance checks: required certifications (ISO 27001, SOC 2), regulatory requirements
-- Contract risk analysis — LLM classifies each clause: LOW / MEDIUM / HIGH / CRITICAL
-- Flags: unlimited liability, unfavorable IP terms, unreasonable indemnification
-- **Decision:** APPROVED / CONDITIONAL / BLOCKED (veto authority)
+- Queries MCP Knowledge Store for legal templates and certifications
+- Classifies each clause: LOW / MEDIUM / HIGH / CRITICAL via `ContractClauseRisk`
+- Decision: `APPROVED` / `CONDITIONAL` / `BLOCKED` (veto authority)
+
+**Output:** `LegalResult` with decision + `ContractClauseRisk` list + compliance status.
+**Prompt:** `rfp_automation/prompts/legal_prompt.txt`
 
 #### MCP Commercial & Legal Rules Fan-In
-- Combines E1 + E2 outputs
+
+- `rfp_automation/mcp/rules/legal_rules.py` → `evaluate_commercial_legal_gate()`
 - BLOCK from E2 → END – Legal Block (regardless of E1)
 - Otherwise → CLEAR, proceed
-
-**Output:** Commercial pricing + legal risk assessment + risk register.
 
 ---
 
@@ -307,31 +335,39 @@ Both agents execute simultaneously. Results are combined at the MCP Commercial &
 ### Week 10 — Finalization Agents (F1, F2)
 
 #### F1 — Final Readiness Agent
-- Compile full approval package:
+
+**File:** `rfp_automation/agents/final_readiness_agent.py` — `FinalReadinessAgent`
+
+- Compile full `ApprovalPackage`:
   - Proposal document (from C3)
-  - Pricing breakdown (from E1)
-  - Legal risk register (from E2)
-  - Requirement coverage matrix (from C2)
+  - Pricing summary (from E1)
+  - Legal risk summary (from E2)
+  - Requirement coverage stats (from C2)
   - One-page decision brief for leadership
-- Trigger **Human Approval Gate** — graph pauses until approver acts
+- Trigger **Human Approval Gate** — in mock mode, auto-approves
   - APPROVE → proceed to F2
-  - REJECT → END – Failed
-  - Timeout (48 hours) → escalate
+  - REJECT → END – Rejected
+  - REQUEST_CHANGES → END (currently same as reject)
 
 #### F2 — Submission & Archive Agent
-- Apply final formatting and branding (PDF output)
+
+**File:** `rfp_automation/agents/submission_agent.py` — `SubmissionAgent`
+
 - Package all deliverables for submission
-- Archive everything to S3 + MongoDB with file hashes for auditability
-- Log completion — final state written as **SUBMITTED**
+- Generate SHA-256 hash of the full narrative for auditability (via `rfp_automation/utils/hashing.py`)
+- Log completion — `SubmissionRecord` with archive paths and timestamps
+- Final state written as **SUBMITTED**
 
 ### Week 11 — Build Frontend (Next.js)
+
+**Directory:** `frontend/` (not yet started)
 
 **Essential Pages:**
 
 1. **Upload Page** — Drag-and-drop file upload, validation and progress indicator
 2. **Dashboard** — List all RFPs with status, filter by status/client/date
-3. **Status Page** (Most Important) — Real-time progress showing which agent is running, timeline of completed steps, clickable stages for details, WebSocket updates
-4. **Approval Page** — Proposal preview (embedded PDF), risk summary and decision history, Approve/Reject/Request Changes buttons
+3. **Status Page** — Real-time progress showing which agent is running, timeline of completed steps
+4. **Approval Page** — Proposal preview, risk summary, Approve/Reject/Request Changes buttons
 
 **Tech:** Next.js, TypeScript, Tailwind CSS, WebSocket for real-time updates
 
@@ -341,30 +377,34 @@ Both agents execute simultaneously. Results are combined at the MCP Commercial &
 
 ### Week 12 — Comprehensive Testing
 
-#### Unit Tests (per agent)
-- B1: Requirements extraction accuracy (precision/recall)
-- B2: Duplicate/contradiction detection correctness
-- C1: All mandatory requirements mapped in architecture plan
-- C2: Technical response quality
-- C3: Narrative assembly coherence
-- D1: Validation logic correctness
-- MCP rule layers: policy, validation, commercial/legal
+#### Unit Tests (`rfp_automation/tests/test_agents.py`)
+- IntakeAgent: metadata creation, text extraction
+- StructuringAgent: section classification, confidence scoring
+- GoNoGoAgent: GO/NO_GO decision logic
+- RequirementsExtractionAgent: requirement parsing, classification
+- RequirementsValidationAgent: duplicate/contradiction detection
+- TechnicalValidationAgent: PASS/REJECT logic, retry tracking
+- CommercialAgent: pricing calculation
+- LegalAgent: clause risk classification
+- FinalReadinessAgent: approval package compilation
 
-#### Integration Tests
-- D1 validation loop: REJECT → C3 → D1 (max 3 retries)
-- E2 legal BLOCK stops pipeline regardless of E1 output
-- A3 Go/No-Go respects both LLM scores and MCP policy rules
-- E1+E2 parallel execution fan-out/fan-in works correctly
-- State persists across all 12 agent transitions
-- MCP queries return correct context per agent
+#### Rule Layer Tests (`rfp_automation/tests/test_rules.py`)
+- PolicyRules: certification checks, geography restrictions
+- ValidationRules: prohibited phrase detection
+- CommercialRules: pricing margin validation
+- LegalRules: gate decision evaluation
 
-#### End-to-End Tests
+#### Integration Tests (`rfp_automation/tests/test_pipeline.py`)
 - Happy path: GO → PASS → CLEAR → APPROVE → SUBMITTED
+- A3 Go/No-Go termination: NO_GO → END
+- D1 Validation loop: REJECT → C3 retry → PASS
+- State persists across all agent transitions
+
+#### End-to-End Tests (planned)
 - Early termination: NO_GO stops at A3
-- Structuring escalation: low confidence at A2 → human review
-- Validation loop: REJECT → C3 retry → PASS
+- Structuring escalation: low confidence at A2 → escalate
 - Legal veto: BLOCK at E1+E2 fan-in → END – Legal Block
-- Human rejection: REJECT at F1 gate → END – Failed
+- Human rejection: REJECT at F1 gate → END – Rejected
 
 #### Test Data
 - Simple RFP (20 requirements, clear scope)
@@ -384,6 +424,7 @@ Both agents execute simultaneously. Results are combined at the MCP Commercial &
 - Validation accuracy
 
 #### Prompt Iteration
+- 7 prompt templates in `rfp_automation/prompts/` as `.txt` files
 - Add examples (few-shot prompting)
 - Add constraints (word count, specificity requirements)
 - Add chain-of-thought reasoning
@@ -423,19 +464,41 @@ Both agents execute simultaneously. Results are combined at the MCP Commercial &
 
 ---
 
-## Deployment Stack
+## Current Status
 
-| Component | Deployment |
+### Completed ✅
+
+| Component | File(s) | Status |
+|---|---|---|
+| Package structure | `rfp_automation/` | All modules created |
+| Configuration | `rfp_automation/config.py` | `Settings` with pydantic-settings, `.env` support |
+| Data models | `rfp_automation/models/` | `enums.py`, `schemas.py` (20+ models), `state.py` |
+| Base agent | `rfp_automation/agents/base_agent.py` | Mock/real switching, audit logging |
+| All 13 agents | `rfp_automation/agents/` | Mock implementations complete |
+| Orchestration | `rfp_automation/orchestration/graph.py` | Full LangGraph state machine |
+| Routing logic | `rfp_automation/orchestration/transitions.py` | 5 routing functions |
+| MCP facade | `rfp_automation/mcp/mcp_server.py` | `MCPService` with all sub-components |
+| MCP rules | `rfp_automation/mcp/rules/` | Policy, validation, commercial, legal |
+| MCP vector stores | `rfp_automation/mcp/vector_store/` | RFP store + knowledge store |
+| MCP schemas | `rfp_automation/mcp/schema/` | Capability, pricing, requirement models |
+| MCP embeddings | `rfp_automation/mcp/embeddings/` | Sentence Transformers wrapper |
+| Services | `rfp_automation/services/` | File, parsing, storage, audit |
+| Persistence | `rfp_automation/persistence/` | MongoDB client, state repository |
+| API server | `rfp_automation/api/` | FastAPI app, routes, callbacks |
+| Prompts | `rfp_automation/prompts/` | 7 `.txt` template files |
+| Utilities | `rfp_automation/utils/` | Logger, SHA-256 hashing |
+| Tests | `rfp_automation/tests/` | Agent tests, pipeline tests, rule tests |
+| CLI entry point | `rfp_automation/__main__.py` | `--serve` flag support |
+
+### Next Steps 🔄
+
+| Task | Priority |
 |---|---|
-| Backend | Docker container on single EC2 instance — FastAPI + LangGraph + all agents |
-| Database | MongoDB container (or Atlas) |
-| Queue | Redis for job queue |
-| Frontend | Next.js on Vercel — connected to backend API |
-| File Storage | AWS S3 |
-| Monitoring | Basic logging to CloudWatch |
-| Real-time | WebSocket for live status updates |
-
-**Access:**
-- Public URL for frontend
-- Secure credentials for demo audience
-- Admin access for presenter
+| Graduate agents from mock to real (connect LLM + MCP) | High |
+| Wire `ParsingService` into A1 Intake for real file processing | High |
+| Connect `MCPService` to actual vector store backend | High |
+| Implement WebSocket for real-time pipeline status | Medium |
+| Build Next.js frontend | Medium |
+| Wire `StateRepository` into orchestration for persistence | Medium |
+| Connect `AuditService` to MongoDB | Low |
+| Add S3 support to `FileService` | Low |
