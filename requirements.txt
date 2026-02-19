@@ -11,21 +11,22 @@ python-multipart>=0.0.22        # required for FastAPI file uploads
 langgraph>=1.0.0
 langchain>=1.2.0
 
-# ── LLM Providers (needed for real mode) ─────────────────
-langchain-openai>=0.2.0
-langchain-anthropic>=0.2.0
+# ── LLM Provider (Groq Cloud) ───────────────────────────
+langchain-groq>=0.2.0
 
 # ── Document Parsing ────────────────────────────────────
 PyMuPDF>=1.24.0                 # PDF text extraction (used by ParsingService)
 python-docx>=1.1.0              # DOCX text extraction (used by ParsingService)
 
-# ── Embeddings & Vector Store ────────────────────────────
-sentence-transformers>=3.0.0    # used by EmbeddingModel (real mode)
-chromadb>=0.5.0                 # vector database backend
+# ── Embeddings ───────────────────────────────────────────
+sentence-transformers>=3.0.0    # used by EmbeddingModel
+
+# ── Vector DB (Pinecone) ────────────────────────────────
+pinecone-client>=3.0.0
 
 # ── Storage & Persistence ────────────────────────────────
-pymongo>=4.8.0                  # MongoDB state persistence (real mode)
-boto3>=1.35.0                   # AWS S3 file storage (real mode)
+pymongo>=4.8.0                  # MongoDB state persistence
+boto3>=1.35.0                   # AWS S3 file storage (optional)
 
 # ── Utilities ────────────────────────────────────────────
 python-dotenv>=1.0.0            # .env file loading for pydantic-settings

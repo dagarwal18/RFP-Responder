@@ -67,7 +67,6 @@ async def health_check():
     settings = get_settings()
     return {
         "status": "ok",
-        "mock_mode": settings.mock_mode,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 

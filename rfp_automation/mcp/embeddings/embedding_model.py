@@ -1,12 +1,11 @@
 """
 Embedding Model — generates vector embeddings for text.
-Uses Sentence Transformers in real mode, random vectors in mock mode.
+Uses Sentence Transformers.
 """
 
 from __future__ import annotations
 
 import logging
-import random
 
 from rfp_automation.config import get_settings
 
@@ -18,12 +17,11 @@ class EmbeddingModel:
 
     def __init__(self):
         self.settings = get_settings()
-        self.mock_mode = self.settings.mock_mode
         self._model = None
 
     def _load_model(self):
         """Lazy-load the embedding model."""
-        if self._model is None and not self.mock_mode:
+        if self._model is None:
             try:
                 from sentence_transformers import SentenceTransformer
 
@@ -38,10 +36,6 @@ class EmbeddingModel:
         Generate embeddings for a list of texts.
         Returns list of float vectors.
         """
-        if self.mock_mode:
-            dim = 384  # MiniLM dimension
-            return [[random.random() for _ in range(dim)] for _ in texts]
-
         self._load_model()
         embeddings = self._model.encode(texts, show_progress_bar=False)
         return embeddings.tolist()

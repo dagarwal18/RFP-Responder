@@ -48,7 +48,7 @@ def create_app() -> FastAPI:
 
     @application.on_event("startup")
     async def startup():
-        logger.info(f"Starting {settings.app_name} API (mock_mode={settings.mock_mode})")
+        logger.info(f"Starting {settings.app_name} API")
 
     return application
 

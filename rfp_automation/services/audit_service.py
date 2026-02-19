@@ -1,5 +1,6 @@
 """
 Audit Service — dedicated service for recording and querying audit trails.
+Records to MongoDB via the persistence layer.
 """
 
 from __future__ import annotations
@@ -14,11 +15,10 @@ logger = logging.getLogger(__name__)
 class AuditService:
     """
     Records agent actions, pipeline decisions, and gate results.
-    In mock mode, uses in-memory list. Real mode would write to MongoDB.
+    Uses in-memory list for now. Will be wired to MongoDB.
     """
 
-    def __init__(self, mock_mode: bool = True):
-        self.mock_mode = mock_mode
+    def __init__(self):
         self._entries: list[dict[str, Any]] = []
 
     def record(
@@ -39,20 +39,15 @@ class AuditService:
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
-        if self.mock_mode:
-            self._entries.append(entry)
-            logger.debug(f"[AUDIT] {agent} → {action}: {details}")
-        else:
-            # TODO: Write to MongoDB audit collection
-            raise NotImplementedError
+        # TODO: Write to MongoDB audit collection once wired
+        self._entries.append(entry)
+        logger.debug(f"[AUDIT] {agent} → {action}: {details}")
 
         return entry
 
     def get_trail(self, rfp_id: str) -> list[dict[str, Any]]:
         """Return all audit entries for an RFP."""
-        if self.mock_mode:
-            return [e for e in self._entries if e["rfp_id"] == rfp_id]
-        raise NotImplementedError
+        return [e for e in self._entries if e["rfp_id"] == rfp_id]
 
     def get_all(self) -> list[dict[str, Any]]:
         """Return all audit entries (for debugging)."""

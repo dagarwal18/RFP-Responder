@@ -14,13 +14,10 @@ class Settings(BaseSettings):
     # ── App ──────────────────────────────────────────────
     app_name: str = "RFP Response Automation"
     debug: bool = True
-    mock_mode: bool = True  # When True, all agents return mock data
 
-    # ── LLM ──────────────────────────────────────────────
-    llm_provider: str = "openai"  # "openai" | "anthropic"
-    openai_api_key: str = ""
-    anthropic_api_key: str = ""
-    llm_model: str = "gpt-4o"
+    # ── LLM (Groq Cloud) ────────────────────────────────
+    groq_api_key: str = ""
+    llm_model: str = "llama-3.3-70b-versatile"
     llm_temperature: float = 0.2
     llm_max_tokens: int = 4096
 
@@ -36,9 +33,12 @@ class Settings(BaseSettings):
     aws_secret_key: str = ""
     aws_region: str = "us-east-1"
 
-    # ── MCP / Vector Store ───────────────────────────────
-    vector_db_backend: str = "chroma"  # "chroma" | "pinecone" | "weaviate"
-    chroma_persist_dir: str = "./chroma_db"
+    # ── Pinecone Vector DB ───────────────────────────────
+    pinecone_api_key: str = ""
+    pinecone_index_name: str = "rfp-automation"
+    pinecone_environment: str = "us-east-1"
+
+    # ── Embeddings ───────────────────────────────────────
     embedding_model: str = "all-MiniLM-L6-v2"
 
     # ── Pipeline Limits ──────────────────────────────────

@@ -15,8 +15,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from rfp_automation.config import get_settings
-
 logger = logging.getLogger(__name__)
 
 
@@ -24,7 +22,7 @@ class MCPService:
     """
     Facade over all MCP layers.
     Agents depend on this single class — swap the implementation underneath
-    when moving from mock → real.
+    when moving from stub → real.
 
     Usage in any agent:
         from rfp_automation.mcp import MCPService
@@ -33,9 +31,6 @@ class MCPService:
     """
 
     def __init__(self):
-        settings = get_settings()
-        self.mock_mode = settings.mock_mode
-
         from .vector_store.rfp_store import RFPVectorStore
         from .vector_store.knowledge_store import KnowledgeStore
         from .rules.policy_rules import PolicyRules
@@ -43,12 +38,12 @@ class MCPService:
         from .rules.commercial_rules import CommercialRules
         from .rules.legal_rules import LegalRules
 
-        self.rfp_store = RFPVectorStore(mock_mode=self.mock_mode)
-        self.knowledge_base = KnowledgeStore(mock_mode=self.mock_mode)
-        self.policy_rules = PolicyRules(mock_mode=self.mock_mode)
-        self.validation_rules = ValidationRules(mock_mode=self.mock_mode)
-        self.commercial_rules = CommercialRules(mock_mode=self.mock_mode)
-        self.legal_rules = LegalRules(mock_mode=self.mock_mode)
+        self.rfp_store = RFPVectorStore()
+        self.knowledge_base = KnowledgeStore()
+        self.policy_rules = PolicyRules()
+        self.validation_rules = ValidationRules()
+        self.commercial_rules = CommercialRules()
+        self.legal_rules = LegalRules()
 
     async def health_check(self) -> dict[str, bool]:
         return {

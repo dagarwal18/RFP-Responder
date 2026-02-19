@@ -14,9 +14,6 @@ logger = logging.getLogger(__name__)
 class LegalRules:
     """E2 legal rules for contract clause risk and compliance checks."""
 
-    def __init__(self, mock_mode: bool = True):
-        self.mock_mode = mock_mode
-
     def evaluate_commercial_legal_gate(
         self,
         legal_decision: str,
@@ -27,14 +24,12 @@ class LegalRules:
         Combined gate that merges E1 + E2 outputs.
         E2 BLOCK always overrides E1 → pipeline ends.
         """
-        if self.mock_mode:
-            if legal_decision == "BLOCKED":
-                return {
-                    "gate_decision": "BLOCK",
-                    "reason": "; ".join(legal_block_reasons),
-                }
+        if legal_decision == "BLOCKED":
             return {
-                "gate_decision": "CLEAR",
-                "reason": "No blocking issues. Legal status: " + legal_decision,
+                "gate_decision": "BLOCK",
+                "reason": "; ".join(legal_block_reasons),
             }
-        raise NotImplementedError
+        return {
+            "gate_decision": "CLEAR",
+            "reason": "No blocking issues. Legal status: " + legal_decision,
+        }

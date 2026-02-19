@@ -14,9 +14,6 @@ logger = logging.getLogger(__name__)
 class CommercialRules:
     """E1 commercial pricing rules and constraints."""
 
-    def __init__(self, mock_mode: bool = True):
-        self.mock_mode = mock_mode
-
     def validate_pricing(
         self,
         total_price: float,
@@ -27,11 +24,9 @@ class CommercialRules:
         Validate pricing against commercial constraints.
         Returns list of violations (empty = pass).
         """
-        if self.mock_mode:
-            violations = []
-            if max_contract_value and total_price > max_contract_value:
-                violations.append(
-                    f"Total price ${total_price:,.2f} exceeds max contract value ${max_contract_value:,.2f}"
-                )
-            return violations
-        raise NotImplementedError
+        violations = []
+        if max_contract_value and total_price > max_contract_value:
+            violations.append(
+                f"Total price ${total_price:,.2f} exceeds max contract value ${max_contract_value:,.2f}"
+            )
+        return violations
