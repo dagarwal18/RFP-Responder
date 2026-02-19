@@ -1,0 +1,23 @@
+{
+    "base_cost": 50000.0,
+    "per_requirement_cost": 2000.0,
+    "complexity_tiers": {
+        "low": 1.0,
+        "medium": 1.25,
+        "high": 1.5,
+        "critical": 2.0
+    },
+    "risk_margin_percent": 0.10,
+    "currency": "USD",
+    "discount_tiers": {
+        "standard": 0.0,
+        "preferred_client": 0.05,
+        "strategic_partner": 0.10,
+        "multi_year": 0.08
+    },
+    "payment_terms": "Net 30",
+    "minimum_contract_value": 25000.0,
+    "maximum_contract_value": 5000000.0,
+    "minimum_margin_percent": 0.15,
+    "maximum_discount_percent": 0.15
+}

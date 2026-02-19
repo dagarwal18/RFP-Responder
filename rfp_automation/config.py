@@ -11,9 +11,11 @@ from pydantic import Field
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    # ── App ──────────────────────────────────────────────
+    # ── App / API Server ───────────────────────────────
     app_name: str = "RFP Response Automation"
     debug: bool = True
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
 
     # ── LLM (Groq Cloud) ────────────────────────────────
     groq_api_key: str = ""
@@ -36,10 +38,14 @@ class Settings(BaseSettings):
     # ── Pinecone Vector DB ───────────────────────────────
     pinecone_api_key: str = ""
     pinecone_index_name: str = "rfp-automation"
-    pinecone_environment: str = "us-east-1"
+    pinecone_cloud: str = "aws"  # serverless cloud provider
+    pinecone_region: str = "us-east-1"  # serverless region
 
     # ── Embeddings ───────────────────────────────────────
     embedding_model: str = "all-MiniLM-L6-v2"
+
+    # ── Knowledge Data ───────────────────────────────────
+    knowledge_data_path: str = ""  # override path to seed JSON files
 
     # ── Pipeline Limits ──────────────────────────────────
     max_validation_retries: int = 3

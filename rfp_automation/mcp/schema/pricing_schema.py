@@ -14,3 +14,9 @@ class PricingParameters(BaseModel):
     complexity_tiers: dict[str, float] = {}  # "low" -> 1.0, "medium" -> 1.25, "high" -> 1.5
     risk_margin_percent: float = 0.10
     payment_terms: str = ""
+    currency: str = "USD"
+    discount_tiers: dict[str, float] = {}  # "preferred_client" -> 0.05, etc.
+    minimum_contract_value: float = 25000.0
+    maximum_contract_value: float = 5000000.0
+    minimum_margin_percent: float = 0.15
+    maximum_discount_percent: float = 0.15

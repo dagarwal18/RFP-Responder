@@ -1,0 +1,22 @@
+{
+    "ISO 27001": true,
+    "SOC 2 Type II": true,
+    "SOC 2 Type I": true,
+    "FedRAMP Moderate": true,
+    "FedRAMP High": false,
+    "HIPAA": true,
+    "PCI DSS": true,
+    "GDPR Compliance": true,
+    "CMMC Level 2": false,
+    "CMMC Level 3": false,
+    "StateRAMP": false,
+    "NIST 800-53": true,
+    "NIST 800-171": true,
+    "CSA STAR": true,
+    "ITIL v4": true,
+    "AWS Solutions Architect Partner": true,
+    "Azure Gold Partner": true,
+    "Google Cloud Partner": true,
+    "CISA Certified": true,
+    "CISSP Certified Staff": true
+}

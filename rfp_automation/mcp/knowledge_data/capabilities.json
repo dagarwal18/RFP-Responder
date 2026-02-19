@@ -1,0 +1,98 @@
+[
+  {
+    "id": "cap-001",
+    "name": "Cloud Infrastructure & Migration",
+    "description": "End-to-end cloud infrastructure design, deployment, and migration services across AWS, Azure, and GCP. Includes lift-and-shift, re-platforming, and cloud-native application development.",
+    "category": "cloud",
+    "tags": ["aws", "azure", "gcp", "migration", "infrastructure"],
+    "evidence": "Successfully migrated 50+ enterprise workloads to cloud, achieving average 40% cost reduction."
+  },
+  {
+    "id": "cap-002",
+    "name": "Cybersecurity & Compliance",
+    "description": "Comprehensive cybersecurity services including threat assessment, penetration testing, SIEM deployment, zero-trust architecture, and compliance framework implementation (NIST, SOC 2, ISO 27001).",
+    "category": "security",
+    "tags": ["cybersecurity", "compliance", "penetration-testing", "SIEM", "zero-trust"],
+    "evidence": "Achieved SOC 2 Type II compliance for 20+ clients. Zero major security incidents across managed services."
+  },
+  {
+    "id": "cap-003",
+    "name": "DevOps & CI/CD Automation",
+    "description": "DevOps transformation services including CI/CD pipeline design, Infrastructure as Code (Terraform, Pulumi), container orchestration (Kubernetes, Docker), and GitOps workflows.",
+    "category": "devops",
+    "tags": ["devops", "ci-cd", "kubernetes", "terraform", "docker", "gitops"],
+    "evidence": "Reduced deployment frequency from monthly to daily for Fortune 500 clients. 99.95% pipeline reliability."
+  },
+  {
+    "id": "cap-004",
+    "name": "AI/ML Solutions & Data Engineering",
+    "description": "Machine learning model development, MLOps pipelines, NLP solutions, computer vision, and large-scale data engineering. Experience with LLMs, RAG architectures, and AI governance.",
+    "category": "ai_ml",
+    "tags": ["machine-learning", "nlp", "computer-vision", "data-engineering", "llm", "rag"],
+    "evidence": "Deployed 30+ production ML models. Built enterprise RAG systems processing 10M+ documents."
+  },
+  {
+    "id": "cap-005",
+    "name": "Enterprise Application Development",
+    "description": "Full-stack application development using modern frameworks (React, Angular, .NET, Java Spring). Microservices architecture, API design, and legacy system modernization.",
+    "category": "development",
+    "tags": ["full-stack", "microservices", "api", "react", "java", "dotnet"],
+    "evidence": "Delivered 100+ enterprise applications. Average 35% improvement in system performance after modernization."
+  },
+  {
+    "id": "cap-006",
+    "name": "Data Analytics & Business Intelligence",
+    "description": "End-to-end data analytics solutions including data warehousing (Snowflake, BigQuery), ETL pipelines, dashboard development (Power BI, Tableau), and advanced analytics.",
+    "category": "analytics",
+    "tags": ["analytics", "business-intelligence", "data-warehouse", "etl", "power-bi", "tableau"],
+    "evidence": "Built data platforms processing 5TB+ daily. Enabled data-driven decision making for 40+ organizations."
+  },
+  {
+    "id": "cap-007",
+    "name": "Managed IT Services & Support",
+    "description": "24/7 managed services including infrastructure monitoring, incident response, helpdesk support, patch management, and SLA-backed service delivery.",
+    "category": "managed_services",
+    "tags": ["managed-services", "monitoring", "incident-response", "helpdesk", "sla"],
+    "evidence": "99.99% uptime SLA achievement across 200+ managed environments. Average 15-minute incident response time."
+  },
+  {
+    "id": "cap-008",
+    "name": "Project & Program Management",
+    "description": "PMO services, Agile transformation, project delivery using Scrum/SAFe/Kanban, risk management, and stakeholder communication. PMP and SAFe certified team.",
+    "category": "project_management",
+    "tags": ["project-management", "agile", "scrum", "safe", "pmo"],
+    "evidence": "95% on-time delivery rate across 500+ projects. Average client satisfaction score of 4.7/5.0."
+  },
+  {
+    "id": "cap-009",
+    "name": "Network & Telecommunications",
+    "description": "Network design and implementation, SD-WAN, VPN, unified communications, and network security. Expertise in Cisco, Palo Alto, and Fortinet platforms.",
+    "category": "networking",
+    "tags": ["networking", "sd-wan", "vpn", "telecommunications", "cisco"],
+    "evidence": "Designed and deployed networks for 50+ locations. Average 60% improvement in network performance."
+  },
+  {
+    "id": "cap-010",
+    "name": "Digital Transformation & Consulting",
+    "description": "Strategic technology consulting, digital transformation roadmaps, technology assessment, vendor selection, and organizational change management.",
+    "category": "consulting",
+    "tags": ["consulting", "digital-transformation", "strategy", "change-management"],
+    "evidence": "Guided 25+ organizations through digital transformation. Average ROI of 300% within 18 months."
+  },
+  {
+    "id": "cap-011",
+    "name": "Government & Public Sector Solutions",
+    "description": "FedRAMP-compliant cloud solutions, government-grade security implementations, and public sector digital services. Experience with federal, state, and local government contracts.",
+    "category": "government",
+    "tags": ["government", "fedramp", "public-sector", "compliance", "federal"],
+    "evidence": "Delivered 15+ government contracts worth $50M+. FedRAMP Moderate authorization achieved for 3 platforms."
+  },
+  {
+    "id": "cap-012",
+    "name": "Quality Assurance & Testing",
+    "description": "Comprehensive QA services including automated testing, performance testing, security testing, accessibility testing, and test strategy development.",
+    "category": "qa",
+    "tags": ["qa", "testing", "automation", "performance-testing", "accessibility"],
+    "evidence": "Achieved 95%+ automated test coverage for enterprise clients. Reduced production defects by 70% on average."
+  }
+]

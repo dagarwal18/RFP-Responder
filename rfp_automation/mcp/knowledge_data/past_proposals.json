@@ -1,0 +1,73 @@
+[
+    {
+        "id": "prop-001",
+        "title": "Enterprise Cloud Migration for National Bank",
+        "category": "cloud",
+        "excerpt": "Our team successfully migrated 200+ applications from on-premises data centers to AWS over an 18-month engagement. We employed a phased approach: discovery and assessment (3 months), pilot migration of 20 non-critical applications (3 months), and full migration of remaining workloads (12 months). Key outcomes included 42% reduction in infrastructure costs, 99.99% uptime during migration, and zero data loss. We utilized AWS Migration Hub for tracking, CloudEndure for live migration, and custom Terraform modules for infrastructure provisioning.",
+        "outcome": "Won - $4.2M contract, completed on time and under budget",
+        "tags": [
+            "cloud",
+            "migration",
+            "aws",
+            "banking",
+            "enterprise"
+        ]
+    },
+    {
+        "id": "prop-002",
+        "title": "Cybersecurity Overhaul for Healthcare Provider",
+        "category": "security",
+        "excerpt": "We designed and implemented a comprehensive cybersecurity program for a multi-site healthcare organization handling 500,000+ patient records. The engagement covered zero-trust network architecture implementation, SIEM deployment (Splunk), endpoint detection and response (CrowdStrike), security awareness training for 3,000 employees, and HIPAA compliance validation. We achieved SOC 2 Type II certification within 8 months and reduced security incidents by 85%.",
+        "outcome": "Won - $2.8M contract, client renewed for 3 additional years",
+        "tags": [
+            "security",
+            "healthcare",
+            "hipaa",
+            "compliance",
+            "zero-trust"
+        ]
+    },
+    {
+        "id": "prop-003",
+        "title": "AI-Powered Document Processing for Insurance Company",
+        "category": "ai_ml",
+        "excerpt": "We developed an intelligent document processing system that automated the extraction and classification of insurance claims documents. The solution used OCR (Tesseract + custom models), NLP for entity extraction, and a RAG-based Q&A system for claims adjusters. Processing time decreased from 45 minutes per claim to 3 minutes, with 97% extraction accuracy. The system handled 10,000+ documents daily and integrated with the client's existing Guidewire platform.",
+        "outcome": "Won - $1.5M initial contract + $800K annual maintenance",
+        "tags": [
+            "ai",
+            "ml",
+            "nlp",
+            "document-processing",
+            "insurance",
+            "rag"
+        ]
+    },
+    {
+        "id": "prop-004",
+        "title": "DevOps Transformation for E-Commerce Platform",
+        "category": "devops",
+        "excerpt": "We led a DevOps transformation for a mid-size e-commerce platform serving 2M+ daily users. The engagement included migrating from manual deployments to fully automated CI/CD (GitLab CI + ArgoCD), containerizing 40+ microservices with Docker/Kubernetes, implementing Infrastructure as Code with Terraform, and establishing observability with Datadog. Deployment frequency increased from bi-weekly to 15x daily, lead time dropped from 2 weeks to 30 minutes, and MTTR decreased from 4 hours to 15 minutes.",
+        "outcome": "Won - $1.2M contract, featured as case study at KubeCon",
+        "tags": [
+            "devops",
+            "kubernetes",
+            "ci-cd",
+            "e-commerce",
+            "terraform"
+        ]
+    },
+    {
+        "id": "prop-005",
+        "title": "Government Portal Modernization",
+        "category": "government",
+        "excerpt": "We modernized a state government citizen services portal serving 8M+ residents. The legacy .NET 4.5 monolith was re-architected into microservices (Java Spring Boot + React), deployed on FedRAMP-authorized AWS GovCloud. We implemented WCAG 2.1 AA accessibility compliance, multi-language support, identity verification integration, and mobile-responsive design. Page load times improved from 8 seconds to under 1 second, and citizen satisfaction scores increased by 40%.",
+        "outcome": "Won - $3.5M contract, awarded follow-on contracts for 2 additional agencies",
+        "tags": [
+            "government",
+            "modernization",
+            "fedramp",
+            "accessibility",
+            "cloud"
+        ]
+    }
+]

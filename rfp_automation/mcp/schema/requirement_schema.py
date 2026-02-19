@@ -16,3 +16,5 @@ class ExtractedRequirement(BaseModel):
     category: str = "TECHNICAL"
     impact: str = "MEDIUM"
     embedding_id: str = ""
+    source_chunk_ids: list[str] = []  # trace back to vector store chunks
+    compliance_mapping: str = ""  # regulatory cross-reference (e.g. "NIST 800-53 AC-2")

@@ -4,6 +4,9 @@ Capability Schema — data structures for company capabilities stored in the kno
 
 from __future__ import annotations
 
+from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -15,3 +18,5 @@ class Capability(BaseModel):
     evidence: str = ""
     category: str = ""  # "cloud", "security", "devops", etc.
     confidence_score: float = 0.0
+    tags: list[str] = []  # multi-label search filtering
+    last_updated: Optional[datetime] = None  # freshness tracking

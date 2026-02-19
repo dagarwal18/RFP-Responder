@@ -1,0 +1,66 @@
+[
+    {
+        "id": "legal-001",
+        "clause_type": "limitation_of_liability",
+        "acceptable_template": "Contractor's total aggregate liability under this Agreement shall not exceed the total fees paid under this Agreement during the twelve (12) months preceding the claim.",
+        "risk_threshold": "Unlimited liability or liability exceeding 2x contract value",
+        "auto_block": true,
+        "notes": "Never accept unlimited liability clauses."
+    },
+    {
+        "id": "legal-002",
+        "clause_type": "intellectual_property",
+        "acceptable_template": "All pre-existing intellectual property remains the property of the originating party. Work product created specifically for this engagement shall be owned by the Client upon full payment.",
+        "risk_threshold": "Broad IP transfer that includes pre-existing IP or derivative works",
+        "auto_block": true,
+        "notes": "Protect pre-existing IP and tools."
+    },
+    {
+        "id": "legal-003",
+        "clause_type": "indemnification",
+        "acceptable_template": "Each party shall indemnify the other for claims arising from its own negligence, willful misconduct, or breach of its representations and warranties under this Agreement.",
+        "risk_threshold": "One-sided indemnification with no mutual obligation",
+        "auto_block": false,
+        "notes": "Flag but negotiate. Block only if extremely one-sided."
+    },
+    {
+        "id": "legal-004",
+        "clause_type": "termination",
+        "acceptable_template": "Either party may terminate this Agreement for convenience upon sixty (60) days written notice. Termination for cause requires thirty (30) days written notice and opportunity to cure.",
+        "risk_threshold": "Client-only termination for convenience without notice period",
+        "auto_block": false,
+        "notes": "Ensure mutual termination rights."
+    },
+    {
+        "id": "legal-005",
+        "clause_type": "non_compete",
+        "acceptable_template": "During the term of this Agreement, Contractor shall not provide substantially similar services to a direct named competitor of Client within the same geographic market.",
+        "risk_threshold": "Broad non-compete exceeding 2 years or covering all industries",
+        "auto_block": true,
+        "notes": "Block overly broad non-compete clauses."
+    },
+    {
+        "id": "legal-006",
+        "clause_type": "data_protection",
+        "acceptable_template": "Contractor shall process Client data in accordance with applicable data protection laws including GDPR and CCPA. A Data Processing Agreement shall be executed as an addendum.",
+        "risk_threshold": "No data protection provisions or unrestricted data sharing",
+        "auto_block": false,
+        "notes": "Do not accept contracts without data protection clauses."
+    },
+    {
+        "id": "legal-007",
+        "clause_type": "warranty",
+        "acceptable_template": "Contractor warrants that services will be performed in a professional and workmanlike manner consistent with generally accepted industry standards for a period of ninety (90) days following delivery.",
+        "risk_threshold": "Warranty period exceeding 12 months or covering fitness for particular purpose",
+        "auto_block": false,
+        "notes": "Standard 90-day warranty. Flag anything beyond 12 months."
+    },
+    {
+        "id": "legal-008",
+        "clause_type": "confidentiality",
+        "acceptable_template": "Both parties shall maintain the confidentiality of all confidential information for three (3) years following disclosure. Standard exceptions apply for publicly known information.",
+        "risk_threshold": "Perpetual confidentiality obligation with no standard exceptions",
+        "auto_block": false,
+        "notes": "Perpetual obligations are a yellow flag."
+    }
+]
