@@ -100,6 +100,61 @@ class RFPVectorStore:
         logger.info(f"[{rfp_id}] Embedded {len(chunks)} chunks into Pinecone")
         return len(chunks)
 
+    def embed_chunks(
+        self,
+        rfp_id: str,
+        chunks: list[dict[str, Any]],
+        extra_metadata: dict[str, Any] | None = None,
+    ) -> int:
+        """
+        Embed pre-structured chunks and upsert into Pinecone.
+
+        Each chunk dict must have: chunk_id, content_type, section_hint,
+        text, page_start, page_end  (from ParsingService.prepare_chunks).
+
+        Returns the number of vectors stored.
+        """
+        index = self._get_index()
+
+        # Filter out table_mock chunks (placeholder text, not useful for semantic search)
+        embeddable = [c for c in chunks if c.get("content_type") != "table_mock"]
+        if not embeddable:
+            logger.warning(f"[{rfp_id}] No embeddable chunks after filtering")
+            return 0
+
+        # Extract text for batch embedding
+        texts = [c["text"] for c in embeddable]
+        embeddings = self._embedder.embed(texts)
+
+        # Build upsert vectors with structured metadata
+        vectors = []
+        for i, (chunk, emb) in enumerate(zip(embeddable, embeddings)):
+            vec_id = f"{rfp_id}_chunk_{i:04d}"
+            vec_metadata = {
+                "rfp_id": rfp_id,
+                "chunk_index": i,
+                "chunk_id": chunk.get("chunk_id", ""),
+                "content_type": chunk.get("content_type", "text"),
+                "section_hint": chunk.get("section_hint", ""),
+                "page_start": chunk.get("page_start", 0),
+                "page_end": chunk.get("page_end", 0),
+                "text": chunk["text"][:1000],  # Pinecone metadata limit
+                **(extra_metadata or {}),
+            }
+            vectors.append((vec_id, emb, vec_metadata))
+
+        # Upsert in batches (Pinecone limit is 100 per request)
+        batch_size = 100
+        for batch_start in range(0, len(vectors), batch_size):
+            batch = vectors[batch_start : batch_start + batch_size]
+            index.upsert(vectors=batch, namespace=rfp_id)
+
+        logger.info(
+            f"[{rfp_id}] Embedded {len(vectors)} structured chunks into Pinecone "
+            f"(skipped {len(chunks) - len(embeddable)} table_mock)"
+        )
+        return len(vectors)
+
     def query(
         self,
         query_text: str,

@@ -69,6 +69,25 @@ class MCPService:
             chunk_overlap=chunk_overlap,
         )
 
+    # ── Convenience: Structured chunk storage ────────────
+
+    def store_rfp_chunks(
+        self,
+        rfp_id: str,
+        chunks: list[dict[str, Any]],
+        source_file: str = "",
+    ) -> int:
+        """
+        Embed pre-structured chunks and store into Pinecone.
+        Each chunk must have: chunk_id, content_type, section_hint,
+        text, page_start, page_end.
+        Returns vector count.
+        """
+        extra = {"source_file": source_file} if source_file else {}
+        count = self.rfp_store.embed_chunks(rfp_id, chunks, extra_metadata=extra)
+        logger.info(f"[MCPService] Stored {count} vectors for {rfp_id}")
+        return count
+
     # ── Convenience: RFP query ───────────────────────────
 
     def query_rfp(

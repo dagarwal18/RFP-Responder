@@ -9,6 +9,7 @@ from enum import Enum
 class PipelineStatus(str, Enum):
     """Overall pipeline status."""
     RECEIVED = "RECEIVED"
+    INTAKE_COMPLETE = "INTAKE_COMPLETE"
     STRUCTURING = "STRUCTURING"
     GO_NO_GO = "GO_NO_GO"
     EXTRACTING_REQUIREMENTS = "EXTRACTING_REQUIREMENTS"
