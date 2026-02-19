@@ -66,10 +66,12 @@ extracting it into its own service is straightforward because the boundary is al
 | Vector DB | Pinecone Serverless (AWS us-east-1, cosine similarity) |
 | Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`, 384 dimensions) |
 | Structured DB | MongoDB (company config, certifications, pricing rules, legal templates) |
-| API | FastAPI + uvicorn |
+| API | FastAPI + uvicorn (async, `to_thread` for heavy I/O) |
+| Real-time | WebSocket via `PipelineProgress` singleton |
+| Frontend | Single-page vanilla JS dashboard (served at `/`) |
 | Parsing | PyMuPDF (PDF), python-docx (DOCX) |
 | Config | pydantic-settings (`.env` file) |
-| Testing | pytest + pytest-asyncio |
+| Testing | pytest |
 
 ## Project Structure
 
@@ -87,9 +89,10 @@ RFP-Responder/
 │   ├── main.py                          # run() + serve() entry points
 │   │
 │   ├── api/                             # ── HTTP Layer (frontend talks to this) ──
-│   │   ├── __init__.py                  # FastAPI app factory (create_app + app instance)
-│   │   ├── routes.py                    # REST endpoints (upload, status, approve, list)
-│   │   └── websocket.py                 # PipelineCallbacks (logging, WebSocket planned)
+│   │   ├── __init__.py                  # FastAPI app factory (create_app + app + event-loop setup)
+│   │   ├── routes.py                    # RFP endpoints (upload, status, approve, list, WS)
+│   │   ├── knowledge_routes.py          # KB endpoints (upload, status, query, seed, files)
+│   │   └── websocket.py                 # PipelineProgress singleton (real-time WS broadcast)
 │   │
 │   ├── models/                          # ── Data Layer ──
 │   │   ├── enums.py                     # Status codes, decision types, categories
@@ -164,8 +167,9 @@ RFP-Responder/
 ├── example_docs/                        # Sample RFP documents for testing
 │   └── Telecom RFP Document.pdf         # 14-page telecom UC RFP
 │
-├── frontend/                            # ═══ FRONTEND (Vercel — not started) ═══
-│   └── README.md                        # Planned stack + pages
+├── frontend/                            # ═══ FRONTEND (served by FastAPI at /) ═══
+│   ├── index.html                       # Single-page dashboard (vanilla JS + CSS)
+│   └── README.md                        # Frontend documentation
 │
 ├── storage/                             # Local file storage directory
 ├── requirements.txt
@@ -196,6 +200,7 @@ python -m rfp_automation "example_docs/Telecom RFP Document.pdf"
 
 # 5. Or start the API server (for frontend integration)
 python -m rfp_automation --serve      # → http://localhost:8000/docs
+uvicorn rfp_automation.api:app --reload
 
 # 6. Run tests
 pytest rfp_automation/tests/ -v
@@ -224,15 +229,29 @@ pytest rfp_automation/tests/ -v
 
 ## API Endpoints
 
+### RFP Pipeline (`/api/rfp`)
+
 | Method | Path | Description |
 |---|---|---|
 | GET | `/health` | Health check (`{status, timestamp}`) |
-| POST | `/api/rfp/upload` | Upload RFP file → run pipeline → return result |
+| POST | `/api/rfp/upload` | Upload RFP → start pipeline (background thread) → return `rfp_id` |
 | GET | `/api/rfp/{rfp_id}/status` | Poll pipeline status for an RFP |
 | POST | `/api/rfp/{rfp_id}/approve` | Human approval gate (APPROVE / REJECT) |
 | GET | `/api/rfp/list` | List all pipeline runs |
+| WS | `/api/rfp/ws/{rfp_id}` | Real-time pipeline progress (node_start, node_end, error, pipeline_end) |
 
-Swagger UI at `/docs`, ReDoc at `/redoc`. CORS configured for `localhost:3000`.
+### Knowledge Base (`/api/knowledge`)
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/knowledge/upload` | Upload company doc → auto-classify → embed + store (async) |
+| GET | `/api/knowledge/status` | Pinecone + MongoDB stats (async) |
+| POST | `/api/knowledge/query` | Semantic query with optional `doc_type` filter (async) |
+| POST | `/api/knowledge/seed` | Seed KB from JSON files (async) |
+| GET | `/api/knowledge/files` | List all uploaded KB documents with classified types |
+
+Swagger UI at `/docs`, ReDoc at `/redoc`. CORS configured for all origins.
+Dashboard served at `/` (single-page HTML from `frontend/index.html`).
 
 ## Pipeline Flow
 
@@ -282,8 +301,8 @@ Routing logic lives in `rfp_automation/orchestration/transitions.py`.
 
 | Agent | Status | Description |
 |---|---|---|
-| A1 IntakeAgent | ✅ **Implemented** | File validation, PDF/DOCX parsing, Pinecone embedding, metadata extraction |
-| A2 StructuringAgent | ⬜ Stub | `NotImplementedError` — needs LLM section classification |
+| A1 IntakeAgent | ✅ **Implemented** | File validation, PDF/DOCX parsing, Pinecone embedding, metadata extraction, WebSocket progress |
+| A2 StructuringAgent | ✅ **Implemented** | LLM-based section classification with confidence scoring |
 | A3 GoNoGoAgent | ⬜ Stub | `NotImplementedError` — needs LLM + policy rules evaluation |
 | B1 RequirementsExtractionAgent | ⬜ Stub | `NotImplementedError` — needs LLM requirement extraction |
 | B2 RequirementsValidationAgent | ⬜ Stub | `NotImplementedError` — needs validation rules check |
@@ -336,7 +355,8 @@ class RequirementsExtractionAgent(BaseAgent):
 |---|---|
 | `MCPService` | Facade over all MCP layers — the only import agents need |
 | `RFPVectorStore` | Pinecone-backed: chunk + embed + upsert RFP documents, semantic query |
-| `KnowledgeStore` | Pinecone for capabilities/proposals + MongoDB for certs/pricing/legal |
+| `KnowledgeStore` | Pinecone for capabilities/proposals + MongoDB for certs/pricing/legal (query_all_types, query_by_type) |
+| `PipelineProgress` | WebSocket broadcast singleton — agents emit node_start/node_end/error events in real-time |
 | `PolicyRules` | Hard disqualification checks: required certifications, contract value limits |
 | `ValidationRules` | Prohibited language detection, SLA compliance checks |
 | `CommercialRules` | Pricing margin validation, max contract value enforcement |
