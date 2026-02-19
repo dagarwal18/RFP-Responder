@@ -12,25 +12,23 @@ langgraph>=1.0.0
 langchain>=1.2.0
 
 # ── LLM Provider (Groq Cloud) ───────────────────────────
-langchain-groq>=0.2.0
+langchain-groq>=0.2.0           # lazy-loaded in llm_service.py
 
 # ── Document Parsing ────────────────────────────────────
-PyMuPDF>=1.24.0                 # PDF text extraction (used by ParsingService)
-python-docx>=1.1.0              # DOCX text extraction (used by ParsingService)
+PyMuPDF>=1.27.0                 # PDF text extraction (used by ParsingService)
+python-docx>=1.1.0              # DOCX text extraction (lazy-loaded in ParsingService)
 
 # ── Embeddings ───────────────────────────────────────────
-sentence-transformers>=3.0.0    # used by EmbeddingModel
+sentence-transformers>=5.0.0    # used by EmbeddingModel (all-MiniLM-L6-v2)
 
 # ── Vector DB (Pinecone) ────────────────────────────────
-pinecone-client>=3.0.0
+pinecone>=8.0.0                 # renamed from pinecone-client in v8
 
-# ── Storage & Persistence ────────────────────────────────
-pymongo>=4.8.0                  # MongoDB state persistence
-boto3>=1.35.0                   # AWS S3 file storage (optional)
+# ── Persistence ──────────────────────────────────────────
+pymongo>=4.8.0                  # MongoDB (KnowledgeStore, rules_config, mongo_client)
 
 # ── Utilities ────────────────────────────────────────────
 python-dotenv>=1.0.0            # .env file loading for pydantic-settings
 
 # ── Testing ──────────────────────────────────────────────
 pytest>=9.0.0
-pytest-asyncio>=0.24.0
