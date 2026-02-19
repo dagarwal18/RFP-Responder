@@ -1,0 +1,17 @@
+You are writing a proposal response section.
+
+Section: {section_title}
+Requirements to address:
+{requirements}
+
+Company capabilities:
+{capabilities}
+
+Write a professional response (150-200 words per requirement) that:
+1. Confirms understanding of requirements
+2. Explains our solution approach
+3. Provides specific details (no vague claims)
+4. References actual products/services/certifications
+5. Highlights benefits and differentiators
+
+Tone: Professional, confident, specific.

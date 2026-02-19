@@ -1,0 +1,20 @@
+You are validating a proposal against original requirements.
+
+Original Requirements:
+{requirements}
+
+Proposal Text:
+{proposal}
+
+Check:
+1. Completeness — Are all mandatory requirements addressed?
+2. Alignment — Do responses genuinely answer requirements (not just keywords)?
+3. Realism — Are claims supportable (no overpromising)?
+4. Consistency — No contradictions between sections?
+
+Return JSON with:
+- decision: PASS or REJECT
+- checks: array of {check_name, passed, issues}
+- critical_failures: count
+- warnings: count
+- feedback_for_revision: string (if REJECT)

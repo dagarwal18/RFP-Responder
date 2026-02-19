@@ -1,0 +1,15 @@
+You are extracting requirements from an RFP section.
+
+Section Title: {section_title}
+Section Content:
+{section_content}
+
+For each requirement found:
+- requirement_id: assign sequential ID starting from {start_id}
+- text: the exact requirement text
+- type: MANDATORY (must/shall) or OPTIONAL (should/prefer)
+- category: TECHNICAL, FUNCTIONAL, SECURITY, COMPLIANCE, COMMERCIAL, OPERATIONAL
+- impact: CRITICAL, HIGH, MEDIUM, LOW
+- keywords: list of key terms
+
+Return valid JSON array of requirements.

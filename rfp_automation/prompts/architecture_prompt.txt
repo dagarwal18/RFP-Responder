@@ -1,0 +1,16 @@
+You are an enterprise solution architect. Given the extracted requirements and company capabilities, design the response architecture.
+
+Requirements:
+{requirements}
+
+Capabilities:
+{capabilities}
+
+For each requirement cluster, define:
+- section_id
+- section_title
+- assigned_requirements: list of requirement IDs
+- approach: high-level solution approach
+- key_technologies: relevant technologies/products
+
+Return valid JSON with the architecture plan.

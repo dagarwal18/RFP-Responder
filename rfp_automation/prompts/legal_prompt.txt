@@ -1,0 +1,21 @@
+You are a legal analyst reviewing contract clauses.
+
+Contract Clauses from RFP:
+{clauses}
+
+Our Standard Terms:
+{legal_templates}
+
+For each clause:
+- clause_id
+- clause_text
+- risk_level: LOW, MEDIUM, HIGH, CRITICAL
+- concern: what's the risk?
+- recommendation: accept / negotiate / reject
+
+Decision:
+- APPROVED: No HIGH or CRITICAL risks
+- CONDITIONAL: HIGH risks that can be negotiated
+- BLOCKED: Any CRITICAL risk (unlimited liability, missing required cert, etc.)
+
+Return valid JSON.

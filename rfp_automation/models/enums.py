@@ -1,0 +1,101 @@
+"""
+Enumerations used across the pipeline.
+Centralised here so agents, orchestration, and services share one truth.
+"""
+
+from enum import Enum
+
+
+class PipelineStatus(str, Enum):
+    """Overall pipeline status."""
+    RECEIVED = "RECEIVED"
+    STRUCTURING = "STRUCTURING"
+    GO_NO_GO = "GO_NO_GO"
+    EXTRACTING_REQUIREMENTS = "EXTRACTING_REQUIREMENTS"
+    VALIDATING_REQUIREMENTS = "VALIDATING_REQUIREMENTS"
+    ARCHITECTURE_PLANNING = "ARCHITECTURE_PLANNING"
+    WRITING_RESPONSES = "WRITING_RESPONSES"
+    ASSEMBLING_NARRATIVE = "ASSEMBLING_NARRATIVE"
+    TECHNICAL_VALIDATION = "TECHNICAL_VALIDATION"
+    COMMERCIAL_LEGAL_REVIEW = "COMMERCIAL_LEGAL_REVIEW"
+    FINAL_READINESS = "FINAL_READINESS"
+    AWAITING_APPROVAL = "AWAITING_APPROVAL"
+    SUBMITTING = "SUBMITTING"
+    SUBMITTED = "SUBMITTED"
+    NO_GO = "NO_GO"
+    LEGAL_BLOCK = "LEGAL_BLOCK"
+    REJECTED = "REJECTED"
+    ESCALATED = "ESCALATED"
+    FAILED = "FAILED"
+
+
+class GoNoGoDecision(str, Enum):
+    GO = "GO"
+    NO_GO = "NO_GO"
+
+
+class ValidationDecision(str, Enum):
+    PASS = "PASS"
+    REJECT = "REJECT"
+
+
+class LegalDecision(str, Enum):
+    APPROVED = "APPROVED"
+    CONDITIONAL = "CONDITIONAL"
+    BLOCKED = "BLOCKED"
+
+
+class ApprovalDecision(str, Enum):
+    APPROVE = "APPROVE"
+    REJECT = "REJECT"
+    REQUEST_CHANGES = "REQUEST_CHANGES"
+
+
+class CommercialLegalGateDecision(str, Enum):
+    CLEAR = "CLEAR"
+    BLOCK = "BLOCK"
+
+
+class RequirementType(str, Enum):
+    MANDATORY = "MANDATORY"
+    OPTIONAL = "OPTIONAL"
+
+
+class RequirementCategory(str, Enum):
+    TECHNICAL = "TECHNICAL"
+    FUNCTIONAL = "FUNCTIONAL"
+    SECURITY = "SECURITY"
+    COMPLIANCE = "COMPLIANCE"
+    COMMERCIAL = "COMMERCIAL"
+    OPERATIONAL = "OPERATIONAL"
+
+
+class ImpactLevel(str, Enum):
+    CRITICAL = "CRITICAL"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+
+
+class RiskLevel(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
+class AgentName(str, Enum):
+    """Identifies each agent in the pipeline."""
+    A1_INTAKE = "A1_INTAKE"
+    A2_STRUCTURING = "A2_STRUCTURING"
+    A3_GO_NO_GO = "A3_GO_NO_GO"
+    B1_REQUIREMENTS_EXTRACTION = "B1_REQUIREMENTS_EXTRACTION"
+    B2_REQUIREMENTS_VALIDATION = "B2_REQUIREMENTS_VALIDATION"
+    C1_ARCHITECTURE_PLANNING = "C1_ARCHITECTURE_PLANNING"
+    C2_REQUIREMENT_WRITING = "C2_REQUIREMENT_WRITING"
+    C3_NARRATIVE_ASSEMBLY = "C3_NARRATIVE_ASSEMBLY"
+    D1_TECHNICAL_VALIDATION = "D1_TECHNICAL_VALIDATION"
+    E1_COMMERCIAL = "E1_COMMERCIAL"
+    E2_LEGAL = "E2_LEGAL"
+    F1_FINAL_READINESS = "F1_FINAL_READINESS"
+    F2_SUBMISSION = "F2_SUBMISSION"

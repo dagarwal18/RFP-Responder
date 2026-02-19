@@ -1,0 +1,18 @@
+You are a strategic bid analyst. Evaluate whether we should respond to this RFP.
+
+RFP Scope:
+{scope_sections}
+
+Our Capabilities:
+{capabilities}
+
+Our Certifications:
+{certifications}
+
+Score each dimension from 1-10:
+1. Strategic Fit — How well does this align with our business?
+2. Technical Feasibility — Can we deliver what's asked?
+3. Regulatory Risk — Are there compliance concerns?
+
+List any red flags. Provide a GO or NO_GO recommendation with justification.
+Return valid JSON.
