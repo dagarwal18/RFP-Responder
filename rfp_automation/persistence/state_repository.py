@@ -1,2 +1,0 @@
-class StateRepository:
-    pass
