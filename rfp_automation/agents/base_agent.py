@@ -90,6 +90,32 @@ class BaseAgent(ABC):
             except Exception:
                 pass
 
+        except NotImplementedError as exc:
+            # Agent not yet implemented — gracefully skip so earlier
+            # results (e.g. A3 requirement mappings) are preserved in
+            # the pipeline state rather than lost.
+            elapsed = time.perf_counter() - t0
+            graph_state.error_message = f"[{self.name.value}] {exc}"
+            graph_state.add_audit(
+                agent=self.name.value,
+                action="skipped",
+                details=str(exc),
+            )
+            logger.warning(
+                f"⚠ [{self.name.value}] NOT IMPLEMENTED — skipping after {elapsed:.3f}s: {exc}"
+            )
+            logger.info(f"{separator}\n")
+
+            try:
+                if progress:
+                    progress.on_error(rfp_id, self.name.value, str(exc))
+            except Exception:
+                pass
+
+            # Return current state so the pipeline can continue or end
+            # with all previously-accumulated data intact.
+            return graph_state.model_dump()
+
         except Exception as exc:
             elapsed = time.perf_counter() - t0
             graph_state.error_message = f"[{self.name.value}] {exc}"

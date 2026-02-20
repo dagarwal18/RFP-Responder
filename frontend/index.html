@@ -719,6 +719,177 @@
       background: rgba(245, 158, 11, 0.15);
       color: var(--warning);
     }
+
+    /* ── Requirement Mappings Table ──────────────── */
+    .mapping-summary {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .mapping-summary .summary-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .summary-pill .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .mapping-scores {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .mapping-scores .score-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      text-align: center;
+      min-width: 120px;
+    }
+
+    .score-item .score-val {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .score-item .score-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .mapping-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .mapping-table thead th {
+      padding: 10px 8px;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg-card);
+      z-index: 2;
+    }
+
+    .mapping-table tbody td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .mapping-table tbody tr:hover {
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .status-chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .status-chip.ALIGNS {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
+
+    .status-chip.VIOLATES {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .status-chip.RISK {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+    }
+
+    .status-chip.NO_MATCH {
+      background: rgba(107, 114, 128, 0.15);
+      color: #9ca3af;
+    }
+
+    .conf-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .conf-bar-track {
+      width: 50px;
+      height: 5px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .conf-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .conf-bar-val {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-width: 32px;
+    }
+
+    .mapping-decision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 24px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+    }
+
+    .mapping-decision-badge.GO {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .mapping-decision-badge.NO_GO {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .mapping-filter-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 
@@ -930,6 +1101,26 @@
           <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
             <button class="btn btn-outline btn-sm" onclick="closePolicyModal()">Cancel</button>
             <button class="btn btn-primary btn-sm" id="policySaveBtn" onclick="savePolicy()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  REQUIREMENT MAPPINGS                               -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="card" style="margin-top:20px" id="mappingsCard">
+      <div class="card-header">
+        <h2>📋 Requirement Mappings</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:var(--text-muted)" id="mappingsHint">Run a pipeline or select a completed run</span>
+          <span class="mapping-decision-badge" id="mappingDecisionBadge" style="display:none"></span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="mappingsContainer">
+          <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">
+            No requirement mappings available. Upload an RFP and run the pipeline to see how each requirement maps to your company policies.
           </div>
         </div>
       </div>
@@ -1326,8 +1517,9 @@
             rfpUploadBtn.innerHTML = 'Run Pipeline';
             rfpUploadBtn.disabled = false;
 
-            // Refresh runs list
+            // Refresh runs list and load mappings
             loadRuns();
+            if (activeRfpId) loadMappings(activeRfpId);
             break;
         }
       };
@@ -1455,6 +1647,9 @@
         // Load agent output logs
         loadAgentLogs(rfpId);
 
+        // Load requirement mappings
+        loadMappings(rfpId);
+
         // If it's still running, connect the WebSocket
         if (status.status === 'RUNNING') {
           connectPipelineWS(rfpId);
@@ -1576,6 +1771,146 @@
         alert('Failed to delete policies: ' + e.message);
       }
     });
+
+    // ══════════════════════════════════════════════
+    //  REQUIREMENT MAPPINGS
+    // ══════════════════════════════════════════════
+
+    async function loadMappings(rfpId) {
+      const container = document.getElementById('mappingsContainer');
+      const badge = document.getElementById('mappingDecisionBadge');
+      const hint = document.getElementById('mappingsHint');
+      container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted)"><span class="spinner"></span> Loading mappings…</div>';
+      hint.textContent = `Run: ${rfpId}`;
+      badge.style.display = 'none';
+
+      try {
+        const data = await apiFetch(`/api/rfp/${rfpId}/mappings`);
+        if (!data.available) {
+          container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">${data.message || 'No mapping data available.'}</div>`;
+          return;
+        }
+
+        // Decision badge
+        badge.textContent = data.decision === 'GO' ? '✅ GO' : '❌ NO GO';
+        badge.className = `mapping-decision-badge ${data.decision}`;
+        badge.style.display = 'inline-flex';
+
+        // Build HTML
+        let html = '';
+
+        // ── Scores row ──
+        const sc = data.scores || {};
+        const scoreColor = (val, invert) => {
+          const v = parseFloat(val) || 0;
+          if (invert) return v > 7 ? '#ef4444' : v > 4 ? '#f59e0b' : '#10b981';
+          return v >= 7 ? '#10b981' : v >= 4 ? '#f59e0b' : '#ef4444';
+        };
+        html += `<div class="mapping-scores">
+          <div class="score-item"><div class="score-val" style="color:${scoreColor(sc.strategic_fit)}">${(sc.strategic_fit || 0).toFixed(1)}</div><div class="score-lbl">Strategic Fit</div></div>
+          <div class="score-item"><div class="score-val" style="color:${scoreColor(sc.technical_feasibility)}">${(sc.technical_feasibility || 0).toFixed(1)}</div><div class="score-lbl">Technical</div></div>
+          <div class="score-item"><div class="score-val" style="color:${scoreColor(sc.regulatory_risk, true)}">${(sc.regulatory_risk || 0).toFixed(1)}</div><div class="score-lbl">Reg. Risk</div></div>
+        </div>`;
+
+        // ── Justification ──
+        if (data.justification) {
+          html += `<div style="margin-bottom:14px;padding:10px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <strong>Justification:</strong> ${data.justification}
+          </div>`;
+        }
+
+        // ── Red flags & violations ──
+        if (data.red_flags && data.red_flags.length) {
+          html += `<div style="margin-bottom:10px;padding:8px 14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;font-size:12px;color:#f59e0b">
+            <strong>⚠ Red Flags:</strong> ${data.red_flags.join(' • ')}
+          </div>`;
+        }
+        if (data.policy_violations && data.policy_violations.length) {
+          html += `<div style="margin-bottom:10px;padding:8px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:12px;color:#ef4444">
+            <strong>❌ Policy Violations:</strong> ${data.policy_violations.join(' • ')}
+          </div>`;
+        }
+
+        // ── Summary pills ──
+        const sm = data.summary || {};
+        html += `<div class="mapping-summary">
+          <div class="summary-pill"><span class="pill-dot" style="background:#6366f1"></span> ${sm.total || 0} Total</div>
+          <div class="summary-pill"><span class="pill-dot" style="background:#10b981"></span> ${sm.aligned || 0} Aligned</div>
+          <div class="summary-pill"><span class="pill-dot" style="background:#ef4444"></span> ${sm.violated || 0} Violated</div>
+          <div class="summary-pill"><span class="pill-dot" style="background:#f59e0b"></span> ${sm.risk || 0} Risk</div>
+          <div class="summary-pill"><span class="pill-dot" style="background:#9ca3af"></span> ${sm.no_match || 0} No Match</div>
+        </div>`;
+
+        // ── Filter row ──
+        html += `<div class="mapping-filter-row">
+          <select id="mappingStatusFilter" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:12px">
+            <option value="">All Statuses</option>
+            <option value="ALIGNS">✅ Aligns</option>
+            <option value="VIOLATES">❌ Violates</option>
+            <option value="RISK">⚠️ Risk</option>
+            <option value="NO_MATCH">❓ No Match</option>
+          </select>
+          <span style="font-size:11px;color:var(--text-muted)" id="mappingFilterCount">${(data.mappings || []).length} mappings</span>
+        </div>`;
+
+        // ── Table ──
+        const mappings = data.mappings || [];
+        html += `<div style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">
+          <table class="mapping-table" id="mappingTable">
+            <thead>
+              <tr>
+                <th style="width:100px">ID</th>
+                <th style="width:90px">Status</th>
+                <th style="width:75px">Confidence</th>
+                <th>Requirement</th>
+                <th>Matched Policy</th>
+                <th>Reasoning</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mappings.map(m => {
+                const conf = parseFloat(m.confidence) || 0;
+                const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.5 ? '#f59e0b' : '#ef4444';
+                return `<tr data-status="${m.mapping_status}">
+                  <td style="font-weight:500;font-size:11px;color:var(--accent-light)">${m.requirement_id || '—'}</td>
+                  <td><span class="status-chip ${m.mapping_status}">${m.mapping_status}</span></td>
+                  <td>
+                    <div class="conf-bar">
+                      <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${conf*100}%;background:${confColor}"></div></div>
+                      <span class="conf-bar-val">${(conf*100).toFixed(0)}%</span>
+                    </div>
+                  </td>
+                  <td style="max-width:220px;line-height:1.4" title="${(m.requirement_text || '').replace(/"/g, '&quot;')}">${m.requirement_text || '—'}</td>
+                  <td style="font-size:11px;max-width:180px;line-height:1.4;color:var(--text-secondary)" title="${(m.matched_policy || '').replace(/"/g, '&quot;')}">${m.matched_policy || '—'}</td>
+                  <td style="font-size:11px;max-width:180px;line-height:1.4;color:var(--text-muted)">${m.reasoning || '—'}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+
+        container.innerHTML = html;
+
+        // ── Wire up filter ──
+        const filterSelect = document.getElementById('mappingStatusFilter');
+        if (filterSelect) {
+          filterSelect.addEventListener('change', () => {
+            const val = filterSelect.value;
+            const rows = document.querySelectorAll('#mappingTable tbody tr');
+            let visible = 0;
+            rows.forEach(row => {
+              const show = !val || row.dataset.status === val;
+              row.style.display = show ? '' : 'none';
+              if (show) visible++;
+            });
+            document.getElementById('mappingFilterCount').textContent = `${visible} mappings`;
+          });
+        }
+
+      } catch (e) {
+        container.innerHTML = `<div style="padding:24px;text-align:center;color:#ef4444;font-size:13px">Failed to load mappings: ${e.message}</div>`;
+      }
+    }
 
     // ══════════════════════════════════════════════
     //  AGENT OUTPUT LOGS

@@ -100,26 +100,8 @@ class GoNoGoAgent(BaseAgent):
             state.status = PipelineStatus.EXTRACTING_REQUIREMENTS
             logger.info(f"[A3] Decision: GO — {result.justification}")
 
-        # ── Detailed decision dump ─────────────────────
-        logger.debug(
-            f"[A3] Scores → strategic_fit={result.strategic_fit_score:.2f}, "
-            f"technical_feasibility={result.technical_feasibility_score:.2f}, "
-            f"regulatory_risk={result.regulatory_risk_score:.2f}"
-        )
-        logger.debug(
-            f"[A3] Mappings → total={result.total_requirements}, "
-            f"aligned={result.aligned_count}, violated={result.violated_count}, "
-            f"risk={result.risk_count}, no_match={result.no_match_count}"
-        )
-        if result.policy_violations:
-            logger.debug(f"[A3] Policy violations: {result.policy_violations}")
-        if result.red_flags:
-            logger.debug(f"[A3] Red flags: {result.red_flags}")
-        for m in result.requirement_mappings:
-            logger.debug(
-                f"[A3]   Mapping: {m.requirement_id} | {m.mapping_status} | "
-                f"confidence={m.confidence:.2f} | {m.requirement_text[:80]}"
-            )
+        # ── Detailed decision dump (INFO for visibility) ──
+        self._log_mapping_table(result)
 
         return state
 
@@ -136,6 +118,71 @@ class GoNoGoAgent(BaseAgent):
             summary = getattr(s, "content_summary", "") if not isinstance(s, dict) else s.get("content_summary", "")
             parts.append(f"### {title} [{category}]\n{summary}")
         return "\n\n".join(parts)
+
+    def _log_mapping_table(self, result: GoNoGoResult) -> None:
+        """Log a formatted requirement-mapping table at INFO level."""
+        # ── Scores summary ──
+        logger.info(
+            f"[A3] Scores → strategic_fit={result.strategic_fit_score:.1f}/10, "
+            f"technical_feasibility={result.technical_feasibility_score:.1f}/10, "
+            f"regulatory_risk={result.regulatory_risk_score:.1f}/10"
+        )
+
+        # ── Counts ──
+        logger.info(
+            f"[A3] Mappings → total={result.total_requirements}, "
+            f"aligned={result.aligned_count}, violated={result.violated_count}, "
+            f"risk={result.risk_count}, no_match={result.no_match_count}"
+        )
+
+        if result.policy_violations:
+            logger.info(f"[A3] Policy violations: {result.policy_violations}")
+        if result.red_flags:
+            logger.info(f"[A3] Red flags: {result.red_flags}")
+
+        # ── Formatted table ──
+        if not result.requirement_mappings:
+            logger.info("[A3] No requirement mappings produced.")
+            return
+
+        # Column widths
+        id_w, status_w, conf_w = 14, 10, 6
+        req_w, policy_w, reason_w = 40, 30, 30
+
+        sep = f"╠{'═'*id_w}╬{'═'*status_w}╬{'═'*conf_w}╬{'═'*req_w}╬{'═'*policy_w}╬{'═'*reason_w}╣"
+        top = f"╔{'═'*id_w}╦{'═'*status_w}╦{'═'*conf_w}╦{'═'*req_w}╦{'═'*policy_w}╦{'═'*reason_w}╗"
+        bot = f"╚{'═'*id_w}╩{'═'*status_w}╩{'═'*conf_w}╩{'═'*req_w}╩{'═'*policy_w}╩{'═'*reason_w}╝"
+
+        def pad(text: str, width: int) -> str:
+            return (text[:width-1] + "…" if len(text) >= width else text).ljust(width)
+
+        header = (
+            f"║{pad('Requirement ID', id_w)}║{pad('Status', status_w)}║{pad('Conf.', conf_w)}"
+            f"║{pad('Requirement Text', req_w)}║{pad('Matched Policy', policy_w)}║{pad('Reasoning', reason_w)}║"
+        )
+
+        lines = [
+            f"[A3] ╔{'═' * (id_w + status_w + conf_w + req_w + policy_w + reason_w + 5)}╗",
+            f"[A3] ║  REQUIREMENT MAPPING RESULTS — {result.total_requirements} requirements{' ' * max(0, id_w + status_w + conf_w + req_w + policy_w + reason_w + 5 - 35 - len(str(result.total_requirements)))}║",
+            f"[A3] {top}",
+            f"[A3] {header}",
+            f"[A3] {sep}",
+        ]
+
+        for m in result.requirement_mappings:
+            row = (
+                f"║{pad(m.requirement_id, id_w)}"
+                f"║{pad(m.mapping_status, status_w)}"
+                f"║{pad(f'{m.confidence:.2f}', conf_w)}"
+                f"║{pad(m.requirement_text, req_w)}"
+                f"║{pad(m.matched_policy or '—', policy_w)}"
+                f"║{pad(m.reasoning or '—', reason_w)}║"
+            )
+            lines.append(f"[A3] {row}")
+
+        lines.append(f"[A3] {bot}")
+
+        logger.info("\n".join(lines))
 
     def _build_prompt(
         self, rfp_sections: str, policies: str, capabilities: str

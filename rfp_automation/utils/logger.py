@@ -17,7 +17,10 @@ def setup_logging(level: str = "DEBUG") -> None:
 
     root.setLevel(getattr(logging, level))
 
-    handler = logging.StreamHandler(sys.stdout)
+    # Use a stream wrapper that can handle Unicode on Windows consoles
+    import io
+    stream = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+    handler = logging.StreamHandler(stream)
     handler.setLevel(getattr(logging, level))
 
     formatter = logging.Formatter(

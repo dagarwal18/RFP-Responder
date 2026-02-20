@@ -255,6 +255,57 @@ async def list_rfps():
     ]
 
 
+# ── Requirement Mappings ─────────────────────────────────
+
+@rfp_router.get("/{rfp_id}/mappings")
+async def get_requirement_mappings(rfp_id: str):
+    """
+    Return the requirement-mapping table for a given RFP run.
+    Provides scores, summary counts, and individual mappings.
+    """
+    run = _runs.get(rfp_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
+
+    result_data = run.get("result")
+    if not isinstance(result_data, dict):
+        return {
+            "rfp_id": rfp_id,
+            "available": False,
+            "message": "Pipeline has not completed yet",
+        }
+
+    gng = result_data.get("go_no_go_result")
+    if not isinstance(gng, dict) or not gng.get("requirement_mappings"):
+        return {
+            "rfp_id": rfp_id,
+            "available": False,
+            "message": "No requirement mapping data available for this run",
+        }
+
+    return {
+        "rfp_id": rfp_id,
+        "available": True,
+        "decision": gng.get("decision", "UNKNOWN"),
+        "justification": gng.get("justification", ""),
+        "scores": {
+            "strategic_fit": gng.get("strategic_fit_score", 0),
+            "technical_feasibility": gng.get("technical_feasibility_score", 0),
+            "regulatory_risk": gng.get("regulatory_risk_score", 0),
+        },
+        "summary": {
+            "total": gng.get("total_requirements", 0),
+            "aligned": gng.get("aligned_count", 0),
+            "violated": gng.get("violated_count", 0),
+            "risk": gng.get("risk_count", 0),
+            "no_match": gng.get("no_match_count", 0),
+        },
+        "red_flags": gng.get("red_flags", []),
+        "policy_violations": gng.get("policy_violations", []),
+        "mappings": gng.get("requirement_mappings", []),
+    }
+
+
 # ── WebSocket endpoint for real-time pipeline progress ───
 
 @rfp_router.websocket("/ws/{rfp_id}")
