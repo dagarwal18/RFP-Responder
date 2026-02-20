@@ -54,9 +54,23 @@ def llm_json_call(prompt: str, output_model: Type[T]) -> T:
     Call the LLM and parse the response into a Pydantic model.
     Uses LangChain's with_structured_output() for reliable JSON parsing.
     """
+    import time
+
+    logger.debug(
+        f"[LLM-JSON] Prompt length: {len(prompt)} chars | "
+        f"Target model: {output_model.__name__}"
+    )
+    logger.debug(f"[LLM-JSON] Prompt preview:\n{prompt[:500]}{'…' if len(prompt) > 500 else ''}")
+
     llm = get_llm()
     structured_llm = llm.with_structured_output(output_model)
+
+    t0 = time.perf_counter()
     result = structured_llm.invoke(prompt)
+    elapsed = time.perf_counter() - t0
+
+    logger.info(f"[LLM-JSON] Response received in {elapsed:.2f}s | Model: {output_model.__name__}")
+    logger.debug(f"[LLM-JSON] Parsed result: {result}")
     return result
 
 
@@ -64,6 +78,22 @@ def llm_text_call(prompt: str) -> str:
     """
     Call the LLM and return the raw text response.
     """
+    import time
+
+    logger.debug(
+        f"[LLM-TEXT] Prompt length: {len(prompt)} chars"
+    )
+    logger.debug(f"[LLM-TEXT] Prompt preview:\n{prompt[:500]}{'…' if len(prompt) > 500 else ''}")
+
     llm = get_llm()
+    t0 = time.perf_counter()
     response = llm.invoke(prompt)
-    return response.content
+    elapsed = time.perf_counter() - t0
+    content = response.content
+
+    logger.info(
+        f"[LLM-TEXT] Response received in {elapsed:.2f}s | "
+        f"Response length: {len(content)} chars"
+    )
+    logger.debug(f"[LLM-TEXT] Full response:\n{content}")
+    return content

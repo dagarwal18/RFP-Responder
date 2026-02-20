@@ -20,6 +20,7 @@ from rfp_automation.config import get_settings
 from rfp_automation.api.routes import rfp_router, health_router
 from rfp_automation.api.knowledge_routes import knowledge_router
 from rfp_automation.api.websocket import PipelineProgress
+from rfp_automation.utils.logger import setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ logger = logging.getLogger(__name__)
 def create_app() -> FastAPI:
     """Application factory — create and configure the FastAPI instance."""
     settings = get_settings()
+    setup_logging(settings.log_level)
 
     application = FastAPI(
         title="RFP Response Automation API",

@@ -168,9 +168,225 @@ class TestStructuringAgent:
 
 
 class TestGoNoGoAgent:
-    def test_raises_not_implemented(self):
+
+    @staticmethod
+    def _go_no_go_state():
+        """State with rfp_id and sections ready for A3."""
+        from rfp_automation.models.schemas import RFPMetadata, StructuringResult, RFPSection
+        return RFPGraphState(
+            status=PipelineStatus.GO_NO_GO,
+            rfp_metadata=RFPMetadata(rfp_id="RFP-TEST-001", title="Test RFP"),
+            structuring_result=StructuringResult(
+                sections=[
+                    RFPSection(
+                        section_id="SEC-01",
+                        title="Security Requirements",
+                        category="compliance",
+                        content_summary="Must have ISO 27001. Data at rest encryption required.",
+                        confidence=0.9,
+                    ),
+                ],
+                overall_confidence=0.9,
+            ),
+        ).model_dump()
+
+    def test_go_decision_aligned(self, monkeypatch):
+        """All requirements align → GO decision, correct counts."""
+        from rfp_automation.agents import GoNoGoAgent
+
+        llm_response = json.dumps({
+            "strategic_fit_score": 8.0,
+            "technical_feasibility_score": 9.0,
+            "regulatory_risk_score": 2.0,
+            "decision": "GO",
+            "justification": "All requirements satisfied",
+            "red_flags": [],
+            "policy_violations": [],
+            "requirement_mappings": [
+                {
+                    "requirement_id": "RFP-REQ-001",
+                    "requirement_text": "Must have ISO 27001",
+                    "source_section": "Security Requirements",
+                    "mapping_status": "ALIGNS",
+                    "matched_policy": "ISO 27001 certified",
+                    "matched_policy_id": "POL-001",
+                    "confidence": 0.95,
+                    "reasoning": "Direct certification match",
+                },
+                {
+                    "requirement_id": "RFP-REQ-002",
+                    "requirement_text": "Data at rest encryption",
+                    "source_section": "Security Requirements",
+                    "mapping_status": "ALIGNS",
+                    "matched_policy": "AES-256 encryption at rest",
+                    "matched_policy_id": "POL-002",
+                    "confidence": 0.90,
+                    "reasoning": "Policy covers this",
+                },
+            ],
+        })
+
+        mock_mcp = type("MockMCP", (), {
+            "query_rfp_all_chunks": lambda self, rfp_id, top_k=50: [],
+            "get_extracted_policies": lambda self: [{"policy_text": "ISO 27001 certified", "policy_id": "POL-001"}],
+            "query_knowledge": lambda self, q, top_k=10: [],
+        })()
+
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt: llm_response)
+
+        agent = GoNoGoAgent()
+        result = agent.process(self._go_no_go_state())
+
+        assert result["go_no_go_result"]["decision"] == "GO"
+        assert result["go_no_go_result"]["aligned_count"] == 2
+        assert result["go_no_go_result"]["violated_count"] == 0
+        assert result["go_no_go_result"]["total_requirements"] == 2
+        assert result["status"] == PipelineStatus.EXTRACTING_REQUIREMENTS.value
+
+    def test_no_go_decision_violations(self, monkeypatch):
+        """VIOLATES entries → NO_GO decision."""
+        from rfp_automation.agents import GoNoGoAgent
+
+        llm_response = json.dumps({
+            "strategic_fit_score": 4.0,
+            "technical_feasibility_score": 3.0,
+            "regulatory_risk_score": 8.0,
+            "decision": "NO_GO",
+            "justification": "Critical policy violation",
+            "red_flags": ["Cannot meet encryption requirement"],
+            "policy_violations": ["Data must not leave premises"],
+            "requirement_mappings": [
+                {
+                    "requirement_id": "RFP-REQ-001",
+                    "requirement_text": "Cloud hosting required",
+                    "source_section": "Infrastructure",
+                    "mapping_status": "VIOLATES",
+                    "matched_policy": "No cloud hosting allowed",
+                    "matched_policy_id": "POL-010",
+                    "confidence": 0.99,
+                    "reasoning": "Direct contradiction",
+                },
+            ],
+        })
+
+        mock_mcp = type("MockMCP", (), {
+            "query_rfp_all_chunks": lambda self, rfp_id, top_k=50: [],
+            "get_extracted_policies": lambda self: [],
+            "query_knowledge": lambda self, q, top_k=10: [],
+        })()
+
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt: llm_response)
+
+        agent = GoNoGoAgent()
+        result = agent.process(self._go_no_go_state())
+
+        assert result["go_no_go_result"]["decision"] == "NO_GO"
+        assert result["go_no_go_result"]["violated_count"] == 1
+        assert result["status"] == PipelineStatus.NO_GO.value
+
+    def test_mixed_mapping_counts(self, monkeypatch):
+        """Mixed ALIGNS/RISK/NO_MATCH → verify correct count breakdown."""
+        from rfp_automation.agents import GoNoGoAgent
+
+        llm_response = json.dumps({
+            "strategic_fit_score": 7.0,
+            "technical_feasibility_score": 6.0,
+            "regulatory_risk_score": 4.0,
+            "decision": "GO",
+            "justification": "Mostly aligned",
+            "red_flags": [],
+            "policy_violations": [],
+            "requirement_mappings": [
+                {"requirement_id": "R1", "requirement_text": "A", "source_section": "S",
+                 "mapping_status": "ALIGNS", "matched_policy": "P1", "matched_policy_id": "POL-001",
+                 "confidence": 0.9, "reasoning": "match"},
+                {"requirement_id": "R2", "requirement_text": "B", "source_section": "S",
+                 "mapping_status": "RISK", "matched_policy": "P2", "matched_policy_id": "POL-002",
+                 "confidence": 0.5, "reasoning": "partial"},
+                {"requirement_id": "R3", "requirement_text": "C", "source_section": "S",
+                 "mapping_status": "NO_MATCH", "matched_policy": "", "matched_policy_id": "",
+                 "confidence": 0.0, "reasoning": "none found"},
+                {"requirement_id": "R4", "requirement_text": "D", "source_section": "S",
+                 "mapping_status": "ALIGNS", "matched_policy": "P3", "matched_policy_id": "POL-003",
+                 "confidence": 0.85, "reasoning": "match"},
+            ],
+        })
+
+        mock_mcp = type("MockMCP", (), {
+            "query_rfp_all_chunks": lambda self, rfp_id, top_k=50: [],
+            "get_extracted_policies": lambda self: [],
+            "query_knowledge": lambda self, q, top_k=10: [],
+        })()
+
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt: llm_response)
+
+        agent = GoNoGoAgent()
+        result = agent.process(self._go_no_go_state())
+
+        r = result["go_no_go_result"]
+        assert r["total_requirements"] == 4
+        assert r["aligned_count"] == 2
+        assert r["risk_count"] == 1
+        assert r["no_match_count"] == 1
+        assert r["violated_count"] == 0
+
+    def test_mappings_fully_populated(self, monkeypatch):
+        """Verify all RequirementMapping fields are present and typed correctly."""
+        from rfp_automation.agents import GoNoGoAgent
+
+        llm_response = json.dumps({
+            "strategic_fit_score": 7.0,
+            "technical_feasibility_score": 7.0,
+            "regulatory_risk_score": 3.0,
+            "decision": "GO",
+            "justification": "OK",
+            "red_flags": [],
+            "policy_violations": [],
+            "requirement_mappings": [
+                {
+                    "requirement_id": "RFP-REQ-001",
+                    "requirement_text": "Need SOC 2 Type II",
+                    "source_section": "Compliance",
+                    "mapping_status": "ALIGNS",
+                    "matched_policy": "SOC 2 Type II certified",
+                    "matched_policy_id": "POL-005",
+                    "confidence": 0.98,
+                    "reasoning": "Direct cert match",
+                },
+            ],
+        })
+
+        mock_mcp = type("MockMCP", (), {
+            "query_rfp_all_chunks": lambda self, rfp_id, top_k=50: [],
+            "get_extracted_policies": lambda self: [],
+            "query_knowledge": lambda self, q, top_k=10: [],
+        })()
+
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt: llm_response)
+
+        agent = GoNoGoAgent()
+        result = agent.process(self._go_no_go_state())
+
+        mapping = result["go_no_go_result"]["requirement_mappings"][0]
+        assert mapping["requirement_id"] == "RFP-REQ-001"
+        assert mapping["requirement_text"] == "Need SOC 2 Type II"
+        assert mapping["mapping_status"] == "ALIGNS"
+        assert mapping["matched_policy_id"] == "POL-005"
+        assert isinstance(mapping["confidence"], float)
+        assert mapping["confidence"] > 0.0
+
+    def test_missing_rfp_id_raises(self):
+        """No rfp_id in state → ValueError."""
         from rfp_automation.agents import GoNoGoAgent
 
         agent = GoNoGoAgent()
-        with pytest.raises(NotImplementedError):
-            agent.process(_empty_state())
+        state = RFPGraphState(
+            status=PipelineStatus.GO_NO_GO,
+        ).model_dump()
+        with pytest.raises(ValueError, match="No rfp_id"):
+            agent.process(state)
+

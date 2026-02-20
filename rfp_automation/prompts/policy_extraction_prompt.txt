@@ -1,0 +1,48 @@
+You are an expert policy analyst. Extract every rule, policy, certification, constraint, prohibition, and capability statement from the following company document text.
+
+DOCUMENT TEXT:
+{document_text}
+
+DOCUMENT TYPE: {doc_type}
+SOURCE FILENAME: {filename}
+
+INSTRUCTIONS:
+1. Read the entire document text carefully.
+2. Identify every individual rule, policy, certification, constraint, prohibition, threshold, standard, or capability statement.
+3. Each item must be a standalone, self-contained statement.
+4. Assign a unique policy_id in the format "POL-001", "POL-002", etc., starting from {start_id}.
+5. Classify each item into exactly one category and one rule_type.
+6. Assign a severity level based on how critical the policy is to business operations and compliance.
+
+CATEGORIES (pick one):
+- certification: Certifications held or required (ISO, SOC, HIPAA, etc.)
+- legal: Legal obligations, contract terms, NDA requirements
+- compliance: Regulatory and compliance requirements (GDPR, data protection, etc.)
+- operational: Operational policies, SLAs, uptime requirements, staffing
+- commercial: Pricing rules, margin thresholds, payment terms
+- governance: Internal governance, approval workflows, decision authority
+- capability: Technical or business capabilities the company possesses
+
+RULE TYPES (pick one):
+- constraint: A limitation or boundary that must not be exceeded
+- requirement: Something that must be fulfilled or maintained
+- capability: A skill, service, or competency the company has
+- prohibition: Something explicitly forbidden
+- threshold: A numeric limit or minimum/maximum value
+- standard: A standard or framework that is followed
+
+SEVERITY LEVELS (pick one):
+- critical: Violation would cause legal liability, contract breach, or regulatory penalty
+- high: Violation would significantly impact operations or client relationships
+- medium: Important but not immediately damaging if temporarily unmet
+- low: Best practice or nice-to-have
+
+Return ONLY a valid JSON array. No markdown fencing, no explanation. Each element must have:
+{
+  "policy_id": "POL-XXX",
+  "policy_text": "The exact policy or rule statement",
+  "category": "one of the categories above",
+  "rule_type": "one of the rule types above",
+  "severity": "critical|high|medium|low",
+  "source_section": "The section or heading this was found under"
+}

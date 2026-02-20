@@ -51,10 +51,13 @@ class StructuringAgent(BaseAgent):
 
         retry_count = state.structuring_result.retry_count
         logger.info(f"[A2] Structuring attempt {retry_count} for {rfp_id}")
+        logger.debug(f"[A2] Previous confidence: {state.structuring_result.overall_confidence:.4f}")
+        logger.debug(f"[A2] Previous sections: {len(state.structuring_result.sections)}")
 
         # ── 1. Retrieve chunks using strategy based on retry count ───
         mcp = MCPService()
         chunks = self._retrieve_chunks(mcp, rfp_id, retry_count, state.raw_text)
+        logger.debug(f"[A2] Retrieved {len(chunks) if chunks else 0} chunks with strategy {retry_count}")
 
         if not chunks:
             logger.warning(f"[A2] No chunks retrieved for {rfp_id}")
@@ -70,8 +73,13 @@ class StructuringAgent(BaseAgent):
         prompt = self._build_prompt(chunks, retry_count, state.structuring_result)
 
         # ── 3. Call LLM ──────────────────────────────────────────────
-        logger.info(f"[A2] Calling LLM with {len(chunks)} chunks")
+        logger.info(f"[A2] Calling LLM with {len(chunks)} chunks ({len(prompt)} char prompt)")
         sections = self._call_llm_and_parse(prompt)
+        for s in sections:
+            logger.debug(
+                f"[A2]   Section: {s.section_id} | {s.category} | "
+                f"confidence={s.confidence:.3f} | {s.title[:60]}"
+            )
 
         # ── 4. Compute confidence ────────────────────────────────────
         if sections:
@@ -83,6 +91,13 @@ class StructuringAgent(BaseAgent):
             f"[A2] Got {len(sections)} sections, "
             f"overall_confidence={overall_confidence:.3f}"
         )
+        if overall_confidence < 0.6:
+            logger.debug(
+                f"[A2] Confidence {overall_confidence:.3f} < 0.6 threshold — will retry "
+                f"(attempt {retry_count + 1})"
+            )
+        else:
+            logger.debug(f"[A2] Confidence {overall_confidence:.3f} >= 0.6 — proceeding to Go/No-Go")
 
         # ── 5. Build result and update state ─────────────────────────
         result = StructuringResult(
@@ -227,11 +242,14 @@ class StructuringAgent(BaseAgent):
         """Call LLM and parse JSON response into RFPSection objects."""
         try:
             raw_response = llm_text_call(prompt)
+            logger.debug(f"[A2] Raw LLM response ({len(raw_response)} chars):\n{raw_response[:2000]}")
         except Exception as exc:
             logger.error(f"[A2] LLM call failed: {exc}")
             return []
 
-        return self._parse_sections_json(raw_response)
+        parsed = self._parse_sections_json(raw_response)
+        logger.debug(f"[A2] Parsed {len(parsed)} sections from LLM response")
+        return parsed
 
     def _parse_sections_json(self, raw_response: str) -> list[RFPSection]:
         """

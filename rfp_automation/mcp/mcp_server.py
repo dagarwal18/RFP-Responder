@@ -83,6 +83,7 @@ class MCPService:
         text, page_start, page_end.
         Returns vector count.
         """
+        logger.debug(f"[MCPService] store_rfp_chunks: rfp_id={rfp_id}, {len(chunks)} chunks, source={source_file}")
         extra = {"source_file": source_file} if source_file else {}
         count = self.rfp_store.embed_chunks(rfp_id, chunks, extra_metadata=extra)
         logger.info(f"[MCPService] Stored {count} vectors for {rfp_id}")
@@ -97,7 +98,10 @@ class MCPService:
         top_k: int = 5,
     ) -> list[dict[str, Any]]:
         """Convenience: semantic search over RFP chunks."""
-        return self.rfp_store.query(query, rfp_id, top_k)
+        logger.debug(f"[MCPService] query_rfp: q={query[:60]!r}, rfp_id={rfp_id}, top_k={top_k}")
+        results = self.rfp_store.query(query, rfp_id, top_k)
+        logger.debug(f"[MCPService] query_rfp returned {len(results)} results")
+        return results
 
     # ── Convenience: RFP full retrieval ────────────────────
 
@@ -107,7 +111,10 @@ class MCPService:
         top_k: int = 100,
     ) -> list[dict[str, Any]]:
         """Retrieve all chunks for an RFP (for full-document classification)."""
-        return self.rfp_store.query_all(rfp_id, top_k)
+        logger.debug(f"[MCPService] query_rfp_all_chunks: rfp_id={rfp_id}, top_k={top_k}")
+        results = self.rfp_store.query_all(rfp_id, top_k)
+        logger.debug(f"[MCPService] query_rfp_all_chunks returned {len(results)} chunks")
+        return results
 
     # ── Convenience: Knowledge query ─────────────────────
 
@@ -118,9 +125,13 @@ class MCPService:
         doc_type: str = "",
     ) -> list[dict[str, Any]]:
         """Convenience: semantic search over company knowledge. If doc_type is empty, search all."""
+        logger.debug(f"[MCPService] query_knowledge: q={query[:60]!r}, doc_type={doc_type!r}, top_k={top_k}")
         if doc_type:
-            return self.knowledge_base.query_by_type(query, doc_type, top_k)
-        return self.knowledge_base.query_all_types(query, top_k)
+            results = self.knowledge_base.query_by_type(query, doc_type, top_k)
+        else:
+            results = self.knowledge_base.query_all_types(query, top_k)
+        logger.debug(f"[MCPService] query_knowledge returned {len(results)} results")
+        return results
 
     # ── Knowledge base admin ─────────────────────────────
 
@@ -176,6 +187,22 @@ class MCPService:
             stats["mongodb"]["error"] = str(e)
 
         return stats
+
+    # ── Pre-extracted policies (from JSON file) ────────
+
+    def get_extracted_policies(self, category: str = "") -> list[dict[str, Any]]:
+        """Read pre-extracted policies from the JSON file, optionally filtered by category."""
+        from rfp_automation.services.policy_extraction_service import PolicyExtractionService
+        policies = PolicyExtractionService.get_all_policies()
+        if category:
+            policies = [p for p in policies if p.get("category") == category]
+        logger.debug(f"[MCPService] get_extracted_policies(category={category!r}): {len(policies)} policies")
+        return policies
+
+    def get_certifications_from_policies(self) -> dict[str, bool]:
+        """Derive a cert map from extracted policies where category='certification'."""
+        cert_policies = self.get_extracted_policies(category="certification")
+        return {p.get("policy_text", ""): True for p in cert_policies if p.get("policy_text")}
 
     # ── Health check ─────────────────────────────────────
 

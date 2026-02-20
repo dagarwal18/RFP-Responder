@@ -65,6 +65,18 @@ class StructuringResult(BaseModel):
 # ── A3 Go / No-Go ────────────────────────────────────────
 
 
+class RequirementMapping(BaseModel):
+    """Maps a single RFP requirement to a company policy."""
+    requirement_id: str = ""          # "RFP-REQ-001"
+    requirement_text: str = ""        # verbatim from RFP
+    source_section: str = ""          # RFP section
+    mapping_status: str = "NO_MATCH"  # "ALIGNS" | "VIOLATES" | "RISK" | "NO_MATCH"
+    matched_policy: str = ""          # policy text, "" if none
+    matched_policy_id: str = ""       # policy_id, "" if none
+    confidence: float = 0.0
+    reasoning: str = ""
+
+
 class GoNoGoResult(BaseModel):
     decision: GoNoGoDecision = GoNoGoDecision.GO
     strategic_fit_score: float = 0.0   # 1-10
@@ -73,6 +85,12 @@ class GoNoGoResult(BaseModel):
     policy_violations: list[str] = []
     red_flags: list[str] = []
     justification: str = ""
+    requirement_mappings: list[RequirementMapping] = []
+    total_requirements: int = 0
+    aligned_count: int = 0
+    violated_count: int = 0
+    risk_count: int = 0
+    no_match_count: int = 0
 
 
 # ── B1 Requirements Extraction ───────────────────────────

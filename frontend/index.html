@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,7 +30,11 @@
       --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       font-family: 'Inter', -apple-system, sans-serif;
@@ -43,49 +48,73 @@
     body::before {
       content: '';
       position: fixed;
-      top: -50%; left: -50%; width: 200%; height: 200%;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
       background: radial-gradient(ellipse at 30% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-                  radial-gradient(ellipse at 70% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
-      z-index: 0; pointer-events: none;
+        radial-gradient(ellipse at 70% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+      z-index: 0;
+      pointer-events: none;
     }
 
     /* ── Header ────────────────────────────────────── */
     .header {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       background: rgba(10, 14, 26, 0.85);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       padding: 0 32px;
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       height: 64px;
     }
+
     .header h1 {
-      font-size: 18px; font-weight: 600;
+      font-size: 18px;
+      font-weight: 600;
       background: linear-gradient(135deg, var(--accent-light), var(--success));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
+
     .header .status-dot {
-      width: 8px; height: 8px; border-radius: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
       background: var(--success);
       box-shadow: 0 0 8px var(--success);
-      display: inline-block; margin-right: 8px;
+      display: inline-block;
+      margin-right: 8px;
     }
+
     .header .api-status {
-      font-size: 13px; color: var(--text-secondary);
-      display: flex; align-items: center; gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     /* ── Main layout ───────────────────────────────── */
     .main {
-      position: relative; z-index: 1;
-      max-width: 1400px; margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
       padding: 24px 32px 64px;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
+
     @media (max-width: 900px) {
-      .main { grid-template-columns: 1fr; }
+      .main {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* ── Cards ──────────────────────────────────────── */
@@ -98,24 +127,40 @@
       transition: var(--transition);
       overflow: hidden;
     }
-    .card:hover { border-color: var(--border-accent); }
+
+    .card:hover {
+      border-color: var(--border-accent);
+    }
 
     .card-header {
       padding: 20px 24px 16px;
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
+
     .card-header h2 {
-      font-size: 16px; font-weight: 600;
-      display: flex; align-items: center; gap: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
+
     .card-header .badge {
-      font-size: 11px; font-weight: 500;
-      padding: 3px 10px; border-radius: 20px;
-      background: var(--accent-glow); color: var(--accent-light);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--accent-glow);
+      color: var(--accent-light);
       border: 1px solid rgba(99, 102, 241, 0.3);
     }
-    .card-body { padding: 20px 24px; }
+
+    .card-body {
+      padding: 20px 24px;
+    }
 
     /* ── Dropzone ───────────────────────────────────── */
     .dropzone {
@@ -127,129 +172,231 @@
       transition: var(--transition);
       position: relative;
     }
-    .dropzone:hover, .dropzone.drag-over {
+
+    .dropzone:hover,
+    .dropzone.drag-over {
       border-color: var(--accent);
       background: var(--accent-glow);
     }
-    .dropzone input { display: none; }
-    .dropzone .icon { font-size: 32px; margin-bottom: 8px; opacity: 0.6; }
-    .dropzone .label {
-      font-size: 14px; color: var(--text-secondary);
+
+    .dropzone input {
+      display: none;
     }
-    .dropzone .label strong { color: var(--accent-light); }
+
+    .dropzone .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.6;
+    }
+
+    .dropzone .label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .dropzone .label strong {
+      color: var(--accent-light);
+    }
 
     /* ── Select / Buttons ──────────────────────────── */
     .form-row {
-      display: flex; gap: 10px; margin-top: 14px; align-items: center;
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
     }
-    select, .btn {
-      font-family: inherit; font-size: 13px;
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      background: var(--bg-secondary); color: var(--text-primary);
-      padding: 8px 14px; outline: none;
+
+    select,
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      outline: none;
       transition: var(--transition);
     }
-    select:focus { border-color: var(--accent); }
-    .btn {
-      cursor: pointer; font-weight: 500;
-      display: inline-flex; align-items: center; gap: 6px;
+
+    select:focus {
+      border-color: var(--accent);
     }
+
+    .btn {
+      cursor: pointer;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .btn-primary {
       background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
-      border-color: transparent; color: #fff;
+      border-color: transparent;
+      color: #fff;
     }
+
     .btn-primary:hover {
       box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
       transform: translateY(-1px);
     }
+
     .btn-primary:disabled {
-      opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
-    .btn-outline { background: transparent; }
+
+    .btn-outline {
+      background: transparent;
+    }
+
     .btn-outline:hover {
       background: rgba(99, 102, 241, 0.1);
       border-color: var(--accent);
     }
-    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
 
     /* ── Stats grid ─────────────────────────────────── */
     .stats-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 12px; margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
     }
+
     .stat-box {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px; text-align: center;
+      padding: 14px;
+      text-align: center;
     }
+
     .stat-box .stat-value {
-      font-size: 22px; font-weight: 700;
+      font-size: 22px;
+      font-weight: 700;
       background: linear-gradient(135deg, var(--accent-light), var(--success));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
+
     .stat-box .stat-label {
-      font-size: 11px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
     }
 
     /* ── Query input ────────────────────────────────── */
     .query-row {
-      display: flex; gap: 10px; margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
     }
+
     .query-row input {
-      flex: 1; font-family: inherit; font-size: 13px;
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      background: var(--bg-secondary); color: var(--text-primary);
-      padding: 8px 14px; outline: none;
+      flex: 1;
+      font-family: inherit;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      outline: none;
     }
-    .query-row input:focus { border-color: var(--accent); }
+
+    .query-row input:focus {
+      border-color: var(--accent);
+    }
 
     /* ── Pipeline stepper ──────────────────────────── */
     .pipeline-stepper {
-      display: flex; flex-direction: column;
-      gap: 0; margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 16px;
     }
+
     .step {
-      display: flex; align-items: center; gap: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       padding: 10px 14px;
       border-left: 2px solid var(--border);
       position: relative;
       transition: var(--transition);
     }
+
     .step::before {
       content: '';
-      width: 10px; height: 10px; border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
       border: 2px solid var(--border);
       background: var(--bg-primary);
       flex-shrink: 0;
       transition: var(--transition);
       margin-left: -6px;
     }
-    .step.active { border-left-color: var(--accent); }
+
+    .step.active {
+      border-left-color: var(--accent);
+    }
+
     .step.active::before {
       border-color: var(--accent);
       background: var(--accent);
       box-shadow: 0 0 8px var(--accent);
     }
-    .step.complete { border-left-color: var(--success); }
+
+    .step.complete {
+      border-left-color: var(--success);
+    }
+
     .step.complete::before {
       border-color: var(--success);
       background: var(--success);
     }
-    .step.failed { border-left-color: var(--error); }
+
+    .step.failed {
+      border-left-color: var(--error);
+    }
+
     .step.failed::before {
       border-color: var(--error);
       background: var(--error);
     }
+
     .step-label {
-      font-size: 13px; font-weight: 500; color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
     }
-    .step.active .step-label { color: var(--text-primary); }
-    .step.complete .step-label { color: var(--success); }
-    .step.failed .step-label { color: var(--error); }
+
+    .step.active .step-label {
+      color: var(--text-primary);
+    }
+
+    .step.complete .step-label {
+      color: var(--success);
+    }
+
+    .step.failed .step-label {
+      color: var(--error);
+    }
+
     .step-detail {
-      font-size: 11px; color: var(--text-muted);
+      font-size: 11px;
+      color: var(--text-muted);
       margin-top: 2px;
     }
 
@@ -260,99 +407,195 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 14px 16px;
-      max-height: 200px; overflow-y: auto;
-      font-size: 12px; line-height: 1.7;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.7;
       font-family: 'Cascadia Code', 'Fira Code', monospace;
       color: var(--text-secondary);
     }
+
     .log-box:empty::after {
       content: 'No activity yet...';
-      color: var(--text-muted); font-style: italic;
+      color: var(--text-muted);
+      font-style: italic;
     }
-    .log-entry { display: flex; gap: 8px; }
-    .log-time { color: var(--text-muted); flex-shrink: 0; }
-    .log-msg { word-break: break-word; }
-    .log-msg.success { color: var(--success); }
-    .log-msg.error { color: var(--error); }
-    .log-msg.info { color: var(--info); }
+
+    .log-entry {
+      display: flex;
+      gap: 8px;
+    }
+
+    .log-time {
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .log-msg {
+      word-break: break-word;
+    }
+
+    .log-msg.success {
+      color: var(--success);
+    }
+
+    .log-msg.error {
+      color: var(--error);
+    }
+
+    .log-msg.info {
+      color: var(--info);
+    }
 
     /* ── Query results ─────────────────────────────── */
     .query-results {
       margin-top: 12px;
-      max-height: 200px; overflow-y: auto;
+      max-height: 200px;
+      overflow-y: auto;
     }
+
     .query-result-item {
       padding: 10px 14px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       margin-bottom: 8px;
       background: var(--bg-secondary);
-      font-size: 12px; line-height: 1.5;
+      font-size: 12px;
+      line-height: 1.5;
     }
+
     .query-result-item .score {
-      color: var(--accent-light); font-weight: 600;
+      color: var(--accent-light);
+      font-weight: 600;
     }
+
     .query-result-item .text {
-      color: var(--text-secondary); margin-top: 4px;
+      color: var(--text-secondary);
+      margin-top: 4px;
     }
 
     /* ── Spinner ────────────────────────────────────── */
     .spinner {
       display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.2);
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
       border-top-color: var(--accent-light);
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* fade in */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .card { animation: fadeUp 0.4s ease-out; }
-    .card:nth-child(2) { animation-delay: 0.1s; }
+
+    .card {
+      animation: fadeUp 0.4s ease-out;
+    }
+
+    .card:nth-child(2) {
+      animation-delay: 0.1s;
+    }
 
     /* ── Runs list ──────────────────────────────────── */
-    .runs-list { margin-top: 16px; }
+    .runs-list {
+      margin-top: 16px;
+    }
 
     /* ── Auto-classified badge ──────────────────────── */
     .classified-badge {
-      font-size: 11px; font-weight: 600;
-      padding: 4px 12px; border-radius: 20px;
-      text-transform: uppercase; letter-spacing: 0.5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .classified-badge.type-capability     { background: rgba(99,102,241,0.15); color: var(--accent-light); }
-    .classified-badge.type-past_proposal  { background: rgba(245,158,11,0.15); color: var(--warning); }
-    .classified-badge.type-certification  { background: rgba(16,185,129,0.15); color: var(--success); }
-    .classified-badge.type-pricing        { background: rgba(59,130,246,0.15); color: var(--info); }
-    .classified-badge.type-legal          { background: rgba(239,68,68,0.15); color: var(--error); }
+
+    .classified-badge.type-capability {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-light);
+    }
+
+    .classified-badge.type-past_proposal {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+
+    .classified-badge.type-certification {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+
+    .classified-badge.type-pricing {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--info);
+    }
+
+    .classified-badge.type-legal {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--error);
+    }
 
     /* ── Filename display ──────────────────────────── */
     .file-info {
-      font-size: 12px; color: var(--text-secondary);
-      margin-top: 8px; padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      padding: 6px 12px;
       background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      display: flex; align-items: center; gap: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .file-info .fname { font-weight: 500; color: var(--text-primary); }
-    .file-info .fsize { color: var(--text-muted); }
+
+    .file-info .fname {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .file-info .fsize {
+      color: var(--text-muted);
+    }
 
     /* ── Uploaded files list ────────────────────────── */
     .kb-files-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-top: 16px; margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      margin-bottom: 8px;
     }
+
     .kb-files-header h3 {
-      font-size: 13px; font-weight: 600; color: var(--text-secondary);
-      text-transform: uppercase; letter-spacing: 0.5px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+
     .kb-file-item {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 8px 12px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
@@ -360,31 +603,73 @@
       background: var(--bg-secondary);
       font-size: 12px;
     }
+
     .kb-file-item .kb-file-name {
-      font-weight: 500; color: var(--text-primary);
-      flex: 1; min-width: 0;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-weight: 500;
+      color: var(--text-primary);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
+
     .kb-file-item .kb-file-meta {
-      display: flex; align-items: center; gap: 8px;
-      flex-shrink: 0; margin-left: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-left: 8px;
     }
+
     .kb-file-item .kb-file-chunks {
-      font-size: 11px; color: var(--text-muted);
+      font-size: 11px;
+      color: var(--text-muted);
     }
+
     .type-badge {
-      font-size: 10px; font-weight: 600;
-      padding: 2px 8px; border-radius: 12px;
-      text-transform: uppercase; letter-spacing: 0.3px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
-    .type-badge.type-capability     { background: rgba(99,102,241,0.15); color: var(--accent-light); }
-    .type-badge.type-past_proposal  { background: rgba(245,158,11,0.15); color: var(--warning); }
-    .type-badge.type-certification  { background: rgba(16,185,129,0.15); color: var(--success); }
-    .type-badge.type-pricing        { background: rgba(59,130,246,0.15); color: var(--info); }
-    .type-badge.type-legal          { background: rgba(239,68,68,0.15); color: var(--error); }
-    .kb-files-list { max-height: 200px; overflow-y: auto; }
+
+    .type-badge.type-capability {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-light);
+    }
+
+    .type-badge.type-past_proposal {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+
+    .type-badge.type-certification {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+
+    .type-badge.type-pricing {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--info);
+    }
+
+    .type-badge.type-legal {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--error);
+    }
+
+    .kb-files-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
     .run-item {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 10px 14px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
@@ -393,19 +678,50 @@
       cursor: pointer;
       transition: var(--transition);
     }
-    .run-item:hover { border-color: var(--accent); }
-    .run-item .run-id { font-size: 13px; font-weight: 500; }
-    .run-item .run-file { font-size: 12px; color: var(--text-muted); }
-    .run-item .run-status {
-      font-size: 11px; font-weight: 500;
-      padding: 3px 10px; border-radius: 20px;
+
+    .run-item:hover {
+      border-color: var(--accent);
     }
-    .run-status.INTAKE_COMPLETE { background: rgba(16,185,129,0.15); color: var(--success); }
-    .run-status.FAILED { background: rgba(239,68,68,0.15); color: var(--error); }
-    .run-status.RUNNING { background: rgba(99,102,241,0.15); color: var(--accent-light); }
-    .run-status.STRUCTURING { background: rgba(245,158,11,0.15); color: var(--warning); }
+
+    .run-item .run-id {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .run-item .run-file {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .run-item .run-status {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .run-status.INTAKE_COMPLETE {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+
+    .run-status.FAILED {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--error);
+    }
+
+    .run-status.RUNNING {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-light);
+    }
+
+    .run-status.STRUCTURING {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
   </style>
 </head>
+
 <body>
 
   <!-- ── Header ────────────────────────────────── -->
@@ -467,7 +783,8 @@
         <!-- Uploaded Files -->
         <div class="kb-files-header">
           <h3>📁 Uploaded Documents</h3>
-          <button class="btn btn-outline btn-sm" id="kbRefreshFilesBtn" style="padding:3px 8px;font-size:11px">🔄</button>
+          <button class="btn btn-outline btn-sm" id="kbRefreshFilesBtn"
+            style="padding:3px 8px;font-size:11px">🔄</button>
         </div>
         <div class="kb-files-list" id="kbFilesList">
           <div style="padding:8px;color:var(--text-muted);font-size:12px">No uploads yet.</div>
@@ -533,6 +850,108 @@
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  COMPANY POLICIES PANEL                             -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <h2>📜 Company Policies</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="policyCategoryFilter"
+            style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:12px">
+            <option value="">All Categories</option>
+            <option value="certification">Certification</option>
+            <option value="legal">Legal</option>
+            <option value="compliance">Compliance</option>
+            <option value="operational">Operational</option>
+            <option value="commercial">Commercial</option>
+            <option value="governance">Governance</option>
+            <option value="capability">Capability</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="addPolicyBtn">+ Add Policy</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="policiesContainer" style="max-height:400px;overflow-y:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px" id="policiesTable">
+            <thead>
+              <tr style="text-align:left;border-bottom:1px solid var(--border)">
+                <th style="padding:8px 6px;width:40%">Policy</th>
+                <th style="padding:8px 6px">Category</th>
+                <th style="padding:8px 6px">Severity</th>
+                <th style="padding:8px 6px">Source</th>
+                <th style="padding:8px 6px;width:100px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="policiesTableBody">
+              <tr>
+                <td colspan="5" style="padding:16px;text-align:center;color:var(--text-muted)">Loading policies…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  ADD/EDIT POLICY MODAL                              -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="policyModal"
+      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+      <div
+        style="background:var(--card-bg);border-radius:12px;padding:24px;max-width:500px;width:90%;border:1px solid var(--border)">
+        <h3 id="policyModalTitle" style="margin:0 0 16px">Add Policy</h3>
+        <input type="hidden" id="policyEditId" />
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <textarea id="policyTextInput" rows="3" placeholder="Policy text…"
+            style="padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:13px;resize:vertical"></textarea>
+          <div style="display:flex;gap:8px">
+            <select id="policyCatInput"
+              style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:12px">
+              <option value="capability">Capability</option>
+              <option value="certification">Certification</option>
+              <option value="legal">Legal</option>
+              <option value="compliance">Compliance</option>
+              <option value="operational">Operational</option>
+              <option value="commercial">Commercial</option>
+              <option value="governance">Governance</option>
+            </select>
+            <select id="policySevInput"
+              style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:12px">
+              <option value="medium">Medium</option>
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <input id="policySectionInput" placeholder="Source section (optional)"
+            style="padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:13px" />
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+            <button class="btn btn-outline btn-sm" onclick="closePolicyModal()">Cancel</button>
+            <button class="btn btn-primary btn-sm" id="policySaveBtn" onclick="savePolicy()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  AGENT OUTPUT LOGS                                  -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <h2>🤖 Agent Output Logs</h2>
+        <span style="font-size:12px;color:var(--text-muted)" id="agentLogsHint">Select a completed pipeline run to view
+          agent outputs</span>
+      </div>
+      <div class="card-body">
+        <div id="agentLogsContainer">
+          <div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px">
+            No agent logs loaded. Click a pipeline run above to view its agent outputs.
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <script>
@@ -542,19 +961,19 @@
 
     // ── Pipeline stages ────────────────────────────
     const STAGES = [
-      { key: 'A1_INTAKE',                label: 'A1 — Intake',              status: 'INTAKE_COMPLETE' },
-      { key: 'A2_STRUCTURING',            label: 'A2 — Structuring',         status: 'STRUCTURING' },
-      { key: 'A3_GO_NO_GO',              label: 'A3 — Go / No-Go',         status: 'GO_NO_GO' },
-      { key: 'B1_REQUIREMENTS_EXTRACTION',label: 'B1 — Requirement Extract', status: 'EXTRACTING_REQUIREMENTS' },
-      { key: 'B2_REQUIREMENTS_VALIDATION',label: 'B2 — Requirement Valid.',  status: 'VALIDATING_REQUIREMENTS' },
-      { key: 'C1_ARCHITECTURE_PLANNING',  label: 'C1 — Architecture Plan',   status: 'ARCHITECTURE_PLANNING' },
-      { key: 'C2_REQUIREMENT_WRITING',    label: 'C2 — Response Writing',    status: 'WRITING_RESPONSES' },
-      { key: 'C3_NARRATIVE_ASSEMBLY',     label: 'C3 — Narrative Assembly',  status: 'ASSEMBLING_NARRATIVE' },
-      { key: 'D1_TECHNICAL_VALIDATION',   label: 'D1 — Technical Validation',status: 'TECHNICAL_VALIDATION' },
-      { key: 'E1_COMMERCIAL',             label: 'E1 — Commercial Review',   status: 'COMMERCIAL_LEGAL_REVIEW' },
-      { key: 'E2_LEGAL',                  label: 'E2 — Legal Review',        status: 'COMMERCIAL_LEGAL_REVIEW' },
-      { key: 'F1_FINAL_READINESS',        label: 'F1 — Final Readiness',     status: 'FINAL_READINESS' },
-      { key: 'F2_SUBMISSION',             label: 'F2 — Submission',          status: 'SUBMITTED' },
+      { key: 'A1_INTAKE', label: 'A1 — Intake', status: 'INTAKE_COMPLETE' },
+      { key: 'A2_STRUCTURING', label: 'A2 — Structuring', status: 'STRUCTURING' },
+      { key: 'A3_GO_NO_GO', label: 'A3 — Go / No-Go', status: 'GO_NO_GO' },
+      { key: 'B1_REQUIREMENTS_EXTRACTION', label: 'B1 — Requirement Extract', status: 'EXTRACTING_REQUIREMENTS' },
+      { key: 'B2_REQUIREMENTS_VALIDATION', label: 'B2 — Requirement Valid.', status: 'VALIDATING_REQUIREMENTS' },
+      { key: 'C1_ARCHITECTURE_PLANNING', label: 'C1 — Architecture Plan', status: 'ARCHITECTURE_PLANNING' },
+      { key: 'C2_REQUIREMENT_WRITING', label: 'C2 — Response Writing', status: 'WRITING_RESPONSES' },
+      { key: 'C3_NARRATIVE_ASSEMBLY', label: 'C3 — Narrative Assembly', status: 'ASSEMBLING_NARRATIVE' },
+      { key: 'D1_TECHNICAL_VALIDATION', label: 'D1 — Technical Validation', status: 'TECHNICAL_VALIDATION' },
+      { key: 'E1_COMMERCIAL', label: 'E1 — Commercial Review', status: 'COMMERCIAL_LEGAL_REVIEW' },
+      { key: 'E2_LEGAL', label: 'E2 — Legal Review', status: 'COMMERCIAL_LEGAL_REVIEW' },
+      { key: 'F1_FINAL_READINESS', label: 'F1 — Final Readiness', status: 'FINAL_READINESS' },
+      { key: 'F2_SUBMISSION', label: 'F2 — Submission', status: 'SUBMITTED' },
     ];
 
     // ── Stepper state ──────────────────────────────
@@ -848,9 +1267,9 @@
       box.innerHTML = STAGES.map(s => {
         const state = stepperState[s.key] || 'pending';
         let cls = '';
-        if (state === 'active')   cls = 'active';
+        if (state === 'active') cls = 'active';
         if (state === 'complete') cls = 'complete';
-        if (state === 'failed')   cls = 'failed';
+        if (state === 'failed') cls = 'failed';
         return `<div class="step ${cls}"><div><div class="step-label">${s.label}</div></div></div>`;
       }).join('');
     }
@@ -860,7 +1279,7 @@
     function connectPipelineWS(rfpId) {
       // Close any existing connection
       if (activeWS) {
-        try { activeWS.close(); } catch {}
+        try { activeWS.close(); } catch { }
       }
       activeRfpId = rfpId;
 
@@ -1021,7 +1440,7 @@
             <div class="run-status ${r.status}">${r.status}</div>
           </div>
         `).join('');
-      } catch {}
+      } catch { }
     }
 
     async function viewRun(rfpId) {
@@ -1031,6 +1450,9 @@
         addLog('rfpLog', `Viewing run ${rfpId}: ${status.status}`, 'info');
 
         updateStepperFromStatus(status);
+
+        // Load agent output logs
+        loadAgentLogs(rfpId);
 
         // If it's still running, connect the WebSocket
         if (status.status === 'RUNNING') {
@@ -1042,6 +1464,181 @@
     }
 
     document.getElementById('rfpRefreshBtn').addEventListener('click', loadRuns);
+
+    // ══════════════════════════════════════════════
+    //  COMPANY POLICIES
+    // ══════════════════════════════════════════════
+
+    async function loadPolicies() {
+      const category = document.getElementById('policyCategoryFilter').value;
+      const qs = category ? `?category=${category}` : '';
+      try {
+        const data = await apiFetch(`/api/knowledge/policies${qs}`);
+        const tbody = document.getElementById('policiesTableBody');
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--text-muted)">No policies extracted yet. Upload a company document to extract policies.</td></tr>';
+          return;
+        }
+        const sevColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#22c55e' };
+        tbody.innerHTML = data.map(p => `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:8px 6px;max-width:300px;overflow:hidden;text-overflow:ellipsis" title="${(p.policy_text || '').replace(/"/g, '&quot;')}">${p.policy_text || ''}</td>
+            <td style="padding:8px 6px"><span class="type-badge">${p.category || ''}</span></td>
+            <td style="padding:8px 6px"><span style="color:${sevColors[p.severity] || '#888'};font-weight:600;font-size:12px">${(p.severity || '').toUpperCase()}</span></td>
+            <td style="padding:8px 6px;font-size:12px;color:var(--text-muted)" title="${p.source_filename || ''}">${(p.source_filename || 'manual').substring(0, 20)}</td>
+            <td style="padding:8px 6px">
+              <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;margin-right:4px" onclick="editPolicy('${p.policy_id}')">✏️</button>
+              <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;color:#ef4444" onclick="deletePolicy('${p.policy_id}')">🗑</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        document.getElementById('policiesTableBody').innerHTML = `<tr><td colspan="5" style="padding:16px;text-align:center;color:#ef4444">Failed to load policies: ${e.message}</td></tr>`;
+      }
+    }
+
+    function openPolicyModal(title = 'Add Policy', policy = null) {
+      document.getElementById('policyModalTitle').textContent = title;
+      document.getElementById('policyEditId').value = policy ? policy.policy_id : '';
+      document.getElementById('policyTextInput').value = policy ? policy.policy_text : '';
+      document.getElementById('policyCatInput').value = policy ? policy.category : 'capability';
+      document.getElementById('policySevInput').value = policy ? policy.severity : 'medium';
+      document.getElementById('policySectionInput').value = policy ? (policy.source_section || '') : '';
+      const modal = document.getElementById('policyModal');
+      modal.style.display = 'flex';
+    }
+    window.closePolicyModal = function () {
+      document.getElementById('policyModal').style.display = 'none';
+    };
+
+    document.getElementById('addPolicyBtn').addEventListener('click', () => openPolicyModal());
+
+    window.savePolicy = async function () {
+      const editId = document.getElementById('policyEditId').value;
+      const body = {
+        policy_text: document.getElementById('policyTextInput').value.trim(),
+        category: document.getElementById('policyCatInput').value,
+        severity: document.getElementById('policySevInput').value,
+        source_section: document.getElementById('policySectionInput').value.trim(),
+      };
+      if (!body.policy_text) return alert('Policy text is required');
+      try {
+        if (editId) {
+          await apiFetch(`/api/knowledge/policies/${editId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        } else {
+          await apiFetch('/api/knowledge/policies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        }
+        closePolicyModal();
+        loadPolicies();
+      } catch (e) {
+        alert('Failed to save: ' + e.message);
+      }
+    };
+
+    window.editPolicy = async function (policyId) {
+      try {
+        const policies = await apiFetch('/api/knowledge/policies');
+        const pol = policies.find(p => p.policy_id === policyId);
+        if (pol) openPolicyModal('Edit Policy', pol);
+      } catch (e) {
+        alert('Failed to load policy: ' + e.message);
+      }
+    };
+
+    window.deletePolicy = async function (policyId) {
+      if (!confirm(`Delete policy ${policyId}?`)) return;
+      try {
+        await apiFetch(`/api/knowledge/policies/${policyId}`, { method: 'DELETE' });
+        loadPolicies();
+      } catch (e) {
+        alert('Failed to delete: ' + e.message);
+      }
+    };
+
+    document.getElementById('policyCategoryFilter').addEventListener('change', loadPolicies);
+
+    // ══════════════════════════════════════════════
+    //  AGENT OUTPUT LOGS
+    // ══════════════════════════════════════════════
+
+    async function loadAgentLogs(rfpId) {
+      const container = document.getElementById('agentLogsContainer');
+      container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted)">Loading agent outputs…</div>';
+      document.getElementById('agentLogsHint').textContent = `Run: ${rfpId}`;
+      try {
+        const status = await apiFetch(`/api/rfp/${rfpId}/status`);
+        const outputs = status.agent_outputs || {};
+        if (!Object.keys(outputs).length) {
+          container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted)">No agent outputs available for this run.</div>';
+          return;
+        }
+        let html = '';
+        // A1 Intake
+        if (outputs.A1_INTAKE) {
+          const a1 = outputs.A1_INTAKE;
+          html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">📥 A1 Intake</summary>
+            <div style="padding:8px 16px;font-size:13px">
+              <div><strong>RFP ID:</strong> ${a1.rfp_id || '—'}</div>
+              <div><strong>Title:</strong> ${a1.title || '—'}</div>
+              <div><strong>Pages:</strong> ${a1.page_count ?? '—'} | <strong>Words:</strong> ${a1.word_count ?? '—'}</div>
+            </div></details>`;
+        }
+        // A2 Structuring
+        if (outputs.A2_STRUCTURING) {
+          const a2 = outputs.A2_STRUCTURING;
+          const sections = a2.sections || [];
+          html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">📑 A2 Structuring (${sections.length} sections, confidence: ${(a2.overall_confidence || 0).toFixed(2)})</summary>
+            <div style="padding:8px 16px;font-size:13px">
+              ${sections.map(s => `<div style="padding:4px 0"><span class="type-badge">${s.category}</span> <strong>${s.title}</strong> — ${s.content_summary || ''}</div>`).join('')}
+            </div></details>`;
+        }
+        // A3 Go/No-Go
+        if (outputs.A3_GO_NO_GO) {
+          const a3 = outputs.A3_GO_NO_GO;
+          const mappings = a3.requirement_mappings || [];
+          const statusColors = { ALIGNS: '#22c55e', VIOLATES: '#ef4444', RISK: '#f97316', NO_MATCH: '#888' };
+          html += `<details open style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">📊 A3 Go/No-Go — <span style="color:${a3.decision === 'GO' ? '#22c55e' : '#ef4444'}">${a3.decision || '—'}</span></summary>
+            <div style="padding:8px 16px;font-size:13px">
+              <div style="display:flex;gap:16px;margin-bottom:12px">
+                <div><strong>Strategic Fit:</strong> ${a3.strategic_fit_score ?? '—'}/10</div>
+                <div><strong>Technical:</strong> ${a3.technical_feasibility_score ?? '—'}/10</div>
+                <div><strong>Risk:</strong> ${a3.regulatory_risk_score ?? '—'}/10</div>
+              </div>
+              <div style="margin-bottom:8px"><strong>Justification:</strong> ${a3.justification || '—'}</div>
+              ${a3.red_flags && a3.red_flags.length ? `<div style="margin-bottom:8px;color:#f97316"><strong>Red Flags:</strong> ${a3.red_flags.join(', ')}</div>` : ''}
+              <div style="margin-bottom:4px"><strong>Requirements:</strong> ${a3.total_requirements || 0} total | ✅ ${a3.aligned_count || 0} aligned | ❌ ${a3.violated_count || 0} violated | ⚠️ ${a3.risk_count || 0} risk | ❓ ${a3.no_match_count || 0} unmatched</div>
+              ${mappings.length ? `<table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px">
+                <thead><tr style="border-bottom:1px solid var(--border);text-align:left">
+                  <th style="padding:6px">Requirement</th><th style="padding:6px">Status</th><th style="padding:6px">Matched Policy</th><th style="padding:6px">Reasoning</th>
+                </tr></thead>
+                <tbody>${mappings.map(m => `<tr style="border-bottom:1px solid var(--border)">
+                  <td style="padding:6px;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${(m.requirement_text || '').replace(/"/g, '&quot;')}">${m.requirement_text || ''}</td>
+                  <td style="padding:6px"><span style="color:${statusColors[m.mapping_status] || '#888'};font-weight:600">${m.mapping_status}</span></td>
+                  <td style="padding:6px;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${m.matched_policy || '—'}</td>
+                  <td style="padding:6px;font-size:11px;color:var(--text-muted)">${m.reasoning || ''}</td>
+                </tr>`).join('')}</tbody>
+              </table>` : ''}
+            </div></details>`;
+        }
+        // Other agents — raw JSON
+        for (const [key, val] of Object.entries(outputs)) {
+          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO'].includes(key)) continue;
+          html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
+            <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
+        }
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = `<div style="padding:16px;text-align:center;color:#ef4444">Failed to load agent outputs: ${e.message}</div>`;
+      }
+    }
 
     // ── Init ───────────────────────────────────────
     let _healthInterval = null;
@@ -1060,7 +1657,9 @@
     loadKBStats();
     loadKBFiles();
     loadRuns();
+    loadPolicies();
     resumePolling();
   </script>
 </body>
+
 </html>

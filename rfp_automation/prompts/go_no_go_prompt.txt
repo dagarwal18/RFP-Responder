@@ -1,18 +1,66 @@
-You are a strategic bid analyst. Evaluate whether we should respond to this RFP.
+You are a strategic bid analyst performing a Go/No-Go assessment.
 
-RFP Scope:
-{scope_sections}
+You will receive:
+1. RFP sections (requirements extracted from the RFP document)
+2. Company policies (pre-extracted rules, certifications, constraints)
+3. Company capabilities (technical and business competencies)
 
-Our Capabilities:
+YOUR TASK (Two Phases):
+
+## PHASE 1: Extract Requirements
+Read each RFP section and extract individual requirements. Each requirement should be a specific, actionable demand from the RFP (e.g., "Must have ISO 27001 certification", "24/7 support required", "Data must reside within US borders").
+
+## PHASE 2: Map Requirements to Policies
+For each extracted requirement, compare it against the provided company policies and capabilities. Classify each mapping as:
+- ALIGNS: Company policy/capability directly satisfies this requirement
+- VIOLATES: Company policy explicitly contradicts or prohibits this requirement
+- RISK: Partial match or uncertain — the company may or may not meet this
+- NO_MATCH: No relevant company policy or capability found for this requirement
+
+## SCORING
+After mapping all requirements, score these dimensions (1-10):
+- strategic_fit_score: How well this RFP aligns with the company's business direction
+- technical_feasibility_score: Can the company technically deliver what's asked?
+- regulatory_risk_score: Level of compliance/regulatory risk (10 = very risky)
+
+## DECISION RULES
+- If ANY requirement has mapping_status = "VIOLATES" with a critical company policy → NO_GO
+- If regulatory_risk_score > 7 → NO_GO
+- If strategic_fit_score < 3 AND technical_feasibility_score < 3 → NO_GO
+- Otherwise → GO
+
+---
+
+RFP SECTIONS:
+{rfp_sections}
+
+COMPANY POLICIES:
+{company_policies}
+
+COMPANY CAPABILITIES:
 {capabilities}
 
-Our Certifications:
-{certifications}
+---
 
-Score each dimension from 1-10:
-1. Strategic Fit — How well does this align with our business?
-2. Technical Feasibility — Can we deliver what's asked?
-3. Regulatory Risk — Are there compliance concerns?
-
-List any red flags. Provide a GO or NO_GO recommendation with justification.
-Return valid JSON.
+Return ONLY valid JSON (no markdown fencing). Use this exact structure:
+{
+  "strategic_fit_score": 7.5,
+  "technical_feasibility_score": 8.0,
+  "regulatory_risk_score": 3.0,
+  "decision": "GO",
+  "justification": "Brief overall justification",
+  "red_flags": ["Any red flags identified"],
+  "policy_violations": ["List of violated policy texts"],
+  "requirement_mappings": [
+    {
+      "requirement_id": "RFP-REQ-001",
+      "requirement_text": "The exact requirement from the RFP",
+      "source_section": "Section title where this was found",
+      "mapping_status": "ALIGNS",
+      "matched_policy": "The matching policy text or empty string",
+      "matched_policy_id": "POL-XXX or empty string",
+      "confidence": 0.95,
+      "reasoning": "Why this mapping was chosen"
+    }
+  ]
+}

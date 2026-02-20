@@ -51,6 +51,7 @@ class StatusResponse(BaseModel):
     filename: str = ""
     pipeline_log: list[dict[str, str]] = []
     result: dict[str, Any] | None = None
+    agent_outputs: dict[str, Any] = {}
 
 
 class ApprovalRequest(BaseModel):
@@ -189,6 +190,23 @@ async def get_rfp_status(rfp_id: str):
     if not run:
         raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
 
+    # Build agent_outputs from the stored pipeline result
+    agent_outputs: dict[str, Any] = {}
+    result_data = run.get("result")
+    if isinstance(result_data, dict):
+        # A1 Intake
+        meta = result_data.get("rfp_metadata")
+        if isinstance(meta, dict) and meta.get("rfp_id"):
+            agent_outputs["A1_INTAKE"] = meta
+        # A2 Structuring
+        struct = result_data.get("structuring_result")
+        if isinstance(struct, dict) and struct.get("sections"):
+            agent_outputs["A2_STRUCTURING"] = struct
+        # A3 Go/No-Go
+        gng = result_data.get("go_no_go_result")
+        if isinstance(gng, dict) and gng.get("decision"):
+            agent_outputs["A3_GO_NO_GO"] = gng
+
     return StatusResponse(
         rfp_id=run["rfp_id"],
         status=run["status"],
@@ -197,6 +215,7 @@ async def get_rfp_status(rfp_id: str):
         filename=run.get("filename", ""),
         pipeline_log=run.get("pipeline_log", []),
         result=run.get("result"),
+        agent_outputs=agent_outputs,
     )
 
 

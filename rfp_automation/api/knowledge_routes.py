@@ -24,6 +24,7 @@ from pydantic import BaseModel
 
 from rfp_automation.config import get_settings
 from rfp_automation.services.parsing_service import ParsingService
+from rfp_automation.services.policy_extraction_service import PolicyExtractionService
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class KBUploadResponse(BaseModel):
     auto_classified: bool
     filename: str
     chunks_stored: int
+    policies_extracted: int = 0
     message: str
 
 
@@ -178,9 +180,15 @@ def _sync_upload_process(
         metadatas=metadatas,
     )
 
-    # For structured types, also store config in MongoDB
-    if doc_type in ("certification", "pricing", "legal"):
-        _store_structured_config(mcp, doc_type, texts, filename)
+    # Extract policies/rules from the document via LLM
+    extractor = PolicyExtractionService()
+    new_policies = extractor.extract_and_persist(
+        doc_id=doc_id,
+        doc_type=doc_type,
+        texts=texts,
+        filename=filename,
+    )
+    policies_count = len(new_policies)
 
     return KBUploadResponse(
         doc_id=doc_id,
@@ -188,7 +196,8 @@ def _sync_upload_process(
         auto_classified=auto_classified,
         filename=filename,
         chunks_stored=chunks_stored,
-        message=f"Stored {chunks_stored} chunks as '{doc_type}' from {filename}",
+        policies_extracted=policies_count,
+        message=f"Stored {chunks_stored} chunks as '{doc_type}' from {filename}. Extracted {policies_count} policies.",
     )
 
 
@@ -252,33 +261,57 @@ async def upload_knowledge_doc(
             logger.warning(f"[KB] Failed to clean up {local_path}: {e}")
 
 
-def _store_structured_config(
-    mcp: Any, doc_type: str, texts: list[str], filename: str
-) -> None:
-    """Store structured config in MongoDB for cert/pricing/legal docs."""
-    combined_text = "\n".join(texts[:20])
+# ── Policy CRUD Endpoints ────────────────────────────────
 
-    if doc_type == "certification":
-        mcp.store_knowledge_config("certifications", {
-            "certifications": {},
-            "source_file": filename,
-            "raw_text_sample": combined_text[:2000],
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        })
-    elif doc_type == "pricing":
-        mcp.store_knowledge_config("pricing_rules", {
-            "rules": {},
-            "source_file": filename,
-            "raw_text_sample": combined_text[:2000],
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        })
-    elif doc_type == "legal":
-        mcp.store_knowledge_config("legal_templates", {
-            "templates": [],
-            "source_file": filename,
-            "raw_text_sample": combined_text[:2000],
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        })
+
+class PolicyInput(BaseModel):
+    policy_text: str
+    category: str = "capability"
+    rule_type: str = "requirement"
+    severity: str = "medium"
+    source_section: str = ""
+
+
+class PolicyUpdateInput(BaseModel):
+    policy_text: str | None = None
+    category: str | None = None
+    rule_type: str | None = None
+    severity: str | None = None
+    source_section: str | None = None
+
+
+@knowledge_router.get("/policies")
+async def list_policies(category: str = ""):
+    """List all extracted policies, optionally filtered by category."""
+    policies = PolicyExtractionService.get_all_policies()
+    if category:
+        policies = [p for p in policies if p.get("category") == category]
+    return policies
+
+
+@knowledge_router.post("/policies")
+async def add_policy(body: PolicyInput):
+    """Manually add a new policy."""
+    policy = PolicyExtractionService.add_policy(body.model_dump())
+    return {"message": "Policy added", "policy": policy}
+
+
+@knowledge_router.put("/policies/{policy_id}")
+async def update_policy(policy_id: str, body: PolicyUpdateInput):
+    """Update an existing policy."""
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    result = PolicyExtractionService.update_policy(policy_id, updates)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Policy {policy_id} not found")
+    return {"message": "Policy updated", "policy": result}
+
+
+@knowledge_router.delete("/policies/{policy_id}")
+async def delete_policy(policy_id: str):
+    """Delete a policy."""
+    if not PolicyExtractionService.delete_policy(policy_id):
+        raise HTTPException(status_code=404, detail=f"Policy {policy_id} not found")
+    return {"message": f"Policy {policy_id} deleted"}
 
 
 # ── Knowledge base status ───────────────────────────────
