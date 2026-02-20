@@ -314,6 +314,15 @@ async def delete_policy(policy_id: str):
     return {"message": f"Policy {policy_id} deleted"}
 
 
+@knowledge_router.delete("/policies")
+async def delete_all_policies():
+    """Delete all extracted policies."""
+    count = len(PolicyExtractionService.get_all_policies())
+    PolicyExtractionService._save_policies_static([])
+    logger.info(f"[KB] Deleted all {count} policies")
+    return {"message": f"Deleted all {count} policies", "deleted_count": count}
+
+
 # ── Knowledge base status ───────────────────────────────
 
 @knowledge_router.get("/status", response_model=KBStatusResponse)

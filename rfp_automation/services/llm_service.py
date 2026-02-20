@@ -74,9 +74,10 @@ def llm_json_call(prompt: str, output_model: Type[T]) -> T:
     return result
 
 
-def llm_text_call(prompt: str) -> str:
+def llm_text_call(prompt: str, max_retries: int = 0) -> str:
     """
     Call the LLM and return the raw text response.
+    Retries up to *max_retries* times on empty responses.
     """
     import time
 
@@ -86,14 +87,34 @@ def llm_text_call(prompt: str) -> str:
     logger.debug(f"[LLM-TEXT] Prompt preview:\n{prompt[:500]}{'…' if len(prompt) > 500 else ''}")
 
     llm = get_llm()
-    t0 = time.perf_counter()
-    response = llm.invoke(prompt)
-    elapsed = time.perf_counter() - t0
-    content = response.content
+    attempts = max_retries + 1
 
-    logger.info(
-        f"[LLM-TEXT] Response received in {elapsed:.2f}s | "
-        f"Response length: {len(content)} chars"
-    )
-    logger.debug(f"[LLM-TEXT] Full response:\n{content}")
-    return content
+    for attempt in range(1, attempts + 1):
+        t0 = time.perf_counter()
+        response = llm.invoke(prompt)
+        elapsed = time.perf_counter() - t0
+        content = response.content or ""
+
+        # Log response metadata (finish_reason, token usage)
+        meta = getattr(response, "response_metadata", {}) or {}
+        finish_reason = meta.get("finish_reason", "unknown")
+        usage = meta.get("token_usage") or meta.get("usage", {})
+        logger.info(
+            f"[LLM-TEXT] Response received in {elapsed:.2f}s | "
+            f"Response length: {len(content)} chars | "
+            f"finish_reason={finish_reason} | "
+            f"tokens={usage}"
+        )
+        logger.debug(f"[LLM-TEXT] Full response:\n{content}")
+
+        if content.strip():
+            return content
+
+        # Empty response — warn and retry if allowed
+        logger.warning(
+            f"[LLM-TEXT] Empty response on attempt {attempt}/{attempts} "
+            f"(finish_reason={finish_reason}). "
+            f"{'Retrying…' if attempt < attempts else 'No retries left.'}"
+        )
+
+    return content  # return whatever we got (empty string)

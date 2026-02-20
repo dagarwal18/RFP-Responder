@@ -47,9 +47,16 @@ class PolicyExtractionService:
         combined_text = "\n".join(texts[:50])  # first 50 blocks
         prompt = self._build_prompt(combined_text, doc_type, filename, start_id)
 
-        # Call LLM
+        # Call LLM with retries on empty responses
         logger.info(f"[PolicyExtraction] Extracting policies from {filename} ({len(texts)} blocks)…")
-        raw_response = llm_text_call(prompt)
+        raw_response = llm_text_call(prompt, max_retries=2)
+
+        if not raw_response.strip():
+            logger.error(
+                f"[PolicyExtraction] LLM returned empty response after all retries "
+                f"for {filename} — no policies extracted"
+            )
+            return []
 
         # Parse
         new_policies = self._parse_response(raw_response)

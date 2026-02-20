@@ -869,6 +869,7 @@
             <option value="capability">Capability</option>
           </select>
           <button class="btn btn-primary btn-sm" id="addPolicyBtn">+ Add Policy</button>
+          <button class="btn btn-outline btn-sm" id="deleteAllPoliciesBtn" style="color:#ef4444;border-color:#ef4444">🗑 Delete All</button>
         </div>
       </div>
       <div class="card-body">
@@ -1564,6 +1565,17 @@
     };
 
     document.getElementById('policyCategoryFilter').addEventListener('change', loadPolicies);
+
+    document.getElementById('deleteAllPoliciesBtn').addEventListener('click', async () => {
+      if (!confirm('Delete ALL policies? This cannot be undone.')) return;
+      try {
+        const res = await apiFetch('/api/knowledge/policies', { method: 'DELETE' });
+        alert(res.message || 'All policies deleted');
+        loadPolicies();
+      } catch (e) {
+        alert('Failed to delete policies: ' + e.message);
+      }
+    });
 
     // ══════════════════════════════════════════════
     //  AGENT OUTPUT LOGS
