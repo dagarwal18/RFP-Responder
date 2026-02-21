@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # ── LLM (Groq Cloud) ────────────────────────────────
     groq_api_key: str = ""
-    llm_model: str = "llama-3.3-70b-versatile"
+    llm_model: str = "openai/gpt-oss-120b"
     llm_temperature: float = 0.2
     llm_max_tokens: int = 4096
 
@@ -46,6 +46,13 @@ class Settings(BaseSettings):
 
     # ── Knowledge Data ───────────────────────────────────
     knowledge_data_path: str = ""  # override path to seed JSON files
+
+    # ── B1 Extraction Overrides ──────────────────────────
+    extraction_llm_temperature: float = 0.0
+    extraction_llm_top_p: float = 1.0
+    extraction_dedup_similarity_threshold: float = 0.95
+    extraction_coverage_warn_ratio: float = 0.6
+    extraction_max_chunk_size: int = 2000
 
     # ── Pipeline Limits ──────────────────────────────────
     max_validation_retries: int = 3

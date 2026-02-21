@@ -116,6 +116,26 @@ class MCPService:
         logger.debug(f"[MCPService] query_rfp_all_chunks returned {len(results)} chunks")
         return results
 
+    # ── Convenience: RFP deterministic fetch ───────────────
+
+    def fetch_all_rfp_chunks(
+        self,
+        rfp_id: str,
+    ) -> list[dict[str, Any]]:
+        """
+        Deterministically fetch ALL chunks for an RFP using list+fetch.
+
+        Unlike query_rfp / query_rfp_all_chunks, this does NOT use embedding
+        similarity. It retrieves every vector in the namespace, sorted by
+        chunk_index (document order).
+        """
+        logger.debug(f"[MCPService] fetch_all_rfp_chunks: rfp_id={rfp_id}")
+        results = self.rfp_store.fetch_all_vectors(rfp_id)
+        logger.debug(
+            f"[MCPService] fetch_all_rfp_chunks returned {len(results)} chunks"
+        )
+        return results
+
     # ── Convenience: Knowledge query ─────────────────────
 
     def query_knowledge(

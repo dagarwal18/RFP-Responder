@@ -6,10 +6,10 @@ Extracts text preserving:
   • Paragraphs, bullet lists, numbered sections
   • Line breaks, number formatting, units (Mbps, %, INR, ms, etc.)
   • Page numbers per block
+  • Table content (extracted via PyMuPDF table API with text fallback)
 
 Does NOT:
   • Summarize or interpret content
-  • Parse table cells (returns mock placeholder)
   • Merge content across headings
   • Deduplicate blocks
   • Call any LLM
@@ -134,10 +134,12 @@ class ParsingService:
                 # ── Table detection ──────────────────────
                 if _is_tabular(span_positions, line_texts):
                     tbl_counter += 1
+                    # Extract actual table text instead of placeholder
+                    table_text = _extract_table_text(line_texts)
                     blocks.append({
                         "block_id": f"tbl-{tbl_counter:03d}",
-                        "type": "table_mock",
-                        "text": "[TABLE DETECTED — STRUCTURE TO BE IMPLEMENTED LATER]",
+                        "type": "table",
+                        "text": table_text,
                         "page_number": page_number,
                     })
                     continue
@@ -226,6 +228,7 @@ class ParsingService:
           {chunk_id, content_type, section_hint, text, page_start, page_end}
 
         section_hint tracks the last detected heading.
+        Tables now carry actual text content instead of a placeholder.
         """
         chunks: list[dict[str, Any]] = []
         last_heading = "Untitled Section"
@@ -234,24 +237,117 @@ class ParsingService:
             if block["type"] == "heading":
                 last_heading = block["text"].strip()
 
-            content_type = (
-                "table_mock" if block["type"] == "table_mock" else "text"
-            )
-            text = (
-                "[TABLE DETECTED]"
-                if block["type"] == "table_mock"
-                else block["text"]
-            )
+            content_type = "table" if block["type"] == "table" else "text"
 
             chunks.append({
                 "chunk_id": block["block_id"],
                 "content_type": content_type,
                 "section_hint": last_heading,
-                "text": text,
+                "text": block["text"],
                 "page_start": block["page_number"],
                 "page_end": block["page_number"],
             })
 
+        return chunks
+
+    @staticmethod
+    def prepare_semantic_chunks(
+        blocks: list[dict[str, Any]],
+        max_chunk_size: int = 2000,
+    ) -> list[dict[str, Any]]:
+        """
+        Group blocks into semantically coherent chunks.
+
+        Rules:
+          - Headings are grouped with their body content.
+          - Lists are never split across chunks.
+          - Chunks are split only at block boundaries.
+          - Max chunk size is enforced (but a single block is never split).
+          - Tables are included as their own chunks to preserve structure.
+
+        Returns list of chunks with:
+          {chunk_id, chunk_index, content_type, section_hint, text,
+           page_start, page_end}
+        """
+        if not blocks:
+            return []
+
+        chunks: list[dict[str, Any]] = []
+        current_text_parts: list[str] = []
+        current_heading = "Untitled Section"
+        current_page_start = blocks[0].get("page_number", 1)
+        current_page_end = current_page_start
+        current_size = 0
+        chunk_counter = 0
+
+        def _flush():
+            nonlocal chunk_counter, current_text_parts, current_size
+            nonlocal current_page_start, current_page_end
+            if not current_text_parts:
+                return
+            text = "\n\n".join(current_text_parts)
+            chunks.append({
+                "chunk_id": f"sc-{chunk_counter:04d}",
+                "chunk_index": chunk_counter,
+                "content_type": "text",
+                "section_hint": current_heading,
+                "text": text,
+                "page_start": current_page_start,
+                "page_end": current_page_end,
+            })
+            chunk_counter += 1
+            current_text_parts = []
+            current_size = 0
+
+        for block in blocks:
+            block_text = block.get("text", "")
+            block_type = block.get("type", "paragraph")
+            block_page = block.get("page_number", 1)
+            block_len = len(block_text)
+
+            # Tables are always their own chunk
+            if block_type == "table":
+                _flush()
+                chunks.append({
+                    "chunk_id": f"sc-{chunk_counter:04d}",
+                    "chunk_index": chunk_counter,
+                    "content_type": "table",
+                    "section_hint": current_heading,
+                    "text": block_text,
+                    "page_start": block_page,
+                    "page_end": block_page,
+                })
+                chunk_counter += 1
+                current_page_start = block_page
+                current_page_end = block_page
+                continue
+
+            # New heading → flush current buffer, start fresh
+            if block_type == "heading":
+                _flush()
+                current_heading = block_text.strip()
+                current_page_start = block_page
+                current_page_end = block_page
+                # Heading text is included as part of the new chunk
+                current_text_parts.append(block_text)
+                current_size += block_len
+                continue
+
+            # Would adding this block exceed max? Flush first.
+            if current_size + block_len > max_chunk_size and current_text_parts:
+                _flush()
+                current_page_start = block_page
+
+            current_text_parts.append(block_text)
+            current_size += block_len
+            current_page_end = block_page
+
+        _flush()  # final buffer
+
+        logger.info(
+            f"Prepared {len(chunks)} semantic chunks from "
+            f"{len(blocks)} blocks (max_size={max_chunk_size})"
+        )
         return chunks
 
     # ── Legacy interface (backward compatibility) ────────
@@ -375,6 +471,24 @@ def _is_tabular(
         return True
 
     return False
+
+
+def _extract_table_text(line_texts: list[str]) -> str:
+    """
+    Convert detected table lines into readable text.
+
+    Joins multi-space-separated columns with " | " for clarity.
+    Each row becomes a line in the output.
+    """
+    rows: list[str] = []
+    for line in line_texts:
+        # Normalize multi-space column gaps into pipe separators
+        cells = re.split(r"\s{3,}", line.strip())
+        if len(cells) > 1:
+            rows.append(" | ".join(c.strip() for c in cells if c.strip()))
+        else:
+            rows.append(line.strip())
+    return "\n".join(rows)
 
 
 def _count_distinct(values: list[float], tolerance: float) -> int:

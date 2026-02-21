@@ -118,3 +118,60 @@ def llm_text_call(prompt: str, max_retries: int = 0) -> str:
         )
 
     return content  # return whatever we got (empty string)
+
+
+def llm_deterministic_call(prompt: str, max_retries: int = 1) -> str:
+    """
+    Call the LLM with deterministic settings (temperature=0, top_p=1).
+
+    Used exclusively by B1 Requirements Extraction to ensure reproducible
+    output.  Creates a dedicated LLM instance separate from the shared
+    singleton so other agents keep their own temperature settings.
+    """
+    import time
+    from langchain_groq import ChatGroq
+
+    settings = get_settings()
+    if not settings.groq_api_key:
+        raise ValueError("GROQ_API_KEY is not set in environment / .env file")
+
+    llm = ChatGroq(
+        api_key=settings.groq_api_key,
+        model=settings.llm_model,
+        temperature=settings.extraction_llm_temperature,  # 0.0
+        max_tokens=settings.llm_max_tokens,
+        model_kwargs={"top_p": settings.extraction_llm_top_p},  # 1.0
+    )
+
+    logger.debug(
+        f"[LLM-DET] Prompt length: {len(prompt)} chars | "
+        f"temp={settings.extraction_llm_temperature} top_p={settings.extraction_llm_top_p}"
+    )
+
+    attempts = max_retries + 1
+    content = ""
+
+    for attempt in range(1, attempts + 1):
+        t0 = time.perf_counter()
+        response = llm.invoke(prompt)
+        elapsed = time.perf_counter() - t0
+        content = response.content or ""
+
+        meta = getattr(response, "response_metadata", {}) or {}
+        finish_reason = meta.get("finish_reason", "unknown")
+        usage = meta.get("token_usage") or meta.get("usage", {})
+        logger.info(
+            f"[LLM-DET] Response in {elapsed:.2f}s | "
+            f"len={len(content)} chars | "
+            f"finish_reason={finish_reason} | tokens={usage}"
+        )
+
+        if content.strip():
+            return content
+
+        logger.warning(
+            f"[LLM-DET] Empty response attempt {attempt}/{attempts} "
+            f"(finish_reason={finish_reason})"
+        )
+
+    return content

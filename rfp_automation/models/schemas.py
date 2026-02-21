@@ -107,6 +107,7 @@ class Requirement(BaseModel):
     impact: ImpactLevel = ImpactLevel.MEDIUM
     source_section: str = ""
     keywords: list[str] = []
+    source_chunk_indices: list[int] = []  # chunk_index values for traceability
 
 
 # ── B2 Requirements Validation ───────────────────────────

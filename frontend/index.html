@@ -1132,6 +1132,24 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════ -->
+    <!--  AGENT OUTPUT LOGS                                  -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="card" style="margin-top:20px" id="agentLogsCard">
+      <div class="card-header">
+        <h2>📊 Agent Output Logs</h2>
+        <span style="font-size:12px;color:var(--text-muted)" id="agentLogsHint">Select a completed run to view</span>
+      </div>
+      <div class="card-body">
+        <div id="agentLogsContainer">
+          <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">
+            No agent outputs available. Upload an RFP and run the pipeline, then click a completed run to view detailed
+            agent outputs.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
     <!--  EXTRACTED REQUIREMENTS (B1 + B2)                   -->
     <!-- ═══════════════════════════════════════════════════ -->
     <div class="card" style="margin-top:20px" id="requirementsCard">
@@ -1587,10 +1605,11 @@
             rfpUploadBtn.innerHTML = 'Run Pipeline';
             rfpUploadBtn.disabled = false;
 
-            // Refresh runs list, load mappings, and load requirements
+            // Refresh runs list, load mappings, requirements, and agent logs
             loadRuns();
             if (activeRfpId) loadMappings(activeRfpId);
             if (activeRfpId) loadRequirements(activeRfpId);
+            if (activeRfpId) loadAgentLogs(activeRfpId);
             break;
         }
       };

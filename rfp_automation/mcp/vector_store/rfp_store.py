@@ -221,6 +221,79 @@ class RFPVectorStore:
         chunks.sort(key=lambda c: c.get("chunk_index", -1))
         return chunks
 
+    def fetch_all_vectors(
+        self,
+        rfp_id: str,
+    ) -> list[dict[str, Any]]:
+        """
+        Deterministically fetch ALL vectors for an RFP namespace.
+
+        Uses Pinecone's list + fetch APIs (no query / no embedding).
+        Returns chunks sorted by chunk_index in document order.
+        This guarantees:
+          - Every vector is retrieved (no top_k cutoff).
+          - Order is deterministic (sorted by chunk_index).
+          - No embedding similarity involved.
+        """
+        index = self._get_index()
+
+        # Collect all vector IDs in the namespace
+        all_ids: list[str] = []
+        try:
+            paginator = index.list(namespace=rfp_id)
+            for id_batch in paginator:
+                if isinstance(id_batch, list):
+                    all_ids.extend(id_batch)
+                elif hasattr(id_batch, "vectors"):
+                    all_ids.extend(v.id for v in id_batch.vectors)
+                else:
+                    # Some SDK versions return strings directly
+                    all_ids.append(str(id_batch))
+        except Exception as exc:
+            logger.warning(
+                f"[{rfp_id}] Pinecone list() failed, "
+                f"falling back to query_all: {exc}"
+            )
+            return self.query_all(rfp_id, top_k=10000)
+
+        if not all_ids:
+            logger.info(f"[{rfp_id}] No vectors found in namespace")
+            return []
+
+        # Fetch in batches of 100 (Pinecone limit)
+        chunks: list[dict[str, Any]] = []
+        batch_size = 100
+        for batch_start in range(0, len(all_ids), batch_size):
+            batch_ids = all_ids[batch_start : batch_start + batch_size]
+            fetch_result = index.fetch(ids=batch_ids, namespace=rfp_id)
+
+            vectors = getattr(fetch_result, "vectors", {})
+            if isinstance(vectors, dict):
+                for vec_id, vec_data in vectors.items():
+                    meta = {}
+                    if hasattr(vec_data, "metadata"):
+                        meta = vec_data.metadata or {}
+                    elif isinstance(vec_data, dict):
+                        meta = vec_data.get("metadata", {})
+
+                    chunks.append({
+                        "id": vec_id,
+                        "text": meta.get("text", ""),
+                        "chunk_index": meta.get("chunk_index", -1),
+                        "section_hint": meta.get("section_hint", ""),
+                        "content_type": meta.get("content_type", "text"),
+                        "page_start": meta.get("page_start", 0),
+                        "page_end": meta.get("page_end", 0),
+                        "metadata": meta,
+                    })
+
+        # Sort by chunk_index for document order
+        chunks.sort(key=lambda c: c.get("chunk_index", -1))
+        logger.info(
+            f"[{rfp_id}] Fetched {len(chunks)} vectors deterministically"
+        )
+        return chunks
+
     def delete_document(self, rfp_id: str) -> bool:
         """Delete all vectors for an RFP by deleting its namespace."""
         index = self._get_index()

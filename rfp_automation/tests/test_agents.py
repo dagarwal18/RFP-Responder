@@ -397,7 +397,28 @@ class TestGoNoGoAgent:
 
 
 class TestRequirementsExtractionAgent:
-    """Tests for B1 Requirements Extraction Agent."""
+    """Tests for B1 Requirements Extraction Agent (overhauled)."""
+
+    @staticmethod
+    def _mock_chunks():
+        """Deterministic chunk data simulating MCP fetch_all_rfp_chunks."""
+        return [
+            {
+                "id": "chunk_0", "chunk_index": 0,
+                "section_hint": "Technical Requirements",
+                "text": "The system must support SSO via SAML 2.0. "
+                        "Data encryption at rest is required.",
+                "content_type": "text", "page_start": 1, "page_end": 1,
+                "metadata": {},
+            },
+            {
+                "id": "chunk_1", "chunk_index": 1,
+                "section_hint": "Performance Requirements",
+                "text": "The system should handle 10,000 concurrent users.",
+                "content_type": "text", "page_start": 2, "page_end": 2,
+                "metadata": {},
+            },
+        ]
 
     @staticmethod
     def _extraction_state():
@@ -428,71 +449,71 @@ class TestRequirementsExtractionAgent:
         ).model_dump()
 
     def test_extraction_success(self, monkeypatch):
-        """Valid LLM response → requirements populated, correct status."""
+        """Valid LLM response -> requirements populated, correct status."""
         from rfp_automation.agents import RequirementsExtractionAgent
 
         llm_responses = [
             json.dumps([
-                {"requirement_id": "REQ-001", "text": "The system must support SSO via SAML 2.0",
+                {"requirement_id": "REQ-0001", "text": "The system must support SSO via SAML 2.0",
                  "type": "MANDATORY", "classification": "FUNCTIONAL",
                  "category": "TECHNICAL", "impact": "HIGH", "keywords": ["SSO", "SAML"]},
-                {"requirement_id": "REQ-002", "text": "Data encryption at rest is required",
+                {"requirement_id": "REQ-0002", "text": "Data encryption at rest is required",
                  "type": "MANDATORY", "classification": "NON_FUNCTIONAL",
                  "category": "SECURITY", "impact": "CRITICAL", "keywords": ["encryption"]},
             ]),
             json.dumps([
-                {"requirement_id": "REQ-003", "text": "Handle 10,000 concurrent users",
+                {"requirement_id": "REQ-0003", "text": "The system should handle 10,000 concurrent users",
                  "type": "OPTIONAL", "classification": "NON_FUNCTIONAL",
                  "category": "TECHNICAL", "impact": "HIGH", "keywords": ["scalability"]},
             ]),
         ]
         call_count = {"n": 0}
 
-        def mock_llm(prompt):
+        def mock_llm(prompt, max_retries=1):
             idx = call_count["n"]
             call_count["n"] += 1
-            return llm_responses[idx]
+            return llm_responses[idx] if idx < len(llm_responses) else "[]"
 
+        mock_chunks = TestRequirementsExtractionAgent._mock_chunks()
         mock_mcp = type("MockMCP", (), {
-            "query_rfp": lambda self, q, rfp_id, top_k=10: [],
+            "fetch_all_rfp_chunks": lambda self, rfp_id: mock_chunks,
         })()
         monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.MCPService", lambda: mock_mcp)
-        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_text_call", mock_llm)
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_deterministic_call", mock_llm)
 
         agent = RequirementsExtractionAgent()
         result = agent.process(self._extraction_state())
 
         assert len(result["requirements"]) == 3
-        assert result["requirements"][0]["requirement_id"] == "REQ-001"
-        assert result["requirements"][2]["requirement_id"] == "REQ-003"
+        assert result["requirements"][0]["requirement_id"] == "REQ-0001"
+        assert result["requirements"][2]["requirement_id"] == "REQ-0003"
         assert result["status"] == PipelineStatus.VALIDATING_REQUIREMENTS.value
 
-    def test_extraction_no_sections(self):
-        """Empty structuring result → 0 requirements, no error."""
+    def test_extraction_no_chunks(self, monkeypatch):
+        """Empty chunk retrieval -> 0 requirements, no error."""
         from rfp_automation.agents import RequirementsExtractionAgent
-        from rfp_automation.models.schemas import RFPMetadata, StructuringResult
 
-        state = RFPGraphState(
-            status=PipelineStatus.EXTRACTING_REQUIREMENTS,
-            rfp_metadata=RFPMetadata(rfp_id="RFP-EMPTY"),
-            structuring_result=StructuringResult(sections=[], overall_confidence=0.0),
-        ).model_dump()
+        mock_mcp = type("MockMCP", (), {
+            "fetch_all_rfp_chunks": lambda self, rfp_id: [],
+        })()
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.MCPService", lambda: mock_mcp)
 
         agent = RequirementsExtractionAgent()
-        result = agent.process(state)
+        result = agent.process(self._extraction_state())
         assert result["requirements"] == []
         assert result["status"] == PipelineStatus.VALIDATING_REQUIREMENTS.value
 
     def test_extraction_invalid_json(self, monkeypatch):
-        """Malformed LLM response → 0 requirements, no crash."""
+        """Malformed LLM response -> 0 requirements, no crash."""
         from rfp_automation.agents import RequirementsExtractionAgent
 
+        mock_chunks = TestRequirementsExtractionAgent._mock_chunks()
         mock_mcp = type("MockMCP", (), {
-            "query_rfp": lambda self, q, rfp_id, top_k=10: [],
+            "fetch_all_rfp_chunks": lambda self, rfp_id: mock_chunks,
         })()
         monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.MCPService", lambda: mock_mcp)
-        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_text_call",
-                            lambda prompt: "This is not JSON at all!!!")
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_deterministic_call",
+                            lambda prompt, max_retries=1: "This is not JSON at all!!!")
 
         agent = RequirementsExtractionAgent()
         result = agent.process(self._extraction_state())
@@ -501,43 +522,38 @@ class TestRequirementsExtractionAgent:
     def test_extraction_classification_types(self, monkeypatch):
         """Verify FUNCTIONAL and NON_FUNCTIONAL are correctly assigned."""
         from rfp_automation.agents import RequirementsExtractionAgent
-        from rfp_automation.models.schemas import RFPMetadata, StructuringResult, RFPSection
 
         llm_response = json.dumps([
-            {"requirement_id": "REQ-001", "text": "System must provide user dashboard",
+            {"requirement_id": "REQ-0001", "text": "System must provide user dashboard",
              "type": "MANDATORY", "classification": "FUNCTIONAL",
              "category": "FUNCTIONAL", "impact": "HIGH", "keywords": ["dashboard"]},
-            {"requirement_id": "REQ-002", "text": "System must respond within 200ms",
+            {"requirement_id": "REQ-0002", "text": "System must respond within 200ms",
              "type": "MANDATORY", "classification": "NON_FUNCTIONAL",
              "category": "TECHNICAL", "impact": "HIGH", "keywords": ["performance"]},
         ])
 
+        mock_chunks = [{
+            "id": "chunk_0", "chunk_index": 0,
+            "section_hint": "Mixed",
+            "text": "System must provide user dashboard. System must respond within 200ms.",
+            "content_type": "text", "page_start": 1, "page_end": 1,
+            "metadata": {},
+        }]
         mock_mcp = type("MockMCP", (), {
-            "query_rfp": lambda self, q, rfp_id, top_k=10: [],
+            "fetch_all_rfp_chunks": lambda self, rfp_id: mock_chunks,
         })()
         monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.MCPService", lambda: mock_mcp)
-        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_text_call",
-                            lambda prompt: llm_response)
-
-        state = RFPGraphState(
-            status=PipelineStatus.EXTRACTING_REQUIREMENTS,
-            rfp_metadata=RFPMetadata(rfp_id="RFP-CLASS"),
-            structuring_result=StructuringResult(
-                sections=[RFPSection(
-                    section_id="SEC-01", title="Mixed", category="technical",
-                    content_summary="Mixed requirements.", confidence=0.9,
-                )], overall_confidence=0.9,
-            ),
-        ).model_dump()
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_deterministic_call",
+                            lambda prompt, max_retries=1: llm_response)
 
         agent = RequirementsExtractionAgent()
-        result = agent.process(state)
+        result = agent.process(self._extraction_state())
         assert len(result["requirements"]) == 2
         assert result["requirements"][0]["classification"] == "FUNCTIONAL"
         assert result["requirements"][1]["classification"] == "NON_FUNCTIONAL"
 
     def test_extraction_no_rfp_id_raises(self):
-        """Missing rfp_id → ValueError."""
+        """Missing rfp_id -> ValueError."""
         from rfp_automation.agents import RequirementsExtractionAgent
 
         agent = RequirementsExtractionAgent()
