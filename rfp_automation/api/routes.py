@@ -101,7 +101,11 @@ def _run_pipeline_thread(rfp_id: str, local_path: str) -> None:
         audit = result.get("audit_trail", [])
         pipeline_log = [
             {"agent": a.get("agent", ""), "status": a.get("action", ""),
-             "timestamp": a.get("timestamp", "")}
+             "timestamp": (
+                 a["timestamp"].isoformat()
+                 if hasattr(a.get("timestamp"), "isoformat")
+                 else str(a.get("timestamp", ""))
+             )}
             for a in audit
         ] if audit else []
 
