@@ -929,10 +929,10 @@
         </div>
         <div class="form-row">
           <span id="kbClassifiedType" class="classified-badge" style="display:none"></span>
-          <button class="btn btn-primary" id="kbUploadBtn" disabled>
+          <button type="button" class="btn btn-primary" id="kbUploadBtn" disabled>
             Upload to KB
           </button>
-          <button class="btn btn-outline btn-sm" id="kbSeedBtn">
+          <button type="button" class="btn btn-outline btn-sm" id="kbSeedBtn">
             🌱 Seed from JSON
           </button>
         </div>
@@ -974,7 +974,7 @@
             <option value="pricing">Pricing</option>
             <option value="legal">Legal</option>
           </select>
-          <button class="btn btn-outline btn-sm" id="kbQueryBtn">🔍 Query</button>
+          <button type="button" class="btn btn-outline btn-sm" id="kbQueryBtn">🔍 Query</button>
         </div>
         <div class="query-results" id="kbQueryResults"></div>
 
@@ -1002,10 +1002,10 @@
           <span class="fsize" id="rfpFileSize"></span>
         </div>
         <div class="form-row">
-          <button class="btn btn-primary" id="rfpUploadBtn" disabled>
+          <button type="button" class="btn btn-primary" id="rfpUploadBtn" disabled>
             Run Pipeline
           </button>
-          <button class="btn btn-outline btn-sm" id="rfpRefreshBtn">
+          <button type="button" class="btn btn-outline btn-sm" id="rfpRefreshBtn">
             🔄 Refresh Runs
           </button>
         </div>
@@ -1102,33 +1102,14 @@
           <input id="policySectionInput" placeholder="Source section (optional)"
             style="padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:13px" />
           <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-            <button class="btn btn-outline btn-sm" onclick="closePolicyModal()">Cancel</button>
-            <button class="btn btn-primary btn-sm" id="policySaveBtn" onclick="savePolicy()">Save</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="closePolicyModal()">Cancel</button>
+            <button type="button" class="btn btn-primary btn-sm" id="policySaveBtn" onclick="savePolicy()">Save</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════ -->
-    <!--  A3 GO/NO-GO RESULTS                               -->
-    <!-- ═══════════════════════════════════════════════════ -->
-    <div class="card" style="margin-top:20px" id="mappingsCard">
-      <div class="card-header">
-        <h2>📋 A3 — Go/No-Go Results</h2>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span style="font-size:12px;color:var(--text-muted)" id="mappingsHint">Run a pipeline or select a completed
-            run</span>
-          <span class="mapping-decision-badge" id="mappingDecisionBadge" style="display:none"></span>
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="mappingsContainer">
-          <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">
-            No Go/No-Go results available. Upload an RFP and run the pipeline to see the A3 Go/No-Go analysis.
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!--  AGENT OUTPUT LOGS                                  -->
@@ -1148,70 +1129,7 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════ -->
-    <!--  EXTRACTED REQUIREMENTS (B1 + B2)                   -->
-    <!-- ═══════════════════════════════════════════════════ -->
-    <div class="card" style="margin-top:20px" id="requirementsCard">
-      <div class="card-header">
-        <h2>📝 Extracted Requirements</h2>
-        <div style="display:flex;gap:10px;align-items:center">
-          <span style="font-size:12px;color:var(--text-muted)" id="reqsHint">Select a completed run to view</span>
-          <span id="reqConfBadge"
-            style="display:none;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid"></span>
-        </div>
-      </div>
-      <div class="card-body">
-        <!-- Stats row -->
-        <div id="reqsStats" style="display:none;margin-bottom:16px">
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
-            <div class="stat-box">
-              <div class="stat-value" id="reqTotal">0</div>
-              <div class="stat-label">Total</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-value"
-                style="background:linear-gradient(135deg,#6366f1,#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"
-                id="reqFunctional">0</div>
-              <div class="stat-label">Functional</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-value"
-                style="background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"
-                id="reqNonFunctional">0</div>
-              <div class="stat-label">Non-Functional</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-value" id="reqDuplicates" style="color:var(--warning)">0</div>
-              <div class="stat-label">Duplicates</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-value" id="reqIssues" style="color:var(--error)">0</div>
-              <div class="stat-label">Issues</div>
-            </div>
-          </div>
-        </div>
-        <!-- Filter row -->
-        <div id="reqsFilterRow" style="display:none;margin-bottom:12px;display:flex;gap:10px;align-items:center">
-          <select id="reqClassFilter"
-            style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:12px">
-            <option value="">All Classifications</option>
-            <option value="FUNCTIONAL">Functional</option>
-            <option value="NON_FUNCTIONAL">Non-Functional</option>
-          </select>
-          <select id="reqTypeFilter"
-            style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:12px">
-            <option value="">All Types</option>
-            <option value="MANDATORY">Mandatory</option>
-            <option value="OPTIONAL">Optional</option>
-          </select>
-          <span style="font-size:11px;color:var(--text-muted)" id="reqFilterCount"></span>
-        </div>
-        <div id="reqsContainer">
-          <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">No requirements loaded.
-            Click a pipeline run to view extracted requirements.</div>
-        </div>
-      </div>
-    </div>
+
 
 
 
@@ -1588,11 +1506,13 @@
             rfpUploadBtn.innerHTML = 'Run Pipeline';
             rfpUploadBtn.disabled = false;
 
-            // Refresh runs list, load mappings, requirements, and agent logs
+            // Refresh runs list and agent logs
             loadRuns();
-            if (activeRfpId) loadMappings(activeRfpId);
-            if (activeRfpId) loadRequirements(activeRfpId);
-            if (activeRfpId) loadAgentLogs(activeRfpId);
+            if (activeRfpId) {
+              loadAgentLogs(activeRfpId).catch(err =>
+                console.warn('Failed to load agent logs:', err)
+              );
+            }
             break;
         }
       };
@@ -1720,12 +1640,6 @@
         // Load agent output logs
         loadAgentLogs(rfpId);
 
-        // Load requirement mappings
-        loadMappings(rfpId);
-
-        // Load extracted requirements
-        loadRequirements(rfpId);
-
         // If it's still running, connect the WebSocket
         if (status.status === 'RUNNING') {
           connectPipelineWS(rfpId);
@@ -1848,145 +1762,7 @@
       }
     });
 
-    // ══════════════════════════════════════════════
-    //  REQUIREMENT MAPPINGS
-    // ══════════════════════════════════════════════
 
-    async function loadMappings(rfpId) {
-      const container = document.getElementById('mappingsContainer');
-      const badge = document.getElementById('mappingDecisionBadge');
-      const hint = document.getElementById('mappingsHint');
-      container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted)"><span class="spinner"></span> Loading mappings…</div>';
-      hint.textContent = `Run: ${rfpId}`;
-      badge.style.display = 'none';
-
-      try {
-        const data = await apiFetch(`/api/rfp/${rfpId}/mappings`);
-        if (!data.available) {
-          container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">${data.message || 'No mapping data available.'}</div>`;
-          return;
-        }
-
-        // Decision badge
-        badge.textContent = data.decision === 'GO' ? '✅ GO' : '❌ NO GO';
-        badge.className = `mapping-decision-badge ${data.decision}`;
-        badge.style.display = 'inline-flex';
-
-        // Build HTML
-        let html = '';
-
-        // ── Scores row ──
-        const sc = data.scores || {};
-        const scoreColor = (val, invert) => {
-          const v = parseFloat(val) || 0;
-          if (invert) return v > 7 ? '#ef4444' : v > 4 ? '#f59e0b' : '#10b981';
-          return v >= 7 ? '#10b981' : v >= 4 ? '#f59e0b' : '#ef4444';
-        };
-        html += `<div class="mapping-scores">
-          <div class="score-item"><div class="score-val" style="color:${scoreColor(sc.strategic_fit)}">${(sc.strategic_fit || 0).toFixed(1)}</div><div class="score-lbl">Strategic Fit</div></div>
-          <div class="score-item"><div class="score-val" style="color:${scoreColor(sc.technical_feasibility)}">${(sc.technical_feasibility || 0).toFixed(1)}</div><div class="score-lbl">Technical</div></div>
-          <div class="score-item"><div class="score-val" style="color:${scoreColor(sc.regulatory_risk, true)}">${(sc.regulatory_risk || 0).toFixed(1)}</div><div class="score-lbl">Reg. Risk</div></div>
-        </div>`;
-
-        // ── Justification ──
-        if (data.justification) {
-          html += `<div style="margin-bottom:14px;padding:10px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;font-size:13px">
-            <strong>Justification:</strong> ${data.justification}
-          </div>`;
-        }
-
-        // ── Red flags & violations ──
-        if (data.red_flags && data.red_flags.length) {
-          html += `<div style="margin-bottom:10px;padding:8px 14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;font-size:12px;color:#f59e0b">
-            <strong>⚠ Red Flags:</strong> ${data.red_flags.join(' • ')}
-          </div>`;
-        }
-        if (data.policy_violations && data.policy_violations.length) {
-          html += `<div style="margin-bottom:10px;padding:8px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:12px;color:#ef4444">
-            <strong>❌ Policy Violations:</strong> ${data.policy_violations.join(' • ')}
-          </div>`;
-        }
-
-        // ── Summary pills ──
-        const sm = data.summary || {};
-        html += `<div class="mapping-summary">
-          <div class="summary-pill"><span class="pill-dot" style="background:#6366f1"></span> ${sm.total || 0} Total</div>
-          <div class="summary-pill"><span class="pill-dot" style="background:#10b981"></span> ${sm.aligned || 0} Aligned</div>
-          <div class="summary-pill"><span class="pill-dot" style="background:#ef4444"></span> ${sm.violated || 0} Violated</div>
-          <div class="summary-pill"><span class="pill-dot" style="background:#f59e0b"></span> ${sm.risk || 0} Risk</div>
-          <div class="summary-pill"><span class="pill-dot" style="background:#9ca3af"></span> ${sm.no_match || 0} No Match</div>
-        </div>`;
-
-        // ── Filter row ──
-        html += `<div class="mapping-filter-row">
-          <select id="mappingStatusFilter" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:12px">
-            <option value="">All Statuses</option>
-            <option value="ALIGNS">✅ Aligns</option>
-            <option value="VIOLATES">❌ Violates</option>
-            <option value="RISK">⚠️ Risk</option>
-            <option value="NO_MATCH">❓ No Match</option>
-          </select>
-          <span style="font-size:11px;color:var(--text-muted)" id="mappingFilterCount">${(data.mappings || []).length} mappings</span>
-        </div>`;
-
-        // ── Table ──
-        const mappings = data.mappings || [];
-        html += `<div style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">
-          <table class="mapping-table" id="mappingTable">
-            <thead>
-              <tr>
-                <th style="width:100px">ID</th>
-                <th style="width:90px">Status</th>
-                <th style="width:75px">Confidence</th>
-                <th>Requirement</th>
-                <th>Matched Policy</th>
-                <th>Reasoning</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${mappings.map(m => {
-          const conf = parseFloat(m.confidence) || 0;
-          const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.5 ? '#f59e0b' : '#ef4444';
-          return `<tr data-status="${m.mapping_status}">
-                  <td style="font-weight:500;font-size:11px;color:var(--accent-light)">${m.requirement_id || '—'}</td>
-                  <td><span class="status-chip ${m.mapping_status}">${m.mapping_status}</span></td>
-                  <td>
-                    <div class="conf-bar">
-                      <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${conf * 100}%;background:${confColor}"></div></div>
-                      <span class="conf-bar-val">${(conf * 100).toFixed(0)}%</span>
-                    </div>
-                  </td>
-                  <td style="max-width:220px;line-height:1.4" title="${(m.requirement_text || '').replace(/"/g, '&quot;')}">${m.requirement_text || '—'}</td>
-                  <td style="font-size:11px;max-width:180px;line-height:1.4;color:var(--text-secondary)" title="${(m.matched_policy || '').replace(/"/g, '&quot;')}">${m.matched_policy || '—'}</td>
-                  <td style="font-size:11px;max-width:180px;line-height:1.4;color:var(--text-muted)">${m.reasoning || '—'}</td>
-                </tr>`;
-        }).join('')}
-            </tbody>
-          </table>
-        </div>`;
-
-        container.innerHTML = html;
-
-        // ── Wire up filter ──
-        const filterSelect = document.getElementById('mappingStatusFilter');
-        if (filterSelect) {
-          filterSelect.addEventListener('change', () => {
-            const val = filterSelect.value;
-            const rows = document.querySelectorAll('#mappingTable tbody tr');
-            let visible = 0;
-            rows.forEach(row => {
-              const show = !val || row.dataset.status === val;
-              row.style.display = show ? '' : 'none';
-              if (show) visible++;
-            });
-            document.getElementById('mappingFilterCount').textContent = `${visible} mappings`;
-          });
-        }
-
-      } catch (e) {
-        container.innerHTML = `<div style="padding:24px;text-align:center;color:#ef4444;font-size:13px">Failed to load mappings: ${e.message}</div>`;
-      }
-    }
 
     // ══════════════════════════════════════════════
     //  AGENT OUTPUT LOGS
@@ -2028,7 +1804,7 @@
           const a3 = outputs.A3_GO_NO_GO;
           const mappings = a3.requirement_mappings || [];
           const statusColors = { ALIGNS: '#22c55e', VIOLATES: '#ef4444', RISK: '#f97316', NO_MATCH: '#888' };
-          html += `<details open style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">📊 A3 Go/No-Go — <span style="color:${a3.decision === 'GO' ? '#22c55e' : '#ef4444'}">${a3.decision || '—'}</span></summary>
+          html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">📊 A3 Go/No-Go — <span style="color:${a3.decision === 'GO' ? '#22c55e' : '#ef4444'}">${a3.decision || '—'}</span></summary>
             <div style="padding:8px 16px;font-size:13px">
               <div style="display:flex;gap:16px;margin-bottom:12px">
                 <div><strong>Strategic Fit:</strong> ${a3.strategic_fit_score ?? '—'}/10</div>
@@ -2080,7 +1856,7 @@
           const conf = b2.confidence_score || 0;
           const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.6 ? '#f59e0b' : '#ef4444';
           const issues = b2.issues || [];
-          html += `<details open style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🛡️ B2 Requirements Validation &mdash; <span style="color:${confColor}">${(conf * 100).toFixed(0)}% Confidence</span></summary>
+          html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🛡️ B2 Requirements Validation &mdash; <span style="color:${confColor}">${(conf * 100).toFixed(0)}% Confidence</span></summary>
             <div style="padding:8px 16px;font-size:13px">
               <div style="display:flex;gap:16px;margin-bottom:12px">
                 <div><strong>Duplicates:</strong> ${b2.duplicate_count || 0}</div>
@@ -2105,150 +1881,7 @@
       }
     }
 
-    // ══════════════════════════════════════════════
-    //  EXTRACTED REQUIREMENTS (B1/B2)
-    // ══════════════════════════════════════════════
 
-    let currentRequirements = [];
-
-    async function loadRequirements(rfpId) {
-      const container = document.getElementById('reqsContainer');
-      const stats = document.getElementById('reqsStats');
-      const filterRow = document.getElementById('reqsFilterRow');
-      const badge = document.getElementById('reqConfBadge');
-
-      container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted)"><span class="spinner"></span> Loading requirements…</div>';
-      document.getElementById('reqsHint').textContent = `Run: ${rfpId}`;
-      stats.style.display = 'none';
-      filterRow.style.display = 'none';
-      badge.style.display = 'none';
-
-      try {
-        const data = await apiFetch(`/api/rfp/${rfpId}/requirements`);
-        if (!data.available) {
-          container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">${data.message || 'No requirements data available.'}</div>`;
-          return;
-        }
-
-        currentRequirements = data.requirements || [];
-        const val = data.validation || {};
-
-        if (!currentRequirements.length) {
-          container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">No requirements extracted for this run.</div>';
-          return;
-        }
-
-        // ── Stats ──
-        document.getElementById('reqTotal').textContent = data.total || 0;
-        document.getElementById('reqFunctional').textContent = data.functional_count || 0;
-        document.getElementById('reqNonFunctional').textContent = data.non_functional_count || 0;
-        document.getElementById('reqDuplicates').textContent = val.duplicate_count || 0;
-        document.getElementById('reqIssues').textContent = (val.contradiction_count || 0) + (val.ambiguity_count || 0);
-
-        stats.style.display = 'block';
-        filterRow.style.display = 'flex';
-
-        // ── Confidence Badge ──
-        if (typeof val.confidence_score === 'number') {
-          const conf = val.confidence_score;
-          const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.6 ? '#f59e0b' : '#ef4444';
-          badge.textContent = `${(conf * 100).toFixed(0)}% Confidence`;
-          badge.style.color = confColor;
-          badge.style.borderColor = confColor;
-          badge.style.background = `${confColor}15`;
-          badge.style.display = 'inline-block';
-        }
-
-        renderRequirementsTable();
-
-      } catch (e) {
-        container.innerHTML = `<div style="padding:24px;text-align:center;color:#ef4444;font-size:13px">Failed to load requirements: ${e.message}</div>`;
-      }
-    }
-
-    function renderRequirementsTable() {
-      const classFilter = document.getElementById('reqClassFilter').value;
-      const typeFilter = document.getElementById('reqTypeFilter').value;
-
-      const filtered = currentRequirements.filter(r => {
-        if (classFilter && r.classification !== classFilter) return false;
-        if (typeFilter && r.type !== typeFilter) return false;
-        return true;
-      });
-
-      document.getElementById('reqFilterCount').textContent = `${filtered.length} visible`;
-
-      const container = document.getElementById('reqsContainer');
-
-      if (!filtered.length) {
-        container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">No requirements match the current filters.</div>';
-        return;
-      }
-
-      // Split into groups
-      const functional = filtered.filter(r => (r.classification || '').toUpperCase() === 'FUNCTIONAL');
-      const nonFunctional = filtered.filter(r => (r.classification || '').toUpperCase() === 'NON_FUNCTIONAL');
-      const other = filtered.filter(r => !['FUNCTIONAL', 'NON_FUNCTIONAL'].includes((r.classification || '').toUpperCase()));
-
-      function buildGroupRows(rows) {
-        return rows.map(r => `
-          <tr style="border-bottom:1px solid var(--border)">
-            <td style="font-weight:600;font-size:11px;color:var(--accent-light);padding:8px">${r.requirement_id || '—'}</td>
-            <td style="padding:8px"><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${r.type === 'MANDATORY' ? 'rgba(239,68,68,0.12)' : 'rgba(107,114,128,0.12)'};color:${r.type === 'MANDATORY' ? '#ef4444' : '#9ca3af'};font-weight:600">${r.type}</span></td>
-            <td style="max-width:400px;line-height:1.5;padding:8px;font-size:12px" title="${(r.text || '').replace(/"/g, '&quot;')}">${r.text || '—'}</td>
-          </tr>
-        `).join('');
-      }
-
-      let html = '<div style="max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">';
-      html += '<table class="mapping-table" style="width:100%">';
-      html += `<thead style="position:sticky;top:0;background:var(--bg-secondary);z-index:10">
-        <tr>
-          <th style="width:100px;padding:8px">ID</th>
-          <th style="width:100px;padding:8px">Type</th>
-          <th style="padding:8px">Requirement Text</th>
-        </tr>
-      </thead><tbody>`;
-
-      // Functional group
-      if (functional.length) {
-        html += `<tr>
-          <td colspan="3" style="padding:10px 8px;background:rgba(99,102,241,0.08);border-left:4px solid #6366f1;font-weight:700;font-size:13px;color:#818cf8">
-            ⚙️ Functional Requirements
-            <span style="margin-left:8px;font-size:11px;font-weight:500;padding:2px 10px;border-radius:12px;background:rgba(99,102,241,0.15);color:#a5b4fc">${functional.length}</span>
-          </td>
-        </tr>`;
-        html += buildGroupRows(functional);
-      }
-
-      // Non-Functional group
-      if (nonFunctional.length) {
-        html += `<tr>
-          <td colspan="3" style="padding:10px 8px;background:rgba(16,185,129,0.08);border-left:4px solid #10b981;font-weight:700;font-size:13px;color:#34d399">
-            📐 Non-Functional Requirements
-            <span style="margin-left:8px;font-size:11px;font-weight:500;padding:2px 10px;border-radius:12px;background:rgba(16,185,129,0.15);color:#6ee7b7">${nonFunctional.length}</span>
-          </td>
-        </tr>`;
-        html += buildGroupRows(nonFunctional);
-      }
-
-      // Other/Unclassified group (if any)
-      if (other.length) {
-        html += `<tr>
-          <td colspan="3" style="padding:10px 8px;background:rgba(107,114,128,0.08);border-left:4px solid #6b7280;font-weight:700;font-size:13px;color:#9ca3af">
-            ❓ Unclassified
-            <span style="margin-left:8px;font-size:11px;font-weight:500;padding:2px 10px;border-radius:12px;background:rgba(107,114,128,0.15);color:#d1d5db">${other.length}</span>
-          </td>
-        </tr>`;
-        html += buildGroupRows(other);
-      }
-
-      html += '</tbody></table></div>';
-      container.innerHTML = html;
-    }
-
-    document.getElementById('reqClassFilter').addEventListener('change', renderRequirementsTable);
-    document.getElementById('reqTypeFilter').addEventListener('change', renderRequirementsTable);
 
     // ── Init ───────────────────────────────────────
     let _healthInterval = null;
