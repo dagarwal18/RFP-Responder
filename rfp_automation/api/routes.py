@@ -206,6 +206,14 @@ async def get_rfp_status(rfp_id: str):
         gng = result_data.get("go_no_go_result")
         if isinstance(gng, dict) and gng.get("decision"):
             agent_outputs["A3_GO_NO_GO"] = gng
+        # B1 Requirements Extraction — include even when empty (shows the agent ran)
+        reqs = result_data.get("requirements")
+        if isinstance(reqs, list):  # include regardless of empty
+            agent_outputs["B1_REQUIREMENTS_EXTRACTION"] = reqs
+        # B2 Requirements Validation — include whenever key is present
+        req_val = result_data.get("requirements_validation")
+        if isinstance(req_val, dict):
+            agent_outputs["B2_REQUIREMENTS_VALIDATION"] = req_val
 
     return StatusResponse(
         rfp_id=run["rfp_id"],
@@ -253,6 +261,57 @@ async def list_rfps():
         }
         for r in _runs.values()
     ]
+
+
+# ── Requirements (B1 output) ────────────────────────────
+
+@rfp_router.get("/{rfp_id}/requirements")
+async def get_requirements(rfp_id: str):
+    """
+    Return extracted requirements (B1) and validation result (B2) for a run.
+    """
+    run = _runs.get(rfp_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
+
+    result_data = run.get("result")
+    if not isinstance(result_data, dict):
+        return {"rfp_id": rfp_id, "available": False, "message": "Pipeline has not completed yet"}
+
+    reqs = result_data.get("requirements") or []
+    req_val = result_data.get("requirements_validation") or {}
+
+    functional = [r for r in reqs if (r.get("classification") or "").upper() == "FUNCTIONAL"]
+    non_functional = [r for r in reqs if (r.get("classification") or "").upper() == "NON_FUNCTIONAL"]
+
+    return {
+        "rfp_id": rfp_id,
+        "available": True,
+        "total": len(reqs),
+        "functional_count": len(functional),
+        "non_functional_count": len(non_functional),
+        "requirements": reqs,
+        "validation": req_val,
+    }
+
+
+# ── Debug: raw pipeline result ───────────────────────────
+
+@rfp_router.get("/{rfp_id}/debug")
+async def debug_rfp(rfp_id: str):
+    """Return the raw pipeline result dict for debugging."""
+    run = _runs.get(rfp_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
+    result = run.get("result") or {}
+    return {
+        "rfp_id": rfp_id,
+        "status": run.get("status"),
+        "has_requirements": bool(result.get("requirements")),
+        "requirements_count": len(result.get("requirements") or []),
+        "has_validation": bool(result.get("requirements_validation")),
+        "keys_in_result": list(result.keys()) if result else [],
+    }
 
 
 # ── Requirement Mappings ─────────────────────────────────

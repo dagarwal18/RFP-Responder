@@ -71,6 +71,12 @@ class RequirementCategory(str, Enum):
     OPERATIONAL = "OPERATIONAL"
 
 
+
+class RequirementClassification(str, Enum):
+    FUNCTIONAL = "FUNCTIONAL"
+    NON_FUNCTIONAL = "NON_FUNCTIONAL"
+
+
 class ImpactLevel(str, Enum):
     CRITICAL = "CRITICAL"
     HIGH = "HIGH"

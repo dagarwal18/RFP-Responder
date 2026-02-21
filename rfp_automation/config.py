@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     # ── Pipeline Limits ──────────────────────────────────
     max_validation_retries: int = 3
     max_structuring_retries: int = 3
+    min_validation_confidence: float = 0.7
     approval_timeout_hours: int = 48
 
     # ── Logging ──────────────────────────────────────────

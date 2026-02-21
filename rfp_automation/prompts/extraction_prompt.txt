@@ -1,15 +1,55 @@
-You are extracting requirements from an RFP section.
+You are a requirements-extraction specialist. Your job is to read the
+provided RFP section and identify every individual client requirement.
 
-Section Title: {section_title}
-Section Content:
+SECTION TITLE: {section_title}
+
+SECTION CONTENT:
 {section_content}
 
-For each requirement found:
-- requirement_id: assign sequential ID starting from {start_id}
-- text: the exact requirement text
-- type: MANDATORY (must/shall) or OPTIONAL (should/prefer)
-- category: TECHNICAL, FUNCTIONAL, SECURITY, COMPLIANCE, COMMERCIAL, OPERATIONAL
-- impact: CRITICAL, HIGH, MEDIUM, LOW
-- keywords: list of key terms
+INSTRUCTIONS:
+1. Read the text carefully. A "requirement" is any statement that describes
+   something the client expects, demands, or desires from the vendor.
+2. Separate each distinct requirement — do NOT merge multiple demands into one.
+3. For each requirement, fill in ALL of the following fields:
 
-Return valid JSON array of requirements.
+   - requirement_id  : assign sequential IDs starting from {start_id}
+                       (format: "REQ-001", "REQ-002", etc.)
+   - text            : the exact or closely paraphrased requirement text
+   - type            : "MANDATORY" if the language uses must/shall/required,
+                       "OPTIONAL" if it uses should/may/preferred/desired
+   - classification  : "FUNCTIONAL" if it defines what the system must DO
+                       (features, capabilities, behaviors),
+                       "NON_FUNCTIONAL" if it defines how the system should
+                       PERFORM or OPERATE (performance, security, compliance,
+                       scalability, availability, usability, etc.)
+   - category        : one of TECHNICAL, FUNCTIONAL, SECURITY, COMPLIANCE,
+                       COMMERCIAL, OPERATIONAL
+   - impact          : CRITICAL, HIGH, MEDIUM, or LOW
+   - keywords        : list of 2-5 key terms from the requirement
+
+4. If the section contains NO requirements, return an empty JSON array [].
+
+Return ONLY a valid JSON array of requirement objects. No markdown fencing,
+no extra text.
+
+Example output:
+[
+  {{
+    "requirement_id": "{start_id}",
+    "text": "The system must support single sign-on via SAML 2.0",
+    "type": "MANDATORY",
+    "classification": "FUNCTIONAL",
+    "category": "TECHNICAL",
+    "impact": "HIGH",
+    "keywords": ["SSO", "SAML", "authentication"]
+  }},
+  {{
+    "requirement_id": "REQ-002",
+    "text": "The system shall achieve 99.9% uptime availability",
+    "type": "MANDATORY",
+    "classification": "NON_FUNCTIONAL",
+    "category": "OPERATIONAL",
+    "impact": "CRITICAL",
+    "keywords": ["uptime", "availability", "SLA"]
+  }}
+]

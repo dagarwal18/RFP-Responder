@@ -390,3 +390,281 @@ class TestGoNoGoAgent:
         with pytest.raises(ValueError, match="No rfp_id"):
             agent.process(state)
 
+
+# ═══════════════════════════════════════════════════════════
+# B1 Requirements Extraction Agent
+# ═══════════════════════════════════════════════════════════
+
+
+class TestRequirementsExtractionAgent:
+    """Tests for B1 Requirements Extraction Agent."""
+
+    @staticmethod
+    def _extraction_state():
+        from rfp_automation.models.schemas import (
+            RFPMetadata, StructuringResult, RFPSection,
+        )
+        return RFPGraphState(
+            status=PipelineStatus.EXTRACTING_REQUIREMENTS,
+            rfp_metadata=RFPMetadata(rfp_id="RFP-TEST-001"),
+            structuring_result=StructuringResult(
+                sections=[
+                    RFPSection(
+                        section_id="SEC-01", title="Technical Requirements",
+                        category="technical",
+                        content_summary="The system must support SSO via SAML 2.0. "
+                                        "Data encryption at rest is required.",
+                        confidence=0.9,
+                    ),
+                    RFPSection(
+                        section_id="SEC-02", title="Performance Requirements",
+                        category="technical",
+                        content_summary="The system should handle 10,000 concurrent users.",
+                        confidence=0.85,
+                    ),
+                ],
+                overall_confidence=0.88,
+            ),
+        ).model_dump()
+
+    def test_extraction_success(self, monkeypatch):
+        """Valid LLM response → requirements populated, correct status."""
+        from rfp_automation.agents import RequirementsExtractionAgent
+
+        llm_responses = [
+            json.dumps([
+                {"requirement_id": "REQ-001", "text": "The system must support SSO via SAML 2.0",
+                 "type": "MANDATORY", "classification": "FUNCTIONAL",
+                 "category": "TECHNICAL", "impact": "HIGH", "keywords": ["SSO", "SAML"]},
+                {"requirement_id": "REQ-002", "text": "Data encryption at rest is required",
+                 "type": "MANDATORY", "classification": "NON_FUNCTIONAL",
+                 "category": "SECURITY", "impact": "CRITICAL", "keywords": ["encryption"]},
+            ]),
+            json.dumps([
+                {"requirement_id": "REQ-003", "text": "Handle 10,000 concurrent users",
+                 "type": "OPTIONAL", "classification": "NON_FUNCTIONAL",
+                 "category": "TECHNICAL", "impact": "HIGH", "keywords": ["scalability"]},
+            ]),
+        ]
+        call_count = {"n": 0}
+
+        def mock_llm(prompt):
+            idx = call_count["n"]
+            call_count["n"] += 1
+            return llm_responses[idx]
+
+        mock_mcp = type("MockMCP", (), {
+            "query_rfp": lambda self, q, rfp_id, top_k=10: [],
+        })()
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_text_call", mock_llm)
+
+        agent = RequirementsExtractionAgent()
+        result = agent.process(self._extraction_state())
+
+        assert len(result["requirements"]) == 3
+        assert result["requirements"][0]["requirement_id"] == "REQ-001"
+        assert result["requirements"][2]["requirement_id"] == "REQ-003"
+        assert result["status"] == PipelineStatus.VALIDATING_REQUIREMENTS.value
+
+    def test_extraction_no_sections(self):
+        """Empty structuring result → 0 requirements, no error."""
+        from rfp_automation.agents import RequirementsExtractionAgent
+        from rfp_automation.models.schemas import RFPMetadata, StructuringResult
+
+        state = RFPGraphState(
+            status=PipelineStatus.EXTRACTING_REQUIREMENTS,
+            rfp_metadata=RFPMetadata(rfp_id="RFP-EMPTY"),
+            structuring_result=StructuringResult(sections=[], overall_confidence=0.0),
+        ).model_dump()
+
+        agent = RequirementsExtractionAgent()
+        result = agent.process(state)
+        assert result["requirements"] == []
+        assert result["status"] == PipelineStatus.VALIDATING_REQUIREMENTS.value
+
+    def test_extraction_invalid_json(self, monkeypatch):
+        """Malformed LLM response → 0 requirements, no crash."""
+        from rfp_automation.agents import RequirementsExtractionAgent
+
+        mock_mcp = type("MockMCP", (), {
+            "query_rfp": lambda self, q, rfp_id, top_k=10: [],
+        })()
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_text_call",
+                            lambda prompt: "This is not JSON at all!!!")
+
+        agent = RequirementsExtractionAgent()
+        result = agent.process(self._extraction_state())
+        assert result["requirements"] == []
+
+    def test_extraction_classification_types(self, monkeypatch):
+        """Verify FUNCTIONAL and NON_FUNCTIONAL are correctly assigned."""
+        from rfp_automation.agents import RequirementsExtractionAgent
+        from rfp_automation.models.schemas import RFPMetadata, StructuringResult, RFPSection
+
+        llm_response = json.dumps([
+            {"requirement_id": "REQ-001", "text": "System must provide user dashboard",
+             "type": "MANDATORY", "classification": "FUNCTIONAL",
+             "category": "FUNCTIONAL", "impact": "HIGH", "keywords": ["dashboard"]},
+            {"requirement_id": "REQ-002", "text": "System must respond within 200ms",
+             "type": "MANDATORY", "classification": "NON_FUNCTIONAL",
+             "category": "TECHNICAL", "impact": "HIGH", "keywords": ["performance"]},
+        ])
+
+        mock_mcp = type("MockMCP", (), {
+            "query_rfp": lambda self, q, rfp_id, top_k=10: [],
+        })()
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.requirement_extraction_agent.llm_text_call",
+                            lambda prompt: llm_response)
+
+        state = RFPGraphState(
+            status=PipelineStatus.EXTRACTING_REQUIREMENTS,
+            rfp_metadata=RFPMetadata(rfp_id="RFP-CLASS"),
+            structuring_result=StructuringResult(
+                sections=[RFPSection(
+                    section_id="SEC-01", title="Mixed", category="technical",
+                    content_summary="Mixed requirements.", confidence=0.9,
+                )], overall_confidence=0.9,
+            ),
+        ).model_dump()
+
+        agent = RequirementsExtractionAgent()
+        result = agent.process(state)
+        assert len(result["requirements"]) == 2
+        assert result["requirements"][0]["classification"] == "FUNCTIONAL"
+        assert result["requirements"][1]["classification"] == "NON_FUNCTIONAL"
+
+    def test_extraction_no_rfp_id_raises(self):
+        """Missing rfp_id → ValueError."""
+        from rfp_automation.agents import RequirementsExtractionAgent
+
+        agent = RequirementsExtractionAgent()
+        state = RFPGraphState(status=PipelineStatus.EXTRACTING_REQUIREMENTS).model_dump()
+        with pytest.raises(ValueError, match="No rfp_id"):
+            agent.process(state)
+
+
+# ═══════════════════════════════════════════════════════════
+# B2 Requirements Validation Agent
+# ═══════════════════════════════════════════════════════════
+
+
+class TestRequirementsValidationAgent:
+    """Tests for B2 Requirements Validation Agent."""
+
+    @staticmethod
+    def _validation_state(requirements=None):
+        from rfp_automation.models.schemas import RFPMetadata, Requirement
+        from rfp_automation.models.enums import (
+            RequirementType, RequirementClassification,
+            RequirementCategory, ImpactLevel,
+        )
+        if requirements is None:
+            requirements = [
+                Requirement(
+                    requirement_id="REQ-001", text="System must support SSO via SAML 2.0",
+                    type=RequirementType.MANDATORY,
+                    classification=RequirementClassification.FUNCTIONAL,
+                    category=RequirementCategory.TECHNICAL, impact=ImpactLevel.HIGH,
+                    source_section="Technical Requirements",
+                ),
+                Requirement(
+                    requirement_id="REQ-002", text="Data encryption at rest is required",
+                    type=RequirementType.MANDATORY,
+                    classification=RequirementClassification.NON_FUNCTIONAL,
+                    category=RequirementCategory.SECURITY, impact=ImpactLevel.CRITICAL,
+                    source_section="Security Requirements",
+                ),
+            ]
+        return RFPGraphState(
+            status=PipelineStatus.VALIDATING_REQUIREMENTS,
+            rfp_metadata=RFPMetadata(rfp_id="RFP-TEST-001"),
+            requirements=requirements,
+        ).model_dump()
+
+    def test_validation_high_confidence(self, monkeypatch):
+        """Confidence >= 0.7 → validated requirements populated, no refinement."""
+        from rfp_automation.agents import RequirementsValidationAgent
+
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call",
+                            lambda prompt: json.dumps({"confidence_score": 0.92, "issues": [], "requirement_notes": {}}))
+
+        agent = RequirementsValidationAgent()
+        result = agent.process(self._validation_state())
+
+        vr = result["requirements_validation"]
+        assert vr["confidence_score"] >= 0.7
+        assert vr["total_requirements"] == 2
+        assert vr["mandatory_count"] == 2
+        assert vr["functional_count"] == 1
+        assert vr["non_functional_count"] == 1
+        assert result["status"] == PipelineStatus.ARCHITECTURE_PLANNING.value
+
+    def test_validation_low_confidence_triggers_refinement(self, monkeypatch):
+        """Confidence < 0.7 → agent calls LLM a second time for refinement."""
+        from rfp_automation.agents import RequirementsValidationAgent
+
+        call_count = {"n": 0}
+
+        def mock_llm(prompt):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return json.dumps({
+                    "confidence_score": 0.45,
+                    "issues": [{"issue_type": "ambiguity", "requirement_ids": ["REQ-001"],
+                                "description": "Vague requirement", "severity": "warning"}],
+                    "requirement_notes": {},
+                })
+            else:
+                return json.dumps({"confidence_score": 0.78, "issues": [], "requirement_notes": {}})
+
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call", mock_llm)
+
+        agent = RequirementsValidationAgent()
+        result = agent.process(self._validation_state())
+
+        assert call_count["n"] == 2
+        assert result["requirements_validation"]["confidence_score"] >= 0.7
+        assert result["status"] == PipelineStatus.ARCHITECTURE_PLANNING.value
+
+    def test_validation_detects_issues(self, monkeypatch):
+        """LLM flags duplicates and contradictions → correct issue counts."""
+        from rfp_automation.agents import RequirementsValidationAgent
+
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call",
+                            lambda prompt: json.dumps({
+                                "confidence_score": 0.75,
+                                "issues": [
+                                    {"issue_type": "duplicate", "requirement_ids": ["REQ-001", "REQ-002"],
+                                     "description": "Both describe SSO", "severity": "warning"},
+                                    {"issue_type": "contradiction", "requirement_ids": ["REQ-001", "REQ-002"],
+                                     "description": "Conflicting hosting", "severity": "warning"},
+                                    {"issue_type": "ambiguity", "requirement_ids": ["REQ-002"],
+                                     "description": "Vague target", "severity": "warning"},
+                                ],
+                                "requirement_notes": {},
+                            }))
+
+        agent = RequirementsValidationAgent()
+        result = agent.process(self._validation_state())
+
+        vr = result["requirements_validation"]
+        assert vr["duplicate_count"] == 1
+        assert vr["contradiction_count"] == 1
+        assert vr["ambiguity_count"] == 1
+        assert len(vr["issues"]) == 3
+
+    def test_validation_empty_requirements(self):
+        """No requirements → passes through with empty result."""
+        from rfp_automation.agents import RequirementsValidationAgent
+
+        agent = RequirementsValidationAgent()
+        result = agent.process(self._validation_state(requirements=[]))
+
+        vr = result["requirements_validation"]
+        assert vr["total_requirements"] == 0
+        assert vr["confidence_score"] == 0.0
+        assert result["status"] == PipelineStatus.ARCHITECTURE_PLANNING.value
+

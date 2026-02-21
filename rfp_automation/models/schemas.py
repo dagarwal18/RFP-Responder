@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from .enums import (
     RequirementType,
+    RequirementClassification,
     RequirementCategory,
     ImpactLevel,
     RiskLevel,
@@ -101,6 +102,7 @@ class Requirement(BaseModel):
     requirement_id: str
     text: str
     type: RequirementType = RequirementType.MANDATORY
+    classification: RequirementClassification = RequirementClassification.FUNCTIONAL
     category: RequirementCategory = RequirementCategory.TECHNICAL
     impact: ImpactLevel = ImpactLevel.MEDIUM
     source_section: str = ""
@@ -120,9 +122,15 @@ class ValidationIssue(BaseModel):
 class RequirementsValidationResult(BaseModel):
     validated_requirements: list[Requirement] = []
     issues: list[ValidationIssue] = []
+    confidence_score: float = 0.0
     total_requirements: int = 0
     mandatory_count: int = 0
     optional_count: int = 0
+    functional_count: int = 0
+    non_functional_count: int = 0
+    duplicate_count: int = 0
+    contradiction_count: int = 0
+    ambiguity_count: int = 0
 
 
 # ── C1 Architecture Planning ─────────────────────────────

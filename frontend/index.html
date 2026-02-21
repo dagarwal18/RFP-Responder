@@ -78,6 +78,7 @@
       font-weight: 600;
       background: linear-gradient(135deg, var(--accent-light), var(--success));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -284,6 +285,7 @@
       font-weight: 700;
       background: linear-gradient(135deg, var(--accent-light), var(--success));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -844,7 +846,7 @@
     .conf-bar-track {
       width: 50px;
       height: 5px;
-      background: rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.08);
       border-radius: 3px;
       overflow: hidden;
     }
@@ -1040,7 +1042,8 @@
             <option value="capability">Capability</option>
           </select>
           <button class="btn btn-primary btn-sm" id="addPolicyBtn">+ Add Policy</button>
-          <button class="btn btn-outline btn-sm" id="deleteAllPoliciesBtn" style="color:#ef4444;border-color:#ef4444">🗑 Delete All</button>
+          <button class="btn btn-outline btn-sm" id="deleteAllPoliciesBtn" style="color:#ef4444;border-color:#ef4444">🗑
+            Delete All</button>
         </div>
       </div>
       <div class="card-body">
@@ -1113,15 +1116,82 @@
       <div class="card-header">
         <h2>📋 Requirement Mappings</h2>
         <div style="display:flex;gap:8px;align-items:center">
-          <span style="font-size:12px;color:var(--text-muted)" id="mappingsHint">Run a pipeline or select a completed run</span>
+          <span style="font-size:12px;color:var(--text-muted)" id="mappingsHint">Run a pipeline or select a completed
+            run</span>
           <span class="mapping-decision-badge" id="mappingDecisionBadge" style="display:none"></span>
         </div>
       </div>
       <div class="card-body">
         <div id="mappingsContainer">
           <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">
-            No requirement mappings available. Upload an RFP and run the pipeline to see how each requirement maps to your company policies.
+            No requirement mappings available. Upload an RFP and run the pipeline to see how each requirement maps to
+            your company policies.
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  EXTRACTED REQUIREMENTS (B1 + B2)                   -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="card" style="margin-top:20px" id="requirementsCard">
+      <div class="card-header">
+        <h2>📝 Extracted Requirements</h2>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:12px;color:var(--text-muted)" id="reqsHint">Select a completed run to view</span>
+          <span id="reqConfBadge"
+            style="display:none;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid"></span>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Stats row -->
+        <div id="reqsStats" style="display:none;margin-bottom:16px">
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+            <div class="stat-box">
+              <div class="stat-value" id="reqTotal">0</div>
+              <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value"
+                style="background:linear-gradient(135deg,#6366f1,#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"
+                id="reqFunctional">0</div>
+              <div class="stat-label">Functional</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value"
+                style="background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"
+                id="reqNonFunctional">0</div>
+              <div class="stat-label">Non-Functional</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="reqDuplicates" style="color:var(--warning)">0</div>
+              <div class="stat-label">Duplicates</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="reqIssues" style="color:var(--error)">0</div>
+              <div class="stat-label">Issues</div>
+            </div>
+          </div>
+        </div>
+        <!-- Filter row -->
+        <div id="reqsFilterRow" style="display:none;margin-bottom:12px;display:flex;gap:10px;align-items:center">
+          <select id="reqClassFilter"
+            style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:12px">
+            <option value="">All Classifications</option>
+            <option value="FUNCTIONAL">Functional</option>
+            <option value="NON_FUNCTIONAL">Non-Functional</option>
+          </select>
+          <select id="reqTypeFilter"
+            style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:12px">
+            <option value="">All Types</option>
+            <option value="MANDATORY">Mandatory</option>
+            <option value="OPTIONAL">Optional</option>
+          </select>
+          <span style="font-size:11px;color:var(--text-muted)" id="reqFilterCount"></span>
+        </div>
+        <div id="reqsContainer">
+          <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">No requirements loaded.
+            Click a pipeline run to view extracted requirements.</div>
         </div>
       </div>
     </div>
@@ -1517,9 +1587,10 @@
             rfpUploadBtn.innerHTML = 'Run Pipeline';
             rfpUploadBtn.disabled = false;
 
-            // Refresh runs list and load mappings
+            // Refresh runs list, load mappings, and load requirements
             loadRuns();
             if (activeRfpId) loadMappings(activeRfpId);
+            if (activeRfpId) loadRequirements(activeRfpId);
             break;
         }
       };
@@ -1649,6 +1720,9 @@
 
         // Load requirement mappings
         loadMappings(rfpId);
+
+        // Load extracted requirements
+        loadRequirements(rfpId);
 
         // If it's still running, connect the WebSocket
         if (status.status === 'RUNNING') {
@@ -1869,22 +1943,22 @@
             </thead>
             <tbody>
               ${mappings.map(m => {
-                const conf = parseFloat(m.confidence) || 0;
-                const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.5 ? '#f59e0b' : '#ef4444';
-                return `<tr data-status="${m.mapping_status}">
+          const conf = parseFloat(m.confidence) || 0;
+          const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.5 ? '#f59e0b' : '#ef4444';
+          return `<tr data-status="${m.mapping_status}">
                   <td style="font-weight:500;font-size:11px;color:var(--accent-light)">${m.requirement_id || '—'}</td>
                   <td><span class="status-chip ${m.mapping_status}">${m.mapping_status}</span></td>
                   <td>
                     <div class="conf-bar">
-                      <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${conf*100}%;background:${confColor}"></div></div>
-                      <span class="conf-bar-val">${(conf*100).toFixed(0)}%</span>
+                      <div class="conf-bar-track"><div class="conf-bar-fill" style="width:${conf * 100}%;background:${confColor}"></div></div>
+                      <span class="conf-bar-val">${(conf * 100).toFixed(0)}%</span>
                     </div>
                   </td>
                   <td style="max-width:220px;line-height:1.4" title="${(m.requirement_text || '').replace(/"/g, '&quot;')}">${m.requirement_text || '—'}</td>
                   <td style="font-size:11px;max-width:180px;line-height:1.4;color:var(--text-secondary)" title="${(m.matched_policy || '').replace(/"/g, '&quot;')}">${m.matched_policy || '—'}</td>
                   <td style="font-size:11px;max-width:180px;line-height:1.4;color:var(--text-muted)">${m.reasoning || '—'}</td>
                 </tr>`;
-              }).join('')}
+        }).join('')}
             </tbody>
           </table>
         </div>`;
@@ -1975,9 +2049,51 @@
               </table>` : ''}
             </div></details>`;
         }
+        // B1 Requirements Extraction
+        if (outputs.B1_REQUIREMENTS_EXTRACTION) {
+          const b1 = outputs.B1_REQUIREMENTS_EXTRACTION;
+          const funcCount = b1.filter(r => r.classification === 'FUNCTIONAL').length;
+          const nonFuncCount = b1.filter(r => r.classification === 'NON_FUNCTIONAL').length;
+          html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔍 B1 Requirements Extraction (${b1.length} total)</summary>
+            <div style="padding:8px 16px;font-size:13px">
+              <div style="margin-bottom:8px"><strong>Classification:</strong> ${funcCount} Functional | ${nonFuncCount} Non-Functional</div>
+              <div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
+                <table style="width:100%;border-collapse:collapse;font-size:12px">
+                  <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
+                    <th style="padding:6px">ID</th><th style="padding:6px">Type</th><th style="padding:6px">Class</th><th style="padding:6px">Requirement</th>
+                  </tr></thead>
+                  <tbody>${b1.map(r => `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:6px;font-weight:600;color:var(--accent-light)">${r.requirement_id}</td>
+                    <td style="padding:6px">${r.type}</td>
+                    <td style="padding:6px"><span class="type-badge">${r.classification}</span></td>
+                    <td style="padding:6px;max-width:300px">${r.text}</td>
+                  </tr>`).join('')}</tbody>
+                </table>
+              </div>
+            </div></details>`;
+        }
+        // B2 Requirements Validation
+        if (outputs.B2_REQUIREMENTS_VALIDATION) {
+          const b2 = outputs.B2_REQUIREMENTS_VALIDATION;
+          const conf = b2.confidence_score || 0;
+          const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.6 ? '#f59e0b' : '#ef4444';
+          const issues = b2.issues || [];
+          html += `<details open style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🛡️ B2 Requirements Validation &mdash; <span style="color:${confColor}">${(conf * 100).toFixed(0)}% Confidence</span></summary>
+            <div style="padding:8px 16px;font-size:13px">
+              <div style="display:flex;gap:16px;margin-bottom:12px">
+                <div><strong>Duplicates:</strong> ${b2.duplicate_count || 0}</div>
+                <div><strong>Contradictions:</strong> ${b2.contradiction_count || 0}</div>
+                <div><strong>Ambiguities:</strong> ${b2.ambiguity_count || 0}</div>
+              </div>
+              ${issues.length ? `<div style="margin-bottom:8px"><strong>Identified Issues:</strong></div>
+              <ul style="margin:0 0 12px 20px;color:var(--text-secondary)">
+                ${issues.map(i => `<li style="margin-bottom:4px"><strong>[${i.issue_type}]</strong> (${(i.requirement_ids || []).join(', ')}) ${i.description}</li>`).join('')}
+              </ul>` : '<div style="margin-bottom:12px;color:var(--success)">✅ No issues identified. Requirements are solid.</div>'}
+            </div></details>`;
+        }
         // Other agents — raw JSON
         for (const [key, val] of Object.entries(outputs)) {
-          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO'].includes(key)) continue;
+          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION'].includes(key)) continue;
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
             <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
         }
@@ -1986,6 +2102,151 @@
         container.innerHTML = `<div style="padding:16px;text-align:center;color:#ef4444">Failed to load agent outputs: ${e.message}</div>`;
       }
     }
+
+    // ══════════════════════════════════════════════
+    //  EXTRACTED REQUIREMENTS (B1/B2)
+    // ══════════════════════════════════════════════
+
+    let currentRequirements = [];
+
+    async function loadRequirements(rfpId) {
+      const container = document.getElementById('reqsContainer');
+      const stats = document.getElementById('reqsStats');
+      const filterRow = document.getElementById('reqsFilterRow');
+      const badge = document.getElementById('reqConfBadge');
+
+      container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted)"><span class="spinner"></span> Loading requirements…</div>';
+      document.getElementById('reqsHint').textContent = `Run: ${rfpId}`;
+      stats.style.display = 'none';
+      filterRow.style.display = 'none';
+      badge.style.display = 'none';
+
+      try {
+        const data = await apiFetch(`/api/rfp/${rfpId}/requirements`);
+        if (!data.available) {
+          container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">${data.message || 'No requirements data available.'}</div>`;
+          return;
+        }
+
+        currentRequirements = data.requirements || [];
+        const val = data.validation || {};
+
+        if (!currentRequirements.length) {
+          container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">No requirements extracted for this run.</div>';
+          return;
+        }
+
+        // ── Stats ──
+        document.getElementById('reqTotal').textContent = data.total || 0;
+        document.getElementById('reqFunctional').textContent = data.functional_count || 0;
+        document.getElementById('reqNonFunctional').textContent = data.non_functional_count || 0;
+        document.getElementById('reqDuplicates').textContent = val.duplicate_count || 0;
+        document.getElementById('reqIssues').textContent = (val.contradiction_count || 0) + (val.ambiguity_count || 0);
+
+        stats.style.display = 'block';
+        filterRow.style.display = 'flex';
+
+        // ── Confidence Badge ──
+        if (typeof val.confidence_score === 'number') {
+          const conf = val.confidence_score;
+          const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.6 ? '#f59e0b' : '#ef4444';
+          badge.textContent = `${(conf * 100).toFixed(0)}% Confidence`;
+          badge.style.color = confColor;
+          badge.style.borderColor = confColor;
+          badge.style.background = `${confColor}15`;
+          badge.style.display = 'inline-block';
+        }
+
+        renderRequirementsTable();
+
+      } catch (e) {
+        container.innerHTML = `<div style="padding:24px;text-align:center;color:#ef4444;font-size:13px">Failed to load requirements: ${e.message}</div>`;
+      }
+    }
+
+    function renderRequirementsTable() {
+      const classFilter = document.getElementById('reqClassFilter').value;
+      const typeFilter = document.getElementById('reqTypeFilter').value;
+
+      const filtered = currentRequirements.filter(r => {
+        if (classFilter && r.classification !== classFilter) return false;
+        if (typeFilter && r.type !== typeFilter) return false;
+        return true;
+      });
+
+      document.getElementById('reqFilterCount').textContent = `${filtered.length} visible`;
+
+      const container = document.getElementById('reqsContainer');
+
+      if (!filtered.length) {
+        container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">No requirements match the current filters.</div>';
+        return;
+      }
+
+      // Split into groups
+      const functional = filtered.filter(r => (r.classification || '').toUpperCase() === 'FUNCTIONAL');
+      const nonFunctional = filtered.filter(r => (r.classification || '').toUpperCase() === 'NON_FUNCTIONAL');
+      const other = filtered.filter(r => !['FUNCTIONAL', 'NON_FUNCTIONAL'].includes((r.classification || '').toUpperCase()));
+
+      function buildGroupRows(rows) {
+        return rows.map(r => `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="font-weight:600;font-size:11px;color:var(--accent-light);padding:8px">${r.requirement_id || '—'}</td>
+            <td style="padding:8px"><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${r.type === 'MANDATORY' ? 'rgba(239,68,68,0.12)' : 'rgba(107,114,128,0.12)'};color:${r.type === 'MANDATORY' ? '#ef4444' : '#9ca3af'};font-weight:600">${r.type}</span></td>
+            <td style="max-width:400px;line-height:1.5;padding:8px;font-size:12px" title="${(r.text || '').replace(/"/g, '&quot;')}">${r.text || '—'}</td>
+          </tr>
+        `).join('');
+      }
+
+      let html = '<div style="max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">';
+      html += '<table class="mapping-table" style="width:100%">';
+      html += `<thead style="position:sticky;top:0;background:var(--bg-secondary);z-index:10">
+        <tr>
+          <th style="width:100px;padding:8px">ID</th>
+          <th style="width:100px;padding:8px">Type</th>
+          <th style="padding:8px">Requirement Text</th>
+        </tr>
+      </thead><tbody>`;
+
+      // Functional group
+      if (functional.length) {
+        html += `<tr>
+          <td colspan="3" style="padding:10px 8px;background:rgba(99,102,241,0.08);border-left:4px solid #6366f1;font-weight:700;font-size:13px;color:#818cf8">
+            ⚙️ Functional Requirements
+            <span style="margin-left:8px;font-size:11px;font-weight:500;padding:2px 10px;border-radius:12px;background:rgba(99,102,241,0.15);color:#a5b4fc">${functional.length}</span>
+          </td>
+        </tr>`;
+        html += buildGroupRows(functional);
+      }
+
+      // Non-Functional group
+      if (nonFunctional.length) {
+        html += `<tr>
+          <td colspan="3" style="padding:10px 8px;background:rgba(16,185,129,0.08);border-left:4px solid #10b981;font-weight:700;font-size:13px;color:#34d399">
+            📐 Non-Functional Requirements
+            <span style="margin-left:8px;font-size:11px;font-weight:500;padding:2px 10px;border-radius:12px;background:rgba(16,185,129,0.15);color:#6ee7b7">${nonFunctional.length}</span>
+          </td>
+        </tr>`;
+        html += buildGroupRows(nonFunctional);
+      }
+
+      // Other/Unclassified group (if any)
+      if (other.length) {
+        html += `<tr>
+          <td colspan="3" style="padding:10px 8px;background:rgba(107,114,128,0.08);border-left:4px solid #6b7280;font-weight:700;font-size:13px;color:#9ca3af">
+            ❓ Unclassified
+            <span style="margin-left:8px;font-size:11px;font-weight:500;padding:2px 10px;border-radius:12px;background:rgba(107,114,128,0.15);color:#d1d5db">${other.length}</span>
+          </td>
+        </tr>`;
+        html += buildGroupRows(other);
+      }
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    }
+
+    document.getElementById('reqClassFilter').addEventListener('change', renderRequirementsTable);
+    document.getElementById('reqTypeFilter').addEventListener('change', renderRequirementsTable);
 
     // ── Init ───────────────────────────────────────
     let _healthInterval = null;
