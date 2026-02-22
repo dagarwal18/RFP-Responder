@@ -53,13 +53,10 @@ _SPECIFICATION_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\b(?:certified|certification|compliant|compliance|ISO|SOC|HIPAA|GDPR)\b", re.IGNORECASE), "compliance/cert"),
 ]
 
-# Sentence-splitting regex: split on period/newline boundaries while
-# keeping list items and numbered points as separate units.
+# Sentence-splitting regex inside blocks: split on period/newline boundaries.
+# Newlines are handled structurally first, so we only need to split inline sentence boundaries.
 _SENTENCE_SPLIT_RE = re.compile(
-    r"(?<=[.!?])\s+(?=[A-Z])"  # standard sentence boundary
-    r"|(?:\r?\n)+"             # newline boundaries
-    r"|(?<=\n)\s*(?=[•●○◦▪▸\-\*])"  # bullet items
-    r"|(?<=\n)\s*(?=\d+[.\):])"     # numbered items
+    r"(?<=[.!?])\s+(?=[A-Z0-9])"  # standard sentence boundary
 )
 
 
@@ -85,18 +82,95 @@ class ObligationDetector:
     def split_sentences(text: str) -> list[str]:
         """
         Split text into sentences/items preserving list structure.
-
-        Returns non-empty, stripped segments.
         """
         if not text or not text.strip():
             return []
 
-        raw_parts = _SENTENCE_SPLIT_RE.split(text)
+        return ObligationDetector._group_structural_blocks(text)
+
+    @staticmethod
+    def _group_structural_blocks(text: str) -> list[str]:
+        """
+        Intelligently group parent phrases with bulleted/numbered children
+        to prevent missing context.
+        """
+        lines = text.split('\n')
+        blocks = []
+        
+        list_item_re = re.compile(r"^\s*(?:[•●○◦▪▸\-\*]|\d+[.\):])\s*(.*)", re.IGNORECASE)
+        parent_re = re.compile(r"(?:[:]$|\b(?:following|below)\s*[:]?$)", re.IGNORECASE)
+        
+        def get_indent(s: str) -> int:
+            return len(s) - len(s.lstrip(' \t'))
+            
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if not line.strip():
+                i += 1
+                continue
+                
+            indent_i = get_indent(line)
+            stripped_line = line.strip()
+            
+            children = []
+            j = i + 1
+            
+            is_parent = bool(parent_re.search(stripped_line))
+            is_list_i = bool(list_item_re.match(line))
+            
+            while j < len(lines):
+                next_line = lines[j]
+                if not next_line.strip():
+                    j += 1
+                    continue
+                    
+                indent_j = get_indent(next_line)
+                is_list_j = bool(list_item_re.match(next_line))
+                
+                is_child = False
+                if is_list_j:
+                    if is_parent:
+                        is_child = True
+                    elif indent_j > indent_i:
+                        is_child = True
+                    elif not is_list_i:
+                        is_child = True
+                        
+                if is_child:
+                    child_match = list_item_re.match(next_line)
+                    child_content = child_match.group(1).strip() if child_match else next_line.strip()
+                    if child_content:
+                        children.append(child_content)
+                    else:
+                        children.append(next_line.strip())
+                    j += 1
+                else:
+                    break
+                    
+            if children:
+                merged = stripped_line
+                if not merged.endswith(" ") and not merged.endswith(":"):
+                    merged += " "
+                elif merged.endswith(":"):
+                    merged += " "
+                merged += ", ".join(children)
+                blocks.append(merged)
+                logger.debug(f"Grouped structural list with {len(children)} children")
+                i = j
+                continue
+                
+            blocks.append(stripped_line)
+            i += 1
+            
         sentences: list[str] = []
-        for part in raw_parts:
-            stripped = part.strip()
-            if stripped:
-                sentences.append(stripped)
+        for block in blocks:
+            parts = _SENTENCE_SPLIT_RE.split(block)
+            for part in parts:
+                p = part.strip()
+                if p:
+                    sentences.append(p)
+                    
         return sentences
 
     @staticmethod

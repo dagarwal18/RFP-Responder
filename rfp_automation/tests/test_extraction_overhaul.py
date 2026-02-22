@@ -304,3 +304,52 @@ class TestSemanticChunking:
     def test_empty_blocks(self):
         chunks = ParsingService.prepare_semantic_chunks([], max_chunk_size=2000)
         assert chunks == []
+
+
+# ═══════════════════════════════════════════════════════════
+# JSON Recovery & Boundary Truncation Tests
+# ═══════════════════════════════════════════════════════════
+
+
+class TestJSONRecovery:
+    def test_json_recovery_truncation(self):
+        from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent
+        
+        agent = RequirementsExtractionAgent()
+        # Simulated truncated JSON
+        truncated_json = '''[
+          {"requirement_id": "REQ-0001", "text": "Must do A"},
+          {"requirement_id": "REQ-0002", "text": "Must do B", "type": "MANDA'''
+        
+        # It should recover REQ-0001 because it can find the last '}'
+        reqs = agent._parse_requirements_json(truncated_json, "Section A", 1)
+        assert len(reqs) == 1
+        assert reqs[0].requirement_id == "REQ-0001"
+        assert reqs[0].text == "Must do A"
+        
+    def test_json_recovery_failure_raises(self):
+        from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent, ExtractionBatchError
+        
+        agent = RequirementsExtractionAgent()
+        # Completely garbled
+        garbled_json = '''[{"req'''
+        
+        with pytest.raises(ExtractionBatchError):
+            agent._parse_requirements_json(garbled_json, "Section A", 1)
+
+
+class TestTextBoundaryTruncation:
+    def test_truncate_at_sentence(self):
+        from rfp_automation.utils.text import truncate_at_boundary
+        
+        text = "This is a sentence. This is another sentence that goes on."
+        # If limit is 25, "This is a sentence. Thi" -> Should cut at "This is a sentence." (19 chars)
+        truncated = truncate_at_boundary(text, 25)
+        assert truncated.strip() == "This is a sentence."
+        
+    def test_truncate_at_paragraph(self):
+        from rfp_automation.utils.text import truncate_at_boundary
+        text = "Paragraph 1.\n\nParagraph 2 is here."
+        truncated = truncate_at_boundary(text, 20)
+        assert truncated == "Paragraph 1.\n\n"
+

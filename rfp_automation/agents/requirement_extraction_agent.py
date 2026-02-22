@@ -19,6 +19,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from rfp_automation.utils.text import truncate_at_boundary
+
 from rfp_automation.agents.base_agent import BaseAgent
 from rfp_automation.config import get_settings
 from rfp_automation.mcp import MCPService
@@ -43,6 +45,11 @@ logger = logging.getLogger(__name__)
 _PROMPT_PATH = (
     Path(__file__).resolve().parent.parent / "prompts" / "extraction_prompt.txt"
 )
+
+
+class ExtractionBatchError(Exception):
+    """Raised when an LLM batch fails unrecoverably and must be retried with smaller context."""
+    pass
 
 
 class RequirementsExtractionAgent(BaseAgent):
@@ -114,51 +121,52 @@ class RequirementsExtractionAgent(BaseAgent):
                 f"'{section_name}' ({section_indicators} indicator matches)"
             )
 
+            # Density Sanity Check
+            candidates_text_len = sum(len(c.text) for c in candidates)
+            density = candidates_text_len / len(raw_text) if len(raw_text) > 0 else 1.0
+            if density < settings.extraction_min_candidate_density:
+                logger.warning(
+                    f"[B1] Candidate density {density:.2%} is suspiciously low. "
+                    f"Falling back to full text extraction for section '{section_name}'."
+                )
+                fallback_sentences = ObligationDetector.split_sentences(raw_text)
+                candidates = [
+                    CandidateSentence(
+                        text=fs,
+                        indicators_found=[],
+                        sentence_index=fi,
+                        source_section=section_name
+                    ) for fi, fs in enumerate(fallback_sentences)
+                ]
+
             # Layer 2: LLM structuring/classification (Batched Extraction)
-            MAX_CANDIDATE_TEXT_LEN = 12000
             MAX_CONTEXT_LEN = 8000
+            section_context = truncate_at_boundary(raw_text, MAX_CONTEXT_LEN)
             
-            section_context = raw_text[:MAX_CONTEXT_LEN]
+            output_budget_tokens = int(settings.llm_max_tokens * settings.extraction_min_output_headroom_ratio)
+            input_budget_tokens = settings.llm_max_tokens - output_budget_tokens
+            overhead_tokens = len(section_context) // 4 + 400
             
-            current_batch_text = ""
-            current_batch_start_id = global_id_counter
+            # Start with maximum safe candidate tokens
+            available_candidate_tokens = max(500, input_budget_tokens - overhead_tokens)
+            max_candidate_chars = available_candidate_tokens * 4
+            
             before_section_reqs = len(all_requirements)
             
-            for candidate in candidates:
-                cand_str = f"[{candidate.sentence_index}] {candidate.text}\n"
+            i = 0
+            while i < len(candidates):
+                current_batch_text = ""
+                batch_candidates_count = 0
                 
-                if len(current_batch_text) + len(cand_str) > MAX_CANDIDATE_TEXT_LEN and current_batch_text:
-                    # Flush batch
-                    start_id = f"REQ-{current_batch_start_id:04d}"
-                    prompt = template.format(
-                        section_title=section_name,
-                        candidate_text=current_batch_text,
-                        section_context=section_context,
-                        start_id=start_id,
-                    )
-                    
-                    try:
-                        raw_response = llm_deterministic_call(prompt)
-                        logger.debug(f"[B1] LLM batch response: {len(raw_response)} chars")
-                    except Exception as exc:
-                        logger.error(f"[B1] LLM batch call failed: {exc}")
-                        raw_response = "[]"
-                        
-                    parsed = self._parse_requirements_json(raw_response, section_name, current_batch_start_id)
-                    for req in parsed:
-                        req.source_chunk_indices = chunk_indices
-                    all_requirements.extend(parsed)
-                    global_id_counter += len(parsed)
-                    
-                    # Start new batch
-                    current_batch_text = cand_str
-                    current_batch_start_id = global_id_counter
-                else:
+                # Fill batch up to limit
+                for j in range(i, len(candidates)):
+                    cand_str = f"[{candidates[j].sentence_index}] {candidates[j].text}\n"
+                    if current_batch_text and len(current_batch_text) + len(cand_str) > max_candidate_chars:
+                        break
                     current_batch_text += cand_str
-            
-            # Flush remaining batch
-            if current_batch_text:
-                start_id = f"REQ-{current_batch_start_id:04d}"
+                    batch_candidates_count += 1
+                
+                start_id = f"REQ-{global_id_counter:04d}"
                 prompt = template.format(
                     section_title=section_name,
                     candidate_text=current_batch_text,
@@ -168,16 +176,26 @@ class RequirementsExtractionAgent(BaseAgent):
                 
                 try:
                     raw_response = llm_deterministic_call(prompt)
-                    logger.debug(f"[B1] LLM final batch response: {len(raw_response)} chars")
-                except Exception as exc:
-                    logger.error(f"[B1] LLM final batch call failed: {exc}")
-                    raw_response = "[]"
+                    logger.debug(f"[B1] LLM batch response: {len(raw_response)} chars")
+                    parsed = self._parse_requirements_json(raw_response, section_name, global_id_counter)
+                    for req in parsed:
+                        req.source_chunk_indices = chunk_indices
+                    all_requirements.extend(parsed)
+                    global_id_counter += len(parsed)
+                    i += batch_candidates_count # move forward
                     
-                parsed = self._parse_requirements_json(raw_response, section_name, current_batch_start_id)
-                for req in parsed:
-                    req.source_chunk_indices = chunk_indices
-                all_requirements.extend(parsed)
-                global_id_counter += len(parsed)
+                except ExtractionBatchError as exc:
+                    logger.error(f"[B1] Extraction batch failed: {exc}. Shrinking batch size.")
+                    if batch_candidates_count == 1:
+                        logger.error(f"[B1] Impossible to shrink single candidate. Skipping candidate: {candidates[i].text}")
+                        i += 1
+                    else:
+                        # Shrink max_candidate_chars to half and retry (don't increment i)
+                        max_candidate_chars = max(200, max_candidate_chars // 2)
+                        
+                except Exception as exc:
+                    logger.error(f"[B1] LLM batch call failed unexpectedly: {exc}")
+                    i += batch_candidates_count
 
             extracted_for_section = len(all_requirements) - before_section_reqs
             logger.info(
@@ -259,24 +277,39 @@ class RequirementsExtractionAgent(BaseAgent):
             lines = [l for l in lines if not l.strip().startswith("```")]
             text = "\n".join(lines)
 
-        # Extract JSON array
-        try:
-            start = text.index("[")
-            end = text.rindex("]") + 1
-            text = text[start:end]
-        except ValueError:
+        # Extract JSON array — handle truncated outputs where ']' may be missing
+        bracket_start = text.find("[")
+        if bracket_start == -1:
             logger.warning("[B1] No JSON array found in LLM response")
             return []
+
+        bracket_end = text.rfind("]")
+        if bracket_end != -1 and bracket_end > bracket_start:
+            text = text[bracket_start:bracket_end + 1]
+        else:
+            # Truncated output: '[' found but no closing ']'
+            text = text[bracket_start:]
 
         try:
             data = json.loads(text)
         except json.JSONDecodeError as exc:
-            logger.warning(f"[B1] JSON parse error: {exc}")
-            return []
+            logger.warning(f"[B1] JSON parse error: {exc}. Attempting structured repair...")
+            last_brace = text.rfind("}")
+            if last_brace != -1:
+                repaired_text = text[:last_brace + 1] + "]"
+                try:
+                    data = json.loads(repaired_text)
+                    logger.warning(f"[B1] Recovered partial JSON array with {len(data)} items")
+                except json.JSONDecodeError as exc_inner:
+                    logger.error(f"[B1] FATAL JSON PARSE FAIL after repair: {text}")
+                    raise ExtractionBatchError("Unrecoverable JSON syntax") from exc_inner
+            else:
+                logger.error(f"[B1] FATAL JSON PARSE FAIL: No objects to recover in response: {text}")
+                raise ExtractionBatchError("Unrecoverable JSON syntax")
 
         if not isinstance(data, list):
             logger.warning("[B1] LLM response is not a JSON array")
-            return []
+            raise ExtractionBatchError("Expected JSON array")
 
         # Build Requirement objects
         requirements: list[Requirement] = []
@@ -353,20 +386,34 @@ class RequirementsExtractionAgent(BaseAgent):
 
         # Mark duplicates (O(n²) but n is typically < 500)
         is_duplicate = [False] * len(requirements)
+        
+        # Regex to strip everything but alphanumeric for strict structural diffing
+        norm_re = re.compile(r"[^\w\s]")
+        
         for i in range(len(requirements)):
             if is_duplicate[i]:
                 continue
             for j in range(i + 1, len(requirements)):
                 if is_duplicate[j]:
                     continue
+                    
                 sim = _cosine_similarity(embeddings[i], embeddings[j])
                 if sim > threshold:
-                    is_duplicate[j] = True
-                    logger.debug(
-                        f"[B1] Duplicate detected (sim={sim:.3f}): "
-                        f"'{requirements[j].text[:60]}' ≈ "
-                        f"'{requirements[i].text[:60]}'"
-                    )
+                    # Ensure texts are literally identical without punctuation/spaces
+                    text_i = norm_re.sub("", requirements[i].text.strip().lower())
+                    text_j = norm_re.sub("", requirements[j].text.strip().lower())
+                    
+                    if text_i == text_j:
+                        is_duplicate[j] = True
+                        logger.debug(
+                            f"[B1] Strict duplicate deleted (sim={sim:.3f}): "
+                            f"'{requirements[j].text[:60]}' == '{requirements[i].text[:60]}'"
+                        )
+                    else:
+                        logger.debug(
+                            f"[B1] Prevented over-aggressive dedup collision (sim={sim:.3f} > {threshold}): "
+                            f"'{requirements[i].text}' vs '{requirements[j].text}'"
+                        )
 
         unique = [r for r, dup in zip(requirements, is_duplicate) if not dup]
         return unique

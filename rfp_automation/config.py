@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     llm_model: str = "moonshotai/kimi-k2-instruct"
     llm_temperature: float = 0.2
-    llm_max_tokens: int = 4096
+    llm_max_tokens: int = 8192
 
     # ── MongoDB ──────────────────────────────────────────
     mongodb_uri: str = "mongodb://localhost:27017"
@@ -50,9 +50,11 @@ class Settings(BaseSettings):
     # ── B1 Extraction Overrides ──────────────────────────
     extraction_llm_temperature: float = 0.0
     extraction_llm_top_p: float = 1.0
-    extraction_dedup_similarity_threshold: float = 0.95
+    extraction_dedup_similarity_threshold: float = 0.99
     extraction_coverage_warn_ratio: float = 0.6
     extraction_max_chunk_size: int = 2000
+    extraction_min_output_headroom_ratio: float = 0.40
+    extraction_min_candidate_density: float = 0.15
 
     # ── Pipeline Limits ──────────────────────────────────
     max_validation_retries: int = 3

@@ -38,7 +38,12 @@ class TestObligationDetector:
     def test_split_preserves_bullets(self):
         text = "Requirements:\n- Must support SSO\n- Shall provide encryption\n- Must log all access"
         result = ObligationDetector.split_sentences(text)
-        assert len(result) >= 3  # header + 3 bullets
+        # Bullets are now merged with parent: "Requirements: Must support SSO, Shall provide encryption, Must log all access"
+        assert len(result) >= 1
+        merged = result[0]
+        assert "Must support SSO" in merged
+        assert "Shall provide encryption" in merged
+        assert "Must log all access" in merged
 
     def test_split_preserves_numbered_list(self):
         text = "1. The vendor must provide monitoring.\n2. The vendor shall deliver quarterly reports."

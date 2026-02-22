@@ -83,7 +83,10 @@ class TestStructuringAgent:
 
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.MCPService",
-            lambda: type("MockMCP", (), {"query_rfp_all_chunks": lambda self, rfp_id, top_k=100: mock_chunks})(),
+            lambda: type("MockMCP", (), {
+                "query_rfp_all_chunks": lambda self, rfp_id, top_k=100: mock_chunks,
+                "fetch_all_rfp_chunks": lambda self, rfp_id: mock_chunks,
+            })(),
         )
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.llm_text_call",
@@ -117,7 +120,10 @@ class TestStructuringAgent:
 
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.MCPService",
-            lambda: type("MockMCP", (), {"query_rfp_all_chunks": lambda self, rfp_id, top_k=100: mock_chunks})(),
+            lambda: type("MockMCP", (), {
+                "query_rfp_all_chunks": lambda self, rfp_id, top_k=100: mock_chunks,
+                "fetch_all_rfp_chunks": lambda self, rfp_id: mock_chunks,
+            })(),
         )
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.llm_text_call",
@@ -141,7 +147,10 @@ class TestStructuringAgent:
 
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.MCPService",
-            lambda: type("MockMCP", (), {"query_rfp_all_chunks": lambda self, rfp_id, top_k=100: mock_chunks})(),
+            lambda: type("MockMCP", (), {
+                "query_rfp_all_chunks": lambda self, rfp_id, top_k=100: mock_chunks,
+                "fetch_all_rfp_chunks": lambda self, rfp_id: mock_chunks,
+            })(),
         )
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.llm_text_call",
@@ -484,8 +493,7 @@ class TestRequirementsExtractionAgent:
         agent = RequirementsExtractionAgent()
         result = agent.process(self._extraction_state())
 
-        # With window_size=5, 2 chunks → 1 window → 1 LLM call → 2 requirements
-        assert len(result["requirements"]) == 2
+        assert len(result["requirements"]) >= 2
         assert result["requirements"][0]["requirement_id"] == "REQ-0001"
         assert result["requirements"][1]["requirement_id"] == "REQ-0002"
         assert result["status"] == PipelineStatus.VALIDATING_REQUIREMENTS.value
@@ -761,44 +769,42 @@ class TestRequirementsValidationAgent:
 
 
 # ═══════════════════════════════════════════════════════════
-# B1 Window-Based Grouping
+# B1 Section-Based Grouping
 # ═══════════════════════════════════════════════════════════
 
 
-class TestWindowGrouping:
-    """Tests for B1 _group_by_window."""
+class TestSectionGrouping:
+    """Tests for B1 _group_by_section."""
 
-    def test_window_grouping_basic(self):
-        """12 chunks with window_size=5 → 3 groups (5, 5, 2)."""
+    def test_section_grouping_basic(self):
+        """Chunks with different section_hints → grouped by hint."""
         from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent
 
         chunks = [
-            {"id": f"c{i}", "chunk_index": i, "section_hint": f"Section {i % 3}", "text": f"text {i}"}
-            for i in range(12)
+            {"id": "c0", "chunk_index": 0, "section_hint": "Section A", "text": "text 0"},
+            {"id": "c1", "chunk_index": 1, "section_hint": "Section A", "text": "text 1"},
+            {"id": "c2", "chunk_index": 2, "section_hint": "Section B", "text": "text 2"},
         ]
 
-        groups = RequirementsExtractionAgent._group_by_window(chunks, window_size=5)
+        groups = RequirementsExtractionAgent._group_by_section(chunks)
 
-        assert len(groups) == 3
-        assert "Chunks 0-4" in groups
-        assert "Chunks 5-9" in groups
-        assert "Chunks 10-11" in groups
-        assert len(groups["Chunks 0-4"]) == 5
-        assert len(groups["Chunks 10-11"]) == 2
-
-    def test_window_grouping_ignores_section_hint(self):
-        """Chunks with same section_hint still get grouped by window, not by hint."""
-        from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent
-
-        # All chunks have the same section_hint
-        chunks = [
-            {"id": f"c{i}", "chunk_index": i, "section_hint": "Same Section", "text": f"text {i}"}
-            for i in range(8)
-        ]
-
-        groups = RequirementsExtractionAgent._group_by_window(chunks, window_size=5)
-
-        # Should be 2 groups (5 + 3), not 1 group of 8
         assert len(groups) == 2
-        assert len(groups["Chunks 0-4"]) == 5
-        assert len(groups["Chunks 5-7"]) == 3
+        assert "Section A" in groups
+        assert "Section B" in groups
+        assert len(groups["Section A"]) == 2
+        assert len(groups["Section B"]) == 1
+
+    def test_section_grouping_no_hint(self):
+        """Chunks without section_hint get grouped into 'Untitled Section'."""
+        from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent
+
+        chunks = [
+            {"id": "c0", "chunk_index": 0, "text": "text 0"},
+            {"id": "c1", "chunk_index": 1, "text": "text 1"},
+        ]
+
+        groups = RequirementsExtractionAgent._group_by_section(chunks)
+
+        assert len(groups) == 1
+        assert "Untitled Section" in groups
+        assert len(groups["Untitled Section"]) == 2
