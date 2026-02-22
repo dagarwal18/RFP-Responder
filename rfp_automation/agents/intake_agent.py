@@ -69,8 +69,8 @@ class IntakeAgent(BaseAgent):
         logger.info(f"[A1] Extracted metadata: {extracted_meta}")
 
         # ── 4. Prepare structured chunks ─────────────────
-        chunks = ParsingService.prepare_chunks(blocks)
-        logger.info(f"[A1] Prepared {len(chunks)} chunks")
+        chunks = ParsingService.prepare_semantic_chunks(blocks)
+        logger.info(f"[A1] Prepared {len(chunks)} semantic chunks")
         for i, c in enumerate(chunks[:5]):
             logger.debug(f"[A1]   Chunk {i}: type={c.get('content_type')} section={c.get('section_hint')} len={len(c.get('text',''))}")
         if len(chunks) > 5:

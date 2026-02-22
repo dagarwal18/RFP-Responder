@@ -71,7 +71,7 @@ class RequirementsExtractionAgent(BaseAgent):
             f"(sorted by chunk_index)"
         )
 
-        # ── 2. Group chunks by section_hint ──────────────────
+        # ── 2. Group chunks by section ────────────
         section_groups = self._group_by_section(all_chunks)
         logger.info(f"[B1] Grouped into {len(section_groups)} sections")
 
@@ -114,47 +114,76 @@ class RequirementsExtractionAgent(BaseAgent):
                 f"'{section_name}' ({section_indicators} indicator matches)"
             )
 
-            # Layer 2: LLM structuring/classification
-            candidate_text = "\n".join(
-                f"[{i+1}] {c.text}" for i, c in enumerate(candidates)
-            )
-
-            start_id = f"REQ-{global_id_counter:04d}"
-            prompt = template.format(
-                section_title=section_name,
-                candidate_text=candidate_text[:6000],
-                section_context=raw_text[:4000],
-                start_id=start_id,
-            )
-
-            try:
-                raw_response = llm_deterministic_call(prompt)
-                logger.debug(
-                    f"[B1] LLM response for '{section_name}': "
-                    f"{len(raw_response)} chars"
+            # Layer 2: LLM structuring/classification (Batched Extraction)
+            MAX_CANDIDATE_TEXT_LEN = 12000
+            MAX_CONTEXT_LEN = 8000
+            
+            section_context = raw_text[:MAX_CONTEXT_LEN]
+            
+            current_batch_text = ""
+            current_batch_start_id = global_id_counter
+            before_section_reqs = len(all_requirements)
+            
+            for candidate in candidates:
+                cand_str = f"[{candidate.sentence_index}] {candidate.text}\n"
+                
+                if len(current_batch_text) + len(cand_str) > MAX_CANDIDATE_TEXT_LEN and current_batch_text:
+                    # Flush batch
+                    start_id = f"REQ-{current_batch_start_id:04d}"
+                    prompt = template.format(
+                        section_title=section_name,
+                        candidate_text=current_batch_text,
+                        section_context=section_context,
+                        start_id=start_id,
+                    )
+                    
+                    try:
+                        raw_response = llm_deterministic_call(prompt)
+                        logger.debug(f"[B1] LLM batch response: {len(raw_response)} chars")
+                    except Exception as exc:
+                        logger.error(f"[B1] LLM batch call failed: {exc}")
+                        raw_response = "[]"
+                        
+                    parsed = self._parse_requirements_json(raw_response, section_name, current_batch_start_id)
+                    for req in parsed:
+                        req.source_chunk_indices = chunk_indices
+                    all_requirements.extend(parsed)
+                    global_id_counter += len(parsed)
+                    
+                    # Start new batch
+                    current_batch_text = cand_str
+                    current_batch_start_id = global_id_counter
+                else:
+                    current_batch_text += cand_str
+            
+            # Flush remaining batch
+            if current_batch_text:
+                start_id = f"REQ-{current_batch_start_id:04d}"
+                prompt = template.format(
+                    section_title=section_name,
+                    candidate_text=current_batch_text,
+                    section_context=section_context,
+                    start_id=start_id,
                 )
-            except Exception as exc:
-                logger.error(
-                    f"[B1] LLM call failed for section '{section_name}': {exc}"
-                )
-                continue
+                
+                try:
+                    raw_response = llm_deterministic_call(prompt)
+                    logger.debug(f"[B1] LLM final batch response: {len(raw_response)} chars")
+                except Exception as exc:
+                    logger.error(f"[B1] LLM final batch call failed: {exc}")
+                    raw_response = "[]"
+                    
+                parsed = self._parse_requirements_json(raw_response, section_name, current_batch_start_id)
+                for req in parsed:
+                    req.source_chunk_indices = chunk_indices
+                all_requirements.extend(parsed)
+                global_id_counter += len(parsed)
 
-            # Parse into Requirement objects
-            parsed = self._parse_requirements_json(
-                raw_response, section_name, global_id_counter
-            )
-
-            # Attach chunk traceability
-            for req in parsed:
-                req.source_chunk_indices = chunk_indices
-
+            extracted_for_section = len(all_requirements) - before_section_reqs
             logger.info(
-                f"[B1] Extracted {len(parsed)} requirements from "
+                f"[B1] Extracted {extracted_for_section} requirements from "
                 f"'{section_name}'"
             )
-
-            global_id_counter += len(parsed)
-            all_requirements.extend(parsed)
 
         # ── 5. Deduplication (embedding-based + text fallback) ─
         before_dedup = len(all_requirements)
@@ -199,19 +228,19 @@ class RequirementsExtractionAgent(BaseAgent):
 
     @staticmethod
     def _group_by_section(
-        chunks: list[dict[str, Any]],
+        chunks: list[dict[str, Any]]
     ) -> dict[str, list[dict[str, Any]]]:
         """
-        Group chunks by section_hint, preserving document order.
-
-        Returns an OrderedDict-like dict (insertion order) where each key
-        is a section name and the value is the list of chunks in that section.
+        Group chunks by their section boundary (section_hint/breadcrumb).
+        This preserves semantic coherence for extraction context.
         """
-        groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        groups: dict[str, list[dict[str, Any]]] = {}
         for chunk in chunks:
-            section = chunk.get("section_hint", "Untitled Section")
-            groups[section].append(chunk)
-        return dict(groups)
+            section_name = chunk.get("section_hint") or "Untitled Section"
+            if section_name not in groups:
+                groups[section_name] = []
+            groups[section_name].append(chunk)
+        return groups
 
     # ── JSON parsing ─────────────────────────────────────────
 

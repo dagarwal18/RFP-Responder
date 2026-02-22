@@ -41,6 +41,18 @@ _OBLIGATION_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\bshould\s+not\b", re.IGNORECASE), "should not"),
 ]
 
+# ── Specification indicator patterns ───────────────────────
+# Catch functional requirements, SLAs, and parameters that might lack a verb
+_SPECIFICATION_PATTERNS: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"\b\d+(?:\.\d+)?\s*%\s*(?:uptime|availability)\b", re.IGNORECASE), "uptime %"),
+    (re.compile(r"\b(?:SLA|service level agreement)s?\b", re.IGNORECASE), "SLA"),
+    (re.compile(r"\b(?:RTO|RPO)\b", re.IGNORECASE), "RTO/RPO"),
+    (re.compile(r"\b\d+\s*(?:ms|milliseconds|seconds|minutes|hours|days)\b", re.IGNORECASE), "time duration"),
+    (re.compile(r"\bcapacity\s+of\b", re.IGNORECASE), "capacity"),
+    (re.compile(r"\b(?:API|integration|webhook|SSO|SAML|OIDC)s?\b", re.IGNORECASE), "integration/auth"),
+    (re.compile(r"\b(?:certified|certification|compliant|compliance|ISO|SOC|HIPAA|GDPR)\b", re.IGNORECASE), "compliance/cert"),
+]
+
 # Sentence-splitting regex: split on period/newline boundaries while
 # keeping list items and numbered points as separate units.
 _SENTENCE_SPLIT_RE = re.compile(
@@ -106,7 +118,7 @@ class ObligationDetector:
 
         for idx, sentence in enumerate(sentences):
             matched_indicators: list[str] = []
-            for pattern, label in _OBLIGATION_PATTERNS:
+            for pattern, label in _OBLIGATION_PATTERNS + _SPECIFICATION_PATTERNS:
                 if pattern.search(sentence):
                     matched_indicators.append(label)
 
@@ -136,6 +148,6 @@ class ObligationDetector:
             return 0
 
         count = 0
-        for pattern, _label in _OBLIGATION_PATTERNS:
+        for pattern, _label in _OBLIGATION_PATTERNS + _SPECIFICATION_PATTERNS:
             count += len(pattern.findall(text))
         return count

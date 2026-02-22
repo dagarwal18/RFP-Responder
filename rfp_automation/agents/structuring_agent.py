@@ -140,9 +140,9 @@ class StructuringAgent(BaseAgent):
     def _strategy_all_chunks(
         self, mcp: MCPService, rfp_id: str
     ) -> list[dict[str, Any]]:
-        """Attempt 0: retrieve all stored chunks in document order."""
-        logger.info("[A2] Strategy 0: retrieving all stored chunks")
-        return mcp.query_rfp_all_chunks(rfp_id, top_k=100)
+        """Attempt 0: retrieve all stored chunks deterministically in document order."""
+        logger.info("[A2] Strategy 0: retrieving all stored chunks (deterministic fetch)")
+        return mcp.fetch_all_rfp_chunks(rfp_id)
 
     def _strategy_category_queries(
         self, mcp: MCPService, rfp_id: str
@@ -241,7 +241,7 @@ class StructuringAgent(BaseAgent):
     def _call_llm_and_parse(self, prompt: str) -> list[RFPSection]:
         """Call LLM and parse JSON response into RFPSection objects."""
         try:
-            raw_response = llm_text_call(prompt)
+            raw_response = llm_text_call(prompt, deterministic=True)
             logger.debug(f"[A2] Raw LLM response ({len(raw_response)} chars):\n{raw_response[:2000]}")
         except Exception as exc:
             logger.error(f"[A2] LLM call failed: {exc}")

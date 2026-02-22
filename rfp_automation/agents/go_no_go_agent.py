@@ -84,7 +84,7 @@ class GoNoGoAgent(BaseAgent):
 
         # ── 6. Call LLM ─────────────────────────────────
         logger.info("[A3] Calling LLM for Go/No-Go analysis…")
-        raw_response = llm_text_call(prompt)
+        raw_response = llm_text_call(prompt, deterministic=True)
         logger.debug(f"[A3] Raw LLM response ({len(raw_response)} chars):\n{raw_response[:2000]}")
 
         # ── 7. Parse response ───────────────────────────

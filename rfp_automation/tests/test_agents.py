@@ -87,7 +87,7 @@ class TestStructuringAgent:
         )
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.llm_text_call",
-            lambda prompt: llm_response,
+            lambda prompt, deterministic=False: llm_response,
         )
 
         agent = StructuringAgent()
@@ -121,7 +121,7 @@ class TestStructuringAgent:
         )
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.llm_text_call",
-            lambda prompt: llm_response,
+            lambda prompt, deterministic=False: llm_response,
         )
 
         agent = StructuringAgent()
@@ -145,7 +145,7 @@ class TestStructuringAgent:
         )
         monkeypatch.setattr(
             "rfp_automation.agents.structuring_agent.llm_text_call",
-            lambda prompt: "This is not valid JSON at all",
+            lambda prompt, deterministic=False: "This is not valid JSON at all",
         )
 
         agent = StructuringAgent()
@@ -233,7 +233,7 @@ class TestGoNoGoAgent:
         })()
 
         monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.MCPService", lambda: mock_mcp)
-        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt: llm_response)
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt, deterministic=False: llm_response)
 
         agent = GoNoGoAgent()
         result = agent.process(self._go_no_go_state())
@@ -277,7 +277,7 @@ class TestGoNoGoAgent:
         })()
 
         monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.MCPService", lambda: mock_mcp)
-        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt: llm_response)
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt, deterministic=False: llm_response)
 
         agent = GoNoGoAgent()
         result = agent.process(self._go_no_go_state())
@@ -321,7 +321,7 @@ class TestGoNoGoAgent:
         })()
 
         monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.MCPService", lambda: mock_mcp)
-        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt: llm_response)
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt, deterministic=False: llm_response)
 
         agent = GoNoGoAgent()
         result = agent.process(self._go_no_go_state())
@@ -366,7 +366,7 @@ class TestGoNoGoAgent:
         })()
 
         monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.MCPService", lambda: mock_mcp)
-        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt: llm_response)
+        monkeypatch.setattr("rfp_automation.agents.go_no_go_agent.llm_text_call", lambda prompt, deterministic=False: llm_response)
 
         agent = GoNoGoAgent()
         result = agent.process(self._go_no_go_state())
@@ -484,9 +484,10 @@ class TestRequirementsExtractionAgent:
         agent = RequirementsExtractionAgent()
         result = agent.process(self._extraction_state())
 
-        assert len(result["requirements"]) == 3
+        # With window_size=5, 2 chunks → 1 window → 1 LLM call → 2 requirements
+        assert len(result["requirements"]) == 2
         assert result["requirements"][0]["requirement_id"] == "REQ-0001"
-        assert result["requirements"][2]["requirement_id"] == "REQ-0003"
+        assert result["requirements"][1]["requirement_id"] == "REQ-0002"
         assert result["status"] == PipelineStatus.VALIDATING_REQUIREMENTS.value
 
     def test_extraction_no_chunks(self, monkeypatch):
@@ -605,7 +606,7 @@ class TestRequirementsValidationAgent:
         from rfp_automation.agents import RequirementsValidationAgent
 
         monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call",
-                            lambda prompt: json.dumps({"confidence_score": 0.92, "issues": [], "requirement_notes": {}}))
+                            lambda prompt, deterministic=False: json.dumps({"confidence_score": 0.92, "issues": [], "requirement_notes": {}}))
 
         agent = RequirementsValidationAgent()
         result = agent.process(self._validation_state())
@@ -624,7 +625,7 @@ class TestRequirementsValidationAgent:
 
         call_count = {"n": 0}
 
-        def mock_llm(prompt):
+        def mock_llm(prompt, deterministic=False):
             call_count["n"] += 1
             if call_count["n"] == 1:
                 return json.dumps({
@@ -650,7 +651,7 @@ class TestRequirementsValidationAgent:
         from rfp_automation.agents import RequirementsValidationAgent
 
         monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call",
-                            lambda prompt: json.dumps({
+                            lambda prompt, deterministic=False: json.dumps({
                                 "confidence_score": 0.75,
                                 "issues": [
                                     {"issue_type": "duplicate", "requirement_ids": ["REQ-001", "REQ-002"],
@@ -684,3 +685,120 @@ class TestRequirementsValidationAgent:
         assert vr["confidence_score"] == 0.0
         assert result["status"] == PipelineStatus.ARCHITECTURE_PLANNING.value
 
+    def test_refinement_guardrail_rejects_new_issues(self, monkeypatch):
+        """If refinement returns MORE issues than original, discard it."""
+        from rfp_automation.agents import RequirementsValidationAgent
+
+        call_count = {"n": 0}
+
+        def mock_llm(prompt, deterministic=False):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                # Initial validation: 1 issue, low confidence
+                return json.dumps({
+                    "confidence_score": 0.45,
+                    "issues": [{"issue_type": "ambiguity", "requirement_ids": ["REQ-001"],
+                                "description": "Vague requirement", "severity": "warning"}],
+                    "requirement_notes": {},
+                })
+            else:
+                # Refinement: LLM tries to inject 3 issues (was 1)
+                return json.dumps({
+                    "confidence_score": 0.80,
+                    "issues": [
+                        {"issue_type": "ambiguity", "requirement_ids": ["REQ-001"],
+                         "description": "Vague requirement", "severity": "warning"},
+                        {"issue_type": "duplicate", "requirement_ids": ["REQ-001", "REQ-002"],
+                         "description": "Hallucinated duplicate", "severity": "error"},
+                        {"issue_type": "contradiction", "requirement_ids": ["REQ-002"],
+                         "description": "Hallucinated contradiction", "severity": "error"},
+                    ],
+                    "requirement_notes": {},
+                })
+
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call", mock_llm)
+
+        agent = RequirementsValidationAgent()
+        result = agent.process(self._validation_state())
+
+        # Guardrail should have kept the original 1 issue & low confidence
+        vr = result["requirements_validation"]
+        assert len(vr["issues"]) == 1
+        assert vr["confidence_score"] == 0.45
+
+    def test_refinement_prompt_includes_rfp_context(self, monkeypatch):
+        """When raw_text is available, refinement prompt should contain RFP excerpts."""
+        from rfp_automation.agents import RequirementsValidationAgent
+        from rfp_automation.models.schemas import RFPMetadata
+
+        captured_prompts = []
+
+        def mock_llm(prompt, deterministic=False):
+            captured_prompts.append(prompt)
+            if len(captured_prompts) == 1:
+                return json.dumps({
+                    "confidence_score": 0.45,
+                    "issues": [{"issue_type": "ambiguity", "requirement_ids": ["REQ-001"],
+                                "description": "Vague requirement", "severity": "warning"}],
+                    "requirement_notes": {},
+                })
+            else:
+                return json.dumps({"confidence_score": 0.78, "issues": [], "requirement_notes": {}})
+
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call", mock_llm)
+
+        # Create state with raw_text
+        state = self._validation_state()
+        state["raw_text"] = "The vendor must provide 24/7 support. SAML 2.0 SSO is required."
+
+        agent = RequirementsValidationAgent()
+        agent.process(state)
+
+        # Second prompt (refinement) should contain RFP text
+        assert len(captured_prompts) == 2
+        assert "24/7 support" in captured_prompts[1]
+        assert "SAML 2.0" in captured_prompts[1]
+
+
+# ═══════════════════════════════════════════════════════════
+# B1 Window-Based Grouping
+# ═══════════════════════════════════════════════════════════
+
+
+class TestWindowGrouping:
+    """Tests for B1 _group_by_window."""
+
+    def test_window_grouping_basic(self):
+        """12 chunks with window_size=5 → 3 groups (5, 5, 2)."""
+        from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent
+
+        chunks = [
+            {"id": f"c{i}", "chunk_index": i, "section_hint": f"Section {i % 3}", "text": f"text {i}"}
+            for i in range(12)
+        ]
+
+        groups = RequirementsExtractionAgent._group_by_window(chunks, window_size=5)
+
+        assert len(groups) == 3
+        assert "Chunks 0-4" in groups
+        assert "Chunks 5-9" in groups
+        assert "Chunks 10-11" in groups
+        assert len(groups["Chunks 0-4"]) == 5
+        assert len(groups["Chunks 10-11"]) == 2
+
+    def test_window_grouping_ignores_section_hint(self):
+        """Chunks with same section_hint still get grouped by window, not by hint."""
+        from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent
+
+        # All chunks have the same section_hint
+        chunks = [
+            {"id": f"c{i}", "chunk_index": i, "section_hint": "Same Section", "text": f"text {i}"}
+            for i in range(8)
+        ]
+
+        groups = RequirementsExtractionAgent._group_by_window(chunks, window_size=5)
+
+        # Should be 2 groups (5 + 3), not 1 group of 8
+        assert len(groups) == 2
+        assert len(groups["Chunks 0-4"]) == 5
+        assert len(groups["Chunks 5-7"]) == 3

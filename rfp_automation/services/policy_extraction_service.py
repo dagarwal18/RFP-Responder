@@ -38,31 +38,49 @@ class PolicyExtractionService:
         """
         Extract policies from document text via LLM and append to the
         persisted JSON file.  Returns list of newly extracted policies.
+        Processes in small batches to avoid LLM token limits and JSON truncation.
         """
+        import time
         # Determine next POL-ID
         existing = self._load_policies()
         start_id = self._next_policy_number(existing)
 
-        # Build prompt
-        combined_text = "\n".join(texts[:50])  # first 50 blocks
-        prompt = self._build_prompt(combined_text, doc_type, filename, start_id)
+        # Batch texts to prevent hitting max response length
+        BATCH_SIZE = 15
+        all_new_policies = []
+        
+        logger.info(f"[PolicyExtraction] Extracting policies from {filename} ({len(texts)} blocks in batches of {BATCH_SIZE})…")
 
-        # Call LLM with retries on empty responses
-        logger.info(f"[PolicyExtraction] Extracting policies from {filename} ({len(texts)} blocks)…")
-        raw_response = llm_text_call(prompt, max_retries=2)
+        for i in range(0, min(len(texts), 90), BATCH_SIZE):  # Process up to first 90 chunks
+            batch_texts = texts[i:i + BATCH_SIZE]
+            combined_text = "\n".join(batch_texts)
+            prompt = self._build_prompt(combined_text, doc_type, filename, start_id)
+            
+            logger.debug(f"[PolicyExtraction] Processing batch {i//BATCH_SIZE + 1}...")
 
-        if not raw_response.strip():
-            logger.error(
-                f"[PolicyExtraction] LLM returned empty response after all retries "
-                f"for {filename} — no policies extracted"
-            )
-            return []
+            try:
+                raw_response = llm_text_call(prompt, max_retries=1)
+                
+                if not raw_response.strip():
+                    logger.warning(f"[PolicyExtraction] Empty response for batch {i//BATCH_SIZE + 1} of {filename}")
+                    continue
 
-        # Parse
-        new_policies = self._parse_response(raw_response)
-        if not new_policies:
-            logger.warning(f"[PolicyExtraction] No policies extracted from {filename}")
-            return []
+                batch_policies = self._parse_response(raw_response)
+                
+                if batch_policies:
+                    all_new_policies.extend(batch_policies)
+                    start_id += len(batch_policies)
+                    logger.debug(f"[PolicyExtraction] Extracted {len(batch_policies)} policies from batch {i//BATCH_SIZE + 1}")
+                else:
+                    logger.warning(f"[PolicyExtraction] No valid JSON policies from batch {i//BATCH_SIZE + 1}")
+                    
+            except Exception as e:
+                logger.error(f"[PolicyExtraction] Error evaluating batch {i//BATCH_SIZE + 1}: {e}")
+            
+            # Brief sleep to avoid rapid rate limits
+            time.sleep(1)
+
+        new_policies = all_new_policies
 
         # Enrich with metadata
         now = datetime.now(timezone.utc).isoformat()

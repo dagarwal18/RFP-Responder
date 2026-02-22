@@ -39,6 +39,7 @@ class MCPService:
         from .rules.validation_rules import ValidationRules
         from .rules.commercial_rules import CommercialRules
         from .rules.legal_rules import LegalRules
+        from rfp_automation.services.section_store import SectionStore
 
         self.rfp_store = RFPVectorStore()
         self.knowledge_base = KnowledgeStore()
@@ -46,6 +47,7 @@ class MCPService:
         self.validation_rules = ValidationRules()
         self.commercial_rules = CommercialRules()
         self.legal_rules = LegalRules()
+        self.section_store = SectionStore()
 
     # ── Convenience: RFP document storage ────────────────
 
@@ -83,11 +85,49 @@ class MCPService:
         text, page_start, page_end.
         Returns vector count.
         """
-        logger.debug(f"[MCPService] store_rfp_chunks: rfp_id={rfp_id}, {len(chunks)} chunks, source={source_file}")
+        logger.debug(f"[MCPService] store_rfp_chunks: rfp_id={rfp_id}, {len(chunks)} chunks")
+        
+        # Save full texts to Mongo/JSON
+        self.section_store.save_sections(rfp_id, chunks)
+
         extra = {"source_file": source_file} if source_file else {}
         count = self.rfp_store.embed_chunks(rfp_id, chunks, extra_metadata=extra)
         logger.info(f"[MCPService] Stored {count} vectors for {rfp_id}")
         return count
+
+    def load_rfp_sections(self, rfp_id: str) -> dict[str, dict[str, Any]]:
+        """Load full text sections from the section store."""
+        return self.section_store.load_sections(rfp_id)
+
+    def _hydrate_chunks(self, rfp_id: str, chunks: list[dict[str, Any]]) -> None:
+        """Inject full text from MongoDB/JSON into retrieved Pinecone chunks."""
+        if not rfp_id or not chunks:
+            return
+            
+        full_sections = self.section_store.load_sections(rfp_id)
+        hydrated_count = 0
+        
+        for chunk in chunks:
+            chunk_id = chunk.get("metadata", {}).get("chunk_id")
+            if not chunk_id:
+                # Fallback to id parsing if chunk_id not in metadata
+                # Format is usually {rfp_id}_chunk_{index}
+                pass
+                
+            if chunk_id and chunk_id in full_sections:
+                # Replace the truncated text with the full text
+                full_text = full_sections[chunk_id].get("text", "")
+                if full_text:
+                    chunk["text"] = full_text
+                    # Also update metadata for consistency if agents read it
+                    chunk["metadata"]["text"] = full_text
+                    hydrated_count += 1
+                    
+        if hydrated_count < len(chunks):
+            logger.warning(
+                f"[MCPService] Hydration mismatch on {rfp_id}: "
+                f"Hydrated {hydrated_count}/{len(chunks)} chunks"
+            )
 
     # ── Convenience: RFP query ───────────────────────────
 
@@ -100,6 +140,8 @@ class MCPService:
         """Convenience: semantic search over RFP chunks."""
         logger.debug(f"[MCPService] query_rfp: q={query[:60]!r}, rfp_id={rfp_id}, top_k={top_k}")
         results = self.rfp_store.query(query, rfp_id, top_k)
+        if rfp_id:
+            self._hydrate_chunks(rfp_id, results)
         logger.debug(f"[MCPService] query_rfp returned {len(results)} results")
         return results
 
@@ -113,6 +155,7 @@ class MCPService:
         """Retrieve all chunks for an RFP (for full-document classification)."""
         logger.debug(f"[MCPService] query_rfp_all_chunks: rfp_id={rfp_id}, top_k={top_k}")
         results = self.rfp_store.query_all(rfp_id, top_k)
+        self._hydrate_chunks(rfp_id, results)
         logger.debug(f"[MCPService] query_rfp_all_chunks returned {len(results)} chunks")
         return results
 
@@ -131,8 +174,9 @@ class MCPService:
         """
         logger.debug(f"[MCPService] fetch_all_rfp_chunks: rfp_id={rfp_id}")
         results = self.rfp_store.fetch_all_vectors(rfp_id)
+        self._hydrate_chunks(rfp_id, results)
         logger.debug(
-            f"[MCPService] fetch_all_rfp_chunks returned {len(results)} chunks"
+            f"[MCPService] fetch_all_rfp_chunks returned {len(results)} chunks (hydrated)"
         )
         return results
 

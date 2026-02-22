@@ -74,19 +74,40 @@ def llm_json_call(prompt: str, output_model: Type[T]) -> T:
     return result
 
 
-def llm_text_call(prompt: str, max_retries: int = 0) -> str:
+def llm_text_call(prompt: str, max_retries: int = 0, deterministic: bool = False) -> str:
     """
     Call the LLM and return the raw text response.
     Retries up to *max_retries* times on empty responses.
+
+    When *deterministic* is True, a dedicated LLM instance with
+    temperature=0 and top_p=1 is used instead of the shared singleton.
+    This ensures reproducible output for analytical/classification tasks.
     """
     import time
 
-    logger.debug(
-        f"[LLM-TEXT] Prompt length: {len(prompt)} chars"
-    )
-    logger.debug(f"[LLM-TEXT] Prompt preview:\n{prompt[:500]}{'…' if len(prompt) > 500 else ''}")
+    tag = "[LLM-TEXT-DET]" if deterministic else "[LLM-TEXT]"
 
-    llm = get_llm()
+    logger.debug(
+        f"{tag} Prompt length: {len(prompt)} chars"
+    )
+    logger.debug(f"{tag} Prompt preview:\n{prompt[:500]}{'…' if len(prompt) > 500 else ''}")
+
+    if deterministic:
+        from langchain_groq import ChatGroq
+
+        settings = get_settings()
+        if not settings.groq_api_key:
+            raise ValueError("GROQ_API_KEY is not set in environment / .env file")
+        llm = ChatGroq(
+            api_key=settings.groq_api_key,
+            model=settings.llm_model,
+            temperature=0.0,
+            max_tokens=settings.llm_max_tokens,
+            model_kwargs={"top_p": 1.0, "seed": 42},
+        )
+    else:
+        llm = get_llm()
+
     attempts = max_retries + 1
 
     for attempt in range(1, attempts + 1):
@@ -100,19 +121,19 @@ def llm_text_call(prompt: str, max_retries: int = 0) -> str:
         finish_reason = meta.get("finish_reason", "unknown")
         usage = meta.get("token_usage") or meta.get("usage", {})
         logger.info(
-            f"[LLM-TEXT] Response received in {elapsed:.2f}s | "
+            f"{tag} Response received in {elapsed:.2f}s | "
             f"Response length: {len(content)} chars | "
             f"finish_reason={finish_reason} | "
             f"tokens={usage}"
         )
-        logger.debug(f"[LLM-TEXT] Full response:\n{content}")
+        logger.debug(f"{tag} Full response:\n{content}")
 
         if content.strip():
             return content
 
         # Empty response — warn and retry if allowed
         logger.warning(
-            f"[LLM-TEXT] Empty response on attempt {attempt}/{attempts} "
+            f"{tag} Empty response on attempt {attempt}/{attempts} "
             f"(finish_reason={finish_reason}). "
             f"{'Retrying…' if attempt < attempts else 'No retries left.'}"
         )
@@ -140,7 +161,7 @@ def llm_deterministic_call(prompt: str, max_retries: int = 1) -> str:
         model=settings.llm_model,
         temperature=settings.extraction_llm_temperature,  # 0.0
         max_tokens=settings.llm_max_tokens,
-        model_kwargs={"top_p": settings.extraction_llm_top_p},  # 1.0
+        model_kwargs={"top_p": settings.extraction_llm_top_p, "seed": 42},  # 1.0
     )
 
     logger.debug(

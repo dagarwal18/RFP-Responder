@@ -253,7 +253,7 @@ class ParsingService:
     @staticmethod
     def prepare_semantic_chunks(
         blocks: list[dict[str, Any]],
-        max_chunk_size: int = 2000,
+        max_chunk_size: int = 8000,
     ) -> list[dict[str, Any]]:
         """
         Group blocks into semantically coherent chunks.
@@ -264,6 +264,7 @@ class ParsingService:
           - Chunks are split only at block boundaries.
           - Max chunk size is enforced (but a single block is never split).
           - Tables are included as their own chunks to preserve structure.
+          - Breadcrumbs are tracked and prepended to the chunk text.
 
         Returns list of chunks with:
           {chunk_id, chunk_index, content_type, section_hint, text,
@@ -272,8 +273,17 @@ class ParsingService:
         if not blocks:
             return []
 
+        import re
+
+        def _get_heading_level(text: str) -> int:
+            m = re.match(r'^(\d+(?:\.\d+)*)', text)
+            if m:
+                return len(m.group(1).split('.'))
+            return 0  # 0 means no explicit number
+
         chunks: list[dict[str, Any]] = []
         current_text_parts: list[str] = []
+        heading_stack: list[tuple[int, str]] = [(0, "Untitled Section")]
         current_heading = "Untitled Section"
         current_page_start = blocks[0].get("page_number", 1)
         current_page_end = current_page_start
@@ -285,13 +295,19 @@ class ParsingService:
             nonlocal current_page_start, current_page_end
             if not current_text_parts:
                 return
-            text = "\n\n".join(current_text_parts)
+            raw_text = "\n\n".join(current_text_parts)
+            
+            # Inject breadcrumb
+            final_text = raw_text
+            if current_heading and current_heading != "Untitled Section":
+                final_text = f"[Section: {current_heading}]\n\n{raw_text}"
+
             chunks.append({
                 "chunk_id": f"sc-{chunk_counter:04d}",
                 "chunk_index": chunk_counter,
                 "content_type": "text",
                 "section_hint": current_heading,
-                "text": text,
+                "text": final_text,
                 "page_start": current_page_start,
                 "page_end": current_page_end,
             })
@@ -308,12 +324,17 @@ class ParsingService:
             # Tables are always their own chunk
             if block_type == "table":
                 _flush()
+                # Inject breadcrumb into table chunk too
+                table_text = block_text
+                if current_heading and current_heading != "Untitled Section":
+                    table_text = f"[Section: {current_heading}]\n\n{block_text}"
+                    
                 chunks.append({
                     "chunk_id": f"sc-{chunk_counter:04d}",
                     "chunk_index": chunk_counter,
                     "content_type": "table",
                     "section_hint": current_heading,
-                    "text": block_text,
+                    "text": table_text,
                     "page_start": block_page,
                     "page_end": block_page,
                 })
@@ -325,7 +346,21 @@ class ParsingService:
             # New heading → flush current buffer, start fresh
             if block_type == "heading":
                 _flush()
-                current_heading = block_text.strip()
+                heading_text = block_text.strip()
+                level = _get_heading_level(heading_text)
+                
+                if level > 0:
+                    while heading_stack and heading_stack[-1][0] >= level:
+                        heading_stack.pop()
+                    if not heading_stack:
+                        heading_stack.append((0, "Untitled Section"))
+                else:
+                    if heading_stack and heading_stack[-1][0] == 0:
+                        heading_stack.pop()
+                
+                heading_stack.append((level, heading_text))
+                current_heading = " > ".join(h[1] for h in heading_stack if h[1] != "Untitled Section") or "Untitled Section"
+                
                 current_page_start = block_page
                 current_page_end = block_page
                 # Heading text is included as part of the new chunk

@@ -72,7 +72,7 @@ class RequirementsValidationAgent(BaseAgent):
         # ── 2. Call LLM for validation ──────────────────────
         logger.info(f"[B2] Calling LLM for validation ({len(prompt)} char prompt)")
         try:
-            raw_response = llm_text_call(prompt)
+            raw_response = llm_text_call(prompt, deterministic=True)
             logger.debug(
                 f"[B2] Validation LLM response ({len(raw_response)} chars):\n"
                 f"{raw_response[:2000]}"
@@ -108,7 +108,7 @@ class RequirementsValidationAgent(BaseAgent):
                 f"attempting refinement"
             )
             requirements, confidence_score, issues = self._refine(
-                requirements, issues, confidence_score
+                requirements, issues, confidence_score, state.raw_text
             )
 
         # ── 5. Build final result ───────────────────────────
@@ -133,30 +133,59 @@ class RequirementsValidationAgent(BaseAgent):
         requirements: list[Requirement],
         issues: list[ValidationIssue],
         original_confidence: float,
+        raw_text: str = "",
     ) -> tuple[list[Requirement], float, list[ValidationIssue]]:
         """
-        Attempt one LLM-based refinement pass.
-        Sends the flagged issues back to the LLM and asks it to re-evaluate.
+        Attempt one LLM-based refinement pass, grounded in original RFP text.
+
+        Guardrail: the refinement can only *remove* issues or *lower* severity.
+        If the LLM returns more issues than the original set, the refinement
+        is discarded to prevent hallucinated issue injection.
         """
         issues_text = "\n".join(
             f"- [{i.issue_type}] {i.requirement_ids}: {i.description}"
             for i in issues
         )
+
+        # Include RFP context so the LLM can ground its re-evaluation
+        rfp_context = ""
+        if raw_text:
+            rfp_context = (
+                "\n\nHere is the original RFP text for reference "
+                "(use this to verify whether issues are real):\n"
+                f"{raw_text[:8_000]}\n"
+            )
+
         refinement_prompt = (
             "You previously validated a set of RFP requirements and found these issues:\n\n"
             f"{issues_text}\n\n"
             "Here are the requirements again:\n"
             f"{json.dumps([r.model_dump(mode='json') for r in requirements], indent=2)[:10_000]}\n\n"
-            "Please re-evaluate the requirements in light of these issues.\n"
+            f"{rfp_context}\n"
+            "IMPORTANT INSTRUCTIONS:\n"
+            "- Only keep issues that are supported by the RFP text above.\n"
+            "- Do NOT add new requirements or modify requirement text.\n"
+            "- Do NOT add new issues that were not in the original list.\n"
+            "- Only re-evaluate the confidence score and issue list.\n"
+            "- You may remove issues or lower their severity if evidence is weak.\n\n"
             "Return ONLY valid JSON with the same structure as before:\n"
             '{"confidence_score": 0.85, "issues": [...], "requirement_notes": {...}}'
         )
 
         try:
-            raw = llm_text_call(refinement_prompt)
+            raw = llm_text_call(refinement_prompt, deterministic=True)
             refined_data = self._parse_validation_json(raw)
             new_confidence = float(refined_data.get("confidence_score", original_confidence))
             new_issues = self._build_issues(refined_data.get("issues", []))
+
+            # Guardrail: refinement must not add new issues
+            if len(new_issues) > len(issues):
+                logger.warning(
+                    f"[B2] Refinement guardrail triggered: LLM returned "
+                    f"{len(new_issues)} issues (was {len(issues)}). "
+                    f"Discarding refinement to prevent issue injection."
+                )
+                return requirements, original_confidence, issues
 
             logger.info(
                 f"[B2] Refinement result: confidence {original_confidence:.3f} → "

@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # ── LLM (Groq Cloud) ────────────────────────────────
     groq_api_key: str = ""
-    llm_model: str = "openai/gpt-oss-120b"
+    llm_model: str = "moonshotai/kimi-k2-instruct"
     llm_temperature: float = 0.2
     llm_max_tokens: int = 4096
 
