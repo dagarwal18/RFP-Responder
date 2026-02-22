@@ -51,6 +51,10 @@ _SPECIFICATION_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\bcapacity\s+of\b", re.IGNORECASE), "capacity"),
     (re.compile(r"\b(?:API|integration|webhook|SSO|SAML|OIDC)s?\b", re.IGNORECASE), "integration/auth"),
     (re.compile(r"\b(?:certified|certification|compliant|compliance|ISO|SOC|HIPAA|GDPR)\b", re.IGNORECASE), "compliance/cert"),
+    # Evaluation criteria patterns
+    (re.compile(r"\b(?:will be evaluated|will be scored|evaluated favorably)\b", re.IGNORECASE), "evaluation"),
+    (re.compile(r"\b(?:weighted|weighting|scoring criteria|assessment criteria)\b", re.IGNORECASE), "scoring"),
+    (re.compile(r"\b(?:selection criteria|pass[/-]fail|minimum score)\b", re.IGNORECASE), "selection"),
 ]
 
 # Sentence-splitting regex inside blocks: split on period/newline boundaries.
@@ -91,43 +95,59 @@ class ObligationDetector:
     @staticmethod
     def _group_structural_blocks(text: str) -> list[str]:
         """
-        Intelligently group parent phrases with bulleted/numbered children
-        to prevent missing context.
+        Intelligently group parent phrases with bulleted/numbered children.
+
+        Strategy:
+          - Bullet children (-, •, *, etc.) → merge into parent as sub-clauses
+          - Numbered children (1., 2., 3.) → each becomes an independent block
+            with the parent sentence as a context prefix
+
+        This distinction is universal across documents: numbered items are
+        independent specifications, bullet items are sub-clauses of one statement.
         """
         lines = text.split('\n')
-        blocks = []
-        
+        blocks: list[str] = []
+
         list_item_re = re.compile(r"^\s*(?:[•●○◦▪▸\-\*]|\d+[.\):])\s*(.*)", re.IGNORECASE)
-        parent_re = re.compile(r"(?:[:]$|\b(?:following|below)\s*[:]?$)", re.IGNORECASE)
-        
+        numbered_re = re.compile(r"^\s*\d+[.\):]")
+        parent_re = re.compile(
+            r"(?:"
+            r"[:]$"
+            r"|\b(?:following|below|these)\s*[:]?\s*$"
+            r"|,\s*$"
+            r"|\b(?:including|such as)\s*[:]?\s*$"
+            r")", re.IGNORECASE
+        )
+
         def get_indent(s: str) -> int:
             return len(s) - len(s.lstrip(' \t'))
-            
+
         i = 0
         while i < len(lines):
             line = lines[i]
             if not line.strip():
                 i += 1
                 continue
-                
+
             indent_i = get_indent(line)
             stripped_line = line.strip()
-            
-            children = []
+
+            children: list[str] = []
+            children_raw: list[str] = []  # track raw lines to detect type
             j = i + 1
-            
+
             is_parent = bool(parent_re.search(stripped_line))
             is_list_i = bool(list_item_re.match(line))
-            
+
             while j < len(lines):
                 next_line = lines[j]
                 if not next_line.strip():
                     j += 1
                     continue
-                    
+
                 indent_j = get_indent(next_line)
                 is_list_j = bool(list_item_re.match(next_line))
-                
+
                 is_child = False
                 if is_list_j:
                     if is_parent:
@@ -136,7 +156,7 @@ class ObligationDetector:
                         is_child = True
                     elif not is_list_i:
                         is_child = True
-                        
+
                 if is_child:
                     child_match = list_item_re.match(next_line)
                     child_content = child_match.group(1).strip() if child_match else next_line.strip()
@@ -144,25 +164,58 @@ class ObligationDetector:
                         children.append(child_content)
                     else:
                         children.append(next_line.strip())
+                    children_raw.append(next_line)
                     j += 1
                 else:
                     break
-                    
+
             if children:
-                merged = stripped_line
-                if not merged.endswith(" ") and not merged.endswith(":"):
-                    merged += " "
-                elif merged.endswith(":"):
-                    merged += " "
-                merged += ", ".join(children)
-                blocks.append(merged)
-                logger.debug(f"Grouped structural list with {len(children)} children")
+                # Determine if children are numbered or bulleted
+                numbered_count = sum(1 for raw in children_raw if numbered_re.match(raw.strip()))
+                is_numbered_list = numbered_count > len(children_raw) / 2
+
+                # Build clean parent prefix (strip trailing colon/comma)
+                parent_prefix = stripped_line.rstrip(":,").strip()
+
+                if is_numbered_list:
+                    # Numbered: each child is an independent requirement
+                    for child in children:
+                        blocks.append(f"{parent_prefix}: {child}")
+                    logger.debug(
+                        f"Split numbered list into {len(children)} independent blocks"
+                    )
+                else:
+                    # Bulleted: merge into parent as sub-clauses
+                    merged = stripped_line
+                    if not merged.endswith(" ") and not merged.endswith(":"):
+                        merged += " "
+                    elif merged.endswith(":"):
+                        merged += " "
+                    merged += ", ".join(children)
+                    blocks.append(merged)
+                    logger.debug(
+                        f"Merged bullet list with {len(children)} children into parent"
+                    )
+
                 i = j
                 continue
-                
+
             blocks.append(stripped_line)
             i += 1
-            
+
+        # Filter out fragments: naked parent headers and truncated sentences.
+        # Catches: trailing colons, "the following X", trailing commas,
+        # and sentences ending with dangling prepositions/conjunctions/articles.
+        _FRAGMENT_RE = re.compile(
+            r"(?:"
+            r":\s*$"                                                # ends with colon
+            r"|\b(?:the following|as follows|these requirements|listed below)\b[^.!?]*$"  # "the following X" anywhere near end
+            r"|,\s*$"                                               # trailing comma
+            r"|\b(?:with|and|or|the|a|an|to|for|of|in|by|from|must be|will be|shall be)\s*$"  # dangling preposition/conjunction
+            r")", re.IGNORECASE
+        )
+        blocks = [b for b in blocks if not _FRAGMENT_RE.search(b)]
+
         sentences: list[str] = []
         for block in blocks:
             parts = _SENTENCE_SPLIT_RE.split(block)
@@ -170,7 +223,7 @@ class ObligationDetector:
                 p = part.strip()
                 if p:
                     sentences.append(p)
-                    
+
         return sentences
 
     @staticmethod

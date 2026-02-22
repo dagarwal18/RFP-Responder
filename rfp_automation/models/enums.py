@@ -75,6 +75,7 @@ class RequirementCategory(str, Enum):
 class RequirementClassification(str, Enum):
     FUNCTIONAL = "FUNCTIONAL"
     NON_FUNCTIONAL = "NON_FUNCTIONAL"
+    EVALUATION_CRITERIA = "EVALUATION_CRITERIA"
 
 
 class ImpactLevel(str, Enum):

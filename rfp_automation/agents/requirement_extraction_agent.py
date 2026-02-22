@@ -236,9 +236,14 @@ class RequirementsExtractionAgent(BaseAgent):
             1 for r in all_requirements
             if r.classification == RequirementClassification.NON_FUNCTIONAL
         )
+        eval_count = sum(
+            1 for r in all_requirements
+            if r.classification == RequirementClassification.EVALUATION_CRITERIA
+        )
         logger.info(
             f"[B1] Extraction complete: {len(all_requirements)} requirements "
-            f"(Functional: {func_count}, Non-Functional: {nonfunc_count})"
+            f"(Functional: {func_count}, Non-Functional: {nonfunc_count}, "
+            f"Evaluation: {eval_count})"
         )
         return state
 
@@ -313,13 +318,40 @@ class RequirementsExtractionAgent(BaseAgent):
 
         # Build Requirement objects
         requirements: list[Requirement] = []
+
+        # Pattern to detect truncated/fragment requirement text
+        _TRUNCATION_RE = re.compile(
+            r"\b(?:with|and|or|the|a|an|to|for|of|in|by|from|"
+            r"must be|will be|shall be|must|will|shall|"
+            r"the following\b.*)\s*$",
+            re.IGNORECASE
+        )
+
         for i, item in enumerate(data):
             try:
+                req_text = item.get("text", "").strip()
+
+                # Skip empty text
+                if not req_text:
+                    continue
+
+                # Skip truncated fragments
+                if _TRUNCATION_RE.search(req_text):
+                    logger.debug(
+                        f"[B1] Skipping truncated fragment: '{req_text[:80]}'"
+                    )
+                    continue
+
+                # Skip very short text (< 15 chars = not a real requirement)
+                if len(req_text) < 15:
+                    logger.debug(f"[B1] Skipping too-short text: '{req_text}'")
+                    continue
+
                 req = Requirement(
                     requirement_id=item.get(
                         "requirement_id", f"REQ-{start_id + i:04d}"
                     ),
-                    text=item.get("text", ""),
+                    text=req_text,
                     type=self._normalize_type(item.get("type", "MANDATORY")),
                     classification=self._normalize_classification(
                         item.get("classification", "FUNCTIONAL")
@@ -331,8 +363,7 @@ class RequirementsExtractionAgent(BaseAgent):
                     source_section=source_section,
                     keywords=item.get("keywords", []),
                 )
-                if req.text.strip():
-                    requirements.append(req)
+                requirements.append(req)
             except (ValueError, TypeError) as exc:
                 logger.warning(f"[B1] Skipping invalid requirement {i}: {exc}")
                 continue
@@ -384,36 +415,71 @@ class RequirementsExtractionAgent(BaseAgent):
         if not embeddings or len(embeddings) != len(requirements):
             raise ValueError("Embedding batch size mismatch")
 
-        # Mark duplicates (O(n²) but n is typically < 500)
+        # Mark duplicates using 3-tier similarity (O(n²) but n is typically < 500)
         is_duplicate = [False] * len(requirements)
-        
+
         # Regex to strip everything but alphanumeric for strict structural diffing
         norm_re = re.compile(r"[^\w\s]")
-        
+
         for i in range(len(requirements)):
             if is_duplicate[i]:
                 continue
             for j in range(i + 1, len(requirements)):
                 if is_duplicate[j]:
                     continue
-                    
+
                 sim = _cosine_similarity(embeddings[i], embeddings[j])
-                if sim > threshold:
-                    # Ensure texts are literally identical without punctuation/spaces
+
+                # Tier 1: Exact duplicate (sim ≥ 0.99 + identical normalized text)
+                if sim >= 0.99:
                     text_i = norm_re.sub("", requirements[i].text.strip().lower())
                     text_j = norm_re.sub("", requirements[j].text.strip().lower())
-                    
                     if text_i == text_j:
                         is_duplicate[j] = True
                         logger.debug(
-                            f"[B1] Strict duplicate deleted (sim={sim:.3f}): "
-                            f"'{requirements[j].text[:60]}' == '{requirements[i].text[:60]}'"
+                            f"[B1] Tier 1 exact duplicate (sim={sim:.3f}): "
+                            f"'{requirements[j].text[:60]}'"
                         )
-                    else:
+                        continue
+
+                # Tier 2: Same-section semantic duplicate (sim ≥ 0.92)
+                if sim >= 0.92 and requirements[i].source_section == requirements[j].source_section:
+                    # Keep the longer (more complete) version
+                    if len(requirements[j].text) > len(requirements[i].text):
+                        is_duplicate[i] = True
                         logger.debug(
-                            f"[B1] Prevented over-aggressive dedup collision (sim={sim:.3f} > {threshold}): "
-                            f"'{requirements[i].text}' vs '{requirements[j].text}'"
+                            f"[B1] Tier 2 same-section dedup (sim={sim:.3f}): "
+                            f"keeping longer '{requirements[j].text[:60]}'"
                         )
+                        break  # i is now duplicate, skip rest of j loop
+                    else:
+                        is_duplicate[j] = True
+                        logger.debug(
+                            f"[B1] Tier 2 same-section dedup (sim={sim:.3f}): "
+                            f"removing '{requirements[j].text[:60]}'"
+                        )
+                    continue
+
+                # Tier 3: Cross-section keyword overlap (sim ≥ 0.95 + 60% keyword overlap)
+                if sim >= 0.95:
+                    kw_i = set(k.lower() for k in requirements[i].keywords)
+                    kw_j = set(k.lower() for k in requirements[j].keywords)
+                    if kw_i and kw_j:
+                        overlap = len(kw_i & kw_j) / max(len(kw_i), len(kw_j))
+                        if overlap >= 0.6:
+                            if len(requirements[j].text) > len(requirements[i].text):
+                                is_duplicate[i] = True
+                                logger.debug(
+                                    f"[B1] Tier 3 cross-section dedup (sim={sim:.3f}, overlap={overlap:.0%}): "
+                                    f"keeping '{requirements[j].text[:60]}'"
+                                )
+                                break
+                            else:
+                                is_duplicate[j] = True
+                                logger.debug(
+                                    f"[B1] Tier 3 cross-section dedup (sim={sim:.3f}, overlap={overlap:.0%}): "
+                                    f"removing '{requirements[j].text[:60]}'"
+                                )
 
         unique = [r for r, dup in zip(requirements, is_duplicate) if not dup]
         return unique
