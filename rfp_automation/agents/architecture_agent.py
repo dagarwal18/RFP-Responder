@@ -1,16 +1,22 @@
 """
-C1 — Architecture Planning Agent
-Responsibility: Group validated requirements into response sections, map each
-                to company capabilities via Knowledge Store, verify every
-                mandatory requirement appears in the plan.
+C1 — Architecture Planning Agent  (Redesigned)
+
+Responsibility: Produce the COMPLETE response document blueprint by:
+  1. Reading the RFP structure (from A2) to discover ALL required sections
+  2. Reading submission/format instructions from MCP RFP store
+  3. Grouping extracted requirements into requirement-driven sections
+  4. Identifying knowledge-driven, commercial, legal, and boilerplate sections
+  5. Mapping company capabilities to each section (via Knowledge Store)
 
 Inputs:
+  - structuring_result.sections (from A2) — RFP document structure
   - requirements_validation.validated_requirements (from B2)
   - Falls back to requirements (raw B1 output) if B2 returned empty
   - Company capabilities from MCP Knowledge Store
+  - RFP submission instructions from MCP RFP Store
 
 Outputs:
-  - architecture_plan: ArchitecturePlan with ResponseSection list
+  - architecture_plan: ArchitecturePlan with full ResponseSection list
   - status → WRITING_RESPONSES
 """
 
@@ -46,23 +52,12 @@ class ArchitecturePlanningAgent(BaseAgent):
         logger.info(f"[C1] Starting architecture planning for {rfp_id}")
 
         # ── 2. Gather requirements ──────────────────────
-        # Prefer validated requirements from B2; fall back to raw B1
         requirements = state.requirements_validation.validated_requirements
         if not requirements:
             requirements = state.requirements
             logger.debug("[C1] Using raw B1 requirements (B2 validated list empty)")
         else:
             logger.debug(f"[C1] Using {len(requirements)} validated requirements from B2")
-
-        if not requirements:
-            logger.warning("[C1] No requirements available — producing empty plan")
-            state.architecture_plan = ArchitecturePlan(
-                sections=[],
-                coverage_gaps=[],
-                total_sections=0,
-            )
-            state.status = PipelineStatus.WRITING_RESPONSES
-            return state
 
         # Serialize requirements for prompt
         requirements_data = []
@@ -75,67 +70,164 @@ class ArchitecturePlanningAgent(BaseAgent):
                 requirements_data.append({"text": str(req)})
 
         requirements_json = json.dumps(requirements_data, indent=2, default=str)
-        logger.debug(f"[C1] Serialized {len(requirements_data)} requirements ({len(requirements_json)} chars)")
+        logger.debug(
+            f"[C1] Serialized {len(requirements_data)} requirements "
+            f"({len(requirements_json)} chars)"
+        )
 
-        # ── 3. Query MCP Knowledge Store for capabilities ─
+        # ── 3. Gather RFP structure from A2 ─────────────
+        rfp_sections_text = self._format_a2_sections(state.structuring_result.sections)
+        logger.debug(f"[C1] A2 structuring result: {len(state.structuring_result.sections)} sections")
+
+        # ── 4. Query MCP for submission/format instructions ──
         mcp = MCPService()
-        capabilities = self._fetch_capabilities(mcp, requirements_data)
-        capabilities_json = json.dumps(capabilities, indent=2, default=str) if capabilities else "No company capabilities available."
+        submission_instructions = self._fetch_submission_instructions(mcp, rfp_id)
+        logger.debug(f"[C1] Submission instructions: {len(submission_instructions)} chars")
+
+        # ── 5. Query MCP Knowledge Store for capabilities ─
+        capabilities = self._fetch_capabilities(mcp, requirements_data, state.structuring_result.sections)
+        capabilities_json = (
+            json.dumps(capabilities, indent=2, default=str)
+            if capabilities
+            else "No company capabilities available."
+        )
         logger.debug(f"[C1] Fetched {len(capabilities)} capability entries")
 
-        # ── 4. Build prompt ─────────────────────────────
-        prompt = self._build_prompt(requirements_json, capabilities_json)
+        # ── 6. Build prompt ─────────────────────────────
+        prompt = self._build_prompt(
+            rfp_sections=rfp_sections_text,
+            requirements=requirements_json,
+            capabilities=capabilities_json,
+            submission_instructions=submission_instructions,
+        )
         logger.debug(f"[C1] Prompt built — {len(prompt)} chars")
 
-        # ── 5. Call LLM ─────────────────────────────────
-        logger.info(f"[C1] Calling LLM with {len(requirements_data)} requirements, {len(capabilities)} capabilities")
+        # ── 7. Call LLM ─────────────────────────────────
+        logger.info(
+            f"[C1] Calling LLM with {len(requirements_data)} requirements, "
+            f"{len(capabilities)} capabilities, "
+            f"{len(state.structuring_result.sections)} RFP sections"
+        )
         raw_response = llm_text_call(prompt, deterministic=True)
         logger.debug(f"[C1] Raw LLM response ({len(raw_response)} chars):\n{raw_response[:2000]}")
 
-        # ── 6. Parse response ───────────────────────────
-        sections = self._parse_sections(raw_response)
+        # ── 8. Parse response ───────────────────────────
+        sections, rfp_instructions = self._parse_response(raw_response)
         logger.info(f"[C1] Parsed {len(sections)} response sections")
         for s in sections:
             logger.debug(
                 f"[C1]   Section: {s.section_id} | {s.title} | "
-                f"{len(s.requirement_ids)} reqs | {len(s.mapped_capabilities)} caps | "
-                f"priority={s.priority}"
+                f"type={s.section_type} | {len(s.requirement_ids)} reqs | "
+                f"{len(s.mapped_capabilities)} caps | priority={s.priority}"
             )
 
-        # ── 7. Coverage gap detection ───────────────────
+        # ── 9. Coverage gap detection (requirement-driven only) ──
         coverage_gaps = self._detect_coverage_gaps(requirements_data, sections)
         if coverage_gaps:
-            logger.warning(f"[C1] Coverage gaps — {len(coverage_gaps)} mandatory requirements unassigned: {coverage_gaps}")
+            logger.warning(
+                f"[C1] Coverage gaps — {len(coverage_gaps)} mandatory "
+                f"requirements unassigned: {coverage_gaps}"
+            )
         else:
             logger.info("[C1] Full coverage — all mandatory requirements assigned to sections")
 
-        # ── 8. Build result and update state ────────────
+        # ── 10. Build result and update state ───────────
         plan = ArchitecturePlan(
             sections=sections,
             coverage_gaps=coverage_gaps,
             total_sections=len(sections),
+            rfp_response_instructions=rfp_instructions,
         )
         state.architecture_plan = plan
         state.status = PipelineStatus.WRITING_RESPONSES
 
+        # Log section type breakdown
+        type_counts: dict[str, int] = {}
+        for s in sections:
+            type_counts[s.section_type] = type_counts.get(s.section_type, 0) + 1
+
         logger.info(
             f"[C1] Architecture plan complete — {plan.total_sections} sections, "
-            f"{len(coverage_gaps)} coverage gaps"
+            f"{len(coverage_gaps)} coverage gaps, "
+            f"types: {type_counts}"
         )
 
         return state
 
     # ── Helpers ──────────────────────────────────────────
 
+    def _format_a2_sections(self, sections: list) -> str:
+        """Format A2 structuring result sections into text for the prompt."""
+        if not sections:
+            return "No RFP structure available."
+
+        parts = []
+        for s in sections:
+            title = (
+                getattr(s, "title", str(s))
+                if not isinstance(s, dict)
+                else s.get("title", "")
+            )
+            category = (
+                getattr(s, "category", "")
+                if not isinstance(s, dict)
+                else s.get("category", "")
+            )
+            summary = (
+                getattr(s, "content_summary", "")
+                if not isinstance(s, dict)
+                else s.get("content_summary", "")
+            )
+            section_id = (
+                getattr(s, "section_id", "")
+                if not isinstance(s, dict)
+                else s.get("section_id", "")
+            )
+            parts.append(
+                f"### {section_id}: {title} [Category: {category}]\n{summary}"
+            )
+        return "\n\n".join(parts)
+
+    def _fetch_submission_instructions(
+        self, mcp: MCPService, rfp_id: str
+    ) -> str:
+        """
+        Query the RFP store for submission/format instructions.
+        These tell us HOW the RFP expects the response to be structured.
+        """
+        queries = [
+            "submission instructions proposal format response structure",
+            "proposal should include following sections",
+            "evaluation criteria scoring methodology",
+            "vendor qualification requirements eligibility",
+        ]
+
+        all_texts: list[str] = []
+        seen: set[str] = set()
+
+        for query in queries:
+            try:
+                results = mcp.query_rfp(query, rfp_id, top_k=5)
+                for r in results:
+                    text = r.get("text", "").strip()
+                    if text and text not in seen:
+                        seen.add(text)
+                        all_texts.append(text)
+            except Exception as exc:
+                logger.warning(f"[C1] RFP query failed for '{query}': {exc}")
+
+        return "\n\n".join(all_texts) if all_texts else "No explicit submission instructions found."
+
     def _fetch_capabilities(
         self,
         mcp: MCPService,
         requirements: list[dict[str, Any]],
+        rfp_sections: list,
     ) -> list[dict[str, Any]]:
         """
-        Query the Knowledge Store for company capabilities relevant to
-        the requirement set. Uses category-based queries to get broad
-        coverage, then deduplicates.
+        Query the Knowledge Store for company capabilities.
+        Uses both requirement categories AND RFP section topics
+        to get broad coverage including non-requirement sections.
         """
         # Collect unique categories from requirements
         categories = set()
@@ -144,10 +236,35 @@ class ArchitecturePlanningAgent(BaseAgent):
             if cat:
                 categories.add(cat.lower())
 
-        # Always include a general capabilities query
-        queries = ["company capabilities services products solutions"]
+        # Collect section topics from A2 structuring result
+        section_topics = set()
+        for s in rfp_sections:
+            title = (
+                getattr(s, "title", "")
+                if not isinstance(s, dict)
+                else s.get("title", "")
+            )
+            category = (
+                getattr(s, "category", "")
+                if not isinstance(s, dict)
+                else s.get("category", "")
+            )
+            if title:
+                section_topics.add(title.lower())
+            if category:
+                section_topics.add(category.lower())
+
+        # Build query list: general + requirement categories + section topics
+        queries = [
+            "company capabilities services products solutions",
+            "company profile about overview experience",
+            "case studies past projects references",
+            "certifications compliance standards",
+        ]
         for cat in categories:
             queries.append(f"{cat} capabilities solutions experience")
+        for topic in section_topics:
+            queries.append(f"{topic} capabilities solutions")
 
         seen_texts: set[str] = set()
         all_capabilities: list[dict[str, Any]] = []
@@ -168,19 +285,29 @@ class ArchitecturePlanningAgent(BaseAgent):
 
         return all_capabilities
 
-    def _build_prompt(self, requirements: str, capabilities: str) -> str:
-        """Load the prompt template and inject requirements + capabilities."""
+    def _build_prompt(
+        self,
+        rfp_sections: str,
+        requirements: str,
+        capabilities: str,
+        submission_instructions: str,
+    ) -> str:
+        """Load the prompt template and inject all four data sources."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
         return (
             template
+            .replace("{rfp_sections}", rfp_sections[:12_000])
             .replace("{requirements}", requirements[:15_000])
             .replace("{capabilities}", capabilities[:10_000])
+            .replace("{submission_instructions}", submission_instructions[:8_000])
         )
 
-    def _parse_sections(self, raw_response: str) -> list[ResponseSection]:
+    def _parse_response(
+        self, raw_response: str
+    ) -> tuple[list[ResponseSection], str]:
         """
-        Parse the LLM JSON response into a list of ResponseSection.
-        Handles markdown fencing, extra text around JSON.
+        Parse the LLM JSON response into a list of ResponseSection
+        and an rfp_response_instructions string.
         """
         text = raw_response.strip()
 
@@ -188,37 +315,58 @@ class ArchitecturePlanningAgent(BaseAgent):
         text = re.sub(r"^```(?:json)?\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
 
-        # Try to extract JSON array
-        try:
-            start = text.index("[")
-            end = text.rindex("]") + 1
-            text = text[start:end]
-        except ValueError:
-            # Maybe the LLM returned a JSON object with a "sections" key
-            try:
-                start = text.index("{")
-                end = text.rindex("}") + 1
-                obj = json.loads(text[start:end])
-                if isinstance(obj, dict) and "sections" in obj:
-                    return self._build_sections(obj["sections"])
-            except (ValueError, json.JSONDecodeError):
-                pass
-            logger.warning("[C1] No JSON array or object found in LLM response")
-            return []
+        # Try to parse as JSON object with "sections" key
+        data = self._extract_json(text)
 
-        try:
-            data = json.loads(text)
-        except json.JSONDecodeError as exc:
-            logger.warning(f"[C1] JSON parse error: {exc}")
-            return []
+        if isinstance(data, dict):
+            rfp_instructions = data.get("rfp_response_instructions", "")
+            sections_data = data.get("sections", [])
+            if isinstance(sections_data, list):
+                return self._build_sections(sections_data), rfp_instructions
+            # No "sections" key — try the whole object as a fallback
+            logger.warning("[C1] JSON object has no 'sections' key")
+            return [], rfp_instructions
 
         if isinstance(data, list):
-            return self._build_sections(data)
-        elif isinstance(data, dict) and "sections" in data:
-            return self._build_sections(data["sections"])
+            # LLM returned a bare array (legacy format)
+            return self._build_sections(data), ""
 
-        logger.warning("[C1] Unexpected JSON structure in LLM response")
-        return []
+        logger.warning("[C1] No valid JSON found in LLM response")
+        return [], ""
+
+    def _extract_json(self, text: str) -> dict | list | None:
+        """Extract JSON object or array from text, handling extra content."""
+        # Find first occurrence of each delimiter
+        obj_start = text.find("{")
+        arr_start = text.find("[")
+
+        # Determine which to try first (outermost delimiter)
+        try_object_first = True
+        if obj_start == -1 and arr_start == -1:
+            return None
+        elif obj_start == -1:
+            try_object_first = False
+        elif arr_start == -1:
+            try_object_first = True
+        else:
+            # Both present — try whichever appears first (outermost)
+            try_object_first = obj_start < arr_start
+
+        attempts = (
+            ("{", "}") if try_object_first else ("[", "]"),
+            ("[", "]") if try_object_first else ("{", "}"),
+        )
+
+        for open_char, close_char in attempts:
+            try:
+                start = text.index(open_char)
+                end = text.rindex(close_char) + 1
+                candidate = text[start:end]
+                return json.loads(candidate)
+            except (ValueError, json.JSONDecodeError):
+                continue
+
+        return None
 
     def _build_sections(self, items: list[dict[str, Any]]) -> list[ResponseSection]:
         """Build ResponseSection objects from parsed JSON items."""
@@ -228,12 +376,31 @@ class ArchitecturePlanningAgent(BaseAgent):
                 logger.warning(f"[C1] Skipping non-dict section item {i}")
                 continue
             try:
+                # Normalize section_type
+                section_type = item.get("section_type", "requirement_driven")
+                valid_types = {
+                    "requirement_driven", "knowledge_driven",
+                    "commercial", "legal", "boilerplate",
+                }
+                if section_type not in valid_types:
+                    section_type = "requirement_driven"
+
                 section = ResponseSection(
                     section_id=item.get("section_id", f"SEC-{i + 1:02d}"),
                     title=item.get("title", item.get("section_title", "Untitled")),
-                    requirement_ids=item.get("requirement_ids", item.get("assigned_requirements", [])),
-                    mapped_capabilities=item.get("mapped_capabilities", item.get("key_technologies", [])),
+                    section_type=section_type,
+                    description=item.get("description", ""),
+                    content_guidance=item.get("content_guidance", ""),
+                    requirement_ids=item.get(
+                        "requirement_ids",
+                        item.get("assigned_requirements", []),
+                    ),
+                    mapped_capabilities=item.get(
+                        "mapped_capabilities",
+                        item.get("key_technologies", []),
+                    ),
                     priority=int(item.get("priority", i + 1)),
+                    source_rfp_section=item.get("source_rfp_section", ""),
                 )
                 sections.append(section)
             except (ValueError, TypeError) as exc:
@@ -248,8 +415,8 @@ class ArchitecturePlanningAgent(BaseAgent):
         sections: list[ResponseSection],
     ) -> list[str]:
         """
-        Find mandatory requirement IDs not assigned to any section.
-        Returns list of unassigned requirement IDs.
+        Find mandatory requirement IDs not assigned to any
+        requirement_driven section.
         """
         # Collect all mandatory requirement IDs
         mandatory_ids: set[str] = set()
@@ -260,11 +427,12 @@ class ArchitecturePlanningAgent(BaseAgent):
                 if req_id:
                     mandatory_ids.add(req_id)
 
-        # Collect all assigned requirement IDs across sections
+        # Collect all assigned requirement IDs across requirement-driven sections
         assigned_ids: set[str] = set()
         for section in sections:
-            assigned_ids.update(section.requirement_ids)
+            if section.section_type == "requirement_driven":
+                assigned_ids.update(section.requirement_ids)
 
-        # Gap = mandatory IDs not in any section
+        # Gap = mandatory IDs not in any requirement-driven section
         gaps = sorted(mandatory_ids - assigned_ids)
         return gaps

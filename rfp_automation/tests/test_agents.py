@@ -816,12 +816,13 @@ class TestSectionGrouping:
 
 
 class TestArchitecturePlanningAgent:
-    """Tests for C1 Architecture Planning Agent."""
+    """Tests for C1 Architecture Planning Agent (redesigned - full blueprint)."""
 
     @staticmethod
     def _architecture_state(requirements=None):
         from rfp_automation.models.schemas import (
             RFPMetadata, Requirement, RequirementsValidationResult,
+            StructuringResult, RFPSection,
         )
         from rfp_automation.models.enums import (
             RequirementType, RequirementClassification,
@@ -859,37 +860,70 @@ class TestArchitecturePlanningAgent:
                 validated_requirements=requirements,
                 total_requirements=len(requirements),
             ),
+            structuring_result=StructuringResult(
+                sections=[
+                    RFPSection(
+                        section_id="SEC-01", title="Technical Requirements",
+                        category="technical",
+                        content_summary="Authentication, encryption, and performance specs.",
+                        confidence=0.9,
+                    ),
+                    RFPSection(
+                        section_id="SEC-02", title="Submission Instructions",
+                        category="submission",
+                        content_summary="Proposal format, deadline, required forms.",
+                        confidence=0.85,
+                    ),
+                ],
+                overall_confidence=0.88,
+            ),
         ).model_dump()
 
-    def test_architecture_success(self, monkeypatch):
-        """Valid LLM response → sections populated, correct status, no coverage gaps."""
-        from rfp_automation.agents import ArchitecturePlanningAgent
-
-        llm_response = json.dumps([
-            {
-                "section_id": "SEC-01",
-                "title": "Security & Compliance",
-                "requirement_ids": ["REQ-001", "REQ-002"],
-                "mapped_capabilities": ["ISO 27001 certified", "AES-256 encryption"],
-                "priority": 1,
-            },
-            {
-                "section_id": "SEC-02",
-                "title": "Performance & Scalability",
-                "requirement_ids": ["REQ-003"],
-                "mapped_capabilities": ["Auto-scaling infrastructure"],
-                "priority": 2,
-            },
-        ])
-
-        mock_mcp = type("MockMCP", (), {
+    @staticmethod
+    def _mock_mcp():
+        return type("MockMCP", (), {
             "query_knowledge": lambda self, q, top_k=5: [
                 {"text": "ISO 27001 certified operations", "metadata": {}},
-                {"text": "AES-256 encryption at rest", "metadata": {}},
+            ],
+            "query_rfp": lambda self, q, rfp_id="", top_k=5: [
+                {"text": "Proposals must include cover letter and compliance matrix.", "metadata": {}},
             ],
         })()
 
-        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService", lambda: mock_mcp)
+    def test_architecture_success(self, monkeypatch):
+        """Valid LLM response with section_types → full blueprint, correct status."""
+        from rfp_automation.agents import ArchitecturePlanningAgent
+
+        llm_response = json.dumps({
+            "rfp_response_instructions": "Follow format from Section 3",
+            "sections": [
+                {
+                    "section_id": "SEC-01",
+                    "title": "Cover Letter",
+                    "section_type": "boilerplate",
+                    "description": "Formal submission letter",
+                    "content_guidance": "Confirm 120-day validity",
+                    "requirement_ids": [],
+                    "mapped_capabilities": [],
+                    "priority": 1,
+                    "source_rfp_section": "Submission Instructions",
+                },
+                {
+                    "section_id": "SEC-02",
+                    "title": "Security & Compliance",
+                    "section_type": "requirement_driven",
+                    "description": "Address all security requirements",
+                    "content_guidance": "",
+                    "requirement_ids": ["REQ-001", "REQ-002"],
+                    "mapped_capabilities": ["ISO 27001", "AES-256"],
+                    "priority": 2,
+                    "source_rfp_section": "Technical Requirements",
+                },
+            ],
+        })
+
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService",
+                            lambda: self._mock_mcp())
         monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
                             lambda prompt, deterministic=False: llm_response)
 
@@ -898,32 +932,44 @@ class TestArchitecturePlanningAgent:
 
         plan = result["architecture_plan"]
         assert plan["total_sections"] == 2
-        assert len(plan["sections"]) == 2
-        assert plan["sections"][0]["section_id"] == "SEC-01"
-        assert "REQ-001" in plan["sections"][0]["requirement_ids"]
-        assert plan["coverage_gaps"] == []
+        assert plan["sections"][0]["section_type"] == "boilerplate"
+        assert plan["sections"][1]["section_type"] == "requirement_driven"
+        assert plan["sections"][0]["description"] == "Formal submission letter"
+        assert "REQ-001" in plan["sections"][1]["requirement_ids"]
+        assert plan["rfp_response_instructions"] == "Follow format from Section 3"
         assert result["status"] == PipelineStatus.WRITING_RESPONSES.value
 
     def test_architecture_coverage_gaps(self, monkeypatch):
         """Missing mandatory requirement → appears in coverage_gaps."""
         from rfp_automation.agents import ArchitecturePlanningAgent
 
-        # LLM only assigns REQ-001 to a section, missing REQ-002 (mandatory)
-        llm_response = json.dumps([
-            {
-                "section_id": "SEC-01",
-                "title": "Authentication",
-                "requirement_ids": ["REQ-001"],
-                "mapped_capabilities": ["SSO support"],
-                "priority": 1,
-            },
-        ])
+        # LLM only assigns REQ-001, missing REQ-002 (mandatory)
+        llm_response = json.dumps({
+            "rfp_response_instructions": "",
+            "sections": [
+                {
+                    "section_id": "SEC-01",
+                    "title": "Authentication",
+                    "section_type": "requirement_driven",
+                    "description": "SSO implementation",
+                    "requirement_ids": ["REQ-001"],
+                    "mapped_capabilities": ["SSO support"],
+                    "priority": 1,
+                },
+                {
+                    "section_id": "SEC-02",
+                    "title": "Company Profile",
+                    "section_type": "knowledge_driven",
+                    "description": "Company overview",
+                    "requirement_ids": [],
+                    "mapped_capabilities": ["10 years experience"],
+                    "priority": 2,
+                },
+            ],
+        })
 
-        mock_mcp = type("MockMCP", (), {
-            "query_knowledge": lambda self, q, top_k=5: [],
-        })()
-
-        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService",
+                            lambda: self._mock_mcp())
         monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
                             lambda prompt, deterministic=False: llm_response)
 
@@ -932,18 +978,57 @@ class TestArchitecturePlanningAgent:
 
         plan = result["architecture_plan"]
         assert "REQ-002" in plan["coverage_gaps"]
-        # REQ-003 is OPTIONAL, so it should NOT appear in coverage_gaps
+        # REQ-003 is OPTIONAL, should NOT appear in coverage_gaps
         assert "REQ-003" not in plan["coverage_gaps"]
+
+    def test_architecture_all_section_types(self, monkeypatch):
+        """Verify all 5 section types are parsed correctly."""
+        from rfp_automation.agents import ArchitecturePlanningAgent
+
+        llm_response = json.dumps({
+            "rfp_response_instructions": "",
+            "sections": [
+                {"section_id": "SEC-01", "title": "Cover Letter",
+                 "section_type": "boilerplate", "description": "Cover", "priority": 1,
+                 "requirement_ids": [], "mapped_capabilities": []},
+                {"section_id": "SEC-02", "title": "Company Profile",
+                 "section_type": "knowledge_driven", "description": "Profile", "priority": 2,
+                 "requirement_ids": [], "mapped_capabilities": ["10 years exp"]},
+                {"section_id": "SEC-03", "title": "Technical Solution",
+                 "section_type": "requirement_driven", "description": "Solution", "priority": 3,
+                 "requirement_ids": ["REQ-001", "REQ-002"], "mapped_capabilities": ["SSO", "AES"]},
+                {"section_id": "SEC-04", "title": "Pricing",
+                 "section_type": "commercial", "description": "Costs", "priority": 4,
+                 "requirement_ids": [], "mapped_capabilities": []},
+                {"section_id": "SEC-05", "title": "Legal Terms",
+                 "section_type": "legal", "description": "Terms", "priority": 5,
+                 "requirement_ids": [], "mapped_capabilities": []},
+            ],
+        })
+
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService",
+                            lambda: self._mock_mcp())
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
+                            lambda prompt, deterministic=False: llm_response)
+
+        agent = ArchitecturePlanningAgent()
+        result = agent.process(self._architecture_state())
+
+        plan = result["architecture_plan"]
+        types = [s["section_type"] for s in plan["sections"]]
+        assert "boilerplate" in types
+        assert "knowledge_driven" in types
+        assert "requirement_driven" in types
+        assert "commercial" in types
+        assert "legal" in types
+        assert plan["total_sections"] == 5
 
     def test_architecture_invalid_json(self, monkeypatch):
         """Malformed LLM response → empty sections, 0 total_sections."""
         from rfp_automation.agents import ArchitecturePlanningAgent
 
-        mock_mcp = type("MockMCP", (), {
-            "query_knowledge": lambda self, q, top_k=5: [],
-        })()
-
-        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService",
+                            lambda: self._mock_mcp())
         monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
                             lambda prompt, deterministic=False: "This is not valid JSON at all!!!")
 
@@ -966,15 +1051,58 @@ class TestArchitecturePlanningAgent:
         with pytest.raises(ValueError, match="No rfp_id"):
             agent.process(state)
 
-    def test_architecture_empty_requirements(self):
-        """No requirements → passes through with empty plan."""
+    def test_architecture_empty_requirements(self, monkeypatch):
+        """No requirements → still produces RFP-driven sections (boilerplate, etc)."""
         from rfp_automation.agents import ArchitecturePlanningAgent
+
+        llm_response = json.dumps({
+            "rfp_response_instructions": "",
+            "sections": [
+                {"section_id": "SEC-01", "title": "Cover Letter",
+                 "section_type": "boilerplate", "description": "Formal letter", "priority": 1,
+                 "requirement_ids": [], "mapped_capabilities": []},
+            ],
+        })
+
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService",
+                            lambda: self._mock_mcp())
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
+                            lambda prompt, deterministic=False: llm_response)
 
         agent = ArchitecturePlanningAgent()
         result = agent.process(self._architecture_state(requirements=[]))
 
         plan = result["architecture_plan"]
-        assert plan["total_sections"] == 0
-        assert plan["sections"] == []
+        # Even with 0 requirements, RFP-driven sections should appear
+        assert plan["total_sections"] >= 1
         assert plan["coverage_gaps"] == []
         assert result["status"] == PipelineStatus.WRITING_RESPONSES.value
+
+    def test_architecture_legacy_array_format(self, monkeypatch):
+        """Backward compat: LLM returns bare JSON array → still parses."""
+        from rfp_automation.agents import ArchitecturePlanningAgent
+
+        llm_response = json.dumps([
+            {
+                "section_id": "SEC-01",
+                "title": "Technical Solution",
+                "section_type": "requirement_driven",
+                "description": "Technical details",
+                "requirement_ids": ["REQ-001", "REQ-002"],
+                "mapped_capabilities": ["SSO"],
+                "priority": 1,
+            },
+        ])
+
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService",
+                            lambda: self._mock_mcp())
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
+                            lambda prompt, deterministic=False: llm_response)
+
+        agent = ArchitecturePlanningAgent()
+        result = agent.process(self._architecture_state())
+
+        plan = result["architecture_plan"]
+        assert plan["total_sections"] == 1
+        assert plan["rfp_response_instructions"] == ""
+

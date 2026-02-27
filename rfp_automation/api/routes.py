@@ -26,6 +26,9 @@ from pydantic import BaseModel
 from rfp_automation.config import get_settings
 from rfp_automation.api.websocket import PipelineProgress
 
+import hashlib
+from copy import deepcopy
+
 logger = logging.getLogger(__name__)
 
 # ── Routers ──────────────────────────────────────────────
@@ -34,6 +37,10 @@ rfp_router = APIRouter()
 
 # ── In-memory store (replaced by MongoDB/Redis later) ────
 _runs: dict[str, dict[str, Any]] = {}
+
+# ── Document Cache (Memory only for now) ─────────────────
+# Maps file SHA256 -> previous rfp_id
+_document_cache: dict[str, str] = {}
 
 
 # ── Response schemas ─────────────────────────────────────
@@ -79,7 +86,7 @@ async def health_check():
 
 # ── Upload & Start Pipeline (background thread) ─────────
 
-def _run_pipeline_thread(rfp_id: str, local_path: str) -> None:
+def _run_pipeline_thread(rfp_id: str, local_path: str, file_hash: str) -> None:
     """Run the pipeline in a background thread so the HTTP response returns immediately."""
     from rfp_automation.orchestration.graph import run_pipeline
 
@@ -116,6 +123,11 @@ def _run_pipeline_thread(rfp_id: str, local_path: str) -> None:
             "result": result,
             "real_rfp_id": real_rfp_id,
         })
+        
+        # Cache successful runs based on the file hash
+        if status not in ("FAILED", "ESCALATED"):
+            _document_cache[file_hash] = rfp_id
+            logger.info(f"Cached document hash {file_hash[:8]}... to run {rfp_id}")
 
         progress.on_pipeline_end(rfp_id, status)
 
@@ -145,22 +157,54 @@ def _run_pipeline_thread(rfp_id: str, local_path: str) -> None:
 async def upload_rfp(file: UploadFile = File(...)):
     """
     Upload an RFP document and start the processing pipeline
-    in a background thread.  Returns immediately with the rfp_id
-    so the frontend can connect via WebSocket for live progress.
+    in a background thread. Returns immediately with the rfp_id.
+    Uses SHA-256 fingerprinting to skip processing for duplicate files.
     """
     rfp_id = f"RFP-{uuid.uuid4().hex[:8].upper()}"
     filename = file.filename or "unknown.pdf"
 
     logger.info(f"Received upload: {filename} → {rfp_id}")
 
-    # Save file temporarily
+    # Save file temporarily and compute hash
     file_bytes = await file.read()
+    file_hash = hashlib.sha256(file_bytes).hexdigest()
+    logger.debug(f"Computed file hash: {file_hash}")
+
     local_path = f"./storage/uploads/{rfp_id}_{filename}"
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
     with open(local_path, "wb") as f:
         f.write(file_bytes)
 
     started_at = datetime.now(timezone.utc).isoformat()
+    
+    # ── Check Cache ──────────────────────────────────────────
+    cached_run_id = _document_cache.get(file_hash)
+    if cached_run_id and cached_run_id in _runs:
+        cached_run = _runs[cached_run_id]
+        if cached_run["status"] not in ("FAILED", "ESCALATED", "UNKNOWN"):
+            logger.info(f"Cache hit! Reusing results from {cached_run_id} for new upload {rfp_id}")
+            
+            # Deep clone the cached result to our new ID
+            _runs[rfp_id] = deepcopy(cached_run)
+            _runs[rfp_id].update({
+                "rfp_id": rfp_id,
+                "filename": filename,
+                "started_at": started_at,
+            })
+            
+            # Clean up temp file immediately since we don't need to process it
+            try:
+                os.remove(local_path)
+            except OSError:
+                pass
+                
+            return UploadResponse(
+                rfp_id=rfp_id,
+                status=_runs[rfp_id]["status"],
+                message=f"Cache hit. Pipeline instantly loaded results for {filename}. Connect to /ws/{rfp_id} or poll /status.",
+            )
+
+    # ── Cache Miss → Run normal pipeline ──────────────────────
     _runs[rfp_id] = {
         "rfp_id": rfp_id,
         "filename": filename,
@@ -174,7 +218,7 @@ async def upload_rfp(file: UploadFile = File(...)):
     # Launch pipeline in background thread
     thread = threading.Thread(
         target=_run_pipeline_thread,
-        args=(rfp_id, local_path),
+        args=(rfp_id, local_path, file_hash),
         daemon=True,
     )
     thread.start()

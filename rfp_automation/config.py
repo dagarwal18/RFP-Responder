@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     llm_model: str = "moonshotai/kimi-k2-instruct"
     llm_temperature: float = 0.2
     llm_max_tokens: int = 8192
-
+ 
     # ── MongoDB ──────────────────────────────────────────
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_database: str = "rfp_automation"

@@ -141,15 +141,21 @@ class ResponseSection(BaseModel):
     """A planned section of the proposal response."""
     section_id: str
     title: str
+    section_type: str = "requirement_driven"
+    # "requirement_driven" | "knowledge_driven" | "commercial" | "legal" | "boilerplate"
+    description: str = ""  # What this section should contain
+    content_guidance: str = ""  # Specific instructions from the RFP on what goes here
     requirement_ids: list[str] = []
     mapped_capabilities: list[str] = []
     priority: int = 0
+    source_rfp_section: str = ""  # The original RFP section this maps to
 
 
 class ArchitecturePlan(BaseModel):
     sections: list[ResponseSection] = []
     coverage_gaps: list[str] = []  # requirement IDs not yet mapped
     total_sections: int = 0
+    rfp_response_instructions: str = ""  # Raw text about how the RFP says to structure the response
 
 
 # ── C2 Requirement Writing ───────────────────────────────

@@ -1586,6 +1586,23 @@
 
       try {
         const data = await apiFetch('/api/rfp/upload', { method: 'POST', body: form });
+
+        // Handle cache hit instantly
+        if (data.status === 'COMPLETED' || data.status === 'SUBMITTED' || data.status === 'REJECTED') {
+          addLog('rfpLog', `✓ Cache hit! Instantly loaded ${data.rfp_id}`, 'success');
+          document.getElementById('rfpBadge').textContent = data.status;
+
+          rfpUploadBtn.innerHTML = 'Run Pipeline';
+          rfpUploadBtn.disabled = false;
+          rfpFile.value = '';
+          rfpDropzone.querySelector('.label').innerHTML = 'Drop an RFP document or <strong>click to browse</strong>';
+
+          loadRuns();
+          viewRun(data.rfp_id);
+          return;
+        }
+
+        // Normal flow (new run)
         addLog('rfpLog', `Pipeline started → ${data.rfp_id}`, 'info');
         document.getElementById('rfpBadge').textContent = 'Running';
 
@@ -1874,22 +1891,40 @@
           const c1 = outputs.C1_ARCHITECTURE_PLANNING;
           const sections = c1.sections || [];
           const gaps = c1.coverage_gaps || [];
+          const instructions = c1.rfp_response_instructions || '';
           const gapBadge = gaps.length ? `<span style="color:#ef4444;margin-left:8px">⚠ ${gaps.length} gap${gaps.length > 1 ? 's' : ''}</span>` : '<span style="color:#10b981;margin-left:8px">✅ Full coverage</span>';
+          const typeColors = {
+            requirement_driven: { bg: 'rgba(99,102,241,0.15)', fg: '#818cf8', label: 'Requirement' },
+            knowledge_driven: { bg: 'rgba(16,185,129,0.15)', fg: '#10b981', label: 'Knowledge' },
+            commercial: { bg: 'rgba(59,130,246,0.15)', fg: '#3b82f6', label: 'Commercial' },
+            legal: { bg: 'rgba(245,158,11,0.15)', fg: '#f59e0b', label: 'Legal' },
+            boilerplate: { bg: 'rgba(156,163,175,0.15)', fg: '#9ca3af', label: 'Boilerplate' },
+          };
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🏗️ C1 Architecture Planning (${sections.length} sections)${gapBadge}</summary>
             <div style="padding:8px 16px;font-size:13px">
               <div style="margin-bottom:12px"><strong>Total Sections:</strong> ${c1.total_sections || sections.length}</div>
-              ${sections.length ? `<div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
-                <table style="width:100%;border-collapse:collapse;font-size:12px">
+              ${instructions ? `<div style="margin-bottom:12px;padding:10px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:6px">
+                <strong style="color:var(--accent-light)">📋 RFP Response Instructions:</strong> <span style="color:var(--text-secondary)">${instructions}</span>
+              </div>` : ''}
+              ${sections.length ? `<div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px">
                   <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
-                    <th style="padding:6px">Section</th><th style="padding:6px">Title</th><th style="padding:6px">Priority</th><th style="padding:6px">Requirements</th><th style="padding:6px">Capabilities</th>
+                    <th style="padding:6px">Section</th><th style="padding:6px">Title</th><th style="padding:6px">Type</th><th style="padding:6px">Priority</th><th style="padding:6px;min-width:200px">Description</th><th style="padding:6px;min-width:150px">Content Guidance</th><th style="padding:6px">Requirements</th><th style="padding:6px">Capabilities</th><th style="padding:6px">Source RFP Section</th>
                   </tr></thead>
-                  <tbody>${sections.map(s => `<tr style="border-bottom:1px solid var(--border)">
+                  <tbody>${sections.map(s => {
+            const tc = typeColors[s.section_type] || typeColors.requirement_driven;
+            return `<tr style="border-bottom:1px solid var(--border)">
                     <td style="padding:6px;font-weight:600;color:var(--accent-light)">${s.section_id}</td>
-                    <td style="padding:6px">${s.title}</td>
-                    <td style="padding:6px;text-align:center"><span style="background:${s.priority >= 8 ? 'rgba(239,68,68,0.15);color:#ef4444' : s.priority >= 5 ? 'rgba(245,158,11,0.15);color:#f59e0b' : 'rgba(34,197,94,0.15);color:#22c55e'};padding:2px 8px;border-radius:10px;font-weight:600;font-size:11px">${s.priority}/10</span></td>
+                    <td style="padding:6px;font-weight:500">${s.title}</td>
+                    <td style="padding:6px"><span style="background:${tc.bg};color:${tc.fg};padding:2px 8px;border-radius:10px;font-weight:600;font-size:11px;white-space:nowrap">${tc.label}</span></td>
+                    <td style="padding:6px;text-align:center;font-weight:600">${s.priority}</td>
+                    <td style="padding:6px;color:var(--text-secondary);max-width:250px">${s.description || '—'}</td>
+                    <td style="padding:6px;font-size:11px;color:var(--text-muted);max-width:200px;font-style:italic">${s.content_guidance || '—'}</td>
                     <td style="padding:6px;font-size:11px">${(s.requirement_ids || []).join(', ') || '—'}</td>
                     <td style="padding:6px;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${(s.mapped_capabilities || []).join(', ') || '—'}</td>
-                  </tr>`).join('')}</tbody>
+                    <td style="padding:6px;font-size:11px;color:var(--text-muted)">${s.source_rfp_section || '—'}</td>
+                  </tr>`;
+          }).join('')}</tbody>
                 </table>
               </div>` : ''}
               ${gaps.length ? `<div style="margin-top:12px;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px">
