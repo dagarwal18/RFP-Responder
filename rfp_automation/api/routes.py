@@ -218,6 +218,10 @@ async def get_rfp_status(rfp_id: str):
         req_val = result_data.get("requirements_validation")
         if isinstance(req_val, dict):
             agent_outputs["B2_REQUIREMENTS_VALIDATION"] = req_val
+        # C1 Architecture Planning
+        arch = result_data.get("architecture_plan")
+        if isinstance(arch, dict) and arch.get("sections"):
+            agent_outputs["C1_ARCHITECTURE_PLANNING"] = arch
 
     return StatusResponse(
         rfp_id=run["rfp_id"],

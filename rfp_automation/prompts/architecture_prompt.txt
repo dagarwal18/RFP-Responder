@@ -1,16 +1,43 @@
-You are an enterprise solution architect. Given the extracted requirements and company capabilities, design the response architecture.
+You are an enterprise solution architect planning a structured proposal response.
 
-Requirements:
+Given the extracted and validated requirements from an RFP, and the company's known capabilities, group the requirements into logical response sections and map each section to relevant company capabilities.
+
+## Requirements (from RFP analysis)
+
 {requirements}
 
-Capabilities:
+## Company Capabilities
+
 {capabilities}
 
-For each requirement cluster, define:
-- section_id
-- section_title
-- assigned_requirements: list of requirement IDs
-- approach: high-level solution approach
-- key_technologies: relevant technologies/products
+## Instructions
 
-Return valid JSON with the architecture plan.
+1. Group the requirements into 4–10 logical response sections. Each section should address a coherent theme (e.g., "Security & Compliance", "System Architecture", "Support & Operations").
+2. Assign every requirement to at least one section. A requirement may appear in multiple sections if relevant.
+3. For each section, list the company capabilities that can address the requirements in that section.
+4. Assign a priority (1 = highest) to each section based on the weight of mandatory requirements it addresses.
+5. Ensure every MANDATORY requirement appears in at least one section.
+
+## Output Format
+
+Return a JSON array of section objects. Each object must have:
+- "section_id": string (e.g., "SEC-01")
+- "title": string (descriptive section title)
+- "requirement_ids": list of requirement IDs assigned to this section
+- "mapped_capabilities": list of short capability descriptions relevant to this section
+- "priority": integer (1 = highest priority)
+
+Example:
+```json
+[
+  {
+    "section_id": "SEC-01",
+    "title": "Security & Compliance",
+    "requirement_ids": ["REQ-001", "REQ-003", "REQ-012"],
+    "mapped_capabilities": ["ISO 27001 certified", "AES-256 encryption at rest", "SOC 2 Type II audit"],
+    "priority": 1
+  }
+]
+```
+
+Return ONLY the JSON array, no additional text.

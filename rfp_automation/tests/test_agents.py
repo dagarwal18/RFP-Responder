@@ -808,3 +808,173 @@ class TestSectionGrouping:
         assert len(groups) == 1
         assert "Untitled Section" in groups
         assert len(groups["Untitled Section"]) == 2
+
+
+# ═══════════════════════════════════════════════════════════
+# C1 Architecture Planning Agent
+# ═══════════════════════════════════════════════════════════
+
+
+class TestArchitecturePlanningAgent:
+    """Tests for C1 Architecture Planning Agent."""
+
+    @staticmethod
+    def _architecture_state(requirements=None):
+        from rfp_automation.models.schemas import (
+            RFPMetadata, Requirement, RequirementsValidationResult,
+        )
+        from rfp_automation.models.enums import (
+            RequirementType, RequirementClassification,
+            RequirementCategory, ImpactLevel,
+        )
+        if requirements is None:
+            requirements = [
+                Requirement(
+                    requirement_id="REQ-001", text="System must support SSO via SAML 2.0",
+                    type=RequirementType.MANDATORY,
+                    classification=RequirementClassification.FUNCTIONAL,
+                    category=RequirementCategory.TECHNICAL, impact=ImpactLevel.HIGH,
+                    source_section="Technical Requirements",
+                ),
+                Requirement(
+                    requirement_id="REQ-002", text="Data encryption at rest is required",
+                    type=RequirementType.MANDATORY,
+                    classification=RequirementClassification.NON_FUNCTIONAL,
+                    category=RequirementCategory.SECURITY, impact=ImpactLevel.CRITICAL,
+                    source_section="Security Requirements",
+                ),
+                Requirement(
+                    requirement_id="REQ-003", text="System should support 10k users",
+                    type=RequirementType.OPTIONAL,
+                    classification=RequirementClassification.NON_FUNCTIONAL,
+                    category=RequirementCategory.TECHNICAL, impact=ImpactLevel.MEDIUM,
+                    source_section="Performance Requirements",
+                ),
+            ]
+        return RFPGraphState(
+            status=PipelineStatus.ARCHITECTURE_PLANNING,
+            rfp_metadata=RFPMetadata(rfp_id="RFP-TEST-001"),
+            requirements=requirements,
+            requirements_validation=RequirementsValidationResult(
+                validated_requirements=requirements,
+                total_requirements=len(requirements),
+            ),
+        ).model_dump()
+
+    def test_architecture_success(self, monkeypatch):
+        """Valid LLM response → sections populated, correct status, no coverage gaps."""
+        from rfp_automation.agents import ArchitecturePlanningAgent
+
+        llm_response = json.dumps([
+            {
+                "section_id": "SEC-01",
+                "title": "Security & Compliance",
+                "requirement_ids": ["REQ-001", "REQ-002"],
+                "mapped_capabilities": ["ISO 27001 certified", "AES-256 encryption"],
+                "priority": 1,
+            },
+            {
+                "section_id": "SEC-02",
+                "title": "Performance & Scalability",
+                "requirement_ids": ["REQ-003"],
+                "mapped_capabilities": ["Auto-scaling infrastructure"],
+                "priority": 2,
+            },
+        ])
+
+        mock_mcp = type("MockMCP", (), {
+            "query_knowledge": lambda self, q, top_k=5: [
+                {"text": "ISO 27001 certified operations", "metadata": {}},
+                {"text": "AES-256 encryption at rest", "metadata": {}},
+            ],
+        })()
+
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
+                            lambda prompt, deterministic=False: llm_response)
+
+        agent = ArchitecturePlanningAgent()
+        result = agent.process(self._architecture_state())
+
+        plan = result["architecture_plan"]
+        assert plan["total_sections"] == 2
+        assert len(plan["sections"]) == 2
+        assert plan["sections"][0]["section_id"] == "SEC-01"
+        assert "REQ-001" in plan["sections"][0]["requirement_ids"]
+        assert plan["coverage_gaps"] == []
+        assert result["status"] == PipelineStatus.WRITING_RESPONSES.value
+
+    def test_architecture_coverage_gaps(self, monkeypatch):
+        """Missing mandatory requirement → appears in coverage_gaps."""
+        from rfp_automation.agents import ArchitecturePlanningAgent
+
+        # LLM only assigns REQ-001 to a section, missing REQ-002 (mandatory)
+        llm_response = json.dumps([
+            {
+                "section_id": "SEC-01",
+                "title": "Authentication",
+                "requirement_ids": ["REQ-001"],
+                "mapped_capabilities": ["SSO support"],
+                "priority": 1,
+            },
+        ])
+
+        mock_mcp = type("MockMCP", (), {
+            "query_knowledge": lambda self, q, top_k=5: [],
+        })()
+
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
+                            lambda prompt, deterministic=False: llm_response)
+
+        agent = ArchitecturePlanningAgent()
+        result = agent.process(self._architecture_state())
+
+        plan = result["architecture_plan"]
+        assert "REQ-002" in plan["coverage_gaps"]
+        # REQ-003 is OPTIONAL, so it should NOT appear in coverage_gaps
+        assert "REQ-003" not in plan["coverage_gaps"]
+
+    def test_architecture_invalid_json(self, monkeypatch):
+        """Malformed LLM response → empty sections, 0 total_sections."""
+        from rfp_automation.agents import ArchitecturePlanningAgent
+
+        mock_mcp = type("MockMCP", (), {
+            "query_knowledge": lambda self, q, top_k=5: [],
+        })()
+
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService", lambda: mock_mcp)
+        monkeypatch.setattr("rfp_automation.agents.architecture_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "This is not valid JSON at all!!!")
+
+        agent = ArchitecturePlanningAgent()
+        result = agent.process(self._architecture_state())
+
+        plan = result["architecture_plan"]
+        assert plan["total_sections"] == 0
+        assert len(plan["sections"]) == 0
+        assert result["status"] == PipelineStatus.WRITING_RESPONSES.value
+
+    def test_architecture_no_rfp_id_raises(self):
+        """Missing rfp_id → ValueError."""
+        from rfp_automation.agents import ArchitecturePlanningAgent
+
+        agent = ArchitecturePlanningAgent()
+        state = RFPGraphState(
+            status=PipelineStatus.ARCHITECTURE_PLANNING,
+        ).model_dump()
+        with pytest.raises(ValueError, match="No rfp_id"):
+            agent.process(state)
+
+    def test_architecture_empty_requirements(self):
+        """No requirements → passes through with empty plan."""
+        from rfp_automation.agents import ArchitecturePlanningAgent
+
+        agent = ArchitecturePlanningAgent()
+        result = agent.process(self._architecture_state(requirements=[]))
+
+        plan = result["architecture_plan"]
+        assert plan["total_sections"] == 0
+        assert plan["sections"] == []
+        assert plan["coverage_gaps"] == []
+        assert result["status"] == PipelineStatus.WRITING_RESPONSES.value

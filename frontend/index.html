@@ -1869,9 +1869,37 @@
               </ul>` : '<div style="margin-bottom:12px;color:var(--success)">✅ No issues identified. Requirements are solid.</div>'}
             </div></details>`;
         }
+        // C1 Architecture Planning
+        if (outputs.C1_ARCHITECTURE_PLANNING) {
+          const c1 = outputs.C1_ARCHITECTURE_PLANNING;
+          const sections = c1.sections || [];
+          const gaps = c1.coverage_gaps || [];
+          const gapBadge = gaps.length ? `<span style="color:#ef4444;margin-left:8px">⚠ ${gaps.length} gap${gaps.length > 1 ? 's' : ''}</span>` : '<span style="color:#10b981;margin-left:8px">✅ Full coverage</span>';
+          html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🏗️ C1 Architecture Planning (${sections.length} sections)${gapBadge}</summary>
+            <div style="padding:8px 16px;font-size:13px">
+              <div style="margin-bottom:12px"><strong>Total Sections:</strong> ${c1.total_sections || sections.length}</div>
+              ${sections.length ? `<div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
+                <table style="width:100%;border-collapse:collapse;font-size:12px">
+                  <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
+                    <th style="padding:6px">Section</th><th style="padding:6px">Title</th><th style="padding:6px">Priority</th><th style="padding:6px">Requirements</th><th style="padding:6px">Capabilities</th>
+                  </tr></thead>
+                  <tbody>${sections.map(s => `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:6px;font-weight:600;color:var(--accent-light)">${s.section_id}</td>
+                    <td style="padding:6px">${s.title}</td>
+                    <td style="padding:6px;text-align:center"><span style="background:${s.priority >= 8 ? 'rgba(239,68,68,0.15);color:#ef4444' : s.priority >= 5 ? 'rgba(245,158,11,0.15);color:#f59e0b' : 'rgba(34,197,94,0.15);color:#22c55e'};padding:2px 8px;border-radius:10px;font-weight:600;font-size:11px">${s.priority}/10</span></td>
+                    <td style="padding:6px;font-size:11px">${(s.requirement_ids || []).join(', ') || '—'}</td>
+                    <td style="padding:6px;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${(s.mapped_capabilities || []).join(', ') || '—'}</td>
+                  </tr>`).join('')}</tbody>
+                </table>
+              </div>` : ''}
+              ${gaps.length ? `<div style="margin-top:12px;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px">
+                <strong style="color:#ef4444">⚠ Coverage Gaps:</strong> <span style="color:var(--text-secondary)">${gaps.join(', ')}</span>
+              </div>` : ''}
+            </div></details>`;
+        }
         // Other agents — raw JSON
         for (const [key, val] of Object.entries(outputs)) {
-          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION'].includes(key)) continue;
+          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING'].includes(key)) continue;
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
             <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
         }
