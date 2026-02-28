@@ -112,9 +112,9 @@ The gateway agent. Takes a raw uploaded PDF, validates it, extracts all text and
 | **File** | `rfp_automation/agents/structuring_agent.py` |
 | **Status** | ✅ **Fully Implemented** |
 | **Uses LLM** | ✅ Yes — `llm_text_call(prompt, deterministic=True)` |
-| **Uses MCP** | ✅ Yes — queries RFP Store for chunks |
+| **Uses MCP** | ✅ Yes — deterministic full fetch from RFP Store |
 | **Deterministic** | ✅ Yes — temperature=0 via deterministic flag |
-| **Has Retry Loop** | ✅ Yes — up to 3 attempts with different retrieval strategies |
+| **Has Retry Loop** | ✅ Yes — up to 3 attempts with retry hints in the prompt |
 
 #### Purpose
 
@@ -131,17 +131,9 @@ Classifies the RFP document into logical sections across six predefined categori
 | `submission` | Proposal format, deadline, delivery instructions |
 | `evaluation` | Scoring methodology, selection criteria, weighting |
 
-#### Retrieval Strategies (One Per Retry)
-
-| Attempt | Strategy | Description |
-|---|---|---|
-| 0 | **All stored chunks** | `mcp.fetch_all_rfp_chunks(rfp_id)` — deterministic full retrieval in document order |
-| 1 | **Category-specific queries** | 6 targeted semantic searches (one per category), results deduplicated by chunk ID, sorted by `chunk_index` |
-| 2+ | **Re-chunk raw text** | `ParsingService.chunk_text(raw_text, chunk_size=500, overlap=100)` — finer granularity from `state.raw_text` |
-
 #### Detailed Processing Steps
 
-1. **Retrieve chunks** using the strategy dictated by `retry_count`.
+1. **Retrieve all chunks deterministically** via `mcp.fetch_all_rfp_chunks(rfp_id)` — fetches every chunk in document order. The same complete chunk set is used on every retry; what changes on retry is the prompt (which includes hints referencing low-confidence sections from the previous attempt).
 2. **Build prompt** from template (`prompts/structuring_prompt.txt`), injecting numbered chunk texts and retry hints referencing low-confidence sections from previous attempts.
 3. **Call LLM** with `deterministic=True` — produces a JSON array of section objects.
 4. **Parse JSON** — extracts `section_id`, `title`, `category` (normalized to valid values), `content_summary`, `confidence`, `page_range`. Handles markdown fences and malformed JSON gracefully.
@@ -238,6 +230,8 @@ A3's output is **advisory context only** — it does NOT filter or modify the re
 #### Purpose
 
 The most complex agent. Performs a **full-document sweep** to extract every obligation, requirement, and evaluation criterion from the RFP, producing a deduplicated, sequentially-numbered list of structured `Requirement` objects. Uses a two-layer architecture: rule-based candidate detection followed by LLM-based structuring.
+
+> **Note on grouping:** B1 groups chunks by `section_hint` — a field set by A1's `prepare_semantic_chunks()` during intake, derived from the PDF's heading structure. This is **independent of A2's LLM classification**, making B1's grouping deterministic and stable.
 
 #### Architecture (Two-Layer Extraction)
 

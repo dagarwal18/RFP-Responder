@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any
 
 from rfp_automation.agents.base_agent import BaseAgent
+from rfp_automation.config import get_settings
 from rfp_automation.models.enums import AgentName, PipelineStatus
 from rfp_automation.models.state import RFPGraphState
 from rfp_automation.models.schemas import ArchitecturePlan, ResponseSection
@@ -59,20 +60,29 @@ class ArchitecturePlanningAgent(BaseAgent):
         else:
             logger.debug(f"[C1] Using {len(requirements)} validated requirements from B2")
 
-        # Serialize requirements for prompt
+        # Serialize requirements for prompt — compact format to fit token budget
+        # Full objects would be ~70K chars for 70 reqs; compact is ~7K
         requirements_data = []
+        compact_req_lines = []
         for req in requirements:
             if hasattr(req, "model_dump"):
-                requirements_data.append(req.model_dump())
+                d = req.model_dump()
             elif isinstance(req, dict):
-                requirements_data.append(req)
+                d = req
             else:
-                requirements_data.append({"text": str(req)})
+                d = {"text": str(req)}
+            requirements_data.append(d)
+            # One line per requirement: ID | TYPE | CLASS | text
+            req_id = d.get("requirement_id", "?")
+            req_type = d.get("type", "?")
+            req_class = d.get("classification", "?")
+            req_text = d.get("text", str(d))[:200]  # cap text at 200 chars
+            compact_req_lines.append(f"{req_id} | {req_type} | {req_class} | {req_text}")
 
-        requirements_json = json.dumps(requirements_data, indent=2, default=str)
+        requirements_compact = "\n".join(compact_req_lines)
         logger.debug(
             f"[C1] Serialized {len(requirements_data)} requirements "
-            f"({len(requirements_json)} chars)"
+            f"({len(requirements_compact)} chars, compact format)"
         )
 
         # ── 3. Gather RFP structure from A2 ─────────────
@@ -96,7 +106,7 @@ class ArchitecturePlanningAgent(BaseAgent):
         # ── 6. Build prompt ─────────────────────────────
         prompt = self._build_prompt(
             rfp_sections=rfp_sections_text,
-            requirements=requirements_json,
+            requirements=requirements_compact,
             capabilities=capabilities_json,
             submission_instructions=submission_instructions,
         )
@@ -292,14 +302,39 @@ class ArchitecturePlanningAgent(BaseAgent):
         capabilities: str,
         submission_instructions: str,
     ) -> str:
-        """Load the prompt template and inject all four data sources."""
+        """Load the prompt template and inject all four data sources with token-aware truncation."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
+
+        # ── Token-aware budget ───────────────────────────
+        chars_per_token = 4  # conservative estimate
+        settings = get_settings()
+        max_tokens = settings.llm_max_tokens
+        reserved_output = 2000  # tokens for LLM response
+        template_overhead = len(template) // chars_per_token + 200
+        available_chars = max(
+            (max_tokens - reserved_output - template_overhead) * chars_per_token,
+            4000,
+        )
+
+        # Proportional allocation: requirements 55% (most critical), sections 20%, capabilities 15%, submission 10%
+        budget_reqs = int(available_chars * 0.55)
+        budget_sections = int(available_chars * 0.20)
+        budget_caps = int(available_chars * 0.15)
+        budget_sub = int(available_chars * 0.10)
+
+        total_input = len(rfp_sections) + len(requirements) + len(capabilities) + len(submission_instructions)
+        if total_input > available_chars:
+            logger.info(
+                f"[C1] Prompt inputs too large ({total_input} chars, ~{total_input // chars_per_token} tokens). "
+                f"Truncating to fit budget ({available_chars} chars)"
+            )
+
         return (
             template
-            .replace("{rfp_sections}", rfp_sections[:12_000])
-            .replace("{requirements}", requirements[:15_000])
-            .replace("{capabilities}", capabilities[:10_000])
-            .replace("{submission_instructions}", submission_instructions[:8_000])
+            .replace("{rfp_sections}", rfp_sections[:budget_sections])
+            .replace("{requirements}", requirements[:budget_reqs])
+            .replace("{capabilities}", capabilities[:budget_caps])
+            .replace("{submission_instructions}", submission_instructions[:budget_sub])
         )
 
     def _parse_response(
@@ -311,9 +346,22 @@ class ArchitecturePlanningAgent(BaseAgent):
         """
         text = raw_response.strip()
 
-        # Strip markdown code fences
-        text = re.sub(r"^```(?:json)?\s*", "", text)
-        text = re.sub(r"\s*```$", "", text)
+        # Debug: log what the LLM actually returned
+        logger.debug(
+            f"[C1] Raw LLM response ({len(text)} chars):\n"
+            f"--- START (first 500 chars) ---\n{text[:500]}\n--- END ---"
+        )
+
+        # Strip markdown code fences from ANYWHERE in the response
+        # Handles: ```json\n{...}\n``` or ```\n{...}\n``` even with preamble
+        fence_match = re.search(
+            r"```(?:json)?\s*\n?(.*?)\n?\s*```",
+            text,
+            re.DOTALL,
+        )
+        if fence_match:
+            text = fence_match.group(1).strip()
+            logger.debug("[C1] Extracted content from markdown fence")
 
         # Try to parse as JSON object with "sections" key
         data = self._extract_json(text)
@@ -331,7 +379,10 @@ class ArchitecturePlanningAgent(BaseAgent):
             # LLM returned a bare array (legacy format)
             return self._build_sections(data), ""
 
-        logger.warning("[C1] No valid JSON found in LLM response")
+        logger.warning(
+            f"[C1] No valid JSON found in LLM response. "
+            f"Response starts with: {raw_response[:200]!r}"
+        )
         return [], ""
 
     def _extract_json(self, text: str) -> dict | list | None:
@@ -363,8 +414,22 @@ class ArchitecturePlanningAgent(BaseAgent):
                 end = text.rindex(close_char) + 1
                 candidate = text[start:end]
                 return json.loads(candidate)
-            except (ValueError, json.JSONDecodeError):
-                continue
+            except (ValueError, json.JSONDecodeError) as exc:
+                # Try repairing common JSON issues
+                try:
+                    start = text.index(open_char)
+                    end = text.rindex(close_char) + 1
+                    candidate = text[start:end]
+                    # Fix trailing commas before } or ]
+                    repaired = re.sub(r",\s*([}\]])", r"\1", candidate)
+                    result = json.loads(repaired)
+                    logger.info("[C1] JSON parsed after repairing trailing commas")
+                    return result
+                except (ValueError, json.JSONDecodeError):
+                    logger.debug(
+                        f"[C1] JSON parse failed for {open_char}...{close_char}: {exc}"
+                    )
+                    continue
 
         return None
 

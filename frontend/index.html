@@ -892,6 +892,109 @@
       align-items: center;
       margin-bottom: 12px;
     }
+
+    /* ── Checkpoint panel ─────────────────────────── */
+    .checkpoint-panel {
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: var(--radius-sm);
+    }
+
+    .checkpoint-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .checkpoint-panel-header h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .checkpoint-agents {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .checkpoint-chip {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .checkpoint-chip.cached {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .checkpoint-chip.missing {
+      background: rgba(107, 114, 128, 0.1);
+      color: var(--text-muted);
+      border: 1px solid rgba(107, 114, 128, 0.2);
+    }
+
+    .rerun-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .rerun-row select {
+      flex: 1;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 12px;
+    }
+
+    .btn-rerun {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border-color: transparent;
+      color: #fff;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .btn-rerun:hover {
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-clear-cp {
+      background: none;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .btn-clear-cp:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
   </style>
 </head>
 
@@ -1013,6 +1116,22 @@
         <!-- Pipeline progress -->
         <div class="pipeline-stepper" id="pipelineStepper">
           <!-- steps injected by JS -->
+        </div>
+
+        <!-- Checkpoint / Re-run panel -->
+        <div class="checkpoint-panel" id="checkpointPanel" style="display:none">
+          <div class="checkpoint-panel-header">
+            <h3>💾 Checkpoints</h3>
+            <button class="btn-clear-cp" id="clearCpBtn" onclick="clearCheckpoints()"
+              title="Delete all checkpoints for this run">🗑 Clear All</button>
+          </div>
+          <div class="checkpoint-agents" id="checkpointAgents"><!-- filled by JS --></div>
+          <div class="rerun-row">
+            <select id="rerunFromSelect">
+              <option value="" disabled selected>Select agent to re-run from…</option>
+            </select>
+            <button class="btn-rerun" id="rerunBtn" onclick="rerunFromAgent()">🔄 Re-Run</button>
+          </div>
         </div>
 
         <!-- Recent runs -->
@@ -1657,6 +1776,9 @@
         // Load agent output logs
         loadAgentLogs(rfpId);
 
+        // Load checkpoints for this run
+        loadCheckpoints(rfpId);
+
         // If it's still running, connect the WebSocket
         if (status.status === 'RUNNING') {
           connectPipelineWS(rfpId);
@@ -1667,6 +1789,130 @@
     }
 
     document.getElementById('rfpRefreshBtn').addEventListener('click', loadRuns);
+
+    // ══════════════════════════════════════════════
+    //  CHECKPOINTS & RE-RUN
+    // ══════════════════════════════════════════════
+
+    let checkpointRfpId = null;
+
+    // Agent display names
+    const AGENT_LABELS = {
+      a1_intake: 'A1 Intake',
+      a2_structuring: 'A2 Structuring',
+      a3_go_no_go: 'A3 Go/No-Go',
+      b1_requirements_extraction: 'B1 Extraction',
+      b2_requirements_validation: 'B2 Validation',
+      c1_architecture_planning: 'C1 Architecture',
+      c2_requirement_writing: 'C2 Writing',
+      c3_narrative_assembly: 'C3 Narrative',
+      d1_technical_validation: 'D1 Tech Valid.',
+      commercial_legal_parallel: 'E1+E2 Com/Legal',
+      f1_final_readiness: 'F1 Readiness',
+      f2_submission: 'F2 Submission',
+    };
+
+    async function loadCheckpoints(rfpId) {
+      checkpointRfpId = rfpId;
+      const panel = document.getElementById('checkpointPanel');
+      const agentsDiv = document.getElementById('checkpointAgents');
+      const select = document.getElementById('rerunFromSelect');
+
+      try {
+        const data = await apiFetch(`/api/rfp/${rfpId}/checkpoints`);
+        const cachedSet = new Set(data.checkpoints.map(c => c.agent));
+
+        if (data.checkpoints.length === 0) {
+          panel.style.display = 'none';
+          return;
+        }
+
+        panel.style.display = 'block';
+
+        // Render cached/missing chips
+        const allAgents = Object.keys(AGENT_LABELS);
+        agentsDiv.innerHTML = allAgents.map(a => {
+          const isCached = cachedSet.has(a);
+          const label = AGENT_LABELS[a] || a;
+          return `<span class="checkpoint-chip ${isCached ? 'cached' : 'missing'}">
+            ${isCached ? '✓' : '○'} ${label}
+          </span>`;
+        }).join('');
+
+        // Populate rerun dropdown: user picks last agent to KEEP,
+        // next agent after it will re-execute
+        const allAgentKeys = Object.keys(AGENT_LABELS);
+        select.innerHTML = '<option value="" disabled selected>Keep cache through… → re-run next</option>';
+        for (const cp of data.checkpoints) {
+          const cachedAgent = cp.agent;
+          const cachedIdx = allAgentKeys.indexOf(cachedAgent);
+          if (cachedIdx < 0 || cachedIdx >= allAgentKeys.length - 1) continue;
+          const nextAgent = allAgentKeys[cachedIdx + 1];
+          const cachedLabel = AGENT_LABELS[cachedAgent] || cachedAgent;
+          const nextLabel = AGENT_LABELS[nextAgent] || nextAgent;
+          const opt = document.createElement('option');
+          opt.value = nextAgent; // API gets the agent to RE-EXECUTE
+          opt.textContent = `Keep ${cachedLabel} → re-run ${nextLabel}`;
+          select.appendChild(opt);
+        }
+
+      } catch (e) {
+        panel.style.display = 'none';
+        console.warn('Failed to load checkpoints:', e);
+      }
+    }
+
+    async function rerunFromAgent() {
+      const select = document.getElementById('rerunFromSelect');
+      const agent = select.value;
+      if (!agent || !checkpointRfpId) {
+        addLog('rfpLog', '⚠ Select an agent to re-run from', 'error');
+        return;
+      }
+
+      const label = AGENT_LABELS[agent] || agent;
+      addLog('rfpLog', `🔄 Re-running from ${label}…`, 'info');
+      document.getElementById('rerunBtn').disabled = true;
+      document.getElementById('rerunBtn').textContent = '⏳ Starting…';
+
+      // Reset stepper
+      resetStepperState();
+      renderStepper();
+      document.getElementById('rfpBadge').textContent = 'Running';
+
+      try {
+        const data = await apiFetch(`/api/rfp/${checkpointRfpId}/rerun?start_from=${agent}`, {
+          method: 'POST',
+        });
+        addLog('rfpLog', `✓ Re-run started from ${label}: ${data.rfp_id}`, 'success');
+
+        // Connect WebSocket for live progress
+        connectPipelineWS(data.rfp_id);
+      } catch (e) {
+        addLog('rfpLog', `✗ Re-run failed: ${e.message}`, 'error');
+        document.getElementById('rfpBadge').textContent = 'Failed';
+      } finally {
+        document.getElementById('rerunBtn').disabled = false;
+        document.getElementById('rerunBtn').textContent = '🔄 Re-Run';
+      }
+    }
+
+    async function clearCheckpoints() {
+      if (!checkpointRfpId) return;
+      if (!confirm(`Delete all cached checkpoints for ${checkpointRfpId}? Next run will execute all agents from scratch.`)) {
+        return;
+      }
+
+      try {
+        const data = await apiFetch(`/api/rfp/${checkpointRfpId}/checkpoints`, {
+          method: 'DELETE',
+        });
+        addLog('rfpLog', `🗑 ${data.message}`, 'info');
+        document.getElementById('checkpointPanel').style.display = 'none';
+      } catch (e) {
+        addLog('rfpLog', `✗ Failed to clear checkpoints: ${e.message}`, 'error');
+      }
+    }
 
     // ══════════════════════════════════════════════
     //  COMPANY POLICIES
@@ -1914,15 +2160,15 @@
                   <tbody>${sections.map(s => {
             const tc = typeColors[s.section_type] || typeColors.requirement_driven;
             return `<tr style="border-bottom:1px solid var(--border)">
-                    <td style="padding:6px;font-weight:600;color:var(--accent-light)">${s.section_id}</td>
-                    <td style="padding:6px;font-weight:500">${s.title}</td>
+                    <td style="padding:6px;font-weight:600;color:var(--accent-light);white-space:nowrap">${s.section_id}</td>
+                    <td style="padding:6px;font-weight:500;min-width:140px">${s.title}</td>
                     <td style="padding:6px"><span style="background:${tc.bg};color:${tc.fg};padding:2px 8px;border-radius:10px;font-weight:600;font-size:11px;white-space:nowrap">${tc.label}</span></td>
                     <td style="padding:6px;text-align:center;font-weight:600">${s.priority}</td>
-                    <td style="padding:6px;color:var(--text-secondary);max-width:250px">${s.description || '—'}</td>
-                    <td style="padding:6px;font-size:11px;color:var(--text-muted);max-width:200px;font-style:italic">${s.content_guidance || '—'}</td>
-                    <td style="padding:6px;font-size:11px">${(s.requirement_ids || []).join(', ') || '—'}</td>
-                    <td style="padding:6px;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${(s.mapped_capabilities || []).join(', ') || '—'}</td>
-                    <td style="padding:6px;font-size:11px;color:var(--text-muted)">${s.source_rfp_section || '—'}</td>
+                    <td style="padding:6px;color:var(--text-secondary);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(s.description || '').replace(/"/g, '&quot;')}">${s.description || '\u2014'}</td>
+                    <td style="padding:6px;font-size:11px;color:var(--text-muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic" title="${(s.content_guidance || '').replace(/"/g, '&quot;')}">${s.content_guidance || '\u2014'}</td>
+                    <td style="padding:6px"><div style="display:flex;flex-wrap:wrap;gap:3px;max-height:60px;overflow-y:auto;max-width:180px">${(s.requirement_ids || []).length ? (s.requirement_ids || []).map(r => `<span style="font-size:10px;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,0.15);color:var(--accent-light);white-space:nowrap">${r}</span>`).join('') : '\u2014'}</div></td>
+                    <td style="padding:6px;font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(s.mapped_capabilities || []).join(', ')}">${(s.mapped_capabilities || []).join(', ') || '\u2014'}</td>
+                    <td style="padding:6px;font-size:11px;color:var(--text-muted);white-space:nowrap">${s.source_rfp_section || '\u2014'}</td>
                   </tr>`;
           }).join('')}</tbody>
                 </table>

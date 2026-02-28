@@ -6,6 +6,9 @@ STRICT RULES (VIOLATION = FAILURE):
 2. DO NOT summarize — use exact or near-exact wording from the source text.
    Include the COMPLETE sentence — never truncate mid-phrase. Every requirement
    must have a subject, verb, and object/complement.
+   If the candidate text is a FRAGMENT (starts mid-sentence, missing subject,
+   or begins with lowercase/punctuation), look in the FULL SECTION CONTEXT
+   to recover the complete sentence before extracting it.
 3. DO NOT expand methodology descriptions into obligations.
 4. DO NOT add commentary, reasoning, or explanation.
 5. ONLY extract statements containing explicit obligation verbs
@@ -13,8 +16,11 @@ STRICT RULES (VIOLATION = FAILURE):
    OR evaluation/scoring criteria.
 6. DO NOT merge multiple distinct obligations into one requirement.
 7. SKIP any candidate that is clearly an incomplete sentence fragment
-   (e.g., ends with a comma, or introduces a list "the following" but
-   lacks the list items). These are structural artifacts, not requirements.
+   that CANNOT be recovered from the section context — e.g., a lone 
+   bullet marker, a column header, or a line that makes no sense alone.
+   However, if the fragment contains a measurable specification or SLA
+   target (e.g., "<150ms latency", "RPO <1 hour"), combine it with its
+   surrounding context to form a complete requirement statement.
 8. If the candidate text contains a structured list of specifications
    (metric/value pairs, SLA targets, capability rows) — extract EACH
    item as a SEPARATE requirement. Do NOT combine multiple measurable

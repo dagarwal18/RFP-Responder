@@ -11,7 +11,9 @@ state dict that LangGraph merges automatically.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Callable
+
+from rfp_automation.persistence.checkpoint import save_checkpoint
 
 from langgraph.graph import StateGraph, END
 
@@ -57,6 +59,43 @@ _e1 = CommercialAgent()
 _e2 = LegalAgent()
 _f1 = FinalReadinessAgent()
 _f2 = SubmissionAgent()
+
+
+def _with_checkpoint(node_name: str, fn: Callable) -> Callable:
+    """Wrap an agent process function with checkpoint-after-completion.
+
+    Also handles the 'skip before' logic for reruns: if the state
+    contains '_rerun_start_from', agents before that point return
+    the state unchanged (instant pass-through).
+    """
+    def wrapper(state: dict[str, Any]) -> dict[str, Any]:
+        from rfp_automation.persistence.checkpoint import AGENT_ORDER
+
+        # ── Skip logic for reruns ─────────────────────
+        start_from = state.get("_rerun_start_from")
+        if start_from and node_name in AGENT_ORDER and start_from in AGENT_ORDER:
+            my_idx = AGENT_ORDER.index(node_name)
+            start_idx = AGENT_ORDER.index(start_from)
+            if my_idx < start_idx:
+                logger.info(f"⏭ [{node_name}] Skipped (rerun starts from {start_from})")
+                return state  # pass through unchanged
+
+        # ── Normal execution ──────────────────────────
+        result = fn(state)
+
+        # Extract rfp_id from state for checkpoint filename
+        rfp_id = (
+            result.get("tracking_rfp_id", "")
+            or (result.get("rfp_metadata", {}) or {}).get("rfp_id", "")
+            or "unknown"
+        )
+        try:
+            save_checkpoint(rfp_id, node_name, result)
+        except Exception as exc:
+            logger.warning(f"Checkpoint save failed for {node_name}: {exc}")
+        return result
+    wrapper.__name__ = fn.__name__  # preserve name for LangGraph
+    return wrapper
 
 
 # ── Terminal nodes (set final status and stop) ───────────
@@ -143,18 +182,18 @@ def build_graph() -> StateGraph:
     graph = StateGraph(dict)
 
     # ── Add nodes ────────────────────────────────────────
-    graph.add_node("a1_intake", _a1.process)
-    graph.add_node("a2_structuring", _a2.process)
-    graph.add_node("a3_go_no_go", _a3.process)
-    graph.add_node("b1_requirements_extraction", _b1.process)
-    graph.add_node("b2_requirements_validation", _b2.process)
-    graph.add_node("c1_architecture_planning", _c1.process)
-    graph.add_node("c2_requirement_writing", _c2.process)
-    graph.add_node("c3_narrative_assembly", _c3.process)
-    graph.add_node("d1_technical_validation", _d1.process)
-    graph.add_node("commercial_legal_parallel", commercial_legal_parallel)
-    graph.add_node("f1_final_readiness", _f1.process)
-    graph.add_node("f2_submission", _f2.process)
+    graph.add_node("a1_intake", _with_checkpoint("a1_intake", _a1.process))
+    graph.add_node("a2_structuring", _with_checkpoint("a2_structuring", _a2.process))
+    graph.add_node("a3_go_no_go", _with_checkpoint("a3_go_no_go", _a3.process))
+    graph.add_node("b1_requirements_extraction", _with_checkpoint("b1_requirements_extraction", _b1.process))
+    graph.add_node("b2_requirements_validation", _with_checkpoint("b2_requirements_validation", _b2.process))
+    graph.add_node("c1_architecture_planning", _with_checkpoint("c1_architecture_planning", _c1.process))
+    graph.add_node("c2_requirement_writing", _with_checkpoint("c2_requirement_writing", _c2.process))
+    graph.add_node("c3_narrative_assembly", _with_checkpoint("c3_narrative_assembly", _c3.process))
+    graph.add_node("d1_technical_validation", _with_checkpoint("d1_technical_validation", _d1.process))
+    graph.add_node("commercial_legal_parallel", _with_checkpoint("commercial_legal_parallel", commercial_legal_parallel))
+    graph.add_node("f1_final_readiness", _with_checkpoint("f1_final_readiness", _f1.process))
+    graph.add_node("f2_submission", _with_checkpoint("f2_submission", _f2.process))
 
     # Terminal nodes
     graph.add_node("end_no_go", end_no_go)
@@ -252,6 +291,10 @@ def run_pipeline(
     """
     Build the graph and run it end-to-end.
     Returns the final state dict.
+
+    If an agent raises, the exception is re-raised with a
+    ``partial_state`` attribute containing the last known-good
+    state so callers can still inspect completed agent outputs.
     """
     compiled = build_graph()
 
@@ -263,10 +306,71 @@ def run_pipeline(
     logger.info("  RFP PIPELINE STARTING")
     logger.info("═" * 60)
 
-    final_state = compiled.invoke(state)
+    # Stream node-by-node so we can capture partial state on error
+    last_state: dict[str, Any] = state
+    try:
+        for step_output in compiled.stream(state):
+            # Each step_output is {node_name: updated_state_dict}
+            for _node_name, node_state in step_output.items():
+                if isinstance(node_state, dict):
+                    last_state = node_state
+    except Exception as exc:
+        logger.error(f"Pipeline failed at stream step: {exc}")
+        # Attach partial state to the exception for the caller
+        exc.partial_state = last_state  # type: ignore[attr-defined]
+        raise
 
     logger.info("═" * 60)
-    logger.info(f"  PIPELINE FINISHED — status: {final_state.get('status')}")
+    logger.info(f"  PIPELINE FINISHED — status: {last_state.get('status')}")
     logger.info("═" * 60)
 
-    return final_state
+    return last_state
+
+
+def run_pipeline_from(
+    start_from: str,
+    checkpoint_state: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Run the pipeline starting from a specific agent using cached state.
+
+    Injects `_rerun_start_from` into the state so that the
+    `_with_checkpoint` wrapper skips agents before `start_from`.
+    """
+    from rfp_automation.persistence.checkpoint import AGENT_ORDER
+
+    if start_from not in AGENT_ORDER:
+        raise ValueError(
+            f"Unknown agent '{start_from}'. Valid: {AGENT_ORDER}"
+        )
+
+    compiled = build_graph()
+
+    # Mark which agent to start from (agents before this will be skipped)
+    checkpoint_state["_rerun_start_from"] = start_from
+
+    # Remove checkpoint metadata keys that aren't part of the graph state
+    checkpoint_state.pop("_checkpoint", None)
+
+    logger.info("═" * 60)
+    logger.info(f"  RFP PIPELINE RE-RUNNING FROM: {start_from}")
+    logger.info("═" * 60)
+
+    # Stream from checkpoint state
+    last_state: dict[str, Any] = checkpoint_state
+    try:
+        for step_output in compiled.stream(checkpoint_state):
+            for _node_name, node_state in step_output.items():
+                if isinstance(node_state, dict):
+                    last_state = node_state
+    except Exception as exc:
+        logger.error(f"Pipeline failed at stream step: {exc}")
+        exc.partial_state = last_state  # type: ignore[attr-defined]
+        raise
+
+    logger.info("═" * 60)
+    logger.info(f"  PIPELINE FINISHED — status: {last_state.get('status')}")
+    logger.info("═" * 60)
+
+    return last_state
+
