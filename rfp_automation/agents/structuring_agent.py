@@ -69,17 +69,36 @@ class StructuringAgent(BaseAgent):
             state.status = PipelineStatus.STRUCTURING
             return state
 
-        # ── 2. Build prompt ──────────────────────────────────────────
-        prompt = self._build_prompt(chunks, retry_count, state.structuring_result)
+        # ── 2. Build prompts in batches (token-aware) ────────────
+        batches = self._batch_chunks(chunks)
+        logger.info(f"[A2] Split {len(chunks)} chunks into {len(batches)} batch(es)")
 
-        # ── 3. Call LLM ──────────────────────────────────────────────
-        logger.info(f"[A2] Calling LLM with {len(chunks)} chunks ({len(prompt)} char prompt)")
-        sections = self._call_llm_and_parse(prompt)
-        for s in sections:
-            logger.debug(
-                f"[A2]   Section: {s.section_id} | {s.category} | "
-                f"confidence={s.confidence:.3f} | {s.title[:60]}"
+        # ── 3. Call LLM on each batch and merge sections ─────────
+        import time
+        all_sections: list[RFPSection] = []
+
+        for batch_idx, batch in enumerate(batches):
+            prompt = self._build_prompt(batch, retry_count, state.structuring_result)
+            logger.info(
+                f"[A2] Calling LLM: batch {batch_idx + 1}/{len(batches)} "
+                f"({len(batch)} chunks, {len(prompt)} char prompt)"
             )
+
+            sections = self._call_llm_and_parse(prompt)
+            all_sections.extend(sections)
+
+            for s in sections:
+                logger.debug(
+                    f"[A2]   Section: {s.section_id} | {s.category} | "
+                    f"confidence={s.confidence:.3f} | {s.title[:60]}"
+                )
+
+            # Rate-limit delay between batches
+            if batch_idx < len(batches) - 1:
+                time.sleep(2.0)
+
+        # Deduplicate sections by title (batches may overlap)
+        sections = self._deduplicate_sections(all_sections)
 
         # ── 4. Compute confidence ────────────────────────────────────
         if sections:
@@ -114,6 +133,68 @@ class StructuringAgent(BaseAgent):
             state.status = PipelineStatus.STRUCTURING
 
         return state
+
+    # ── Chunk batching ────────────────────────────────────────
+
+    @staticmethod
+    def _batch_chunks(
+        chunks: list[dict[str, Any]],
+        max_batch_chars: int = 6000,
+    ) -> list[list[dict[str, Any]]]:
+        """
+        Split chunks into token-aware batches.
+
+        max_batch_chars ≈ 1500 tokens (at 4 chars/token).
+        Each batch must fit within Groq's TPM limit when combined
+        with the prompt overhead (~500 tokens).
+        """
+        batches: list[list[dict[str, Any]]] = []
+        current_batch: list[dict[str, Any]] = []
+        current_size = 0
+
+        for chunk in chunks:
+            text = chunk.get("text", "")
+            chunk_size = len(text) + 30  # overhead for [Chunk N] header
+
+            # If a single chunk exceeds limit, truncate and add alone
+            if chunk_size > max_batch_chars:
+                if current_batch:
+                    batches.append(current_batch)
+                    current_batch = []
+                    current_size = 0
+                truncated = {**chunk, "text": text[:max_batch_chars - 30]}
+                batches.append([truncated])
+                continue
+
+            if current_size + chunk_size > max_batch_chars:
+                batches.append(current_batch)
+                current_batch = []
+                current_size = 0
+
+            current_batch.append(chunk)
+            current_size += chunk_size
+
+        if current_batch:
+            batches.append(current_batch)
+
+        return batches if batches else [[]]  # at least one empty batch
+
+    @staticmethod
+    def _deduplicate_sections(sections: list[RFPSection]) -> list[RFPSection]:
+        """
+        Remove duplicate sections from multi-batch results.
+        Keeps the section with the highest confidence when titles match.
+        """
+        seen: dict[str, RFPSection] = {}
+        for section in sections:
+            key = section.title.strip().lower()
+            if key not in seen or section.confidence > seen[key].confidence:
+                seen[key] = section
+
+        unique = list(seen.values())
+        for i, sec in enumerate(unique, 1):
+            sec.section_id = f"SEC-{i:02d}"
+        return unique
 
     # ── Chunking strategies ──────────────────────────────────────
 

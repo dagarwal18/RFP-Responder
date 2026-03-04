@@ -112,7 +112,22 @@ def llm_text_call(prompt: str, max_retries: int = 0, deterministic: bool = False
 
     for attempt in range(1, attempts + 1):
         t0 = time.perf_counter()
-        response = llm.invoke(prompt)
+        try:
+            response = llm.invoke(prompt)
+        except Exception as exc:
+            exc_str = str(exc)
+            if "413" in exc_str or "429" in exc_str or "rate_limit" in exc_str.lower():
+                if attempt < attempts:
+                    wait = min(30, 10 * attempt)
+                    logger.warning(
+                        f"{tag} Rate limit hit (attempt {attempt}/{attempts}). "
+                        f"Waiting {wait}s for TPM window to reset..."
+                    )
+                    time.sleep(wait)
+                    continue
+                else:
+                    logger.error(f"{tag} Rate limit exceeded on final attempt: {exc}")
+            raise
         elapsed = time.perf_counter() - t0
         content = response.content or ""
 
@@ -174,7 +189,22 @@ def llm_deterministic_call(prompt: str, max_retries: int = 1) -> str:
 
     for attempt in range(1, attempts + 1):
         t0 = time.perf_counter()
-        response = llm.invoke(prompt)
+        try:
+            response = llm.invoke(prompt)
+        except Exception as exc:
+            exc_str = str(exc)
+            if "413" in exc_str or "429" in exc_str or "rate_limit" in exc_str.lower():
+                if attempt < attempts:
+                    wait = min(30, 10 * attempt)
+                    logger.warning(
+                        f"[LLM-DET] Rate limit hit (attempt {attempt}/{attempts}). "
+                        f"Waiting {wait}s..."
+                    )
+                    time.sleep(wait)
+                    continue
+                else:
+                    logger.error(f"[LLM-DET] Rate limit exceeded on final attempt: {exc}")
+            raise
         elapsed = time.perf_counter() - t0
         content = response.content or ""
 

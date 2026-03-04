@@ -93,13 +93,58 @@ class ParsingService:
         blocks: list[dict[str, Any]] = []
         blk_counter = 0
         tbl_counter = 0
+        diag_counter = 0
+
+        # ── VLM setup (if enabled) ───────────────────────
+        vlm_enabled = False
+        vision_svc = None
+        try:
+            from rfp_automation.config import get_settings
+            vlm_enabled = get_settings().vlm_enabled
+            if vlm_enabled:
+                from rfp_automation.services.vision_service import VisionService
+                vision_svc = VisionService()
+        except Exception as e:
+            logger.warning(f"VLM initialization failed, using heuristic fallback: {e}")
+            vlm_enabled = False
+
+        vlm_processed_pages: dict[int, list[dict[str, Any]]] = {}  # page_num → VLM tables
 
         for page_idx, page in enumerate(doc):
             page_number = page_idx + 1
             page_dict = page.get_text("dict")
 
             for block in page_dict.get("blocks", []):
-                if block.get("type") != 0:  # skip image blocks
+                # ── Image blocks → diagram description ───
+                if block.get("type") == 1 and vlm_enabled and vision_svc:
+                    try:
+                        # Render image block region
+                        import fitz as _fitz_inner
+                        bbox = block.get("bbox", block.get("ext", None))
+                        if bbox:
+                            clip = _fitz_inner.Rect(bbox)
+                            pix = page.get_pixmap(clip=clip, dpi=150)
+                        else:
+                            pix = page.get_pixmap(dpi=150)
+                        img_bytes = pix.tobytes("png")
+                        desc = vision_svc.extract_diagram_description(
+                            img_bytes, page_number
+                        )
+                        if desc:
+                            diag_counter += 1
+                            blocks.append({
+                                "block_id": f"diag-{diag_counter:03d}",
+                                "type": "diagram",
+                                "text": desc,
+                                "page_number": page_number,
+                            })
+                    except Exception as e:
+                        logger.debug(
+                            f"Diagram extraction failed on page {page_number}: {e}"
+                        )
+                    continue
+
+                if block.get("type") != 0:  # skip non-text blocks
                     continue
 
                 # Gather text and font info from all spans
@@ -132,10 +177,39 @@ class ParsingService:
                 full_text = "\n".join(line_texts)
 
                 # ── Table detection ──────────────────────
+                # Try DETR + VLM first, fall back to heuristic
+                if vlm_enabled and vision_svc and page_number not in vlm_processed_pages:
+                    try:
+                        pix = page.get_pixmap(dpi=150)
+                        page_img_bytes = pix.tobytes("png")
+                        vlm_tables = vision_svc.extract_tables_from_page(
+                            page_img_bytes, page_number
+                        )
+                        vlm_processed_pages[page_number] = vlm_tables
+                    except Exception as e:
+                        logger.warning(
+                            f"VLM table extraction failed on page {page_number}: {e}"
+                        )
+                        vlm_processed_pages[page_number] = []
+
+                # Check if this block is a table
                 if _is_tabular(span_positions, line_texts):
                     tbl_counter += 1
-                    # Extract actual table text instead of placeholder
-                    table_text = _extract_table_text(line_texts)
+
+                    # Use VLM-extracted tables if available for this page
+                    page_vlm_tables = vlm_processed_pages.get(page_number, [])
+                    if page_vlm_tables:
+                        # Take the first unused VLM table for this page
+                        from rfp_automation.services.vision_service import VisionService as _VS
+                        vlm_tbl = page_vlm_tables.pop(0)
+                        table_text = _VS.format_table_as_text(vlm_tbl)
+                        if not table_text:
+                            # VLM returned empty → fallback to heuristic
+                            table_text = _extract_table_text(line_texts)
+                    else:
+                        # No VLM tables → use heuristic extraction
+                        table_text = _extract_table_text(line_texts)
+
                     blocks.append({
                         "block_id": f"tbl-{tbl_counter:03d}",
                         "type": "table",
@@ -160,7 +234,7 @@ class ParsingService:
         doc.close()
         logger.info(
             f"Extracted {len(blocks)} blocks from {Path(file_path).name} "
-            f"({blk_counter} text, {tbl_counter} table mocks)"
+            f"({blk_counter} text, {tbl_counter} tables, {diag_counter} diagrams)"
         )
         return blocks
 

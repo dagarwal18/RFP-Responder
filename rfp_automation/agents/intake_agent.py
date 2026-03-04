@@ -76,6 +76,12 @@ class IntakeAgent(BaseAgent):
         if len(chunks) > 5:
             logger.debug(f"[A1]   ... and {len(chunks) - 5} more chunks")
 
+        # ── 4b. Resolve cross-references ────────────────
+        from rfp_automation.services.cross_ref_resolver import CrossRefResolver
+        resolver = CrossRefResolver()
+        chunks = resolver.resolve(chunks)
+        logger.info(f"[A1] Cross-reference resolution complete, {len(chunks)} chunks")
+
         # ── 5. Build concatenated raw text ───────────────
         raw_text = "\n".join(b["text"] for b in blocks)
 

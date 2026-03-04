@@ -35,6 +35,7 @@ class MCPService:
     def __init__(self):
         from .vector_store.rfp_store import RFPVectorStore
         from .vector_store.knowledge_store import KnowledgeStore
+        from .vector_store.bm25_store import BM25Store
         from .rules.policy_rules import PolicyRules
         from .rules.validation_rules import ValidationRules
         from .rules.commercial_rules import CommercialRules
@@ -43,6 +44,7 @@ class MCPService:
 
         self.rfp_store = RFPVectorStore()
         self.knowledge_base = KnowledgeStore()
+        self._bm25_store = BM25Store()
         self.policy_rules = PolicyRules()
         self.validation_rules = ValidationRules()
         self.commercial_rules = CommercialRules()
@@ -92,6 +94,13 @@ class MCPService:
 
         extra = {"source_file": source_file} if source_file else {}
         count = self.rfp_store.embed_chunks(rfp_id, chunks, extra_metadata=extra)
+
+        # Also build BM25 sparse index for hybrid retrieval
+        try:
+            self._bm25_store.index(rfp_id, chunks)
+        except Exception as e:
+            logger.warning(f"[MCPService] BM25 indexing failed for {rfp_id}: {e}")
+
         logger.info(f"[MCPService] Stored {count} vectors for {rfp_id}")
         return count
 
@@ -144,6 +153,85 @@ class MCPService:
             self._hydrate_chunks(rfp_id, results)
         logger.debug(f"[MCPService] query_rfp returned {len(results)} results")
         return results
+
+    # ── Convenience: Hybrid RFP query ────────────────────
+
+    def query_rfp_hybrid(
+        self,
+        query: str,
+        rfp_id: str = "",
+        top_k: int = 10,
+    ) -> list[dict[str, Any]]:
+        """
+        Hybrid retrieval: merge Pinecone dense + BM25 sparse results
+        using Reciprocal Rank Fusion.
+
+        Falls back to dense-only if no BM25 index exists.
+        """
+        logger.debug(
+            f"[MCPService] query_rfp_hybrid: q={query[:60]!r}, "
+            f"rfp_id={rfp_id}, top_k={top_k}"
+        )
+
+        # Dense retrieval (existing Pinecone)
+        dense_results = self.query_rfp(query, rfp_id, top_k=top_k * 2)
+
+        # Sparse retrieval (BM25)
+        sparse_results = self._bm25_store.query(rfp_id, query, top_k=top_k * 2)
+
+        if not sparse_results:
+            # No BM25 index or no matches — return dense only
+            logger.debug(
+                f"[MCPService] No BM25 results for {rfp_id}, using dense only"
+            )
+            return dense_results[:top_k]
+
+        fused = self._reciprocal_rank_fusion(
+            dense_results, sparse_results, top_k
+        )
+        logger.info(
+            f"[MCPService] Hybrid query returned {len(fused)} results "
+            f"(dense={len(dense_results)}, sparse={len(sparse_results)})"
+        )
+        return fused
+
+    @staticmethod
+    def _reciprocal_rank_fusion(
+        dense: list[dict[str, Any]],
+        sparse: list[dict[str, Any]],
+        top_k: int,
+        k: int = 60,
+    ) -> list[dict[str, Any]]:
+        """
+        Merge two ranked lists using Reciprocal Rank Fusion.
+
+        score(doc) = Σ 1/(k + rank)
+
+        k=60 is the standard RRF constant (from the original paper).
+        """
+        scores: dict[str, float] = {}     # chunk_id → RRF score
+        chunk_map: dict[str, dict] = {}   # chunk_id → best chunk dict
+
+        # Score dense results
+        for rank, item in enumerate(dense):
+            cid = (
+                item.get("metadata", {}).get("chunk_id")
+                or item.get("chunk_id")
+                or f"dense_{rank}"
+            )
+            scores[cid] = scores.get(cid, 0) + 1.0 / (k + rank)
+            chunk_map[cid] = item
+
+        # Score sparse results
+        for rank, item in enumerate(sparse):
+            cid = item.get("chunk_id", f"sparse_{rank}")
+            scores[cid] = scores.get(cid, 0) + 1.0 / (k + rank)
+            if cid not in chunk_map:
+                chunk_map[cid] = item
+
+        # Sort by RRF score descending, take top_k
+        ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
+        return [chunk_map[cid] for cid, _ in ranked if cid in chunk_map]
 
     # ── Convenience: RFP full retrieval ────────────────────
 

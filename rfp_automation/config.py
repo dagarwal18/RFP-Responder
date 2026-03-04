@@ -19,9 +19,14 @@ class Settings(BaseSettings):
 
     # ── LLM (Groq Cloud) ────────────────────────────────
     groq_api_key: str = ""
-    llm_model: str = "moonshotai/kimi-k2-instruct"
+    llm_model: str = "meta-llama/llama-4-maverick-17b-128e-instruct"
     llm_temperature: float = 0.2
     llm_max_tokens: int = 8192
+
+    # ── VLM (Groq Vision) ──────────────────────────────
+    vlm_model: str = "meta-llama/llama-4-scout-17b-16e-instruct"
+    vlm_max_tokens: int = 4096
+    vlm_enabled: bool = True  # Feature flag to disable VLM processing
 
     # ── MongoDB ──────────────────────────────────────────
     mongodb_uri: str = "mongodb://localhost:27017"
