@@ -23,7 +23,6 @@ from rfp_automation.models.enums import AgentName, PipelineStatus
 from rfp_automation.models.schemas import RFPSection, StructuringResult
 from rfp_automation.models.state import RFPGraphState
 from rfp_automation.services.llm_service import llm_text_call
-from rfp_automation.services.parsing_service import ParsingService
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +53,10 @@ class StructuringAgent(BaseAgent):
         logger.debug(f"[A2] Previous confidence: {state.structuring_result.overall_confidence:.4f}")
         logger.debug(f"[A2] Previous sections: {len(state.structuring_result.sections)}")
 
-        # ── 1. Retrieve chunks using strategy based on retry count ───
+        # ── 1. Retrieve all chunks deterministically ────────────────
         mcp = MCPService()
-        chunks = self._retrieve_chunks(mcp, rfp_id, retry_count, state.raw_text)
-        logger.debug(f"[A2] Retrieved {len(chunks) if chunks else 0} chunks with strategy {retry_count}")
+        chunks = self._retrieve_chunks(mcp, rfp_id)
+        logger.debug(f"[A2] Retrieved {len(chunks) if chunks else 0} chunks (attempt {retry_count})")
 
         if not chunks:
             logger.warning(f"[A2] No chunks retrieved for {rfp_id}")
@@ -196,84 +195,24 @@ class StructuringAgent(BaseAgent):
             sec.section_id = f"SEC-{i:02d}"
         return unique
 
-    # ── Chunking strategies ──────────────────────────────────────
+    # ── Chunk retrieval ────────────────────────────────────────
 
     def _retrieve_chunks(
         self,
         mcp: MCPService,
         rfp_id: str,
-        retry_count: int,
-        raw_text: str,
     ) -> list[dict[str, Any]]:
         """
-        Pick retrieval strategy based on retry count:
-          0 → all stored chunks (broad retrieval)
-          1 → category-specific targeted queries
-          2+ → re-chunk raw text with smaller windows
-        """
-        if retry_count == 0:
-            return self._strategy_all_chunks(mcp, rfp_id)
-        elif retry_count == 1:
-            return self._strategy_category_queries(mcp, rfp_id)
-        else:
-            return self._strategy_rechunk(raw_text)
+        Retrieve all stored chunks deterministically in document order.
 
-    def _strategy_all_chunks(
-        self, mcp: MCPService, rfp_id: str
-    ) -> list[dict[str, Any]]:
-        """Attempt 0: retrieve all stored chunks deterministically in document order."""
-        logger.info("[A2] Strategy 0: retrieving all stored chunks (deterministic fetch)")
+        Since A1 uses section-aware semantic chunks, a single deterministic
+        fetch is sufficient — the section structure is already embedded in the
+        chunks themselves.  On retry, the LLM prompt includes a retry hint
+        referencing low-confidence sections, giving the LLM a different
+        perspective on the same complete chunk set.
+        """
+        logger.info("[A2] Retrieving all stored chunks (deterministic fetch)")
         return mcp.fetch_all_rfp_chunks(rfp_id)
-
-    def _strategy_category_queries(
-        self, mcp: MCPService, rfp_id: str
-    ) -> list[dict[str, Any]]:
-        """Attempt 1: run 6 category-specific queries and deduplicate."""
-        logger.info("[A2] Strategy 1: category-specific targeted queries")
-        category_queries = {
-            "scope": "project scope objectives deliverables background overview",
-            "technical": "technical requirements specifications architecture system design",
-            "compliance": "compliance regulatory standards certifications requirements",
-            "legal": "legal terms contract liability indemnification intellectual property",
-            "submission": "submission instructions deadline format proposal delivery",
-            "evaluation": "evaluation criteria scoring methodology selection process weighting",
-        }
-
-        seen_ids: set[str] = set()
-        all_chunks: list[dict[str, Any]] = []
-
-        for category, query in category_queries.items():
-            results = mcp.query_rfp(query, rfp_id, top_k=10)
-            for chunk in results:
-                chunk_id = chunk.get("id", "")
-                if chunk_id not in seen_ids:
-                    seen_ids.add(chunk_id)
-                    all_chunks.append(chunk)
-
-        # Sort by chunk_index for document order
-        all_chunks.sort(key=lambda c: c.get("chunk_index", -1))
-        return all_chunks
-
-    def _strategy_rechunk(self, raw_text: str) -> list[dict[str, Any]]:
-        """Attempt 2+: re-chunk raw text with smaller windows for finer granularity."""
-        logger.info("[A2] Strategy 2: re-chunking raw text with smaller windows")
-        if not raw_text:
-            logger.warning("[A2] No raw_text available for re-chunking")
-            return []
-
-        small_chunks = ParsingService.chunk_text(
-            raw_text, chunk_size=500, overlap=100
-        )
-        return [
-            {
-                "id": f"rechunk_{i:04d}",
-                "score": 1.0,
-                "text": chunk,
-                "chunk_index": i,
-                "metadata": {"rechunked": True},
-            }
-            for i, chunk in enumerate(small_chunks)
-        ]
 
     # ── Prompt building ──────────────────────────────────────────
 
@@ -286,16 +225,7 @@ class StructuringAgent(BaseAgent):
         """Load the prompt template and fill placeholders."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
 
-        # Format chunks as numbered text blocks
-        chunk_texts = []
-        for i, chunk in enumerate(chunks):
-            text = chunk.get("text", "").strip()
-            if text:
-                chunk_texts.append(f"[Chunk {i + 1}]\n{text}")
-
-        chunks_str = "\n\n".join(chunk_texts)
-
-        # Build retry hint
+        # Build retry hint first (needed for budget calculation)
         retry_hint = ""
         if retry_count > 0 and previous_result.sections:
             low_conf_sections = [
@@ -314,6 +244,50 @@ class StructuringAgent(BaseAgent):
                     f"Previous overall confidence was {previous_result.overall_confidence:.2f}. "
                     f"Be more precise in your classification."
                 )
+
+        # ── Token-aware chunk truncation ─────────────────────────
+        # Reserve tokens: template (~500 tok) + retry hint + output (2K)
+        chars_per_token = 4  # conservative estimate
+        settings = get_settings()
+        max_prompt_tokens = settings.llm_max_tokens  # model's token window
+        reserved_output_tokens = 2000
+        template_tokens = len(template) // chars_per_token + 100  # overhead
+        retry_hint_tokens = len(retry_hint) // chars_per_token
+        available_tokens = max_prompt_tokens - reserved_output_tokens - template_tokens - retry_hint_tokens
+        available_chars = max(available_tokens * chars_per_token, 4000)  # floor
+
+        # Format chunks as numbered text blocks
+        chunk_texts = []
+        for i, chunk in enumerate(chunks):
+            text = chunk.get("text", "").strip()
+            if text:
+                chunk_texts.append(f"[Chunk {i + 1}]\n{text}")
+
+        total_chars = sum(len(t) for t in chunk_texts)
+
+        if total_chars > available_chars and chunk_texts:
+            # Proportionally truncate each chunk's text
+            # Keep at least 100 chars per chunk for context, header first
+            overhead_per_chunk = 15  # "[Chunk NN]\n"
+            usable_chars = available_chars - (overhead_per_chunk * len(chunk_texts))
+            max_per_chunk = max(usable_chars // len(chunk_texts), 100)
+
+            logger.info(
+                f"[A2] Prompt too large ({total_chars} chars, ~{total_chars // chars_per_token} tokens). "
+                f"Truncating {len(chunk_texts)} chunks to ~{max_per_chunk} chars each "
+                f"(budget: {available_chars} chars)"
+            )
+
+            truncated = []
+            for i, chunk in enumerate(chunks):
+                text = chunk.get("text", "").strip()
+                if text:
+                    if len(text) > max_per_chunk:
+                        text = text[:max_per_chunk] + "…"
+                    truncated.append(f"[Chunk {i + 1}]\n{text}")
+            chunk_texts = truncated
+
+        chunks_str = "\n\n".join(chunk_texts)
 
         return template.format(chunks=chunks_str, retry_hint=retry_hint)
 

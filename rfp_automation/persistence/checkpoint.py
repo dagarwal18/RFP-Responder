@@ -1,0 +1,187 @@
+"""
+Checkpoint — file-based per-agent state persistence.
+
+Saves pipeline state after each agent completes, allowing:
+  • Pipeline state to survive uvicorn --reload
+  • Re-running individual agents using cached predecessor state
+  • Inspecting intermediate state for debugging
+
+Storage: storage/checkpoints/{rfp_id}/{agent_name}.json
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import shutil
+from datetime import datetime, timezone
+from enum import Enum
+from pathlib import Path
+from typing import Any
+
+logger = logging.getLogger(__name__)
+
+_CHECKPOINT_ROOT = Path("./storage/checkpoints")
+
+# Ordered list of agent nodes in the pipeline
+AGENT_ORDER: list[str] = [
+    "a1_intake",
+    "a2_structuring",
+    "a3_go_no_go",
+    "b1_requirements_extraction",
+    "b2_requirements_validation",
+    "c1_architecture_planning",
+    "c2_requirement_writing",
+    "c3_narrative_assembly",
+    "d1_technical_validation",
+    "commercial_legal_parallel",
+    "f1_final_readiness",
+    "f2_submission",
+]
+
+
+def _checkpoint_dir(rfp_id: str) -> Path:
+    """Return the checkpoint directory for a given RFP."""
+    return _CHECKPOINT_ROOT / rfp_id
+
+
+def _state_to_serializable(obj: Any) -> Any:
+    """Recursively convert non-JSON-serializable types."""
+    if isinstance(obj, Enum):
+        return obj.value  # "MANDATORY", "GO", etc.
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if hasattr(obj, "model_dump"):
+        return _state_to_serializable(obj.model_dump())
+    if hasattr(obj, "__dict__") and not isinstance(obj, type):
+        return {k: _state_to_serializable(v) for k, v in obj.__dict__.items()}
+    if isinstance(obj, dict):
+        return {k: _state_to_serializable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_state_to_serializable(item) for item in obj]
+    if isinstance(obj, (set, frozenset)):
+        return [_state_to_serializable(item) for item in obj]
+    return obj
+
+
+def save_checkpoint(rfp_id: str, agent_name: str, state_dict: dict[str, Any]) -> Path:
+    """
+    Save pipeline state after an agent completes.
+    Returns the path to the checkpoint file.
+    """
+    checkpoint_dir = _checkpoint_dir(rfp_id)
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    filepath = checkpoint_dir / f"{agent_name}.json"
+    serializable = _state_to_serializable(state_dict)
+    serializable["_checkpoint"] = {
+        "agent": agent_name,
+        "rfp_id": rfp_id,
+        "saved_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(serializable, f, indent=2, default=str)
+
+    logger.info(f"💾 Checkpoint saved: {agent_name} → {filepath}")
+    return filepath
+
+
+def load_checkpoint(rfp_id: str, agent_name: str) -> dict[str, Any] | None:
+    """
+    Load a specific agent's checkpoint.
+    Returns None if checkpoint doesn't exist.
+    """
+    filepath = _checkpoint_dir(rfp_id) / f"{agent_name}.json"
+    if not filepath.exists():
+        return None
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    logger.info(f"📂 Checkpoint loaded: {agent_name} ← {filepath}")
+    return data
+
+
+def get_predecessor(agent_name: str) -> str | None:
+    """Return the agent that runs immediately before the given one."""
+    try:
+        idx = AGENT_ORDER.index(agent_name)
+        return AGENT_ORDER[idx - 1] if idx > 0 else None
+    except ValueError:
+        return None
+
+
+def load_checkpoint_up_to(rfp_id: str, start_from: str) -> dict[str, Any] | None:
+    """
+    Load the checkpoint from the agent immediately before `start_from`.
+    This gives us the state needed to begin execution at `start_from`.
+    """
+    predecessor = get_predecessor(start_from)
+    if predecessor is None:
+        logger.warning(f"No predecessor for {start_from} — must start from scratch")
+        return None
+    return load_checkpoint(rfp_id, predecessor)
+
+
+def list_checkpoints(rfp_id: str) -> list[dict[str, Any]]:
+    """
+    List all available checkpoints for an RFP, ordered by pipeline position.
+    Returns list of {agent, saved_at, file_size_bytes}.
+    """
+    checkpoint_dir = _checkpoint_dir(rfp_id)
+    if not checkpoint_dir.exists():
+        return []
+
+    result = []
+    for agent_name in AGENT_ORDER:
+        filepath = checkpoint_dir / f"{agent_name}.json"
+        if filepath.exists():
+            stat = filepath.stat()
+            result.append({
+                "agent": agent_name,
+                "saved_at": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
+                "file_size_bytes": stat.st_size,
+            })
+    return result
+
+
+def clear_checkpoints(rfp_id: str) -> int:
+    """
+    Delete all checkpoints for an RFP.
+    Returns the number of files deleted.
+    """
+    checkpoint_dir = _checkpoint_dir(rfp_id)
+    if not checkpoint_dir.exists():
+        return 0
+
+    count = sum(1 for f in checkpoint_dir.iterdir() if f.is_file())
+    shutil.rmtree(checkpoint_dir)
+    logger.info(f"🗑️  Cleared {count} checkpoints for {rfp_id}")
+    return count
+
+
+def find_rfp_by_file_hash(file_hash: str) -> str | None:
+    """
+    Scan checkpoint directories to find an RFP that matches a file hash.
+    Checks the a1_intake checkpoint for a matching file_hash field.
+    Returns the rfp_id if found, None otherwise.
+    """
+    if not _CHECKPOINT_ROOT.exists():
+        return None
+
+    for rfp_dir in _CHECKPOINT_ROOT.iterdir():
+        if not rfp_dir.is_dir():
+            continue
+        intake_file = rfp_dir / "a1_intake.json"
+        if intake_file.exists():
+            try:
+                with open(intake_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                stored_hash = data.get("file_hash", "")
+                if stored_hash == file_hash:
+                    return rfp_dir.name
+            except (json.JSONDecodeError, OSError):
+                continue
+    return None

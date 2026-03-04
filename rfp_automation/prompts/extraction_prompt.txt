@@ -4,12 +4,28 @@ pre-filtered candidate sentences into standardised requirement objects.
 STRICT RULES (VIOLATION = FAILURE):
 1. DO NOT infer, interpret, or add requirements not explicitly stated.
 2. DO NOT summarize — use exact or near-exact wording from the source text.
+   Include the COMPLETE sentence — never truncate mid-phrase. Every requirement
+   must have a subject, verb, and object/complement.
+   If the candidate text is a FRAGMENT (starts mid-sentence, missing subject,
+   or begins with lowercase/punctuation), look in the FULL SECTION CONTEXT
+   to recover the complete sentence before extracting it.
 3. DO NOT expand methodology descriptions into obligations.
 4. DO NOT add commentary, reasoning, or explanation.
 5. ONLY extract statements containing explicit obligation verbs
-   (shall, must, required, will provide, responsible for, ensure, etc.).
+   (shall, must, required, will provide, responsible for, ensure, etc.)
+   OR evaluation/scoring criteria.
 6. DO NOT merge multiple distinct obligations into one requirement.
-7. Return ONLY a valid JSON array — no markdown fencing, no extra text.
+7. SKIP any candidate that is clearly an incomplete sentence fragment
+   that CANNOT be recovered from the section context — e.g., a lone 
+   bullet marker, a column header, or a line that makes no sense alone.
+   However, if the fragment contains a measurable specification or SLA
+   target (e.g., "<150ms latency", "RPO <1 hour"), combine it with its
+   surrounding context to form a complete requirement statement.
+8. If the candidate text contains a structured list of specifications
+   (metric/value pairs, SLA targets, capability rows) — extract EACH
+   item as a SEPARATE requirement. Do NOT combine multiple measurable
+   specifications into a single requirement.
+9. Return ONLY a valid JSON array — no markdown fencing, no extra text.
 
 WHAT COUNTS AS A REQUIREMENT:
 - A statement that explicitly assigns an obligation or responsibility.
@@ -17,12 +33,14 @@ WHAT COUNTS AS A REQUIREMENT:
   responsible for, deliver, provide, ensure, comply with, needs to.
 - Has a clear assignee (the vendor, the system, the contractor, etc.)
   and an explicit action or deliverable.
+- Evaluation/scoring criteria: weighted, scored, evaluated, pass/fail.
 
 WHAT IS NOT A REQUIREMENT:
 - Marketing descriptions or general narratives.
 - Methodology explanations (how something works).
 - Background context or informational statements.
 - Aspirational language without obligation verbs.
+- Naked list headers with no actionable content.
 
 SECTION: {section_title}
 
@@ -38,7 +56,8 @@ For each requirement found in the CANDIDATE SENTENCES, return a JSON object:
   - type            : "MANDATORY" if shall/must/required,
                       "OPTIONAL" if should/may/preferred/desired
   - classification  : "FUNCTIONAL" (what the system must DO) or
-                      "NON_FUNCTIONAL" (how it must PERFORM/OPERATE)
+                      "NON_FUNCTIONAL" (how it must PERFORM/OPERATE) or
+                      "EVALUATION_CRITERIA" (how proposals will be SCORED/EVALUATED)
   - category        : TECHNICAL | FUNCTIONAL | SECURITY | COMPLIANCE |
                       COMMERCIAL | OPERATIONAL
   - impact          : CRITICAL | HIGH | MEDIUM | LOW
@@ -58,3 +77,4 @@ Example output:
     "keywords": ["monitoring", "24x7", "production"]
   }}
 ]
+
