@@ -1,19 +1,425 @@
 """
 C2 — Requirement Writing Agent
+
 Responsibility: Generate prose response per section using requirement context
-                and capability evidence.  Build a coverage matrix.
+               and capability evidence.  Build a coverage matrix.
+
+Inputs:
+  - architecture_plan.sections (from C1) — section blueprints
+  - requirements_validation.validated_requirements (from B2)
+  - Falls back to requirements (raw B1 output) if B2 returned empty
+  - Company capabilities from MCP Knowledge Store
+
+Outputs:
+  - writing_result: WritingResult with section_responses + coverage_matrix
+  - status → ASSEMBLING_NARRATIVE
 """
 
 from __future__ import annotations
 
+import json
+import logging
+import re
+from pathlib import Path
+from typing import Any
+
 from rfp_automation.agents.base_agent import BaseAgent
-from rfp_automation.models.enums import AgentName
+from rfp_automation.config import get_settings
+from rfp_automation.models.enums import AgentName, PipelineStatus
 from rfp_automation.models.state import RFPGraphState
+from rfp_automation.models.schemas import (
+    WritingResult,
+    SectionResponse,
+    CoverageEntry,
+    ResponseSection,
+)
+from rfp_automation.mcp import MCPService
+from rfp_automation.services.llm_service import llm_text_call
+
+logger = logging.getLogger(__name__)
+
+_PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "writing_prompt.txt"
+
+# Section types that C2 writes content for.
+# commercial and legal are handled by E1 and E2 respectively.
+_WRITABLE_SECTION_TYPES = {"requirement_driven", "knowledge_driven", "boilerplate"}
 
 
 class RequirementWritingAgent(BaseAgent):
     name = AgentName.C2_REQUIREMENT_WRITING
 
     def _real_process(self, state: RFPGraphState) -> RFPGraphState:
-        # TODO: LLM prose generation per section
-        raise NotImplementedError(f"{self.name.value} not yet implemented")
+        # ── 1. Validate prerequisites ───────────────────
+        rfp_id = state.rfp_metadata.rfp_id
+        if not rfp_id:
+            raise ValueError("No rfp_id in state — A1 Intake must run first")
+
+        sections = state.architecture_plan.sections
+        if not sections:
+            logger.warning("[C2] No sections in architecture plan — nothing to write")
+            state.writing_result = WritingResult(
+                section_responses=[], coverage_matrix=[]
+            )
+            state.status = PipelineStatus.ASSEMBLING_NARRATIVE
+            return state
+
+        logger.info(
+            f"[C2] Starting requirement writing for {rfp_id} — "
+            f"{len(sections)} sections in plan"
+        )
+
+        # ── 2. Gather requirements ──────────────────────
+        requirements = state.requirements_validation.validated_requirements
+        if not requirements:
+            requirements = state.requirements
+            logger.debug("[C2] Using raw B1 requirements (B2 validated list empty)")
+        else:
+            logger.debug(
+                f"[C2] Using {len(requirements)} validated requirements from B2"
+            )
+
+        # ── 3. Build requirement lookup map ─────────────
+        req_map: dict[str, dict[str, Any]] = {}
+        for req in requirements:
+            if hasattr(req, "model_dump"):
+                d = req.model_dump()
+            elif isinstance(req, dict):
+                d = req
+            else:
+                d = {"text": str(req)}
+            req_id = d.get("requirement_id", "")
+            if req_id:
+                req_map[req_id] = d
+
+        logger.debug(f"[C2] Requirement lookup: {len(req_map)} entries")
+
+        # ── 4. Sort sections by priority ────────────────
+        sorted_sections = sorted(
+            sections,
+            key=lambda s: (
+                getattr(s, "priority", 99)
+                if not isinstance(s, dict)
+                else s.get("priority", 99)
+            ),
+        )
+
+        # ── 5. Initialize MCP service ──────────────────
+        mcp = MCPService()
+
+        # ── 6. RFP response instructions (from C1) ─────
+        rfp_instructions = state.architecture_plan.rfp_response_instructions or ""
+
+        # ── 7. Process each section ─────────────────────
+        section_responses: list[SectionResponse] = []
+        all_addressed: dict[str, list[str]] = {}  # req_id -> [section_ids]
+
+        for section in sorted_sections:
+            section_id = self._get_attr(section, "section_id", "")
+            section_type = self._get_attr(section, "section_type", "requirement_driven")
+            title = self._get_attr(section, "title", "Untitled")
+
+            # ── 7a. Filter writable types ───────────────
+            if section_type not in _WRITABLE_SECTION_TYPES:
+                logger.info(
+                    f"[C2] Skipping section {section_id} ({title}) — "
+                    f"type '{section_type}' handled by dedicated agent"
+                )
+                # Add a placeholder entry so C3 knows this section exists
+                section_responses.append(
+                    SectionResponse(
+                        section_id=section_id,
+                        title=title,
+                        content=f"[{section_type.upper()} — content generated by dedicated agent]",
+                        requirements_addressed=[],
+                        word_count=0,
+                    )
+                )
+                continue
+
+            # ── 7b. Resolve requirements for this section ─
+            req_ids = self._get_attr(section, "requirement_ids", [])
+            req_texts = []
+            for rid in req_ids:
+                req = req_map.get(rid)
+                if req:
+                    req_type = req.get("type", "MANDATORY")
+                    req_text = req.get("text", "")[:300]
+                    req_texts.append(f"- {rid} [{req_type}]: {req_text}")
+                else:
+                    req_texts.append(f"- {rid}: [requirement details not found]")
+
+            requirements_block = (
+                "\n".join(req_texts) if req_texts else "No specific requirements assigned."
+            )
+
+            # ── 7c. Fetch capabilities from MCP ─────────
+            capabilities = self._fetch_section_capabilities(
+                mcp, title, req_ids, req_map,
+                self._get_attr(section, "mapped_capabilities", []),
+            )
+
+            # ── 7d. Build prompt ────────────────────────
+            prompt = self._build_prompt(
+                section_title=title,
+                section_type=section_type,
+                section_description=self._get_attr(section, "description", ""),
+                content_guidance=self._get_attr(section, "content_guidance", ""),
+                requirements=requirements_block,
+                capabilities=capabilities,
+                rfp_instructions=rfp_instructions,
+            )
+
+            # ── 7e. Call LLM ────────────────────────────
+            logger.info(
+                f"[C2] Writing section {section_id}: {title} | "
+                f"type={section_type} | {len(req_ids)} requirements"
+            )
+            raw_response = llm_text_call(prompt, deterministic=True)
+            logger.debug(
+                f"[C2] LLM response for {section_id} "
+                f"({len(raw_response)} chars): {raw_response[:500]}"
+            )
+
+            # ── 7f. Parse response ──────────────────────
+            content, addressed, word_count = self._parse_response(
+                raw_response, section_id
+            )
+
+            section_responses.append(
+                SectionResponse(
+                    section_id=section_id,
+                    title=title,
+                    content=content,
+                    requirements_addressed=addressed,
+                    word_count=word_count,
+                )
+            )
+
+            # Track which requirements were addressed in which sections
+            for rid in addressed:
+                all_addressed.setdefault(rid, []).append(section_id)
+
+            logger.info(
+                f"[C2] Section {section_id}: {title} | "
+                f"{word_count} words | {len(addressed)} reqs addressed"
+            )
+
+        # ── 8. Build coverage matrix ────────────────────
+        coverage_matrix = self._build_coverage_matrix(req_map, all_addressed)
+
+        # ── 9. Update state ─────────────────────────────
+        state.writing_result = WritingResult(
+            section_responses=section_responses,
+            coverage_matrix=coverage_matrix,
+        )
+        state.status = PipelineStatus.ASSEMBLING_NARRATIVE
+
+        # Log summary
+        total_words = sum(sr.word_count for sr in section_responses)
+        addressed_count = sum(
+            1 for c in coverage_matrix if c.coverage_quality != "missing"
+        )
+        logger.info(
+            f"[C2] Writing complete — {len(section_responses)} sections, "
+            f"{total_words} total words, "
+            f"{addressed_count}/{len(coverage_matrix)} requirements covered"
+        )
+
+        return state
+
+    # ── Helpers ──────────────────────────────────────────
+
+    @staticmethod
+    def _get_attr(obj: Any, attr: str, default: Any) -> Any:
+        """Get attribute from either a Pydantic model or a dict."""
+        if isinstance(obj, dict):
+            return obj.get(attr, default)
+        return getattr(obj, attr, default)
+
+    def _fetch_section_capabilities(
+        self,
+        mcp: MCPService,
+        section_title: str,
+        req_ids: list[str],
+        req_map: dict[str, dict[str, Any]],
+        mapped_capabilities: list[str],
+    ) -> str:
+        """Fetch company capabilities relevant to this section from MCP Knowledge Store."""
+        queries = [f"{section_title} capabilities solutions"]
+
+        # Add queries based on requirement keywords
+        for rid in req_ids[:5]:  # cap at 5 to avoid too many queries
+            req = req_map.get(rid)
+            if req:
+                keywords = req.get("keywords", [])
+                if keywords:
+                    queries.append(f"{' '.join(keywords[:3])} capabilities")
+
+        seen_texts: set[str] = set()
+        capability_texts: list[str] = []
+
+        # Add pre-mapped capabilities from C1
+        for cap in mapped_capabilities:
+            if cap and cap not in seen_texts:
+                seen_texts.add(cap)
+                capability_texts.append(f"- {cap}")
+
+        # Fetch from MCP
+        for query in queries:
+            try:
+                results = mcp.query_knowledge(query, top_k=3)
+                for r in results:
+                    text = r.get("text", "").strip()
+                    if text and text not in seen_texts:
+                        seen_texts.add(text)
+                        capability_texts.append(text)
+            except Exception as exc:
+                logger.warning(f"[C2] Knowledge query failed for '{query}': {exc}")
+
+        if not capability_texts:
+            return "No specific capabilities available for this section."
+
+        return "\n\n".join(capability_texts)
+
+    def _build_prompt(
+        self,
+        section_title: str,
+        section_type: str,
+        section_description: str,
+        content_guidance: str,
+        requirements: str,
+        capabilities: str,
+        rfp_instructions: str,
+    ) -> str:
+        """Load the prompt template and inject context with token-aware truncation."""
+        template = _PROMPT_PATH.read_text(encoding="utf-8")
+
+        # ── Token-aware budget ────────────────────────────
+        chars_per_token = 4
+        settings = get_settings()
+        max_tokens = settings.llm_max_tokens
+        reserved_output = 2500  # tokens for LLM response (section prose)
+        template_overhead = len(template) // chars_per_token + 200
+        available_chars = max(
+            (max_tokens - reserved_output - template_overhead) * chars_per_token,
+            4000,
+        )
+
+        # Budget: requirements 40%, capabilities 35%, instructions 15%, guidance 10%
+        budget_reqs = int(available_chars * 0.40)
+        budget_caps = int(available_chars * 0.35)
+        budget_inst = int(available_chars * 0.15)
+        budget_guide = int(available_chars * 0.10)
+
+        return (
+            template
+            .replace("{section_title}", section_title)
+            .replace("{section_type}", section_type)
+            .replace("{section_description}", section_description[:500])
+            .replace("{content_guidance}", (content_guidance or "None specified.")[:budget_guide])
+            .replace("{requirements}", requirements[:budget_reqs])
+            .replace("{capabilities}", capabilities[:budget_caps])
+            .replace("{rfp_instructions}", (rfp_instructions or "No specific response instructions.")[:budget_inst])
+        )
+
+    def _parse_response(
+        self, raw_response: str, section_id: str
+    ) -> tuple[str, list[str], int]:
+        """
+        Parse LLM response into (content, requirements_addressed, word_count).
+        Falls back to using raw text as content on parse failure.
+        """
+        text = raw_response.strip()
+        if not text:
+            logger.warning(f"[C2] Empty LLM response for section {section_id}")
+            return "", [], 0
+
+        # Strip markdown code fences
+        fence_match = re.search(
+            r"```(?:json)?\s*\n?(.*?)\n?\s*```",
+            text,
+            re.DOTALL,
+        )
+        if fence_match:
+            text = fence_match.group(1).strip()
+
+        # Try JSON parse
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            # Try extracting JSON object from mixed content
+            obj_start = text.find("{")
+            obj_end = text.rfind("}")
+            if obj_start != -1 and obj_end > obj_start:
+                try:
+                    candidate = text[obj_start : obj_end + 1]
+                    # Fix trailing commas
+                    candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
+                    data = json.loads(candidate)
+                except json.JSONDecodeError:
+                    data = None
+            else:
+                data = None
+
+        if isinstance(data, dict):
+            content = data.get("content", "")
+            addressed = data.get("requirements_addressed", [])
+            word_count = data.get("word_count", 0)
+
+            # Ensure types
+            if not isinstance(addressed, list):
+                addressed = []
+            addressed = [str(rid) for rid in addressed]
+
+            if not isinstance(word_count, int):
+                try:
+                    word_count = int(word_count)
+                except (ValueError, TypeError):
+                    word_count = len(content.split())
+
+            return content, addressed, word_count
+
+        # Fallback: treat entire response as content
+        logger.warning(
+            f"[C2] Could not parse JSON for section {section_id} — "
+            f"using raw text as content"
+        )
+        fallback_content = raw_response.strip()
+        return fallback_content, [], len(fallback_content.split())
+
+    def _build_coverage_matrix(
+        self,
+        req_map: dict[str, dict[str, Any]],
+        all_addressed: dict[str, list[str]],
+    ) -> list[CoverageEntry]:
+        """
+        Build the coverage matrix comparing requirements to sections that address them.
+
+        Coverage quality:
+          - "full"    — requirement addressed in at least one section
+          - "partial" — requirement assigned to a section but LLM didn't confirm addressing it
+          - "missing" — requirement not addressed by any section
+        """
+        matrix: list[CoverageEntry] = []
+
+        for req_id in sorted(req_map.keys()):
+            section_ids = all_addressed.get(req_id, [])
+            if section_ids:
+                # Addressed — list first section
+                matrix.append(
+                    CoverageEntry(
+                        requirement_id=req_id,
+                        addressed_in_section=section_ids[0],
+                        coverage_quality="full",
+                    )
+                )
+            else:
+                matrix.append(
+                    CoverageEntry(
+                        requirement_id=req_id,
+                        addressed_in_section="",
+                        coverage_quality="missing",
+                    )
+                )
+
+        return matrix

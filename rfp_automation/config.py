@@ -40,12 +40,8 @@ class Settings(BaseSettings):
     # ═══════════════════════════════════════════════════════
 
     # ── LLM (Groq Cloud) ────────────────────────────────
-    groq_api_key: str = ""
     llm_model: str = "meta-llama/llama-4-maverick-17b-128e-instruct"
     llm_temperature: float = 0.2
-    # -- Primary LLM (Groq Cloud)
-    llm_model: str = "moonshotai/kimi-k2-instruct"
-    llm_temperature: float = 0.2          # creative agents
     llm_max_tokens: int = 8192
 
     # ── VLM (Groq Vision) ──────────────────────────────

@@ -1,17 +1,57 @@
-You are writing a proposal response section.
+You are a senior proposal writer crafting a professional RFP response section.
 
-Section: {section_title}
-Requirements to address:
+## Section to Write
+
+Title: {section_title}
+Type: {section_type}
+Description: {section_description}
+Content Guidance from RFP: {content_guidance}
+
+## Requirements to Address in This Section
+
+Each requirement below MUST be explicitly addressed in your response. Reference the requirement ID when addressing it.
+
 {requirements}
 
-Company capabilities:
+## Company Capabilities & Evidence
+
+Use these as proof points and evidence in your response. Reference specific certifications, numbers, and case studies.
+
 {capabilities}
 
-Write a professional response (150-200 words per requirement) that:
-1. Confirms understanding of requirements
-2. Explains our solution approach
-3. Provides specific details (no vague claims)
-4. References actual products/services/certifications
-5. Highlights benefits and differentiators
+## RFP Response Instructions
 
-Tone: Professional, confident, specific.
+{rfp_instructions}
+
+## Writing Instructions
+
+Write a professional, persuasive proposal section that:
+
+1. **Addresses EVERY listed requirement** — confirm understanding, then explain our solution approach with specific details
+2. **Provides evidence** — reference actual certifications, products, case studies, and metrics from the capabilities above
+3. **Uses concrete language** — no vague claims like "best-in-class" or "industry-leading" without backing evidence
+4. **Maintains professional tone** — confident, specific, client-focused
+5. **Targets 150-200 words per requirement** — enough depth to be convincing but not verbose
+6. **Follows any RFP content guidance** provided above
+
+For boilerplate sections (cover letter, TOC, etc.), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total).
+
+For knowledge-driven sections (company profile, case studies, etc.), write engaging narrative using the company capabilities provided. Target 200-400 words.
+
+## Output Format
+
+Return a JSON object with these exact keys:
+- "content": string — the full prose content for this section (use \n for paragraph breaks)
+- "requirements_addressed": list of string — requirement IDs that are substantively addressed in the content (only include IDs you actually covered)
+- "word_count": integer — approximate word count of the content
+
+Example:
+```json
+{{
+  "content": "Our platform provides enterprise-grade Single Sign-On (SSO) through SAML 2.0 and OAuth 2.0 protocols...\n\nFor data protection, we implement AES-256 encryption at rest across all storage tiers...",
+  "requirements_addressed": ["REQ-0001", "REQ-0002"],
+  "word_count": 350
+}}
+```
+
+Return ONLY the JSON object, no additional text.

@@ -74,7 +74,7 @@ def llm_json_call(prompt: str, output_model: Type[T]) -> T:
     return result
 
 
-def llm_text_call(prompt: str, max_retries: int = 0, deterministic: bool = False) -> str:
+def llm_text_call(prompt: str, max_retries: int = 2, deterministic: bool = False) -> str:
     """
     Call the LLM and return the raw text response.
     Retries up to *max_retries* times on empty responses.
@@ -116,7 +116,7 @@ def llm_text_call(prompt: str, max_retries: int = 0, deterministic: bool = False
             response = llm.invoke(prompt)
         except Exception as exc:
             exc_str = str(exc)
-            if "413" in exc_str or "429" in exc_str or "rate_limit" in exc_str.lower():
+            if "413" in exc_str or "429" in exc_str or "503" in exc_str or "rate_limit" in exc_str.lower():
                 if attempt < attempts:
                     wait = min(30, 10 * attempt)
                     logger.warning(
@@ -193,7 +193,7 @@ def llm_deterministic_call(prompt: str, max_retries: int = 1) -> str:
             response = llm.invoke(prompt)
         except Exception as exc:
             exc_str = str(exc)
-            if "413" in exc_str or "429" in exc_str or "rate_limit" in exc_str.lower():
+            if "413" in exc_str or "429" in exc_str or "503" in exc_str or "rate_limit" in exc_str.lower():
                 if attempt < attempts:
                     wait = min(30, 10 * attempt)
                     logger.warning(

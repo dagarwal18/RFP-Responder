@@ -2119,17 +2119,98 @@
           const conf = b2.confidence_score || 0;
           const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.6 ? '#f59e0b' : '#ef4444';
           const issues = b2.issues || [];
+          const valReqs = b2.validated_requirements || [];
+
+          // Severity badge colors
+          const sevStyles = {
+            warning: 'background:rgba(245,158,11,0.15);color:#f59e0b',
+            info: 'background:rgba(59,130,246,0.15);color:#3b82f6',
+            error: 'background:rgba(239,68,68,0.15);color:#ef4444',
+          };
+
+          // Build issues HTML
+          let issuesHtml = '';
+          if (issues.length) {
+            issuesHtml = `<div style="margin-bottom:12px">
+              <strong style="margin-bottom:6px;display:block">Identified Issues:</strong>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                ${issues.map(i => {
+              const sev = sevStyles[i.severity] || sevStyles.warning;
+              const reqIds = (i.requirement_ids || []);
+              const desc = i.description || 'No description provided';
+              const reqBadges = reqIds.length
+                ? reqIds.map(r => `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(99,102,241,0.15);color:var(--accent-light);margin-right:3px">${r}</span>`).join('')
+                : '<span style="font-size:11px;color:var(--text-muted)">General</span>';
+              return `<div style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary)">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                      <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;${sev}">${i.issue_type}</span>
+                      <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;${sev}">${i.severity || 'warning'}</span>
+                      <span>${reqBadges}</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-secondary)">${desc}</div>
+                  </div>`;
+            }).join('')}
+              </div>
+            </div>`;
+          } else {
+            issuesHtml = '<div style="margin-bottom:12px;padding:8px 12px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:6px;color:#10b981;font-weight:500">✅ No issues identified. Requirements are solid.</div>';
+          }
+
+          // Build validated requirements table
+          let valReqsHtml = '';
+          if (valReqs.length) {
+            valReqsHtml = `<div style="margin-top:12px">
+              <strong style="margin-bottom:6px;display:block">Validated Requirements (${valReqs.length}):</strong>
+              <div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
+                <table style="width:100%;border-collapse:collapse;font-size:12px">
+                  <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
+                    <th style="padding:6px">ID</th><th style="padding:6px">Type</th><th style="padding:6px">Class</th><th style="padding:6px">Requirement</th>
+                  </tr></thead>
+                  <tbody>${valReqs.map(r => `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:6px;font-weight:600;color:var(--accent-light);white-space:nowrap">${r.requirement_id}</td>
+                    <td style="padding:6px;white-space:nowrap"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${r.type === 'MANDATORY' ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)'};color:${r.type === 'MANDATORY' ? '#ef4444' : '#3b82f6'}">${r.type}</span></td>
+                    <td style="padding:6px"><span class="type-badge">${r.classification}</span></td>
+                    <td style="padding:6px;max-width:350px">${r.text}</td>
+                  </tr>`).join('')}</tbody>
+                </table>
+              </div>
+            </div>`;
+          }
+
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🛡️ B2 Requirements Validation &mdash; <span style="color:${confColor}">${(conf * 100).toFixed(0)}% Confidence</span></summary>
             <div style="padding:8px 16px;font-size:13px">
-              <div style="display:flex;gap:16px;margin-bottom:12px">
-                <div><strong>Duplicates:</strong> ${b2.duplicate_count || 0}</div>
-                <div><strong>Contradictions:</strong> ${b2.contradiction_count || 0}</div>
-                <div><strong>Ambiguities:</strong> ${b2.ambiguity_count || 0}</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:${confColor}">${(conf * 100).toFixed(0)}%</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Confidence</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${b2.total_requirements || 0}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Total</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:${b2.duplicate_count ? '#f59e0b' : '#10b981'}">${b2.duplicate_count || 0}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Duplicates</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:${b2.contradiction_count ? '#ef4444' : '#10b981'}">${b2.contradiction_count || 0}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Contradictions</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:${b2.ambiguity_count ? '#f59e0b' : '#10b981'}">${b2.ambiguity_count || 0}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Ambiguities</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${b2.mandatory_count || 0}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Mandatory</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${b2.optional_count || 0}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Optional</div>
+                </div>
               </div>
-              ${issues.length ? `<div style="margin-bottom:8px"><strong>Identified Issues:</strong></div>
-              <ul style="margin:0 0 12px 20px;color:var(--text-secondary)">
-                ${issues.map(i => `<li style="margin-bottom:4px"><strong>[${i.issue_type}]</strong> (${(i.requirement_ids || []).join(', ')}) ${i.description}</li>`).join('')}
-              </ul>` : '<div style="margin-bottom:12px;color:var(--success)">✅ No issues identified. Requirements are solid.</div>'}
+              ${issuesHtml}
+              ${valReqsHtml}
             </div></details>`;
         }
         // C1 Architecture Planning
@@ -2178,9 +2259,105 @@
               </div>` : ''}
             </div></details>`;
         }
+        // C2 Requirement Writing
+        if (outputs.C2_REQUIREMENT_WRITING) {
+          const c2 = outputs.C2_REQUIREMENT_WRITING;
+          const secResps = c2.section_responses || [];
+          const covMatrix = c2.coverage_matrix || [];
+          const totalWords = secResps.reduce((sum, s) => sum + (s.word_count || 0), 0);
+          const totalReqsCovered = new Set(secResps.flatMap(s => s.requirements_addressed || [])).size;
+
+          // Coverage quality colors
+          const covColors = {
+            full: { bg: 'rgba(16,185,129,0.15)', fg: '#10b981' },
+            partial: { bg: 'rgba(245,158,11,0.15)', fg: '#f59e0b' },
+            missing: { bg: 'rgba(239,68,68,0.15)', fg: '#ef4444' },
+          };
+
+          // Build sections HTML
+          let sectionsHtml = '';
+          if (secResps.length) {
+            sectionsHtml = `<div style="margin-top:12px">
+              <strong style="margin-bottom:6px;display:block">Section Responses (${secResps.length}):</strong>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                ${secResps.map(s => {
+              const preview = (s.content || '').substring(0, 250);
+              const reqs = s.requirements_addressed || [];
+              return `<details style="border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary)">
+                    <summary style="cursor:pointer;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+                      <span>
+                        <span style="font-weight:600;color:var(--accent-light);margin-right:6px">${s.section_id}</span>
+                        <span style="font-weight:500">${s.title}</span>
+                      </span>
+                      <span style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                        <span style="font-size:11px;color:var(--text-muted)">${s.word_count || 0} words</span>
+                        ${reqs.length ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(99,102,241,0.15);color:var(--accent-light)">${reqs.length} reqs</span>` : ''}
+                      </span>
+                    </summary>
+                    <div style="padding:0 14px 14px;font-size:12px">
+                      ${reqs.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${reqs.map(r => `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(99,102,241,0.15);color:var(--accent-light)">${r}</span>`).join('')}</div>` : ''}
+                      <div style="color:var(--text-secondary);line-height:1.6;white-space:pre-wrap">${preview}${(s.content || '').length > 250 ? '…' : ''}</div>
+                    </div>
+                  </details>`;
+            }).join('')}
+              </div>
+            </div>`;
+          }
+
+          // Build coverage matrix HTML
+          let covHtml = '';
+          if (covMatrix.length) {
+            const fullCount = covMatrix.filter(c => c.coverage_quality === 'full').length;
+            const partialCount = covMatrix.filter(c => c.coverage_quality === 'partial').length;
+            const missingCount = covMatrix.filter(c => c.coverage_quality === 'missing').length;
+            covHtml = `<div style="margin-top:14px">
+              <strong style="margin-bottom:6px;display:block">Coverage Matrix (${covMatrix.length} entries):</strong>
+              <div style="display:flex;gap:10px;margin-bottom:8px">
+                <span style="font-size:12px;padding:3px 10px;border-radius:10px;background:rgba(16,185,129,0.15);color:#10b981;font-weight:600">✓ Full: ${fullCount}</span>
+                <span style="font-size:12px;padding:3px 10px;border-radius:10px;background:rgba(245,158,11,0.15);color:#f59e0b;font-weight:600">◐ Partial: ${partialCount}</span>
+                <span style="font-size:12px;padding:3px 10px;border-radius:10px;background:rgba(239,68,68,0.15);color:#ef4444;font-weight:600">✗ Missing: ${missingCount}</span>
+              </div>
+              <div style="max-height:250px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
+                <table style="width:100%;border-collapse:collapse;font-size:12px">
+                  <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
+                    <th style="padding:6px">Requirement</th><th style="padding:6px">Section</th><th style="padding:6px">Coverage</th>
+                  </tr></thead>
+                  <tbody>${covMatrix.map(c => {
+              const cc = covColors[c.coverage_quality] || covColors.full;
+              return `<tr style="border-bottom:1px solid var(--border)">
+                      <td style="padding:6px;font-weight:600;color:var(--accent-light)">${c.requirement_id}</td>
+                      <td style="padding:6px">${c.addressed_in_section}</td>
+                      <td style="padding:6px"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${cc.bg};color:${cc.fg};text-transform:uppercase">${c.coverage_quality}</span></td>
+                    </tr>`;
+            }).join('')}</tbody>
+                </table>
+              </div>
+            </div>`;
+          }
+
+          html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">✍️ C2 Requirement Writing (${secResps.length} sections, ${totalWords.toLocaleString()} words)</summary>
+            <div style="padding:8px 16px;font-size:13px">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${secResps.length}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Sections</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${totalWords.toLocaleString()}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Total Words</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:var(--accent-light)">${totalReqsCovered}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Reqs Covered</div>
+                </div>
+              </div>
+              ${sectionsHtml}
+              ${covHtml}
+            </div></details>`;
+        }
         // Other agents — raw JSON
         for (const [key, val] of Object.entries(outputs)) {
-          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING'].includes(key)) continue;
+          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING'].includes(key)) continue;
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
             <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
         }

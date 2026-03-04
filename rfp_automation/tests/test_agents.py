@@ -1106,3 +1106,241 @@ class TestArchitecturePlanningAgent:
         assert plan["total_sections"] == 1
         assert plan["rfp_response_instructions"] == ""
 
+
+# ═══════════════════════════════════════════════════════════
+# C2 Requirement Writing Agent
+# ═══════════════════════════════════════════════════════════
+
+
+class TestWritingAgent:
+    """Tests for C2 Requirement Writing Agent."""
+
+    @staticmethod
+    def _writing_state(sections=None, requirements=None):
+        from rfp_automation.models.schemas import (
+            RFPMetadata, Requirement, RequirementsValidationResult,
+            ArchitecturePlan, ResponseSection,
+        )
+        from rfp_automation.models.enums import (
+            RequirementType, RequirementClassification,
+            RequirementCategory, ImpactLevel,
+        )
+        if requirements is None:
+            requirements = [
+                Requirement(
+                    requirement_id="REQ-001", text="System must support SSO via SAML 2.0",
+                    type=RequirementType.MANDATORY,
+                    classification=RequirementClassification.FUNCTIONAL,
+                    category=RequirementCategory.TECHNICAL, impact=ImpactLevel.HIGH,
+                    source_section="Technical Requirements",
+                    keywords=["SSO", "SAML"],
+                ),
+                Requirement(
+                    requirement_id="REQ-002", text="Data encryption at rest is required",
+                    type=RequirementType.MANDATORY,
+                    classification=RequirementClassification.NON_FUNCTIONAL,
+                    category=RequirementCategory.SECURITY, impact=ImpactLevel.CRITICAL,
+                    source_section="Security Requirements",
+                    keywords=["encryption", "security"],
+                ),
+            ]
+        if sections is None:
+            sections = [
+                ResponseSection(
+                    section_id="SEC-01", title="Technical Solution",
+                    section_type="requirement_driven",
+                    description="Address all technical requirements",
+                    content_guidance="Include architecture diagram",
+                    requirement_ids=["REQ-001", "REQ-002"],
+                    mapped_capabilities=["SSO support", "AES-256 encryption"],
+                    priority=1,
+                ),
+                ResponseSection(
+                    section_id="SEC-02", title="Company Profile",
+                    section_type="knowledge_driven",
+                    description="Company overview and experience",
+                    requirement_ids=[],
+                    mapped_capabilities=["10 years experience"],
+                    priority=4,
+                ),
+            ]
+        return RFPGraphState(
+            status=PipelineStatus.WRITING_RESPONSES,
+            rfp_metadata=RFPMetadata(rfp_id="RFP-TEST-001"),
+            requirements=requirements,
+            requirements_validation=RequirementsValidationResult(
+                validated_requirements=requirements,
+                total_requirements=len(requirements),
+            ),
+            architecture_plan=ArchitecturePlan(
+                sections=sections,
+                total_sections=len(sections),
+                rfp_response_instructions="Follow format from Section 3",
+            ),
+        ).model_dump()
+
+    @staticmethod
+    def _mock_mcp():
+        return type("MockMCP", (), {
+            "query_knowledge": lambda self, q, top_k=3: [
+                {"text": "ISO 27001 certified operations", "metadata": {}},
+            ],
+        })()
+
+    def test_writing_success(self, monkeypatch):
+        """Valid LLM response → section responses populated, status = ASSEMBLING_NARRATIVE."""
+        from rfp_automation.agents import RequirementWritingAgent
+
+        responses = {
+            "Technical Solution": json.dumps({
+                "content": "Our platform provides SSO via SAML 2.0 and AES-256 encryption.",
+                "requirements_addressed": ["REQ-001", "REQ-002"],
+                "word_count": 45,
+            }),
+            "Company Profile": json.dumps({
+                "content": "We have 10 years of enterprise experience.",
+                "requirements_addressed": [],
+                "word_count": 8,
+            }),
+        }
+
+        def mock_llm(prompt, deterministic=False):
+            for title, resp in responses.items():
+                if title in prompt:
+                    return resp
+            return json.dumps({"content": "Default.", "requirements_addressed": [], "word_count": 1})
+
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.MCPService",
+                            lambda: self._mock_mcp())
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_text_call", mock_llm)
+
+        agent = RequirementWritingAgent()
+        result = agent.process(self._writing_state())
+
+        wr = result["writing_result"]
+        assert len(wr["section_responses"]) == 2
+        assert wr["section_responses"][0]["content"] != ""
+        assert "REQ-001" in wr["section_responses"][0]["requirements_addressed"]
+        assert result["status"] == PipelineStatus.ASSEMBLING_NARRATIVE.value
+
+    def test_writing_coverage_matrix(self, monkeypatch):
+        """Addressed requirements → 'full'; unaddressed → 'missing'."""
+        from rfp_automation.agents import RequirementWritingAgent
+
+        # LLM only confirms REQ-001, not REQ-002
+        def mock_llm(prompt, deterministic=False):
+            return json.dumps({
+                "content": "SSO via SAML 2.0.",
+                "requirements_addressed": ["REQ-001"],
+                "word_count": 5,
+            })
+
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.MCPService",
+                            lambda: self._mock_mcp())
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_text_call", mock_llm)
+
+        agent = RequirementWritingAgent()
+        result = agent.process(self._writing_state())
+
+        matrix = result["writing_result"]["coverage_matrix"]
+        coverage_by_id = {c["requirement_id"]: c for c in matrix}
+        assert coverage_by_id["REQ-001"]["coverage_quality"] == "full"
+        assert coverage_by_id["REQ-002"]["coverage_quality"] == "missing"
+
+    def test_writing_skips_commercial_legal(self, monkeypatch):
+        """Commercial and legal sections get placeholder content, not LLM calls."""
+        from rfp_automation.agents import RequirementWritingAgent
+        from rfp_automation.models.schemas import ResponseSection
+
+        sections = [
+            ResponseSection(
+                section_id="SEC-01", title="Technical Solution",
+                section_type="requirement_driven",
+                description="Tech details",
+                requirement_ids=["REQ-001"],
+                priority=1,
+            ),
+            ResponseSection(
+                section_id="SEC-02", title="Pricing",
+                section_type="commercial",
+                description="Cost breakdown",
+                requirement_ids=[],
+                priority=3,
+            ),
+            ResponseSection(
+                section_id="SEC-03", title="Legal Terms",
+                section_type="legal",
+                description="Contract terms",
+                requirement_ids=[],
+                priority=4,
+            ),
+        ]
+
+        call_count = {"n": 0}
+
+        def mock_llm(prompt, deterministic=False):
+            call_count["n"] += 1
+            return json.dumps({
+                "content": "Technical content here.",
+                "requirements_addressed": ["REQ-001"],
+                "word_count": 3,
+            })
+
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.MCPService",
+                            lambda: self._mock_mcp())
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_text_call", mock_llm)
+
+        agent = RequirementWritingAgent()
+        result = agent.process(self._writing_state(sections=sections))
+
+        # LLM called only once (for the requirement_driven section)
+        assert call_count["n"] == 1
+
+        wr = result["writing_result"]
+        assert len(wr["section_responses"]) == 3
+        # Commercial and legal have placeholder content
+        commercial = [s for s in wr["section_responses"] if s["section_id"] == "SEC-02"][0]
+        legal = [s for s in wr["section_responses"] if s["section_id"] == "SEC-03"][0]
+        assert "COMMERCIAL" in commercial["content"]
+        assert "LEGAL" in legal["content"]
+
+    def test_writing_empty_plan(self, monkeypatch):
+        """Empty architecture plan → empty WritingResult, no crash."""
+        from rfp_automation.agents import RequirementWritingAgent
+
+        agent = RequirementWritingAgent()
+        result = agent.process(self._writing_state(sections=[]))
+
+        wr = result["writing_result"]
+        assert wr["section_responses"] == []
+        assert wr["coverage_matrix"] == []
+        assert result["status"] == PipelineStatus.ASSEMBLING_NARRATIVE.value
+
+    def test_writing_no_rfp_id_raises(self):
+        """Missing rfp_id → ValueError."""
+        from rfp_automation.agents import RequirementWritingAgent
+
+        agent = RequirementWritingAgent()
+        state = RFPGraphState(
+            status=PipelineStatus.WRITING_RESPONSES,
+        ).model_dump()
+        with pytest.raises(ValueError, match="No rfp_id"):
+            agent.process(state)
+
+    def test_writing_llm_failure_graceful(self, monkeypatch):
+        """LLM returns empty → section gets empty content, pipeline continues."""
+        from rfp_automation.agents import RequirementWritingAgent
+
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.MCPService",
+                            lambda: self._mock_mcp())
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "")
+
+        agent = RequirementWritingAgent()
+        result = agent.process(self._writing_state())
+
+        wr = result["writing_result"]
+        # Sections should exist but with empty content
+        assert len(wr["section_responses"]) == 2
+        assert result["status"] == PipelineStatus.ASSEMBLING_NARRATIVE.value
+

@@ -144,7 +144,7 @@ def _run_pipeline_thread(rfp_id: str, local_path: str, file_hash: str) -> None:
             error_result["error"] = str(e)  # ensure error is not overwritten
             logger.info(
                 f"Preserved partial state with keys: "
-                f"{[k for k in partial if partial[k] is not None and partial[k] != [] and partial[k] != {{}}]}"
+                f"{[k for k in partial if partial[k] is not None and partial[k] != [] and partial[k] != dict()]}"
             )
 
         _runs[rfp_id].update({
@@ -279,6 +279,10 @@ async def get_rfp_status(rfp_id: str):
         arch = result_data.get("architecture_plan")
         if isinstance(arch, dict) and arch.get("sections"):
             agent_outputs["C1_ARCHITECTURE_PLANNING"] = arch
+        # C2 Requirement Writing
+        writing = result_data.get("writing_result")
+        if isinstance(writing, dict) and writing.get("section_responses"):
+            agent_outputs["C2_REQUIREMENT_WRITING"] = writing
 
     return StatusResponse(
         rfp_id=run["rfp_id"],
