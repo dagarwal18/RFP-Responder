@@ -47,3 +47,6 @@ class EmbeddingModel:
     def embed_single(self, text: str) -> list[float]:
         """Embed a single text string."""
         return self.embed([text])[0]
+
+    # Alias for backward compatibility
+    embed_batch = embed

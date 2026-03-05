@@ -282,35 +282,60 @@ class RequirementsExtractionAgent(BaseAgent):
             lines = [l for l in lines if not l.strip().startswith("```")]
             text = "\n".join(lines)
 
-        # Extract JSON array — handle truncated outputs where ']' may be missing
-        bracket_start = text.find("[")
-        if bracket_start == -1:
-            logger.warning("[B1] No JSON array found in LLM response")
-            return []
+        # ── Robust JSON array extraction ──────────────────────
+        # The LLM may emit chain-of-thought reasoning before the JSON.
+        # Naive text.find("[") fails because reasoning often contains
+        # square brackets (e.g. "[Section: ...]", "[1]", "[B1]").
+        # Strategy: try each '[' position until json.loads succeeds.
+        data = None
+        search_start = 0
+        while True:
+            bracket_start = text.find("[", search_start)
+            if bracket_start == -1:
+                break
 
-        bracket_end = text.rfind("]")
-        if bracket_end != -1 and bracket_end > bracket_start:
-            text = text[bracket_start:bracket_end + 1]
-        else:
-            # Truncated output: '[' found but no closing ']'
-            text = text[bracket_start:]
-
-        try:
-            data = json.loads(text)
-        except json.JSONDecodeError as exc:
-            logger.warning(f"[B1] JSON parse error: {exc}. Attempting structured repair...")
-            last_brace = text.rfind("}")
-            if last_brace != -1:
-                repaired_text = text[:last_brace + 1] + "]"
-                try:
-                    data = json.loads(repaired_text)
-                    logger.warning(f"[B1] Recovered partial JSON array with {len(data)} items")
-                except json.JSONDecodeError as exc_inner:
-                    logger.error(f"[B1] FATAL JSON PARSE FAIL after repair: {text}")
-                    raise ExtractionBatchError("Unrecoverable JSON syntax") from exc_inner
+            # Find matching ']' from the end
+            bracket_end = text.rfind("]")
+            if bracket_end != -1 and bracket_end > bracket_start:
+                candidate = text[bracket_start:bracket_end + 1]
             else:
-                logger.error(f"[B1] FATAL JSON PARSE FAIL: No objects to recover in response: {text}")
-                raise ExtractionBatchError("Unrecoverable JSON syntax")
+                # Truncated output: '[' found but no closing ']'
+                candidate = text[bracket_start:]
+
+            try:
+                data = json.loads(candidate)
+                if isinstance(data, list):
+                    break  # Success — found valid JSON array
+                data = None  # Not an array, keep searching
+            except json.JSONDecodeError:
+                pass  # This '[' wasn't the JSON start, try the next one
+
+            search_start = bracket_start + 1
+
+        # If no clean parse succeeded, attempt structured repair
+        if data is None:
+            # Find the last '[' that precedes a '{' (likely JSON array of objects)
+            json_array_match = re.search(r'\[\s*\{', text)
+            if json_array_match:
+                fragment = text[json_array_match.start():]
+                last_brace = fragment.rfind("}")
+                if last_brace != -1:
+                    repaired = fragment[:last_brace + 1] + "]"
+                    try:
+                        data = json.loads(repaired)
+                        logger.warning(f"[B1] Recovered partial JSON array with {len(data)} items")
+                    except json.JSONDecodeError as exc_inner:
+                        logger.error(f"[B1] FATAL JSON PARSE FAIL after repair: {fragment[:300]}")
+                        raise ExtractionBatchError("Unrecoverable JSON syntax") from exc_inner
+                else:
+                    logger.error(f"[B1] FATAL JSON PARSE FAIL: No objects to recover")
+                    raise ExtractionBatchError("Unrecoverable JSON syntax")
+            else:
+                # No JSON array found at all
+                if text.strip() == "[]" or "[]" in text:
+                    return []
+                logger.warning("[B1] No JSON array found in LLM response")
+                return []
 
         if not isinstance(data, list):
             logger.warning("[B1] LLM response is not a JSON array")
@@ -410,7 +435,7 @@ class RequirementsExtractionAgent(BaseAgent):
 
         embedder = EmbeddingModel()
         texts = [req.text for req in requirements]
-        embeddings = embedder.embed_batch(texts)
+        embeddings = embedder.embed(texts)
 
         if not embeddings or len(embeddings) != len(requirements):
             raise ValueError("Embedding batch size mismatch")

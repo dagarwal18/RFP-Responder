@@ -316,16 +316,16 @@ class TestJSONRecovery:
         from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent
         
         agent = RequirementsExtractionAgent()
-        # Simulated truncated JSON
+        # Simulated truncated JSON — texts must be ≥15 chars to pass content filters
         truncated_json = '''[
-          {"requirement_id": "REQ-0001", "text": "Must do A"},
-          {"requirement_id": "REQ-0002", "text": "Must do B", "type": "MANDA'''
+          {"requirement_id": "REQ-0001", "text": "The vendor must deliver Phase 1 by Q1 2026."},
+          {"requirement_id": "REQ-0002", "text": "The system shall support 1000 concurrent users", "type": "MANDA'''
         
         # It should recover REQ-0001 because it can find the last '}'
         reqs = agent._parse_requirements_json(truncated_json, "Section A", 1)
         assert len(reqs) == 1
         assert reqs[0].requirement_id == "REQ-0001"
-        assert reqs[0].text == "Must do A"
+        assert reqs[0].text == "The vendor must deliver Phase 1 by Q1 2026."
         
     def test_json_recovery_failure_raises(self):
         from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent, ExtractionBatchError
