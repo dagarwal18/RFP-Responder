@@ -61,7 +61,6 @@ class ArchitecturePlanningAgent(BaseAgent):
             logger.debug(f"[C1] Using {len(requirements)} validated requirements from B2")
 
         # Serialize requirements for prompt — compact format to fit token budget
-        # Full objects would be ~70K chars for 70 reqs; compact is ~7K
         requirements_data = []
         compact_req_lines = []
         for req in requirements:
@@ -103,27 +102,24 @@ class ArchitecturePlanningAgent(BaseAgent):
         )
         logger.debug(f"[C1] Fetched {len(capabilities)} capability entries")
 
-        # ── 6. Build prompt ─────────────────────────────
+        # ── 6. PASS 1 — Initial architecture with full prompt ─
         prompt = self._build_prompt(
             rfp_sections=rfp_sections_text,
             requirements=requirements_compact,
             capabilities=capabilities_json,
             submission_instructions=submission_instructions,
         )
-        logger.debug(f"[C1] Prompt built — {len(prompt)} chars")
-
-        # ── 7. Call LLM ─────────────────────────────────
         logger.info(
-            f"[C1] Calling LLM with {len(requirements_data)} requirements, "
+            f"[C1] Pass 1: Calling LLM with {len(requirements_data)} requirements, "
             f"{len(capabilities)} capabilities, "
             f"{len(state.structuring_result.sections)} RFP sections"
         )
         raw_response = llm_text_call(prompt, deterministic=True)
-        logger.debug(f"[C1] Raw LLM response ({len(raw_response)} chars):\n{raw_response[:2000]}")
+        logger.debug(f"[C1] Pass 1 LLM response ({len(raw_response)} chars)")
 
-        # ── 8. Parse response ───────────────────────────
+        # ── 7. Parse Pass 1 response ────────────────────
         sections, rfp_instructions = self._parse_response(raw_response)
-        logger.info(f"[C1] Parsed {len(sections)} response sections")
+        logger.info(f"[C1] Pass 1 produced {len(sections)} response sections")
         for s in sections:
             logger.debug(
                 f"[C1]   Section: {s.section_id} | {s.title} | "
@@ -131,12 +127,42 @@ class ArchitecturePlanningAgent(BaseAgent):
                 f"{len(s.mapped_capabilities)} caps | priority={s.priority}"
             )
 
-        # ── 9. Coverage gap detection (requirement-driven only) ──
+        # ── 8. Multi-pass gap filling ────────────────────
+        MAX_GAP_PASSES = 3
+        for pass_num in range(2, 2 + MAX_GAP_PASSES):
+            coverage_gaps = self._detect_coverage_gaps(requirements_data, sections)
+            if not coverage_gaps:
+                logger.info(f"[C1] Full coverage achieved after {pass_num - 1} pass(es)")
+                break
+
+            logger.info(
+                f"[C1] Pass {pass_num}: {len(coverage_gaps)} mandatory requirements "
+                f"still unassigned — running gap-filling pass"
+            )
+
+            # Build gap requirements list
+            gap_set = set(coverage_gaps)
+            gap_req_lines = [
+                line for line, d in zip(compact_req_lines, requirements_data)
+                if d.get("requirement_id", "") in gap_set
+            ]
+
+            sections = self._gap_fill_pass(
+                sections=sections,
+                gap_req_lines=gap_req_lines,
+                pass_num=pass_num,
+            )
+        else:
+            # Ran all passes, check final gaps
+            coverage_gaps = self._detect_coverage_gaps(requirements_data, sections)
+
+        # ── 9. Final coverage check ─────────────────────
         coverage_gaps = self._detect_coverage_gaps(requirements_data, sections)
         if coverage_gaps:
             logger.warning(
-                f"[C1] Coverage gaps — {len(coverage_gaps)} mandatory "
-                f"requirements unassigned: {coverage_gaps}"
+                f"[C1] Final coverage gaps — {len(coverage_gaps)} mandatory "
+                f"requirements unassigned after all passes: "
+                f"{coverage_gaps[:20]}{'...' if len(coverage_gaps) > 20 else ''}"
             )
         else:
             logger.info("[C1] Full coverage — all mandatory requirements assigned to sections")
@@ -473,6 +499,143 @@ class ArchitecturePlanningAgent(BaseAgent):
                 continue
 
         return sections
+
+    def _gap_fill_pass(
+        self,
+        sections: list[ResponseSection],
+        gap_req_lines: list[str],
+        pass_num: int,
+    ) -> list[ResponseSection]:
+        """
+        Run a focused LLM call to assign unassigned requirements to
+        existing sections. Much lighter than the full architecture prompt,
+        so all remaining requirements can fit.
+        """
+        # Build existing sections summary for context
+        section_summary_lines = []
+        for s in sections:
+            if s.section_type == "requirement_driven":
+                section_summary_lines.append(
+                    f"  {s.section_id}: {s.title} "
+                    f"(currently has {len(s.requirement_ids)} requirements)"
+                )
+
+        section_summary = "\n".join(section_summary_lines)
+        gap_requirements = "\n".join(gap_req_lines)
+
+        prompt = (
+            "You are assigning unassigned RFP requirements to existing proposal sections.\n\n"
+            "## Existing Sections (requirement-driven only)\n\n"
+            f"{section_summary}\n\n"
+            "## Unassigned Requirements\n"
+            "Format: REQUIREMENT_ID | TYPE | CLASSIFICATION | Requirement text\n\n"
+            f"{gap_requirements}\n\n"
+            "## Instructions\n\n"
+            "For EACH unassigned requirement above, assign it to the most appropriate "
+            "existing section. Use the section_id from the list above.\n\n"
+            "Rules:\n"
+            "- SLA/performance metrics (availability, latency, uptime, jitter, packet loss, "
+            "response time, RPO, RTO) → assign to the SLA section\n"
+            "- Security/compliance requirements → assign to the Compliance section\n"
+            "- Technical capabilities → assign to the Technical Solution section\n"
+            "- If no existing section fits, assign to the Compliance Matrix as a catch-all\n"
+            "- Every requirement MUST be assigned to exactly one section\n\n"
+            "Return ONLY a JSON object mapping section_id to a list of requirement IDs:\n"
+            "```json\n"
+            '{\n'
+            '  "assignments": {\n'
+            '    "SEC-03": ["REQ-0050", "REQ-0051"],\n'
+            '    "SEC-04": ["REQ-0067", "REQ-0068"],\n'
+            '    "SEC-05": ["REQ-0089", "REQ-0090"]\n'
+            '  }\n'
+            '}\n'
+            "```\n\n"
+            "Return ONLY the JSON object, no additional text."
+        )
+
+        logger.debug(
+            f"[C1] Gap-fill pass {pass_num} prompt: {len(prompt)} chars, "
+            f"{len(gap_req_lines)} requirements to assign"
+        )
+
+        try:
+            raw_response = llm_text_call(prompt, deterministic=True)
+            logger.debug(
+                f"[C1] Gap-fill pass {pass_num} response: "
+                f"{len(raw_response)} chars"
+            )
+
+            # Parse the assignments
+            assignments = self._parse_gap_assignments(raw_response)
+            if not assignments:
+                logger.warning(
+                    f"[C1] Gap-fill pass {pass_num}: no valid assignments parsed"
+                )
+                return sections
+
+            # Merge assignments into existing sections
+            total_assigned = 0
+            section_map = {s.section_id: s for s in sections}
+
+            for section_id, req_ids in assignments.items():
+                section = section_map.get(section_id)
+                if section:
+                    existing_ids = set(section.requirement_ids)
+                    new_ids = [rid for rid in req_ids if rid not in existing_ids]
+                    section.requirement_ids.extend(new_ids)
+                    total_assigned += len(new_ids)
+                    if new_ids:
+                        logger.debug(
+                            f"[C1] Gap-fill: added {len(new_ids)} requirements "
+                            f"to {section_id} ({section.title})"
+                        )
+                else:
+                    logger.warning(
+                        f"[C1] Gap-fill: unknown section_id '{section_id}', "
+                        f"skipping {len(req_ids)} requirements"
+                    )
+
+            logger.info(
+                f"[C1] Gap-fill pass {pass_num}: assigned {total_assigned} "
+                f"requirements across sections"
+            )
+
+        except Exception as exc:
+            logger.error(f"[C1] Gap-fill pass {pass_num} failed: {exc}")
+
+        return sections
+
+    def _parse_gap_assignments(
+        self, raw_response: str
+    ) -> dict[str, list[str]]:
+        """Parse gap-filling LLM response into section_id -> [req_ids] mapping."""
+        text = raw_response.strip()
+
+        # Strip markdown fences
+        fence_match = re.search(
+            r"```(?:json)?\s*\n?(.*?)\n?\s*```",
+            text,
+            re.DOTALL,
+        )
+        if fence_match:
+            text = fence_match.group(1).strip()
+
+        # Extract JSON object
+        data = self._extract_json(text)
+
+        if isinstance(data, dict):
+            assignments = data.get("assignments", data)
+            if isinstance(assignments, dict):
+                result: dict[str, list[str]] = {}
+                for section_id, req_ids in assignments.items():
+                    if isinstance(req_ids, list):
+                        result[section_id] = [
+                            str(rid) for rid in req_ids
+                        ]
+                return result
+
+        logger.warning("[C1] Could not parse gap-fill assignments")
+        return {}
 
     def _detect_coverage_gaps(
         self,

@@ -38,6 +38,14 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
      from the requirements list above is assigned to at least one section.
      If any requirements remain unassigned, add them to the Compliance Matrix
      section or create an appropriate catch-all section.
+   - SLA / PERFORMANCE METRICS: Requirements about availability, uptime, latency,
+     jitter, packet loss, call setup time, response time, MTTR, RPO, RTO, or any
+     measurable SLA target MUST be assigned to the SLA Commitments section.
+   - VENDOR QUALIFICATIONS: Requirements about certifications, years of experience,
+     team qualifications, references, or vendor eligibility MUST be assigned to
+     Company Profile, Certifications, or Team Qualifications sections.
+   - GOAL: ZERO unassigned mandatory requirements. Every requirement ID must
+     appear in at least one section's requirement_ids list.
 
 4. For `knowledge_driven` sections:
    - Map relevant company capabilities / evidence that should be cited
