@@ -213,6 +213,14 @@ class RequirementsExtractionAgent(BaseAgent):
             f"[B1] Deduplicated: {before_dedup} → {len(all_requirements)} requirements"
         )
 
+        # ── 5b. Merge badly-split fragments ──────────────────
+        before_merge = len(all_requirements)
+        all_requirements = self._merge_fragments(all_requirements)
+        if before_merge != len(all_requirements):
+            logger.info(
+                f"[B1] Fragment merging: {before_merge} → {len(all_requirements)} requirements"
+            )
+
         # ── 6. Stable sequential ID re-assignment ────────────
         for i, req in enumerate(all_requirements, start=1):
             req.requirement_id = f"REQ-{i:04d}"
@@ -520,6 +528,86 @@ class RequirementsExtractionAgent(BaseAgent):
                 seen.add(normalized)
                 unique.append(req)
         return unique
+
+    # ── Fragment merging ─────────────────────────────────────
+
+    @staticmethod
+    def _merge_fragments(requirements: list[Requirement]) -> list[Requirement]:
+        """
+        Merge sequential requirements that were split at bad boundaries.
+
+        Detects pairs where requirement N ends without terminal punctuation
+        and requirement N+1 starts with a comparator, lowercase letter, or
+        continuation pattern — indicating they were one sentence split poorly.
+        """
+        if len(requirements) < 2:
+            return requirements
+
+        # Pattern: starts with <, >, ≤, ≥, or lowercase letter
+        _CONTINUATION_START = re.compile(r"^[<>≤≥a-z]")
+        # Terminal punctuation that indicates a complete sentence
+        _TERMINAL_PUNCT = re.compile(r"[.!?\)\]]\s*$")
+
+        merged: list[Requirement] = []
+        skip_next = False
+
+        for i in range(len(requirements)):
+            if skip_next:
+                skip_next = False
+                continue
+
+            req = requirements[i]
+
+            # Check if this req should merge with the next one
+            if i + 1 < len(requirements):
+                next_req = requirements[i + 1]
+
+                # Only merge if same source section
+                if req.source_section != next_req.source_section:
+                    merged.append(req)
+                    continue
+
+                text_ends_incomplete = not _TERMINAL_PUNCT.search(req.text)
+                next_starts_continuation = _CONTINUATION_START.match(
+                    next_req.text.strip()
+                )
+
+                if text_ends_incomplete and next_starts_continuation:
+                    # Merge: combine text with a space
+                    combined_text = req.text.rstrip() + " " + next_req.text.lstrip()
+                    combined_keywords = list(
+                        dict.fromkeys(req.keywords + next_req.keywords)
+                    )
+                    combined_chunks = list(
+                        dict.fromkeys(
+                            req.source_chunk_indices + next_req.source_chunk_indices
+                        )
+                    )
+
+                    merged_req = Requirement(
+                        requirement_id=req.requirement_id,
+                        text=combined_text,
+                        type=req.type,
+                        classification=req.classification,
+                        category=req.category,
+                        impact=max(req.impact, next_req.impact, key=lambda x: x.value),
+                        source_section=req.source_section,
+                        keywords=combined_keywords,
+                        source_chunk_indices=combined_chunks,
+                    )
+                    merged.append(merged_req)
+                    skip_next = True
+
+                    logger.warning(
+                        f"[B1] Merged fragment pair: "
+                        f"'{req.text[:50]}' + '{next_req.text[:50]}' → "
+                        f"'{combined_text[:80]}'"
+                    )
+                    continue
+
+            merged.append(req)
+
+        return merged
 
     # ── Coverage validation ──────────────────────────────────
 

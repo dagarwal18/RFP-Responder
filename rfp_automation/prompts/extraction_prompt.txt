@@ -23,8 +23,14 @@ STRICT RULES (VIOLATION = FAILURE):
    surrounding context to form a complete requirement statement.
 8. If the candidate text contains a structured list of specifications
    (metric/value pairs, SLA targets, capability rows) — extract EACH
-   item as a SEPARATE requirement. Do NOT combine multiple measurable
-   specifications into a single requirement.
+   item as a SEPARATE requirement. Split ONLY at natural delimiters
+   (semicolons, commas, line breaks, bullet points). Each resulting
+   requirement MUST be a complete, self-contained statement with its
+   own metric name AND value. NEVER split mid-phrase — e.g., for
+   "Call setup time <2 seconds; voice latency <150ms; video quality
+   minimum 720p HD", extract THREE separate requirements:
+   "Call setup time <2 seconds", "Voice latency <150ms",
+   "Video quality minimum 720p HD".
 9. Return ONLY a valid JSON array — no markdown fencing, no extra text.
 
 WHAT COUNTS AS A REQUIREMENT:

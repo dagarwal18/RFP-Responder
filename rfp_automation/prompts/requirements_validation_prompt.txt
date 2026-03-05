@@ -4,6 +4,9 @@ extracted requirements below and identify any quality issues.
 EXTRACTED REQUIREMENTS:
 {requirements_json}
 
+ORIGINAL RFP TEXT (for cross-referencing):
+{rfp_context}
+
 PERFORM THESE CHECKS:
 
 1. COMPLETENESS — Is each requirement clearly defined with enough detail
@@ -24,6 +27,14 @@ PERFORM THESE CHECKS:
    - 0.7+ = minor issues only
    - 0.5-0.7 = several vague or duplicate entries
    - Below 0.5 = significant quality problems
+
+6. FACTUAL ACCURACY — Cross-reference extracted numeric values
+   (percentages, thresholds, SLA targets, response times, counts) against
+   the ORIGINAL RFP TEXT above. If a requirement's value does NOT match
+   the RFP source (e.g., requirement says "95%" but RFP says "99.95%"),
+   flag it as a "factual_error" issue with severity "critical".
+   Also flag any requirement whose text appears truncated mid-sentence
+   (missing subject, verb, or ends abruptly without punctuation).
 
 Return ONLY valid JSON (no markdown fencing). Use this exact structure:
 {{
@@ -46,10 +57,17 @@ Return ONLY valid JSON (no markdown fencing). Use this exact structure:
       "requirement_ids": ["REQ-007", "REQ-015"],
       "description": "REQ-007 requires cloud hosting but REQ-015 requires on-premise only",
       "severity": "warning"
+    }},
+    {{
+      "issue_type": "factual_error",
+      "requirement_ids": ["REQ-010"],
+      "description": "Requirement says 95% uptime but RFP Table 2 specifies 99.95% uptime",
+      "severity": "critical"
     }}
   ],
   "requirement_notes": {{
     "REQ-003": "Vague — needs measurable SLA target",
-    "REQ-005": "Duplicate of REQ-012"
+    "REQ-005": "Duplicate of REQ-012",
+    "REQ-010": "FACTUAL ERROR — value does not match RFP source"
   }}
 }}

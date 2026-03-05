@@ -204,6 +204,20 @@ class RequirementWritingAgent(BaseAgent):
                 f"{word_count} words | {len(addressed)} reqs addressed"
             )
 
+            # Word count validation
+            min_words = {
+                "knowledge_driven": 400,
+                "requirement_driven": 100,
+                "boilerplate": 50,
+            }
+            threshold = min_words.get(section_type, 100)
+            if word_count < threshold and word_count > 0:
+                logger.warning(
+                    f"[C2] ⚠ LOW WORD COUNT: Section {section_id} ({title}) "
+                    f"has only {word_count} words (minimum for "
+                    f"{section_type}: {threshold})"
+                )
+
         # ── 8. Build coverage matrix ────────────────────
         coverage_matrix = self._build_coverage_matrix(req_map, all_addressed)
 

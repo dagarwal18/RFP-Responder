@@ -67,7 +67,12 @@ class RequirementsValidationAgent(BaseAgent):
             [r.model_dump(mode="json") for r in requirements],
             indent=2,
         )
-        prompt = template.format(requirements_json=requirements_json[:12_000])
+        # Inject original RFP text so LLM can cross-check factual accuracy
+        rfp_context = state.raw_text[:8_000] if state.raw_text else "No RFP source text available."
+        prompt = template.format(
+            requirements_json=requirements_json[:12_000],
+            rfp_context=rfp_context,
+        )
 
         # ── 2. Call LLM for validation ──────────────────────
         logger.info(f"[B2] Calling LLM for validation ({len(prompt)} char prompt)")
@@ -280,6 +285,15 @@ class RequirementsValidationAgent(BaseAgent):
         ambiguity_count = sum(
             1 for i in issues if i.issue_type == "ambiguity"
         )
+        factual_error_count = sum(
+            1 for i in issues if i.issue_type == "factual_error"
+        )
+
+        if factual_error_count:
+            logger.warning(
+                f"[B2] {factual_error_count} factual error(s) detected — "
+                f"extracted values don't match RFP source text"
+            )
 
         return RequirementsValidationResult(
             validated_requirements=requirements,

@@ -34,9 +34,9 @@ Write a professional, persuasive proposal section that:
 5. **Targets 150-200 words per requirement** — enough depth to be convincing but not verbose
 6. **Follows any RFP content guidance** provided above
 
-For boilerplate sections (cover letter, TOC, etc.), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total).
+For boilerplate sections (cover letter, TOC, submission forms), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total).
 
-For knowledge-driven sections (company profile, case studies, etc.), write engaging narrative using the company capabilities provided. Target 200-400 words.
+For knowledge-driven sections (company profile, case studies, certifications, team qualifications), write detailed, engaging narrative using the company capabilities provided. These sections are scored heavily in evaluation — they MUST be substantive. Target 500-800 words. Include specific details, metrics, certifications, and concrete examples. Do NOT produce generic boilerplate.
 
 ## Output Format
 
