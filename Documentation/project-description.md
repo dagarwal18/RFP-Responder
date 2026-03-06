@@ -28,7 +28,7 @@ A multi-agent AI system that automates the end-to-end process of responding to R
 
 | Layer | Module | Who Queries It |
 |---|---|---|
-| RFP Vector Store | `mcp/vector_store/rfp_store.py` | A2, A3, B1, C1, C2, D1, E2 |
+| RFP Vector Store | `mcp/vector_store/rfp_store.py` | A1, A2, A3, B1, C1, C2, D1, E2 |
 | Knowledge Store | `mcp/vector_store/knowledge_store.py` | A3, C1, C2, E1, E2 |
 | Policy Rules | `mcp/rules/policy_rules.py` | A3 Go/No-Go gate |
 | Validation Rules | `mcp/rules/validation_rules.py` | D1 Validation gate |
@@ -42,153 +42,347 @@ A multi-agent AI system that automates the end-to-end process of responding to R
 | Component | Technology |
 |---|---|
 | Language | Python 3.10+ |
-| Orchestration | LangGraph (state machine) |
-| LLM | OpenAI or Anthropic API (configurable via `llm_provider` setting) |
-| Database | MongoDB (state persistence, audit trail) |
-| File Storage | Local filesystem (default) or AWS S3 (configurable) |
-| MCP Server | In-process module — vector stores + rule layers + schemas |
-| Vector Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`) |
-| Vector Database | ChromaDB (within MCP server) |
+| LLM | Groq Cloud (`llama-3.3-70b-versatile`) via `langchain-groq` |
+| Orchestration | LangGraph (state machine — 17 nodes, 5 conditional edges) |
+| Vector DB | Pinecone Serverless (AWS us-east-1, cosine similarity) |
+| Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`, 384 dimensions) |
+| Structured DB | MongoDB (company config, certifications, pricing, legal) |
+| API | FastAPI + uvicorn (async, `to_thread` for heavy I/O) |
+| Real-time | WebSocket via `PipelineProgress` singleton |
+| Frontend | Single-page vanilla JS dashboard (served at `/`) |
+| File Parsing | PyMuPDF (PDF), python-docx (DOCX) |
+| Vision/Tables | Groq VLM (`llama-4-scout-17b-16e-instruct`) for table extraction |
 | State Models | Pydantic v2 (type safety + validation) |
 | Configuration | pydantic-settings (`.env` file support) |
-| Frontend | Next.js, TypeScript, Tailwind CSS, WebSocket (planned — not yet started) |
-| File Parsing | PyMuPDF (PDF), python-docx (DOCX) |
+| Testing | pytest |
 
 ---
 
 ## Project Structure
 
 ```
-rfp_automation/
-├── __init__.py                      # Package marker
-├── __main__.py                      # CLI entry: python -m rfp_automation
-├── config.py                        # Centralised settings (pydantic-settings + .env)
-├── main.py                          # run() and serve() entry points
+RFP-Responder/
+├── Documentation/
+│   ├── project-description.md           # This file — full system spec + agent descriptions
+│   └── implementation-plan.md           # Detailed implementation plan with current status
 │
-├── agents/                          # One file per agent (13 agents + base)
-│   ├── base_agent.py                # BaseAgent — mock/real switching, audit
-│   ├── intake_agent.py              # A1 — file intake + metadata extraction
-│   ├── structuring_agent.py         # A2 — RFP section classification
-│   ├── go_no_go_agent.py            # A3 — bid/no-bid decision
-│   ├── requirement_extraction_agent.py  # B1 — extract requirements
-│   ├── requirement_validation_agent.py  # B2 — validate requirements
-│   ├── architecture_agent.py        # C1 — response architecture planning
-│   ├── writing_agent.py             # C2 — section-level response writing
-│   ├── narrative_agent.py           # C3 — narrative assembly
-│   ├── technical_validation_agent.py    # D1 — technical validation
-│   ├── commercial_agent.py          # E1 — commercial pricing
-│   ├── legal_agent.py               # E2 — legal review
-│   ├── final_readiness_agent.py     # F1 — final readiness + approval gate
-│   └── submission_agent.py          # F2 — submission + archival
+├── rfp_automation/                      # ═══ BACKEND ═══
+│   ├── __init__.py
+│   ├── __main__.py                      # CLI entry: python -m rfp_automation
+│   ├── config.py                        # Centralised config (pydantic-settings + .env)
+│   ├── main.py                          # run() + serve() entry points
+│   │
+│   ├── api/                             # ── HTTP Layer ──
+│   │   ├── __init__.py                  # FastAPI app factory
+│   │   ├── routes.py                    # RFP endpoints (upload, status, approve, list, WS)
+│   │   ├── knowledge_routes.py          # KB endpoints (upload, status, query, seed, files)
+│   │   └── websocket.py                 # PipelineProgress singleton (real-time WS broadcast)
+│   │
+│   ├── agents/                          # ── 13 Agents ──
+│   │   ├── base_agent.py                # BaseAgent — _real_process(), audit, WS events
+│   │   ├── intake_agent.py              # A1 — IntakeAgent ✅
+│   │   ├── structuring_agent.py         # A2 — StructuringAgent ✅
+│   │   ├── go_no_go_agent.py            # A3 — GoNoGoAgent ✅
+│   │   ├── requirement_extraction_agent.py  # B1 — RequirementsExtractionAgent ✅
+│   │   ├── requirement_validation_agent.py  # B2 — RequirementsValidationAgent ✅
+│   │   ├── architecture_agent.py        # C1 — ArchitecturePlanningAgent ✅
+│   │   ├── writing_agent.py             # C2 — RequirementWritingAgent ✅
+│   │   ├── narrative_agent.py           # C3 — NarrativeAssemblyAgent (stub)
+│   │   ├── technical_validation_agent.py    # D1 — TechnicalValidationAgent (stub)
+│   │   ├── commercial_agent.py          # E1 — CommercialAgent (stub)
+│   │   ├── legal_agent.py               # E2 — LegalAgent (stub)
+│   │   ├── final_readiness_agent.py     # F1 — FinalReadinessAgent (stub)
+│   │   └── submission_agent.py          # F2 — SubmissionAgent (stub)
+│   │
+│   ├── mcp/                             # ── MCP Server (in-process module) ──
+│   │   ├── mcp_server.py                # MCPService facade — single entry point
+│   │   ├── vector_store/
+│   │   │   ├── rfp_store.py             # RFP Vector Store (Pinecone)
+│   │   │   └── knowledge_store.py       # Company KB (Pinecone + MongoDB)
+│   │   ├── rules/                       # Policy, validation, commercial, legal
+│   │   ├── schema/                      # Capability, pricing, requirement models
+│   │   └── embeddings/
+│   │       └── embedding_model.py       # Sentence Transformers wrapper
+│   │
+│   ├── models/                          # ── Data Layer ──
+│   │   ├── enums.py                     # Status codes, decision types, categories
+│   │   ├── state.py                     # RFPGraphState — the shared LangGraph state
+│   │   └── schemas.py                   # 20+ Pydantic models for each agent's output
+│   │
+│   ├── services/                        # ── Business Services ──
+│   │   ├── file_service.py              # Local / S3 file operations
+│   │   ├── parsing_service.py           # PDF/DOCX extraction + chunking + VLM tables
+│   │   ├── llm_service.py               # LLM call wrappers (text, JSON, deterministic)
+│   │   ├── vision_service.py            # VLM-based table detection and extraction
+│   │   ├── storage_service.py           # Coordinates file + state persistence
+│   │   └── audit_service.py             # Audit trail recording
+│   │
+│   ├── persistence/                     # ── Data Persistence ──
+│   │   ├── mongo_client.py              # MongoDB connection wrapper
+│   │   ├── state_repository.py          # State persistence (in-memory)
+│   │   └── checkpoint.py               # JSON checkpoint save/load per agent
+│   │
+│   ├── orchestration/                   # ── LangGraph Pipeline ──
+│   │   ├── graph.py                     # StateGraph (17 nodes + edges + run_pipeline)
+│   │   └── transitions.py              # Conditional routing (5 decision functions)
+│   │
+│   ├── prompts/                         # ── LLM Prompt Templates ──
+│   │   ├── extraction_prompt.txt        # B1 requirement extraction
+│   │   ├── architecture_prompt.txt      # C1 architecture planning
+│   │   ├── go_no_go_prompt.txt          # A3 go/no-go analysis
+│   │   ├── structuring_prompt.txt       # A2 section classification
+│   │   ├── writing_prompt.txt           # C2 response writing
+│   │   ├── validation_prompt.txt        # D1 technical validation
+│   │   └── legal_prompt.txt             # E2 legal review
+│   │
+│   ├── utils/
+│   │   ├── logger.py                    # Logging setup
+│   │   └── hashing.py                   # SHA-256 hashing
+│   │
+│   └── tests/
+│       ├── test_agents.py               # Per-agent unit tests
+│       ├── test_pipeline.py             # End-to-end pipeline tests
+│       └── test_rules.py                # MCP rule layer tests
 │
-├── orchestration/                   # LangGraph state machine
-│   ├── graph.py                     # StateGraph builder + run_pipeline()
-│   └── transitions.py              # Conditional routing functions (5 decision points)
+├── frontend/                            # ═══ FRONTEND ═══
+│   ├── index.html                       # Single-page dashboard (vanilla JS + CSS)
+│   └── README.md
 │
-├── mcp/                             # MCP server — in-process module
-│   ├── mcp_server.py                # MCPService facade — single entry point for agents
-│   ├── vector_store/
-│   │   ├── rfp_store.py             # RFP Vector Store (embed / query)
-│   │   └── knowledge_store.py       # Company KB (capabilities, certs, pricing)
-│   ├── rules/
-│   │   ├── policy_rules.py          # Hard disqualification rules (A3)
-│   │   ├── validation_rules.py      # Over-promise / prohibited language checks (D1)
-│   │   ├── commercial_rules.py      # Pricing validation (E1)
-│   │   └── legal_rules.py           # Commercial+Legal gate logic (E1+E2)
-│   ├── schema/
-│   │   ├── capability_schema.py     # Capability model
-│   │   ├── pricing_schema.py        # PricingParameters model
-│   │   └── requirement_schema.py    # ExtractedRequirement model
-│   └── embeddings/
-│       └── embedding_model.py       # Sentence Transformers wrapper (mock: random vectors)
-│
-├── models/                          # Pydantic data models
-│   ├── enums.py                     # All enum values (PipelineStatus, decisions, categories)
-│   ├── state.py                     # RFPGraphState — the shared LangGraph state
-│   └── schemas.py                   # 20+ sub-models (RFPMetadata, Requirement, etc.)
-│
-├── services/                        # Business services
-│   ├── file_service.py              # Local / S3 file operations
-│   ├── parsing_service.py           # PDF / DOCX text extraction + chunking
-│   ├── storage_service.py           # Coordinates file + state persistence
-│   └── audit_service.py             # Audit trail recording
-│
-├── persistence/                     # Data persistence layer
-│   ├── mongo_client.py              # MongoDB connection wrapper
-│   └── state_repository.py          # State persistence (in-memory / MongoDB)
-│
-├── api/                             # HTTP layer (FastAPI)
-│   ├── __init__.py                  # create_app() factory + app instance
-│   ├── routes.py                    # REST endpoints (upload, status, approve, list)
-│   └── websocket.py                 # PipelineCallbacks (logging, future WebSocket)
-│
-├── prompts/                         # LLM prompt templates (.txt files)
-│   ├── extraction_prompt.txt        # B1 requirement extraction
-│   ├── architecture_prompt.txt      # C1 architecture planning
-│   ├── go_no_go_prompt.txt          # A3 go/no-go analysis
-│   ├── structuring_prompt.txt       # A2 section classification
-│   ├── legal_prompt.txt             # E2 legal review
-│   ├── writing_prompt.txt           # C2 response writing
-│   └── validation_prompt.txt        # D1 technical validation
-│
-├── utils/                           # Shared utilities
-│   ├── logger.py                    # Logging setup
-│   └── hashing.py                   # SHA-256 hashing
-│
-└── tests/                           # Test suite
-    ├── test_agents.py               # Per-agent unit tests (9 agents)
-    ├── test_pipeline.py             # End-to-end pipeline tests
-    └── test_rules.py                # MCP rule layer tests
+├── example_docs/                        # Sample RFP documents for testing
+├── storage/                             # Local file + checkpoint storage
+├── requirements.txt
+├── .env.example
+└── README.md
 ```
 
 ---
 
 ## Pipeline: 12-Stage Flow
 
-### Stage 1 — Intake (A1)
-The uploaded RFP file is validated, text is extracted, and the document is immediately chunked and embedded into the MCP server's RFP vector store. Basic metadata (client, deadline, RFP number) is written to state. From this point forward, no agent reads the raw file — all RFP retrieval goes through MCP.
-
-### Stage 2 — RFP Structuring (A2)
-Queries the MCP RFP store to retrieve and classify document sections (scope, technical requirements, compliance, legal terms, submission instructions, evaluation criteria). Assigns a confidence score to the structure. If confidence is too low (< 0.6), it re-queries with a different chunking strategy and retries up to 3 times before escalating for human review.
-
-### Stage 3 — Go / No-Go Analysis (A3)
-Retrieves the scope and compliance sections from the MCP RFP store. Queries the MCP knowledge store for company capabilities, certifications held, and contract history. Runs an LLM assessment scoring strategic fit, technical feasibility, and regulatory risk. The MCP policy rules layer then applies hard disqualification checks (certifications not held, geography restrictions, contract value limits). A violation at either layer produces **NO_GO → END**.
-
-### Stage 4 — Requirements Extraction (B1)
-Queries the MCP RFP store section by section to extract every requirement. Each requirement is classified by type (mandatory / optional), category (technical, functional, security, compliance, commercial, operational), and impact level (critical, high, medium, low). Results are written to state as a structured list with unique IDs (REQ-001, REQ-002, etc.).
-
-### Stage 5 — Requirements Validation (B2)
-Cross-checks the extracted requirements list for completeness, duplicate detection, and contradictions. Ambiguous mandatory requirements are flagged. Issues do not block the pipeline but are passed forward as context to downstream agents.
-
-### Stage 6 — Architecture Planning (C1)
-Queries both MCP stores simultaneously — the RFP store for requirement groupings and the knowledge store for relevant company solutions. Groups requirements into 5–8 logical response sections and maps each section to specific company capabilities. Validates that every mandatory requirement appears in the plan before proceeding.
-
-### Stage 7 — Requirement Writing (C2)
-For each response section, retrieves the relevant requirements from the MCP RFP store and matching capability evidence from the MCP knowledge store. Generates a full prose response per section, referencing real products, certifications, and past work. Builds a requirement coverage matrix tracking which requirements are addressed and where.
-
-### Stage 8 — Narrative Assembly (C3)
-Combines all section responses into a cohesive proposal document. Adds an executive summary, section transitions, and a requirement coverage appendix. Validates that no placeholder text remains and that the document is within submission length limits.
-
-### Stage 9 — Technical Validation (D1)
-Retrieves original requirements from the MCP RFP store and checks the assembled proposal against them. Runs four checks: coverage completeness, alignment, realism, and consistency. The MCP validation rules layer applies hard checks for over-promised SLAs and prohibited language (e.g., "guarantee 100% uptime", "unlimited", "zero risk"). **REJECT** loops back to C3 Narrative Assembly with specific feedback. After 3 rejections the pipeline escalates to human review.
-
-### Stage 10 — Commercial + Legal Review (E1 + E2)
-Both agents run in the `commercial_legal_parallel` node (sequential execution currently; true parallel via LangGraph `Send()` planned for production).
-
-- **E1 Commercial** queries the MCP knowledge store for pricing rules and applies the formula (base cost + per-requirement cost × complexity multiplier + risk margin). Generates the commercial response section with a `PricingBreakdown`.
-- **E2 Legal** queries the MCP RFP store for contract clauses and the MCP knowledge store for the company's legal templates and certifications. Classifies each clause by risk level (LOW / MEDIUM / HIGH / CRITICAL). Any CRITICAL risk produces a **BLOCK**.
-
-The MCP legal rules layer combines both outputs via `evaluate_commercial_legal_gate()`. A BLOCK from E2 always terminates the pipeline regardless of E1's output — **END – Legal Block**.
-
-### Stage 11 — Final Readiness (F1)
-Compiles the full approval package: proposal document, pricing breakdown, legal risk register, requirement coverage matrix, and a one-page decision brief for leadership. Triggers the **Human Approval Gate** — in mock mode, this auto-approves. **REJECT** at this gate ends the pipeline.
-
-### Stage 12 — Submission & Archive (F2)
-Applies final formatting, packages all deliverables, and submits. Archives everything with SHA-256 file hashes logged for auditability. Final state is written as **SUBMITTED**.
+```
+A1 → A2 ──┬── (retry loop, max 3) ──→ A3 ──┬── GO ──→ B1 → B2 → C1 → C2 → C3 → D1 ──┬── PASS ──→ E1+E2 → F1 → F2 → END
+           │                                │                                           │
+           └── escalate_structuring → END    └── NO_GO → END                             ├── REJECT → C3 (retry, max 3)
+                                                                                         └── escalate_validation → END
+```
 
 ---
 
-## Data Flow Diagram
+## Agent Descriptions
+
+### Phase A — Document Understanding & Strategic Assessment
+
+#### A1 — Intake Agent ✅
+
+| Property | Value |
+|---|---|
+| **Class** | `IntakeAgent` |
+| **File** | `agents/intake_agent.py` |
+| **Uses LLM** | ❌ No |
+| **Uses MCP** | ✅ Stores chunks to RFP Store |
+| **Deterministic** | ✅ Yes |
+
+The gateway agent. Takes a raw uploaded PDF, validates it, extracts all text and metadata, builds semantic chunks, and stores them in MCP for all downstream agents.
+
+**Processing:** File validation → SHA-256 hashing → structured block extraction (`ParsingService.parse_pdf_blocks()`) → metadata extraction via regex → semantic chunk preparation → MCP storage → state update.
+
+**State writes:** `rfp_metadata`, `uploaded_file_path`, `raw_text`, `status → INTAKE_COMPLETE`
+
+---
+
+#### A2 — Structuring Agent ✅
+
+| Property | Value |
+|---|---|
+| **Class** | `StructuringAgent` |
+| **File** | `agents/structuring_agent.py` |
+| **Uses LLM** | ✅ Yes — `llm_text_call(deterministic=True)` |
+| **Uses MCP** | ✅ Full fetch from RFP Store |
+| **Deterministic** | ✅ Yes |
+| **Has Retry Loop** | ✅ Up to 3 attempts |
+
+Classifies the RFP document into logical sections across six categories: `scope`, `technical`, `compliance`, `legal`, `submission`, `evaluation`. Assigns confidence scores. If overall confidence < 0.6, retries with better hints (up to 3 times).
+
+**Processing:** Fetch all chunks deterministically → build prompt with retry hints → LLM call → parse section JSON → compute overall confidence → update state.
+
+**State writes:** `structuring_result`, `status → GO_NO_GO` or `STRUCTURING` (retry)
+
+**Routing:** confidence ≥ 0.6 → A3 | retry_count < 3 → A2 (retry) | retry_count ≥ 3 → escalate → END
+
+---
+
+#### A3 — Go / No-Go Agent ✅
+
+| Property | Value |
+|---|---|
+| **Class** | `GoNoGoAgent` |
+| **File** | `agents/go_no_go_agent.py` |
+| **Uses LLM** | ✅ Yes — deterministic |
+| **Uses MCP** | ✅ RFP Store + Knowledge Store + Policy Store |
+| **Deterministic** | ✅ Yes |
+
+Makes the strategic **GO / NO_GO** decision by evaluating the RFP against company policies, capabilities, and risk factors. Produces a detailed requirement-to-policy mapping table.
+
+**Processing:** Gather RFP content + company policies + capabilities → LLM analysis → parse scores (strategic fit, technical feasibility, regulatory risk on 0-10 scale) + policy violations + red flags + per-requirement mapping → state update.
+
+> **Note:** A3's output is **advisory only** — it does NOT filter the requirements list. The full set from B1 flows unchanged to downstream agents.
+
+**State writes:** `go_no_go_result`, `status → EXTRACTING_REQUIREMENTS` or `NO_GO`
+
+---
+
+### Phase B — Requirements Analysis
+
+#### B1 — Requirements Extraction Agent ✅
+
+| Property | Value |
+|---|---|
+| **Class** | `RequirementsExtractionAgent` |
+| **File** | `agents/requirement_extraction_agent.py` |
+| **Uses LLM** | ✅ Yes — `llm_deterministic_call()` — batched per section |
+| **Uses MCP** | ✅ `fetch_all_rfp_chunks(rfp_id)` |
+| **Deterministic** | ✅ Yes — temperature=0, seed=42 |
+
+The most complex agent. Performs a **full-document sweep** using a two-layer architecture: rule-based candidate detection (obligation indicators) followed by LLM-based structuring. Produces deduplicated, sequentially-numbered `Requirement` objects.
+
+**Two-Layer Architecture:**
+1. **Layer 1 — Rule-based** (`ObligationDetector`): Scans for obligation patterns (must, shall, required, etc.), counts indicators, applies density-based fallback
+2. **Layer 2 — LLM structuring** (batched): Token-budget-aware batching, structured extraction with retry on failure
+
+**Post-processing:** JSON parsing with recovery → requirement construction (ID, text, type, classification, category, impact, keywords, source) → embedding-based 3-tier deduplication (exact, same-section, cross-section) → sequential ID re-assignment → coverage validation
+
+**State writes:** `requirements` (list[Requirement]), `status → VALIDATING_REQUIREMENTS`
+
+---
+
+#### B2 — Requirements Validation Agent ✅
+
+| Property | Value |
+|---|---|
+| **Class** | `RequirementsValidationAgent` |
+| **File** | `agents/requirement_validation_agent.py` |
+| **Uses LLM** | ✅ Yes — 1-2 deterministic calls |
+| **Uses MCP** | ❌ No |
+| **Deterministic** | ✅ Yes |
+
+Cross-checks B1's requirements for duplicates, contradictions, and ambiguities. If confidence is low, performs one grounded refinement pass using original RFP text. Refinement has guardrails: can only REMOVE issues or LOWER severity — never add new issues.
+
+> **Note:** B2 does **NOT filter** the requirements list. Full `state.requirements` from B1 passes unchanged to C1.
+
+**State writes:** `requirements_validation`, `status → ARCHITECTURE_PLANNING`
+
+---
+
+### Phase C — Response Generation
+
+#### C1 — Architecture Planning Agent ✅
+
+| Property | Value |
+|---|---|
+| **Class** | `ArchitecturePlanningAgent` |
+| **File** | `agents/architecture_agent.py` |
+| **Uses LLM** | ✅ Yes — deterministic |
+| **Uses MCP** | ✅ RFP Store + Knowledge Store |
+| **Deterministic** | ✅ Yes |
+
+Produces the **complete response document blueprint**. Designs section structure by combining RFP structure, extracted requirements, submission instructions, and company capabilities.
+
+**Section Types:** `requirement_driven`, `knowledge_driven`, `commercial`, `legal`, `boilerplate`
+
+**Processing:** Gather requirements → format A2 sections → fetch submission instructions (4 MCP queries) → fetch capabilities (general + per-category + per-topic) → LLM call → parse sections → **programmatic gap-fill** (assigns unassigned requirements via keyword scoring with max 20/section cap) → **auto-split** overloaded sections by requirement category → coverage check → state update.
+
+**Key feature:** Sections exceeding 20 requirements are automatically split into sub-sections (e.g., "Technical Solution — Security & Data Protection") to keep C2's token budget manageable.
+
+**State writes:** `architecture_plan` (sections + gaps + instructions), `status → WRITING_RESPONSES`
+
+---
+
+#### C2 — Requirement Writing Agent ✅
+
+| Property | Value |
+|---|---|
+| **Class** | `RequirementWritingAgent` |
+| **File** | `agents/writing_agent.py` |
+| **Uses LLM** | ✅ Yes — deterministic, per-section calls |
+| **Uses MCP** | ✅ Knowledge Store (capabilities) |
+| **Deterministic** | ✅ Yes |
+
+Generates prose response for each section from C1's architecture plan. For each section: fetches matching capabilities from MCP Knowledge Store, builds a token-aware prompt with RFP metadata, requirements, capabilities, and guidance, then calls the LLM.
+
+**Key features:**
+- **Token-aware budgeting** — allocates prompt space: 40% requirements, 35% capabilities, 15% instructions, 10% guidance
+- **RFP metadata injection** — client name, title, dates included to prevent placeholder hallucination
+- **Actual word count** — uses `len(content.split())`, not LLM self-reported counts
+- **Three-tier coverage matrix:** `full` (LLM confirmed), `partial` (C1 assigned but not confirmed), `missing` (not assigned)
+
+**State writes:** `writing_result` (section_responses + coverage_matrix), `status → ASSEMBLING_NARRATIVE`
+
+---
+
+#### C3 — Narrative Assembly Agent *(stub)*
+
+Combines section responses into a cohesive proposal document with executive summary, section transitions, and coverage appendix. Participates in D1→C3 retry loop.
+
+**Expected outputs:** `assembled_proposal` (executive_summary, full_proposal_text, section_order, word_count, coverage_appendix)
+
+---
+
+### Phase D — Quality Assurance
+
+#### D1 — Technical Validation Agent *(stub)*
+
+Validates the assembled proposal against original requirements. Checks: completeness, alignment, realism, consistency. Uses MCP Validation Rules for prohibited language detection.
+
+**Routing:** PASS → E1+E2 | REJECT → C3 (max 3 retries) | REJECT after 3 → escalate → END
+
+---
+
+### Phase E — Commercial & Legal Review
+
+> E1 and E2 run in `commercial_legal_parallel` node (sequential execution, LangGraph `Send()` parallel planned).
+
+#### E1 — Commercial Agent *(stub)*
+
+Generates pricing breakdown using MCP Knowledge Store pricing rules. Formula: base cost + (per-requirement cost × complexity multiplier) + risk margin.
+
+#### E2 — Legal Agent *(stub)*
+
+Analyzes contract clauses for legal risk. **Has VETO power** — BLOCK terminates the pipeline. Fan-in gate: E2 BLOCK → END, regardless of E1.
+
+---
+
+### Phase F — Finalization & Delivery
+
+#### F1 — Final Readiness Agent *(stub)*
+
+Compiles approval package (proposal, pricing, legal, coverage) and triggers the **human approval gate**.
+
+#### F2 — Submission & Archive Agent *(stub)*
+
+Final formatting, packaging, SHA-256 hashing for auditability, archival. Pipeline status → `SUBMITTED`.
+
+---
+
+## Shared Infrastructure
+
+### BaseAgent
+
+All 13 agents inherit from `BaseAgent` (`agents/base_agent.py`):
+- **`process(state: dict) → dict`** — Public entry called by LangGraph. Hydrates state, calls `_real_process()`, handles errors, manages audit trail, broadcasts WebSocket events.
+- **`_real_process(state: RFPGraphState) → RFPGraphState`** — Abstract method each agent overrides.
+- `NotImplementedError` → Agent skipped gracefully (stubs).
+- All other exceptions → logged, re-raised (pipeline fails).
+
+### Pipeline Graph & Routing
+
+`rfp_automation/orchestration/graph.py` wires all agents with:
+- **5 conditional edges** (A2 retry, A3 go/no-go, D1 validation, E1+E2 gate, F1 approval)
+- **5 terminal nodes** (`end_no_go`, `end_legal_block`, `end_rejected`, `escalate_structuring`, `escalate_validation`)
+- **1 composite node** (`commercial_legal_parallel` — E1+E2 sequential with fan-in gate)
+
+---
+
+## Data Flow
 
 ```
 RFP Upload
@@ -216,7 +410,7 @@ B2 Requirements Validation
 C1 Architecture Planning ◄──────── MCP: RFP Store + Knowledge Store
     │
     ▼
-C2 Requirement Writing ◄─────────── MCP: RFP Store + Knowledge Store
+C2 Requirement Writing ◄─────────── MCP: Knowledge Store
     │
     ▼
 C3 Narrative Assembly
@@ -257,7 +451,7 @@ D1 Technical Validation ◄─────────── MCP: RFP Store + Va
 
 ## State Schema
 
-The shared graph state object (`RFPGraphState` in `rfp_automation/models/state.py`) contains:
+The shared state object (`RFPGraphState` in `models/state.py`):
 
 | Field | Type | Owner | Description |
 |---|---|---|---|
@@ -299,19 +493,16 @@ The shared graph state object (`RFPGraphState` in `rfp_automation/models/state.p
 
 ## Configuration
 
-All settings are managed via `rfp_automation/config.py` using `pydantic-settings`. Configuration can be set via environment variables or a `.env` file.
+All settings via `rfp_automation/config.py` using `pydantic-settings` (`.env` file support).
 
 | Setting | Default | Description |
 |---|---|---|
-| `mock_mode` | `True` | Toggle mock/real agent execution |
-| `llm_provider` | `openai` | LLM provider (openai / anthropic) |
-| `llm_model` | `gpt-4o` | Model name |
-| `llm_temperature` | `0.2` | Generation temperature |
-| `llm_max_tokens` | `4096` | Max tokens per call |
-| `storage_backend` | `local` | File storage backend (local / s3) |
-| `local_storage_path` | `./storage` | Local file storage directory |
-| `vector_db_backend` | `chroma` | Vector database backend |
+| `llm_model` | `llama-3.3-70b-versatile` | Groq model name |
+| `llm_max_tokens` | `4096` | Max tokens per LLM call |
 | `embedding_model` | `all-MiniLM-L6-v2` | Sentence transformer model |
+| `storage_backend` | `local` | File storage (`local` / `s3`) |
+| `local_storage_path` | `./storage` | Local file storage directory |
+| `vector_db_backend` | `pinecone` | Vector database backend |
 | `max_validation_retries` | `3` | D1 validation retry limit |
 | `max_structuring_retries` | `3` | A2 structuring retry limit |
 | `approval_timeout_hours` | `48` | Human approval timeout |
