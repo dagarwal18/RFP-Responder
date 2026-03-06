@@ -6,37 +6,37 @@ A multi-agent AI system that automates end-to-end RFP (Request for Proposal) res
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        BACKEND (FastAPI)                        │
+│                        BACKEND (FastAPI)                         │
 │                                                                 │
-│  ┌──────────┐   ┌──────────────┐   ┌──────────────────────┐     │
-│  │ FastAPI  │──▶│ Orchestration│──▶│      13 Agents      │     │
-│  │ (API)    │   │ (LangGraph)  │   │ (A1→A2→A3→...→F2)    │     │
-│  └──────────┘   └──────────────┘   └─────────┬────────────┘     │
-│       │                                      │                  │
-│       │              ┌───────────────────────┘                  │
+│  ┌──────────┐   ┌──────────────┐   ┌──────────────────────┐    │
+│  │ FastAPI   │──▶│ Orchestration│──▶│      13 Agents       │    │
+│  │ (API)     │   │ (LangGraph)  │   │ (A1→A2→A3→...→F2)   │    │
+│  └──────────┘   └──────────────┘   └─────────┬────────────┘    │
+│       │                                       │                 │
+│       │              ┌────────────────────────┘                 │
 │       │              ▼                                          │
 │       │    ┌──────────────────┐                                 │
 │       │    │   MCP Server     │  ← in-process module            │
 │       │    │   (MCPService)   │                                 │
 │       │    │  ┌─────────────┐ │                                 │
-│       │    │  │ RFP Store   │ │  ← Pinecone vectors             │
+│       │    │  │ RFP Store   │ │  ← Pinecone vectors            │
 │       │    │  │ KB Store    │ │  ← Pinecone + MongoDB           │
 │       │    │  │ Rules       │ │  ← Policy/validation/legal      │
 │       │    │  │ Embeddings  │ │  ← all-MiniLM-L6-v2             │
 │       │    │  └─────────────┘ │                                 │
 │       │    └──────────────────┘                                 │
 │       ▼                                                         │
-│  ┌──────────┐  ┌───────────┐  ┌───────────┐                     │
-│  │ Storage  │  │  MongoDB  │  │ Pinecone  │                     │
-│  │ (local)  │  │  (config) │  │ (vectors) │                     │
-│  └──────────┘  └───────────┘  └───────────┘                     │
+│  ┌──────────┐  ┌───────────┐  ┌───────────┐                    │
+│  │ Storage  │  │  MongoDB  │  │ Pinecone  │                    │
+│  │ (local)  │  │  (config) │  │ (vectors) │                    │
+│  └──────────┘  └───────────┘  └───────────┘                    │
 └─────────────────────────────────────────────────────────────────┘
         ▲  REST + WebSocket
         │
         ▼
 ┌─────────────────────────────────┐
 │  FRONTEND (served at /)         │
-│  Vanilla JS single-page app     │
+│  Vanilla JS single-page app    │
 │                                 │
 │  • Upload    — drag & drop      │
 │  • Dashboard — list all RFPs    │
@@ -49,8 +49,8 @@ A multi-agent AI system that automates end-to-end RFP (Request for Proposal) res
 
 | Layer | Technology |
 |---|---|
-| LLM | Groq Cloud (`llama-3.3-70b-versatile`) via `langchain-groq` |
-| Vision/Tables | Groq VLM (`llama-4-scout-17b-16e-instruct`) |
+| LLM | Groq Cloud (`llama-4-maverick-17b-128e-instruct`) via `langchain-groq` |
+| VLM | HuggingFace Inference API (`Qwen/Qwen3-VL-8B-Instruct`) |
 | Orchestration | LangGraph state machine (17 nodes, 5 conditional edges) |
 | Vector DB | Pinecone Serverless (AWS us-east-1, cosine similarity) |
 | Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`, 384 dims) |
@@ -58,7 +58,7 @@ A multi-agent AI system that automates end-to-end RFP (Request for Proposal) res
 | API | FastAPI + uvicorn |
 | Real-time | WebSocket via `PipelineProgress` singleton |
 | Parsing | PyMuPDF (PDF), python-docx (DOCX) |
-| Config | pydantic-settings (`.env`) |
+| Config | pydantic-settings (secrets in `.env`, params in `config.py`) |
 
 ## Quick Start
 
@@ -73,7 +73,7 @@ pip install -r requirements.txt
 
 # 3. Copy and configure environment
 copy .env.example .env
-# Edit .env — required keys: GROQ_API_KEY, PINECONE_API_KEY, MONGODB_URI
+# Edit .env — required keys: GROQ_API_KEY, HUGGINGFACE_API_KEY, PINECONE_API_KEY, MONGODB_URI
 
 # 4. Start the API server
 uvicorn rfp_automation.api:app --reload    # → http://localhost:8000
@@ -85,17 +85,16 @@ python -m rfp_automation "example_docs/Telecom RFP Document.pdf"
 pytest rfp_automation/tests/ -v
 ```
 
-### Environment Variables
+### Environment Variables (`.env`)
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `GROQ_API_KEY` | Yes | — | Groq Cloud API key |
-| `PINECONE_API_KEY` | Yes | — | Pinecone API key |
-| `MONGODB_URI` | Yes | `mongodb://localhost:27017` | MongoDB connection string |
-| `LLM_MODEL` | No | `llama-3.3-70b-versatile` | Groq model name |
-| `PINECONE_INDEX_NAME` | No | `rfp-automation` | Pinecone index name |
-| `EMBEDDING_MODEL` | No | `all-MiniLM-L6-v2` | Sentence Transformers model |
-| `LOG_LEVEL` | No | `INFO` | Python logging level |
+Only secrets go in `.env` — all model names, thresholds, and behavior params are hardcoded in `config.py`.
+
+| Variable | Required | Description |
+|---|---|---|
+| `GROQ_API_KEY` | Yes | Groq Cloud API key (LLM) |
+| `HUGGINGFACE_API_KEY` | Yes | HuggingFace API key (VLM table extraction) |
+| `PINECONE_API_KEY` | Yes | Pinecone API key |
+| `MONGODB_URI` | No (default: `mongodb://localhost:27017`) | MongoDB connection string |
 
 ## API Endpoints
 
@@ -106,7 +105,13 @@ pytest rfp_automation/tests/ -v
 | POST | `/api/rfp/upload` | Upload RFP → start pipeline → return `rfp_id` |
 | GET | `/api/rfp/{rfp_id}/status` | Poll pipeline status + agent outputs |
 | POST | `/api/rfp/{rfp_id}/approve` | Human approval gate (APPROVE / REJECT) |
-| GET | `/api/rfp/list` | List all pipeline runs |
+| GET | `/api/rfp/list` | List all pipeline runs (in-memory + checkpointed) |
+| GET | `/api/rfp/{rfp_id}/checkpoints` | List available agent checkpoints |
+| DELETE | `/api/rfp/{rfp_id}/checkpoints` | Clear checkpoints for full re-run |
+| POST | `/api/rfp/{rfp_id}/rerun?start_from=agent` | Re-run from a specific agent |
+| GET | `/api/rfp/{rfp_id}/requirements` | Get extracted requirements + validation |
+| GET | `/api/rfp/{rfp_id}/mappings` | Get A3 requirement-to-policy mappings |
+| GET | `/api/rfp/{rfp_id}/debug` | Debug view of pipeline result keys |
 | WS | `/api/rfp/ws/{rfp_id}` | Real-time progress events |
 | GET | `/health` | Health check |
 
@@ -114,12 +119,16 @@ pytest rfp_automation/tests/ -v
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/knowledge/upload` | Upload company doc → classify → embed |
+| POST | `/api/knowledge/upload` | Upload company doc → auto-classify → embed + extract policies |
 | GET | `/api/knowledge/status` | Pinecone + MongoDB stats |
-| POST | `/api/knowledge/query` | Semantic query with `doc_type` filter |
-| POST | `/api/knowledge/seed` | Seed KB from JSON files |
+| POST | `/api/knowledge/query` | Semantic query with optional `doc_type` filter |
+| POST | `/api/knowledge/seed` | Seed KB from JSON files (`mcp/knowledge_data/`) |
 | GET | `/api/knowledge/files` | List uploaded KB documents |
-| GET | `/api/knowledge/policies` | List company policies |
+| GET | `/api/knowledge/policies` | List extracted policies (optional `?category=` filter) |
+| POST | `/api/knowledge/policies` | Add a policy manually |
+| PUT | `/api/knowledge/policies/{id}` | Update a policy |
+| DELETE | `/api/knowledge/policies/{id}` | Delete a policy |
+| DELETE | `/api/knowledge/policies` | Delete all policies |
 
 Swagger UI at `/docs`. Dashboard at `/`.
 
@@ -158,13 +167,13 @@ A1 Intake → A2 Structuring → A3 Go/No-Go ──→ END (NO_GO)
 
 | Agent | Status | Key Feature |
 |---|---|---|
-| A1 IntakeAgent | ✅ | PDF parsing, VLM tables, Pinecone embedding |
-| A2 StructuringAgent | ✅ | LLM section classification with retry loop |
-| A3 GoNoGoAgent | ✅ | Policy rules + LLM risk scoring |
-| B1 RequirementsExtractionAgent | ✅ | Two-layer extraction + 3-tier dedup |
+| A1 IntakeAgent | ✅ | PDF parsing, HuggingFace VLM table extraction, Pinecone embedding |
+| A2 StructuringAgent | ✅ | LLM section classification (6 categories) with retry loop |
+| A3 GoNoGoAgent | ✅ | Policy rules + LLM risk scoring + requirement mapping |
+| B1 RequirementsExtractionAgent | ✅ | Two-layer extraction (rule-based + LLM) + 3-tier dedup |
 | B2 RequirementsValidationAgent | ✅ | Grounded refinement with hallucination guards |
-| C1 ArchitecturePlanningAgent | ✅ | Auto-split overloaded sections (max 20 reqs) |
-| C2 RequirementWritingAgent | ✅ | Token budgeting + 3-tier coverage matrix |
+| C1 ArchitecturePlanningAgent | ✅ | Programmatic gap-fill + auto-split overloaded sections (≤20 reqs) |
+| C2 RequirementWritingAgent | ✅ | Token budgeting + RFP metadata injection + 3-tier coverage matrix |
 | C3 NarrativeAssemblyAgent | 🔜 | Next to implement |
 | D1 TechnicalValidationAgent | ⬜ | Stub |
 | E1 CommercialAgent | ⬜ | Stub |
@@ -190,11 +199,16 @@ pytest rfp_automation/tests/ -v
 
 | Test File | Coverage |
 |---|---|
-| `test_agents.py` | A1 validation, stub agent behavior |
-| `test_pipeline.py` | Pipeline halts on missing input |
-| `test_rules.py` | All 4 MCP rule layers (11 tests) |
+| `test_agents.py` | Per-agent unit tests |
+| `test_pipeline.py` | End-to-end pipeline tests |
+| `test_rules.py` | MCP rule layer tests (policy, validation, commercial, legal) |
+| `test_api.py` | API endpoint tests |
+| `test_extraction_overhaul.py` | B1 extraction overhaul validation |
+| `test_obligation_detector.py` | Obligation detection pattern tests |
+| `test_quality_fixes.py` | C2 quality fix verification |
+| `test_stage4.py` | Stage 4 integration tests |
 
 ## Documentation
 
-- **[Documentation/project-description.md](Documentation/project-description.md)** — Full system specification with agent descriptions
-- **[Documentation/implementation-plan.md](Documentation/implementation-plan.md)** — Current status, next steps, remaining agent plans
+- **[Documentation/project-description.md](Documentation/project-description.md)** — Full system spec with agent descriptions, state schema, configuration reference
+- **[Documentation/implementation-plan.md](Documentation/implementation-plan.md)** — Current status, C3 design, remaining agent plans

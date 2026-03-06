@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     pinecone_api_key: str = ""
     mongodb_uri: str = "mongodb://localhost:27017"
+    huggingface_api_key: str = ""
     aws_access_key: str = ""
     aws_secret_key: str = ""
 
@@ -44,8 +45,9 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.2
     llm_max_tokens: int = 8192
 
-    # ── VLM (Groq Vision) ──────────────────────────────
-    vlm_model: str = "meta-llama/llama-4-scout-17b-16e-instruct"
+    # ── VLM (HuggingFace Inference API) ─────────────────
+    vlm_provider: str = "huggingface"  # "huggingface" or "groq"
+    vlm_model: str = "Qwen/Qwen3-VL-8B-Instruct:novita"
     vlm_max_tokens: int = 4096
     vlm_enabled: bool = True  # Feature flag to disable VLM processing
 

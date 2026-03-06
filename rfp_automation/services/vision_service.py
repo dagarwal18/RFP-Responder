@@ -1,14 +1,16 @@
 """
-Vision Service — DETR table detection + Groq VLM structured extraction.
+Vision Service — DETR table detection + VLM structured extraction.
 
 Two-stage pipeline:
   1. Microsoft Table Transformer (DETR) detects table bounding boxes locally
-  2. Groq VLM (Qwen3 32B) extracts structured table data from cropped regions
+  2. VLM extracts structured table data from cropped regions
+
+Supported VLM providers (set via config.vlm_provider):
+  • "huggingface" — HuggingFace Inference API (Qwen3-VL-8B-Instruct)
+  • "groq"        — Groq Cloud API (fallback)
 
 Also supports:
   • Diagram/figure description via VLM
-
-No new API keys needed — uses the existing groq_api_key.
 """
 
 from __future__ import annotations
@@ -121,14 +123,15 @@ class TableDetector:
 
 
 # ═══════════════════════════════════════════════════════════
-# VLM Service (Groq API)
+# VLM Service (HuggingFace / Groq)
 # ═══════════════════════════════════════════════════════════
 
 class VisionService:
     """
-    Extract structured data from document images via Groq VLM.
+    Extract structured data from document images via VLM.
 
-    Uses DETR for table detection, then Groq VLM for content extraction.
+    Uses DETR for table detection, then a VLM API for content extraction.
+    Supports HuggingFace Inference API (default) and Groq Cloud.
     """
 
     def __init__(self):
@@ -234,14 +237,32 @@ class VisionService:
         max_retries: int = 3,
     ) -> str:
         """
-        Send an image + prompt to Groq VLM API and return the text response.
+        Send an image + prompt to VLM API and return the text response.
 
-        Uses direct HTTP to Groq's OpenAI-compatible endpoint.
+        Routes to HuggingFace or Groq based on config.vlm_provider.
         """
         import requests
 
-        if not self._settings.groq_api_key:
-            raise ValueError("GROQ_API_KEY is not set — required for VLM calls")
+        provider = self._settings.vlm_provider
+
+        if provider == "huggingface":
+            if not self._settings.huggingface_api_key:
+                raise ValueError("HUGGINGFACE_API_KEY is not set — required for HuggingFace VLM calls")
+            url = "https://router.huggingface.co/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self._settings.huggingface_api_key}",
+                "Content-Type": "application/json",
+            }
+        elif provider == "groq":
+            if not self._settings.groq_api_key:
+                raise ValueError("GROQ_API_KEY is not set — required for Groq VLM calls")
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self._settings.groq_api_key}",
+                "Content-Type": "application/json",
+            }
+        else:
+            raise ValueError(f"Unknown vlm_provider: {provider}")
 
         # Base64-encode the image
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
@@ -266,13 +287,6 @@ class VisionService:
             "temperature": 0.1,
         }
 
-        headers = {
-            "Authorization": f"Bearer {self._settings.groq_api_key}",
-            "Content-Type": "application/json",
-        }
-
-        url = "https://api.groq.com/openai/v1/chat/completions"
-
         for attempt in range(1, max_retries + 1):
             try:
                 t0 = time.perf_counter()
@@ -295,7 +309,8 @@ class VisionService:
 
                 logger.info(
                     f"[VLM] Response in {elapsed:.2f}s | "
-                    f"len={len(content)} chars | model={self._settings.vlm_model}"
+                    f"len={len(content)} chars | model={self._settings.vlm_model} | "
+                    f"provider={provider}"
                 )
                 return content
 
