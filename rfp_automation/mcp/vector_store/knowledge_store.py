@@ -200,6 +200,26 @@ class KnowledgeStore:
             "currency": "USD",
         }
 
+    # ── Query / Upsert: company profile (MongoDB) ─────────
+
+    def query_company_profile(self) -> dict[str, Any]:
+        """Return company profile (name, description, etc.) from MongoDB."""
+        db = self._get_db()
+        doc = db.company_config.find_one({"config_type": "company_profile"})
+        if doc and "profile" in doc:
+            return doc["profile"]
+        return {}
+
+    def upsert_company_profile(self, profile: dict[str, Any]) -> None:
+        """Create or update the company profile in MongoDB."""
+        db = self._get_db()
+        db.company_config.update_one(
+            {"config_type": "company_profile"},
+            {"$set": {"config_type": "company_profile", "profile": profile}},
+            upsert=True,
+        )
+        logger.info(f"Upserted company profile: {list(profile.keys())}")
+
     # ── Query: legal templates (MongoDB) ─────────────────
 
     def query_legal_templates(self) -> list[dict[str, str]]:

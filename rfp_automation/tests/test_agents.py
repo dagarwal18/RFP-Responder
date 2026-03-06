@@ -1347,3 +1347,337 @@ class TestWritingAgent:
         assert len(wr["section_responses"]) == 2
         assert result["status"] == PipelineStatus.ASSEMBLING_NARRATIVE.value
 
+
+# ═══════════════════════════════════════════════════════════
+# C3 Narrative Assembly Agent
+# ═══════════════════════════════════════════════════════════
+
+
+class TestNarrativeAssemblyAgent:
+    """Tests for C3 Narrative Assembly Agent."""
+
+    @staticmethod
+    def _narrative_state(section_responses=None, sections=None, requirements=None, coverage_matrix=None):
+        from rfp_automation.models.schemas import (
+            RFPMetadata, Requirement, WritingResult,
+            ArchitecturePlan, ResponseSection, SectionResponse,
+            CoverageEntry, RequirementsValidationResult,
+        )
+        from rfp_automation.models.enums import (
+            RequirementType, RequirementClassification,
+            RequirementCategory, ImpactLevel,
+        )
+        if requirements is None:
+            requirements = [
+                Requirement(
+                    requirement_id="REQ-001", text="System must support SSO via SAML 2.0",
+                    type=RequirementType.MANDATORY,
+                    classification=RequirementClassification.FUNCTIONAL,
+                    category=RequirementCategory.TECHNICAL, impact=ImpactLevel.HIGH,
+                    source_section="Technical Requirements",
+                ),
+                Requirement(
+                    requirement_id="REQ-002", text="Data encryption at rest is required",
+                    type=RequirementType.MANDATORY,
+                    classification=RequirementClassification.NON_FUNCTIONAL,
+                    category=RequirementCategory.SECURITY, impact=ImpactLevel.CRITICAL,
+                    source_section="Security Requirements",
+                ),
+            ]
+        if sections is None:
+            sections = [
+                ResponseSection(
+                    section_id="SEC-01", title="Cover Letter",
+                    section_type="boilerplate", description="Formal submission letter",
+                    requirement_ids=[], priority=1,
+                ),
+                ResponseSection(
+                    section_id="SEC-02", title="Technical Solution",
+                    section_type="requirement_driven",
+                    description="Address all technical requirements",
+                    requirement_ids=["REQ-001", "REQ-002"],
+                    mapped_capabilities=["SSO support", "AES-256"],
+                    priority=2,
+                ),
+            ]
+        if section_responses is None:
+            section_responses = [
+                SectionResponse(
+                    section_id="SEC-01", title="Cover Letter",
+                    content="Dear Client, we are pleased to submit our proposal.",
+                    requirements_addressed=[], word_count=9,
+                ),
+                SectionResponse(
+                    section_id="SEC-02", title="Technical Solution",
+                    content="Our platform provides enterprise SSO via SAML 2.0 and AES-256 encryption at rest.",
+                    requirements_addressed=["REQ-001", "REQ-002"], word_count=14,
+                ),
+            ]
+        if coverage_matrix is None:
+            coverage_matrix = [
+                CoverageEntry(
+                    requirement_id="REQ-001", addressed_in_section="SEC-02",
+                    coverage_quality="full",
+                ),
+                CoverageEntry(
+                    requirement_id="REQ-002", addressed_in_section="SEC-02",
+                    coverage_quality="full",
+                ),
+            ]
+        return RFPGraphState(
+            status=PipelineStatus.ASSEMBLING_NARRATIVE,
+            rfp_metadata=RFPMetadata(
+                rfp_id="RFP-TEST-001",
+                client_name="Acme Corp",
+                rfp_title="Unified Communications Platform",
+                rfp_number="RFP-2026-001",
+            ),
+            requirements=requirements,
+            requirements_validation=RequirementsValidationResult(
+                validated_requirements=requirements,
+                total_requirements=len(requirements),
+            ),
+            architecture_plan=ArchitecturePlan(
+                sections=sections,
+                total_sections=len(sections),
+                rfp_response_instructions="Follow format from Section 3",
+            ),
+            writing_result=WritingResult(
+                section_responses=section_responses,
+                coverage_matrix=coverage_matrix,
+            ),
+        ).model_dump()
+
+    def test_narrative_assembly_success(self, monkeypatch):
+        """Valid inputs → executive summary populated, full_narrative non-empty, status = TECHNICAL_VALIDATION."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "This is a professional executive summary for Acme Corp.")
+
+        agent = NarrativeAssemblyAgent()
+        result = agent.process(self._narrative_state())
+
+        ap = result["assembled_proposal"]
+        assert ap["executive_summary"] != ""
+        assert ap["full_narrative"] != ""
+        assert ap["word_count"] > 0
+        assert ap["sections_included"] >= 1
+        assert result["status"] == PipelineStatus.TECHNICAL_VALIDATION.value
+
+    def test_narrative_section_ordering(self, monkeypatch):
+        """Sections ordered by C1 priority — section_order reflects correct order."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+        from rfp_automation.models.schemas import ResponseSection, SectionResponse, CoverageEntry
+
+        # Sections with priority 3 and 1 (reversed input order)
+        sections = [
+            ResponseSection(section_id="SEC-02", title="Technical", section_type="requirement_driven",
+                            description="", requirement_ids=["REQ-001"], priority=3),
+            ResponseSection(section_id="SEC-01", title="Cover Letter", section_type="boilerplate",
+                            description="", requirement_ids=[], priority=1),
+        ]
+        responses = [
+            SectionResponse(section_id="SEC-02", title="Technical",
+                            content="Technical content.", requirements_addressed=["REQ-001"], word_count=2),
+            SectionResponse(section_id="SEC-01", title="Cover Letter",
+                            content="Dear client.", requirements_addressed=[], word_count=2),
+        ]
+
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "Executive summary.")
+
+        agent = NarrativeAssemblyAgent()
+        result = agent.process(self._narrative_state(
+            section_responses=responses, sections=sections,
+            coverage_matrix=[CoverageEntry(requirement_id="REQ-001",
+                                           addressed_in_section="SEC-02", coverage_quality="full")],
+        ))
+
+        # SEC-01 (priority 1) should come before SEC-02 (priority 3)
+        assert result["assembled_proposal"]["section_order"] == ["SEC-01", "SEC-02"]
+
+    def test_narrative_split_section_reassembly(self, monkeypatch):
+        """Category-split sections grouped under parent heading in output."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+        from rfp_automation.models.schemas import ResponseSection, SectionResponse, CoverageEntry
+
+        sections = [
+            ResponseSection(section_id="SEC-01", title="Technical Solution — Security & Data Protection",
+                            section_type="requirement_driven", description="Security reqs",
+                            requirement_ids=["REQ-001"], priority=2),
+            ResponseSection(section_id="SEC-02", title="Technical Solution — Core Platform",
+                            section_type="requirement_driven", description="Platform reqs",
+                            requirement_ids=["REQ-002"], priority=2),
+        ]
+        responses = [
+            SectionResponse(section_id="SEC-01", title="Technical Solution — Security & Data Protection",
+                            content="Security content with AES-256.", requirements_addressed=["REQ-001"], word_count=5),
+            SectionResponse(section_id="SEC-02", title="Technical Solution — Core Platform",
+                            content="Platform content with SSO.", requirements_addressed=["REQ-002"], word_count=4),
+        ]
+
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "Executive summary.")
+
+        agent = NarrativeAssemblyAgent()
+        result = agent.process(self._narrative_state(
+            section_responses=responses, sections=sections,
+            coverage_matrix=[
+                CoverageEntry(requirement_id="REQ-001", addressed_in_section="SEC-01", coverage_quality="full"),
+                CoverageEntry(requirement_id="REQ-002", addressed_in_section="SEC-02", coverage_quality="full"),
+            ],
+        ))
+
+        narrative = result["assembled_proposal"]["full_narrative"]
+        # Parent heading should appear
+        assert "## Technical Solution" in narrative
+        # Sub-headings should appear
+        assert "### Security & Data Protection" in narrative
+        assert "### Core Platform" in narrative
+
+    def test_narrative_part_split_reassembly(self, monkeypatch):
+        """Part-split sections grouped under parent heading in output."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+        from rfp_automation.models.schemas import ResponseSection, SectionResponse, CoverageEntry
+
+        sections = [
+            ResponseSection(section_id="SEC-01", title="Compliance Matrix (Part 1)",
+                            section_type="requirement_driven", description="",
+                            requirement_ids=["REQ-001"], priority=3),
+            ResponseSection(section_id="SEC-02", title="Compliance Matrix (Part 2)",
+                            section_type="requirement_driven", description="",
+                            requirement_ids=["REQ-002"], priority=3),
+        ]
+        responses = [
+            SectionResponse(section_id="SEC-01", title="Compliance Matrix (Part 1)",
+                            content="Part 1 content.", requirements_addressed=["REQ-001"], word_count=3),
+            SectionResponse(section_id="SEC-02", title="Compliance Matrix (Part 2)",
+                            content="Part 2 content.", requirements_addressed=["REQ-002"], word_count=3),
+        ]
+
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "Executive summary.")
+
+        agent = NarrativeAssemblyAgent()
+        result = agent.process(self._narrative_state(
+            section_responses=responses, sections=sections,
+            coverage_matrix=[
+                CoverageEntry(requirement_id="REQ-001", addressed_in_section="SEC-01", coverage_quality="full"),
+                CoverageEntry(requirement_id="REQ-002", addressed_in_section="SEC-02", coverage_quality="full"),
+            ],
+        ))
+
+        narrative = result["assembled_proposal"]["full_narrative"]
+        # Parent heading should appear
+        assert "## Compliance Matrix" in narrative
+        # Sub-headings should appear
+        assert "### Part 1" in narrative
+        assert "### Part 2" in narrative
+
+    def test_narrative_coverage_appendix(self, monkeypatch):
+        """Coverage matrix correctly formatted into appendix."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "Executive summary.")
+
+        agent = NarrativeAssemblyAgent()
+        result = agent.process(self._narrative_state())
+
+        appendix = result["assembled_proposal"]["coverage_appendix"]
+        assert "REQ-001" in appendix
+        assert "REQ-002" in appendix
+        assert "✅ Full" in appendix
+        assert "Requirement ID" in appendix  # table header
+        assert "Coverage Summary" in appendix  # summary stats
+
+    def test_narrative_placeholder_detection(self, monkeypatch):
+        """Content with unresolvable placeholder text → has_placeholders = True."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+        from rfp_automation.models.schemas import SectionResponse
+
+        responses = [
+            SectionResponse(section_id="SEC-01", title="Cover Letter",
+                            content="Dear Client, implementation begins on [TBD].",
+                            requirements_addressed=[], word_count=7),
+            SectionResponse(section_id="SEC-02", title="Technical Solution",
+                            content="Our platform supports SSO.",
+                            requirements_addressed=["REQ-001"], word_count=4),
+        ]
+
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "Executive summary with [TBD] details.")
+
+        agent = NarrativeAssemblyAgent()
+        result = agent.process(self._narrative_state(section_responses=responses))
+
+        assert result["assembled_proposal"]["has_placeholders"] is True
+
+    def test_narrative_no_placeholders(self, monkeypatch):
+        """Clean content + configured company_name → has_placeholders = False."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+        from unittest.mock import MagicMock
+
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.llm_text_call",
+                            lambda prompt, deterministic=False: "Executive summary for Acme Corp.")
+
+        # Provide company_name so "Prepared by:" doesn't produce [Vendor Name]
+        mock_settings = MagicMock()
+        mock_settings.company_name = "Test Vendor Inc."
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.get_settings",
+                            lambda: mock_settings)
+
+        agent = NarrativeAssemblyAgent()
+        result = agent.process(self._narrative_state())
+
+        assert result["assembled_proposal"]["has_placeholders"] is False
+
+    def test_narrative_empty_writing_result(self, monkeypatch):
+        """No section responses → minimal output without crash."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+        from rfp_automation.models.schemas import SectionResponse
+
+        agent = NarrativeAssemblyAgent()
+        result = agent.process(self._narrative_state(section_responses=[], coverage_matrix=[]))
+
+        ap = result["assembled_proposal"]
+        assert ap["word_count"] == 0
+        assert ap["sections_included"] == 0
+        assert result["status"] == PipelineStatus.TECHNICAL_VALIDATION.value
+
+    def test_narrative_d1_retry_feedback(self, monkeypatch):
+        """When technical_validation.feedback_for_revision is set, it's passed to the LLM prompt."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+        from rfp_automation.models.schemas import TechnicalValidationResult
+
+        captured_prompts = []
+
+        def mock_llm(prompt, deterministic=False):
+            captured_prompts.append(prompt)
+            return "Revised executive summary addressing D1 feedback."
+
+        monkeypatch.setattr("rfp_automation.agents.narrative_agent.llm_text_call", mock_llm)
+
+        state = self._narrative_state()
+        state["technical_validation"] = TechnicalValidationResult(
+            feedback_for_revision="Missing SLA details in technical section.",
+            retry_count=1,
+        ).model_dump()
+
+        agent = NarrativeAssemblyAgent()
+        agent.process(state)
+
+        # The executive summary prompt should contain the D1 feedback
+        exec_prompts = [p for p in captured_prompts if "Executive Summary" in p or "executive summary" in p]
+        assert len(exec_prompts) >= 1
+        assert "Missing SLA details" in exec_prompts[0]
+
+    def test_narrative_no_rfp_id_raises(self):
+        """Missing rfp_id → ValueError."""
+        from rfp_automation.agents import NarrativeAssemblyAgent
+
+        agent = NarrativeAssemblyAgent()
+        state = RFPGraphState(status=PipelineStatus.ASSEMBLING_NARRATIVE).model_dump()
+        with pytest.raises(ValueError, match="No rfp_id"):
+            agent.process(state)

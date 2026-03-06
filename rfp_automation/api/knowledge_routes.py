@@ -383,3 +383,37 @@ async def list_kb_files():
         KBFileEntry(**entry)
         for entry in reversed(_kb_files)  # newest first
     ]
+
+
+# ── Company Profile ─────────────────────────────────────
+
+class CompanyProfileInput(BaseModel):
+    company_name: str = ""
+    company_description: str = ""
+    headquarters: str = ""
+    website: str = ""
+
+
+@knowledge_router.get("/company-profile")
+async def get_company_profile():
+    """Return the company profile from the knowledge base."""
+    def _sync():
+        from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
+        return KnowledgeStore().query_company_profile()
+
+    profile = await asyncio.to_thread(_sync)
+    return {"profile": profile}
+
+
+@knowledge_router.put("/company-profile")
+async def set_company_profile(body: CompanyProfileInput):
+    """Create or update the company profile in the knowledge base."""
+    def _sync():
+        from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
+        store = KnowledgeStore()
+        profile_data = {k: v for k, v in body.model_dump().items() if v}
+        store.upsert_company_profile(profile_data)
+        return profile_data
+
+    profile = await asyncio.to_thread(_sync)
+    return {"message": "Company profile updated", "profile": profile}

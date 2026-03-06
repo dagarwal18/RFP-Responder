@@ -283,6 +283,10 @@ async def get_rfp_status(rfp_id: str):
         writing = result_data.get("writing_result")
         if isinstance(writing, dict) and writing.get("section_responses"):
             agent_outputs["C2_REQUIREMENT_WRITING"] = writing
+        # C3 Narrative Assembly
+        proposal = result_data.get("assembled_proposal")
+        if isinstance(proposal, dict) and proposal.get("full_narrative"):
+            agent_outputs["C3_NARRATIVE_ASSEMBLY"] = proposal
 
     return StatusResponse(
         rfp_id=run["rfp_id"],

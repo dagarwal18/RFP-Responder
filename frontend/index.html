@@ -2355,9 +2355,59 @@
               ${covHtml}
             </div></details>`;
         }
+        // C3 Narrative Assembly
+        if (outputs.C3_NARRATIVE_ASSEMBLY) {
+          const c3 = outputs.C3_NARRATIVE_ASSEMBLY;
+          const wordCount = c3.word_count || 0;
+          const sectionsIncluded = c3.sections_included || 0;
+          const hasPlaceholders = c3.has_placeholders;
+          const execSummary = c3.executive_summary || '';
+          const coverageAppendix = c3.coverage_appendix || '';
+
+          // Extract coverage summary line from appendix
+          let coverageLine = '';
+          if (coverageAppendix) {
+            const match = coverageAppendix.match(/\*\*Coverage Summary:\*\*\s*(.+)/);
+            if (match) coverageLine = match[1].trim();
+          }
+
+          // Truncate exec summary for preview
+          const execPreview = execSummary.length > 500 ? execSummary.substring(0, 500) + '…' : execSummary;
+
+          html += `<details style="margin-bottom:12px" open><summary style="cursor:pointer;font-weight:600;padding:8px 0">📄 C3 — Narrative Assembly</summary>
+            <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border)">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${wordCount.toLocaleString()}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Total Words</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:var(--accent-light)">${sectionsIncluded}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Sections</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid ${hasPlaceholders ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)'};text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:${hasPlaceholders ? '#f59e0b' : '#10b981'}">${hasPlaceholders ? '⚠' : '✓'}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Placeholders</div>
+                </div>
+              </div>
+              ${coverageLine ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:8px;font-size:13px">
+                <strong style="color:var(--accent-light)">📊 Coverage:</strong> <span style="color:var(--text-secondary)">${coverageLine}</span>
+              </div>` : ''}
+              ${execPreview ? `<div style="margin-bottom:12px">
+                <strong style="display:block;margin-bottom:6px">Executive Summary:</strong>
+                <div style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:12px;line-height:1.6;color:var(--text-secondary);max-height:200px;overflow-y:auto">${execPreview}</div>
+              </div>` : ''}
+              ${(c3.section_order || []).length ? `<details style="margin-top:8px">
+                <summary style="cursor:pointer;font-weight:500;font-size:13px;padding:4px 0">Section Order (${c3.section_order.length})</summary>
+                <div style="padding:8px;font-size:11px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+                  ${c3.section_order.map((s, i) => `<span style="padding:2px 8px;border-radius:10px;background:rgba(99,102,241,0.1);color:var(--accent-light);font-size:10px">${i + 1}. ${s}</span>`).join('')}
+                </div>
+              </details>` : ''}
+            </div></details>`;
+        }
         // Other agents — raw JSON
         for (const [key, val] of Object.entries(outputs)) {
-          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING'].includes(key)) continue;
+          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING', 'C3_NARRATIVE_ASSEMBLY'].includes(key)) continue;
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
             <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
         }

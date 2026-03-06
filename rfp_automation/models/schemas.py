@@ -190,6 +190,8 @@ class AssembledProposal(BaseModel):
     word_count: int = 0
     sections_included: int = 0
     has_placeholders: bool = False
+    section_order: list[str] = []          # ordered section IDs
+    coverage_appendix: str = ""            # requirement traceability matrix text
 
 
 # ── D1 Technical Validation ──────────────────────────────

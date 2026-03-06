@@ -174,7 +174,7 @@ A1 Intake → A2 Structuring → A3 Go/No-Go ──→ END (NO_GO)
 | B2 RequirementsValidationAgent | ✅ | Grounded refinement with hallucination guards |
 | C1 ArchitecturePlanningAgent | ✅ | Programmatic gap-fill + auto-split overloaded sections (≤20 reqs) |
 | C2 RequirementWritingAgent | ✅ | Token budgeting + RFP metadata injection + 3-tier coverage matrix |
-| C3 NarrativeAssemblyAgent | 🔜 | Next to implement |
+| C3 NarrativeAssemblyAgent | ✅ | LLM exec summary + transitions, split-section reassembly, coverage appendix |
 | D1 TechnicalValidationAgent | ⬜ | Stub |
 | E1 CommercialAgent | ⬜ | Stub |
 | E2 LegalAgent | ⬜ | Stub |

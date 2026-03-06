@@ -16,7 +16,7 @@
 | B2 RequirementsValidationAgent | ✅ Done | Duplicate/contradiction/ambiguity detection, grounded refinement with hallucination guards |
 | C1 ArchitecturePlanningAgent | ✅ Done | LLM section design + programmatic gap-fill + auto-split (max 20 reqs/section) |
 | C2 RequirementWritingAgent | ✅ Done | Per-section prose, token budgeting, RFP metadata injection, 3-tier coverage matrix |
-| C3 NarrativeAssemblyAgent | 🔜 Next | Stub — `NotImplementedError` |
+| C3 NarrativeAssemblyAgent | ✅ Done | LLM exec summary + transitions, split-section reassembly, coverage appendix, placeholder detection |
 | D1 TechnicalValidationAgent | ⬜ Stub | `NotImplementedError` |
 | E1 CommercialAgent | ⬜ Stub | `NotImplementedError` |
 | E2 LegalAgent | ⬜ Stub | `NotImplementedError` |
