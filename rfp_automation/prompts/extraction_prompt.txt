@@ -31,6 +31,8 @@ STRICT RULES (VIOLATION = FAILURE):
    minimum 720p HD", extract THREE separate requirements:
    "Call setup time <2 seconds", "Voice latency <150ms",
    "Video quality minimum 720p HD".
+    BAD split (DO NOT produce): "<150ms" alone — this lacks the metric name
+    and is NOT a valid requirement. Always include the metric name with its value.
 9. Return ONLY a valid JSON array — no markdown fencing, no extra text.
 
 WHAT COUNTS AS A REQUIREMENT:

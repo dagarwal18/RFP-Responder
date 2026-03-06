@@ -939,8 +939,8 @@ class TestArchitecturePlanningAgent:
         assert plan["rfp_response_instructions"] == "Follow format from Section 3"
         assert result["status"] == PipelineStatus.WRITING_RESPONSES.value
 
-    def test_architecture_coverage_gaps(self, monkeypatch):
-        """Missing mandatory requirement → appears in coverage_gaps."""
+    def test_architecture_programmatic_assignment(self, monkeypatch):
+        """Programmatic mapper auto-assigns unassigned mandatory requirements."""
         from rfp_automation.agents import ArchitecturePlanningAgent
 
         # LLM only assigns REQ-001, missing REQ-002 (mandatory)
@@ -977,7 +977,8 @@ class TestArchitecturePlanningAgent:
         result = agent.process(self._architecture_state())
 
         plan = result["architecture_plan"]
-        assert "REQ-002" in plan["coverage_gaps"]
+        # REQ-002 should be auto-assigned by programmatic mapper (not in gaps)
+        assert plan["coverage_gaps"] == []
         # REQ-003 is OPTIONAL, should NOT appear in coverage_gaps
         assert "REQ-003" not in plan["coverage_gaps"]
 
@@ -1024,7 +1025,8 @@ class TestArchitecturePlanningAgent:
         assert plan["total_sections"] == 5
 
     def test_architecture_invalid_json(self, monkeypatch):
-        """Malformed LLM response → empty sections, 0 total_sections."""
+        """Malformed LLM response → LLM produces no sections, but programmatic
+        mapper creates a catch-all to handle mandatory requirements."""
         from rfp_automation.agents import ArchitecturePlanningAgent
 
         monkeypatch.setattr("rfp_automation.agents.architecture_agent.MCPService",
@@ -1036,8 +1038,9 @@ class TestArchitecturePlanningAgent:
         result = agent.process(self._architecture_state())
 
         plan = result["architecture_plan"]
-        assert plan["total_sections"] == 0
-        assert len(plan["sections"]) == 0
+        # Programmatic mapper creates catch-all for the 2 mandatory requirements
+        assert plan["total_sections"] >= 1
+        assert plan["coverage_gaps"] == []
         assert result["status"] == PipelineStatus.WRITING_RESPONSES.value
 
     def test_architecture_no_rfp_id_raises(self):

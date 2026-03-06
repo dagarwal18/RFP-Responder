@@ -40,6 +40,10 @@ logger = logging.getLogger(__name__)
 
 _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "architecture_prompt.txt"
 
+# Maximum requirements per section before splitting — keeps C2's token budget
+# manageable and ensures each section gets adequate LLM attention.
+_MAX_REQS_PER_SECTION = 20
+
 
 class ArchitecturePlanningAgent(BaseAgent):
     name = AgentName.C1_ARCHITECTURE_PLANNING
@@ -127,41 +131,32 @@ class ArchitecturePlanningAgent(BaseAgent):
                 f"{len(s.mapped_capabilities)} caps | priority={s.priority}"
             )
 
-        # ── 8. Multi-pass gap filling ────────────────────
-        MAX_GAP_PASSES = 3
-        for pass_num in range(2, 2 + MAX_GAP_PASSES):
-            coverage_gaps = self._detect_coverage_gaps(requirements_data, sections)
-            if not coverage_gaps:
-                logger.info(f"[C1] Full coverage achieved after {pass_num - 1} pass(es)")
-                break
-
+        # ── 8. Programmatic gap filling ─────────────────────
+        #    The LLM only assigns representative IDs per section.
+        #    We now deterministically assign ALL remaining requirements
+        #    by matching classification / category / keywords to sections.
+        #    This is instant, uses zero LLM tokens, and guarantees coverage.
+        before_gaps = self._detect_coverage_gaps(requirements_data, sections)
+        if before_gaps:
             logger.info(
-                f"[C1] Pass {pass_num}: {len(coverage_gaps)} mandatory requirements "
-                f"still unassigned — running gap-filling pass"
+                f"[C1] Programmatic mapping: {len(before_gaps)} mandatory "
+                f"requirements unassigned after Pass 1 — assigning now"
+            )
+            sections = self._programmatic_assign(
+                requirements_data, sections
             )
 
-            # Build gap requirements list
-            gap_set = set(coverage_gaps)
-            gap_req_lines = [
-                line for line, d in zip(compact_req_lines, requirements_data)
-                if d.get("requirement_id", "") in gap_set
-            ]
-
-            sections = self._gap_fill_pass(
-                sections=sections,
-                gap_req_lines=gap_req_lines,
-                pass_num=pass_num,
-            )
-        else:
-            # Ran all passes, check final gaps
-            coverage_gaps = self._detect_coverage_gaps(requirements_data, sections)
+        # ── 8b. Split overloaded sections ────────────────
+        sections = self._split_overloaded_sections(
+            requirements_data, sections
+        )
 
         # ── 9. Final coverage check ─────────────────────
         coverage_gaps = self._detect_coverage_gaps(requirements_data, sections)
         if coverage_gaps:
             logger.warning(
                 f"[C1] Final coverage gaps — {len(coverage_gaps)} mandatory "
-                f"requirements unassigned after all passes: "
+                f"requirements still unassigned: "
                 f"{coverage_gaps[:20]}{'...' if len(coverage_gaps) > 20 else ''}"
             )
         else:
@@ -328,31 +323,38 @@ class ArchitecturePlanningAgent(BaseAgent):
         capabilities: str,
         submission_instructions: str,
     ) -> str:
-        """Load the prompt template and inject all four data sources with token-aware truncation."""
+        """Load the prompt template and inject data with TPM-aware truncation.
+
+        Groq free tier has a 6,000 TPM (tokens per minute) limit.
+        A single request's total tokens (input + output) cannot exceed this.
+        We budget ~4,000 tokens for input and ~2,000 for output.
+        """
         template = _PROMPT_PATH.read_text(encoding="utf-8")
 
-        # ── Token-aware budget ───────────────────────────
+        # ── Budget calculation ───────────────────────────
         chars_per_token = 4  # conservative estimate
         settings = get_settings()
-        max_tokens = settings.llm_max_tokens
-        reserved_output = 2000  # tokens for LLM response
-        template_overhead = len(template) // chars_per_token + 200
-        available_chars = max(
-            (max_tokens - reserved_output - template_overhead) * chars_per_token,
-            4000,
-        )
+        # Use llm_max_tokens as the per-request token budget (covers TPM limit).
+        # On Groq free tier (6K TPM), a single request can use up to 6K tokens.
+        # llm_max_tokens (8192) is a reasonable cap; we reserve output headroom.
+        total_token_budget = settings.llm_max_tokens  # 8192
+        output_reserve = 2000  # tokens for LLM JSON response
+        template_tokens = len(template) // chars_per_token + 200  # ~1,950 tokens
+        data_budget_tokens = total_token_budget - output_reserve - template_tokens
+        data_budget_chars = max(data_budget_tokens * chars_per_token, 4000)
 
-        # Proportional allocation: requirements 55% (most critical), sections 20%, capabilities 15%, submission 10%
-        budget_reqs = int(available_chars * 0.55)
-        budget_sections = int(available_chars * 0.20)
-        budget_caps = int(available_chars * 0.15)
-        budget_sub = int(available_chars * 0.10)
+        # Proportional allocation: requirements 55%, sections 20%, capabilities 15%, submission 10%
+        budget_reqs = int(data_budget_chars * 0.55)
+        budget_sections = int(data_budget_chars * 0.20)
+        budget_caps = int(data_budget_chars * 0.15)
+        budget_sub = int(data_budget_chars * 0.10)
 
         total_input = len(rfp_sections) + len(requirements) + len(capabilities) + len(submission_instructions)
-        if total_input > available_chars:
+        if total_input > data_budget_chars:
             logger.info(
-                f"[C1] Prompt inputs too large ({total_input} chars, ~{total_input // chars_per_token} tokens). "
-                f"Truncating to fit budget ({available_chars} chars)"
+                f"[C1] Truncating prompt inputs ({total_input} chars, "
+                f"~{total_input // chars_per_token} tokens) to fit budget "
+                f"({data_budget_chars} chars, ~{data_budget_tokens} tokens)"
             )
 
         return (
@@ -499,6 +501,319 @@ class ArchitecturePlanningAgent(BaseAgent):
                 continue
 
         return sections
+
+    def _programmatic_assign(
+        self,
+        requirements: list[dict[str, Any]],
+        sections: list[ResponseSection],
+    ) -> list[ResponseSection]:
+        """
+        Deterministically assign ALL unassigned mandatory requirements
+        to sections using classification, category, and keyword matching.
+        No LLM calls — instant and guarantees 100% coverage.
+        """
+        # Build section index for matching
+        section_map = {s.section_id: s for s in sections}
+        req_driven = [s for s in sections if s.section_type == "requirement_driven"]
+
+        # Collect already-assigned IDs
+        assigned_ids: set[str] = set()
+        for s in req_driven:
+            assigned_ids.update(s.requirement_ids)
+
+        # Build keyword index: lowercase words in section title → section_id
+        title_words: dict[str, list[str]] = {}  # word → [section_ids]
+        for s in req_driven:
+            words = set(re.findall(r"[a-z]+", s.title.lower()))
+            # Also include description keywords
+            words.update(re.findall(r"[a-z]+", s.description.lower())[:10])
+            for w in words:
+                if len(w) > 3:  # skip tiny words
+                    title_words.setdefault(w, []).append(s.section_id)
+
+        # Category → likely section keywords for matching
+        _CATEGORY_KEYWORDS: dict[str, list[str]] = {
+            "TECHNICAL": ["technical", "solution", "architecture", "platform",
+                          "system", "integration", "infrastructure"],
+            "FUNCTIONAL": ["technical", "solution", "functional", "feature",
+                           "capability", "system"],
+            "SECURITY": ["security", "compliance", "privacy", "data",
+                         "protection", "access", "encryption"],
+            "COMPLIANCE": ["compliance", "regulatory", "certification",
+                           "standard", "audit", "governance"],
+            "COMMERCIAL": ["pricing", "commercial", "cost", "financial",
+                           "payment", "licensing"],
+            "OPERATIONAL": ["support", "maintenance", "operational", "sla",
+                            "service", "monitoring", "management"],
+        }
+
+        # Classification → preferred section keywords
+        _CLASS_KEYWORDS: dict[str, list[str]] = {
+            "FUNCTIONAL": ["technical", "solution", "functional"],
+            "NON_FUNCTIONAL": ["sla", "performance", "compliance",
+                               "non-functional", "availability", "security"],
+            "EVALUATION_CRITERIA": ["compliance", "matrix", "evaluation",
+                                    "scoring", "qualification"],
+        }
+
+        # Track assignments for logging
+        assignments: dict[str, int] = {}
+        catch_all_id: str | None = None
+
+        # Find or plan catch-all section
+        for s in req_driven:
+            lower_title = s.title.lower()
+            if any(kw in lower_title for kw in ["compliance matrix", "general", "additional"]):
+                catch_all_id = s.section_id
+                break
+
+        # Process each unassigned mandatory requirement
+        for req in requirements:
+            req_id = req.get("requirement_id", "")
+            req_type = req.get("type", "MANDATORY")
+            if not req_id or req_id in assigned_ids:
+                continue
+            if isinstance(req_type, str) and req_type.upper() != "MANDATORY":
+                continue
+
+            classification = req.get("classification", "FUNCTIONAL")
+            if not isinstance(classification, str):
+                classification = str(classification)
+            classification = classification.upper()
+
+            category = req.get("category", "TECHNICAL")
+            if not isinstance(category, str):
+                category = str(category)
+            category = category.upper()
+
+            req_text = req.get("text", "").lower()
+            req_keywords = [k.lower() for k in req.get("keywords", [])]
+
+            best_section: str | None = None
+            best_score = 0
+
+            for s in req_driven:
+                # Skip sections already at capacity
+                current_count = len(s.requirement_ids)
+                if current_count >= _MAX_REQS_PER_SECTION:
+                    continue
+
+                score = 0
+                lower_title = s.title.lower()
+                lower_desc = s.description.lower()
+
+                # Score 1: keyword overlap between requirement text and section
+                for kw in req_keywords:
+                    if kw in lower_title:
+                        score += 3
+                    elif kw in lower_desc:
+                        score += 1
+
+                # Score 2: category keyword match
+                cat_keywords = _CATEGORY_KEYWORDS.get(category, [])
+                for ck in cat_keywords:
+                    if ck in lower_title:
+                        score += 2
+
+                # Score 3: classification keyword match
+                cls_keywords = _CLASS_KEYWORDS.get(classification, [])
+                for ck in cls_keywords:
+                    if ck in lower_title:
+                        score += 2
+
+                # Score 4: requirement text word overlap with section title
+                req_words = set(re.findall(r"[a-z]{4,}", req_text))
+                title_kws = set(re.findall(r"[a-z]{4,}", lower_title))
+                overlap = req_words & title_kws
+                score += len(overlap) * 2
+
+                if score > best_score:
+                    best_score = score
+                    best_section = s.section_id
+
+            # Assign to best match, or catch-all
+            target = best_section if best_score >= 2 else catch_all_id
+
+            if not target:
+                # Create catch-all Compliance Matrix section
+                catch_all_id = f"SEC-{len(sections) + 1:02d}"
+                catch_all = ResponseSection(
+                    section_id=catch_all_id,
+                    title="Compliance Matrix & General Requirements",
+                    section_type="requirement_driven",
+                    description="Catch-all section for requirements not fitting other sections",
+                    priority=5,
+                )
+                sections.append(catch_all)
+                req_driven.append(catch_all)
+                section_map[catch_all_id] = catch_all
+                target = catch_all_id
+
+            section = section_map[target]
+            if req_id not in section.requirement_ids:
+                section.requirement_ids.append(req_id)
+                assigned_ids.add(req_id)
+                assignments[target] = assignments.get(target, 0) + 1
+
+        # Log summary
+        for sec_id, count in sorted(assignments.items()):
+            sec = section_map[sec_id]
+            logger.debug(
+                f"[C1] Programmatic: assigned {count} requirements "
+                f"to {sec_id} ({sec.title})"
+            )
+        total = sum(assignments.values())
+        logger.info(
+            f"[C1] Programmatic mapping complete: {total} requirements "
+            f"assigned across {len(assignments)} sections"
+        )
+
+        return sections
+
+    def _split_overloaded_sections(
+        self,
+        requirements: list[dict[str, Any]],
+        sections: list[ResponseSection],
+    ) -> list[ResponseSection]:
+        """
+        Split any section with more than _MAX_REQS_PER_SECTION requirements
+        into sub-sections grouped by requirement category.
+
+        This prevents C2's token budget from being overwhelmed and ensures
+        each sub-section gets adequate LLM attention.
+        """
+        req_lookup = {
+            r.get("requirement_id", ""): r
+            for r in requirements if r.get("requirement_id")
+        }
+
+        result: list[ResponseSection] = []
+        next_section_num = max(
+            (int(re.search(r"\d+", s.section_id).group())
+             for s in sections if re.search(r"\d+", s.section_id)),
+            default=0,
+        ) + 1
+
+        for section in sections:
+            if (
+                section.section_type != "requirement_driven"
+                or len(section.requirement_ids) <= _MAX_REQS_PER_SECTION
+            ):
+                result.append(section)
+                continue
+
+            # Group requirements by category
+            category_groups: dict[str, list[str]] = {}
+            for rid in section.requirement_ids:
+                req = req_lookup.get(rid, {})
+                cat = req.get("category", "GENERAL")
+                if not isinstance(cat, str):
+                    cat = str(cat)
+                cat = cat.upper()
+                category_groups.setdefault(cat, []).append(rid)
+
+            # Friendly names for sub-section titles
+            _CAT_LABELS: dict[str, str] = {
+                "TECHNICAL": "Core Platform & Infrastructure",
+                "FUNCTIONAL": "Functional Capabilities",
+                "SECURITY": "Security & Data Protection",
+                "COMPLIANCE": "Regulatory Compliance",
+                "OPERATIONAL": "Operations & Support",
+                "COMMERCIAL": "Commercial Terms",
+            }
+
+            logger.info(
+                f"[C1] Splitting overloaded section {section.section_id} "
+                f"({section.title}): {len(section.requirement_ids)} reqs "
+                f"→ {len(category_groups)} sub-sections by category"
+            )
+
+            # If all reqs are same category, split by chunks instead
+            if len(category_groups) <= 1:
+                reqs = section.requirement_ids
+                chunk_size = _MAX_REQS_PER_SECTION
+                for i in range(0, len(reqs), chunk_size):
+                    chunk = reqs[i : i + chunk_size]
+                    part_num = i // chunk_size + 1
+                    sub = ResponseSection(
+                        section_id=f"SEC-{next_section_num:02d}",
+                        title=f"{section.title} (Part {part_num})",
+                        section_type="requirement_driven",
+                        description=section.description,
+                        content_guidance=section.content_guidance,
+                        requirement_ids=chunk,
+                        mapped_capabilities=section.mapped_capabilities,
+                        priority=section.priority,
+                        source_rfp_section=section.source_rfp_section,
+                    )
+                    result.append(sub)
+                    next_section_num += 1
+                    logger.debug(
+                        f"[C1]   Created {sub.section_id}: "
+                        f"{sub.title} ({len(chunk)} reqs)"
+                    )
+            else:
+                # Create a sub-section per category group
+                for cat, req_ids in sorted(category_groups.items()):
+                    label = _CAT_LABELS.get(cat, cat.title())
+                    sub = ResponseSection(
+                        section_id=f"SEC-{next_section_num:02d}",
+                        title=f"{section.title} — {label}",
+                        section_type="requirement_driven",
+                        description=(
+                            f"{section.description} "
+                            f"Focus on {label.lower()} requirements."
+                        ),
+                        content_guidance=section.content_guidance,
+                        requirement_ids=req_ids,
+                        mapped_capabilities=section.mapped_capabilities,
+                        priority=section.priority,
+                        source_rfp_section=section.source_rfp_section,
+                    )
+                    result.append(sub)
+                    next_section_num += 1
+                    logger.debug(
+                        f"[C1]   Created {sub.section_id}: "
+                        f"{sub.title} ({len(req_ids)} reqs)"
+                    )
+
+                    # Recursively split if still overloaded
+                    if len(req_ids) > _MAX_REQS_PER_SECTION:
+                        logger.info(
+                            f"[C1] Sub-section {sub.section_id} still "
+                            f"overloaded ({len(req_ids)} reqs) — "
+                            f"will be split again"
+                        )
+
+        # Second pass: split any sub-sections still over limit
+        final: list[ResponseSection] = []
+        for section in result:
+            if (
+                section.section_type == "requirement_driven"
+                and len(section.requirement_ids) > _MAX_REQS_PER_SECTION
+            ):
+                reqs = section.requirement_ids
+                chunk_size = _MAX_REQS_PER_SECTION
+                for i in range(0, len(reqs), chunk_size):
+                    chunk = reqs[i : i + chunk_size]
+                    part_num = i // chunk_size + 1
+                    sub = ResponseSection(
+                        section_id=f"SEC-{next_section_num:02d}",
+                        title=f"{section.title} (Part {part_num})",
+                        section_type=section.section_type,
+                        description=section.description,
+                        content_guidance=section.content_guidance,
+                        requirement_ids=chunk,
+                        mapped_capabilities=section.mapped_capabilities,
+                        priority=section.priority,
+                        source_rfp_section=section.source_rfp_section,
+                    )
+                    final.append(sub)
+                    next_section_num += 1
+            else:
+                final.append(section)
+
+        return final
 
     def _gap_fill_pass(
         self,

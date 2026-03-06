@@ -375,6 +375,13 @@ class RequirementsExtractionAgent(BaseAgent):
                     )
                     continue
 
+                # Skip spec fragments starting with comparator (e.g. "<150ms; video...")
+                if re.match(r'^[<>≤≥]\s*\d', req_text):
+                    logger.debug(
+                        f"[B1] Skipping comparator fragment: '{req_text[:60]}'"
+                    )
+                    continue
+
                 # Skip very short text (< 15 chars = not a real requirement)
                 if len(req_text) < 15:
                     logger.debug(f"[B1] Skipping too-short text: '{req_text}'")

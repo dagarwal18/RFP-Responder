@@ -31,21 +31,19 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
    - `"boilerplate"` — cover letter, table of contents, submission forms, declaration pages
 
 3. For `requirement_driven` sections:
-   - Assign every extracted requirement to at least one section
-   - Every MANDATORY requirement MUST appear in at least one section
-   - Map relevant company capabilities to each section
-   - CRITICAL: After building all sections, verify that EVERY requirement ID
-     from the requirements list above is assigned to at least one section.
-     If any requirements remain unassigned, add them to the Compliance Matrix
-     section or create an appropriate catch-all section.
+   - Assign REPRESENTATIVE requirement IDs (3-5 per section) that best exemplify
+     what the section covers. You do NOT need to list every single requirement ID —
+     a separate gap-filling process will complete the mapping after you.
+   - Focus on correctly categorizing WHICH TYPES of requirements belong in each section.
+   - Map relevant company capabilities to each section.
    - SLA / PERFORMANCE METRICS: Requirements about availability, uptime, latency,
      jitter, packet loss, call setup time, response time, MTTR, RPO, RTO, or any
-     measurable SLA target MUST be assigned to the SLA Commitments section.
+     measurable SLA target → assign to an SLA / Non-Functional Compliance section.
    - VENDOR QUALIFICATIONS: Requirements about certifications, years of experience,
-     team qualifications, references, or vendor eligibility MUST be assigned to
+     team qualifications, references, or vendor eligibility → assign to
      Company Profile, Certifications, or Team Qualifications sections.
-   - GOAL: ZERO unassigned mandatory requirements. Every requirement ID must
-     appear in at least one section's requirement_ids list.
+   - EVALUATION CRITERIA: Requirements about scoring, evaluation, demonstrations,
+     or selection criteria → assign to a Compliance Matrix or Evaluation section.
 
 4. For `knowledge_driven` sections:
    - Map relevant company capabilities / evidence that should be cited

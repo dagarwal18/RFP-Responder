@@ -109,7 +109,24 @@ class RequirementWritingAgent(BaseAgent):
         # ── 6. RFP response instructions (from C1) ─────
         rfp_instructions = state.architecture_plan.rfp_response_instructions or ""
 
-        # ── 7. Process each section ─────────────────────
+        # ── 7. Prepare RFP metadata for prompt injection ──
+        rfp_meta = state.rfp_metadata
+        rfp_metadata_block = (
+            f"Client: {rfp_meta.client_name}\n"
+            f"RFP Title: {rfp_meta.rfp_title}\n"
+            f"RFP Number: {rfp_meta.rfp_number}\n"
+            f"Issue Date: {rfp_meta.issue_date or 'Not specified'}\n"
+            f"Deadline: {rfp_meta.deadline_text or 'Not specified'}\n"
+        )
+
+        # ── 8. Build C1 assignment map (for coverage matrix) ──
+        c1_assignments: dict[str, list[str]] = {}  # req_id -> [section_ids]
+        for section in sections:
+            sid = self._get_attr(section, "section_id", "")
+            for rid in self._get_attr(section, "requirement_ids", []):
+                c1_assignments.setdefault(rid, []).append(sid)
+
+        # ── 9. Process each section ─────────────────────
         section_responses: list[SectionResponse] = []
         all_addressed: dict[str, list[str]] = {}  # req_id -> [section_ids]
 
@@ -158,7 +175,7 @@ class RequirementWritingAgent(BaseAgent):
                 self._get_attr(section, "mapped_capabilities", []),
             )
 
-            # ── 7d. Build prompt ────────────────────────
+            # ── 9d. Build prompt ────────────────────────
             prompt = self._build_prompt(
                 section_title=title,
                 section_type=section_type,
@@ -167,6 +184,7 @@ class RequirementWritingAgent(BaseAgent):
                 requirements=requirements_block,
                 capabilities=capabilities,
                 rfp_instructions=rfp_instructions,
+                rfp_metadata=rfp_metadata_block,
             )
 
             # ── 7e. Call LLM ────────────────────────────
@@ -218,8 +236,10 @@ class RequirementWritingAgent(BaseAgent):
                     f"{section_type}: {threshold})"
                 )
 
-        # ── 8. Build coverage matrix ────────────────────
-        coverage_matrix = self._build_coverage_matrix(req_map, all_addressed)
+        # ── 10. Build coverage matrix ───────────────────
+        coverage_matrix = self._build_coverage_matrix(
+            req_map, all_addressed, c1_assignments,
+        )
 
         # ── 9. Update state ─────────────────────────────
         state.writing_result = WritingResult(
@@ -304,6 +324,7 @@ class RequirementWritingAgent(BaseAgent):
         requirements: str,
         capabilities: str,
         rfp_instructions: str,
+        rfp_metadata: str = "",
     ) -> str:
         """Load the prompt template and inject context with token-aware truncation."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
@@ -334,6 +355,7 @@ class RequirementWritingAgent(BaseAgent):
             .replace("{requirements}", requirements[:budget_reqs])
             .replace("{capabilities}", capabilities[:budget_caps])
             .replace("{rfp_instructions}", (rfp_instructions or "No specific response instructions.")[:budget_inst])
+            .replace("{rfp_metadata}", rfp_metadata or "No metadata available.")
         )
 
     def _parse_response(
@@ -385,13 +407,11 @@ class RequirementWritingAgent(BaseAgent):
                 addressed = []
             addressed = [str(rid) for rid in addressed]
 
-            if not isinstance(word_count, int):
-                try:
-                    word_count = int(word_count)
-                except (ValueError, TypeError):
-                    word_count = len(content.split())
+            # Always use actual word count — LLM self-reported counts
+            # are systematically inflated by 18-95%.
+            actual_word_count = len(content.split()) if content else 0
 
-            return content, addressed, word_count
+            return content, addressed, actual_word_count
 
         # Fallback: treat entire response as content
         logger.warning(
@@ -405,21 +425,27 @@ class RequirementWritingAgent(BaseAgent):
         self,
         req_map: dict[str, dict[str, Any]],
         all_addressed: dict[str, list[str]],
+        c1_assignments: dict[str, list[str]] | None = None,
     ) -> list[CoverageEntry]:
         """
         Build the coverage matrix comparing requirements to sections that address them.
 
         Coverage quality:
           - "full"    — requirement addressed in at least one section
-          - "partial" — requirement assigned to a section but LLM didn't confirm addressing it
-          - "missing" — requirement not addressed by any section
+          - "partial" — requirement assigned by C1 but not confirmed addressed by C2
+          - "missing" — requirement not assigned to or addressed by any section
         """
+        if c1_assignments is None:
+            c1_assignments = {}
+
         matrix: list[CoverageEntry] = []
 
         for req_id in sorted(req_map.keys()):
             section_ids = all_addressed.get(req_id, [])
+            c1_section_ids = c1_assignments.get(req_id, [])
+
             if section_ids:
-                # Addressed — list first section
+                # Fully addressed — LLM confirmed addressing it
                 matrix.append(
                     CoverageEntry(
                         requirement_id=req_id,
@@ -427,7 +453,17 @@ class RequirementWritingAgent(BaseAgent):
                         coverage_quality="full",
                     )
                 )
+            elif c1_section_ids:
+                # Assigned by C1 architecture plan but not addressed by C2 LLM
+                matrix.append(
+                    CoverageEntry(
+                        requirement_id=req_id,
+                        addressed_in_section=c1_section_ids[0],
+                        coverage_quality="partial",
+                    )
+                )
             else:
+                # Not assigned or addressed anywhere
                 matrix.append(
                     CoverageEntry(
                         requirement_id=req_id,

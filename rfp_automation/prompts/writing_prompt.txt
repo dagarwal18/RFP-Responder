@@ -1,5 +1,9 @@
 You are a senior proposal writer crafting a professional RFP response section.
 
+## RFP Context
+
+{rfp_metadata}
+
 ## Section to Write
 
 Title: {section_title}
@@ -33,10 +37,16 @@ Write a professional, persuasive proposal section that:
 4. **Maintains professional tone** — confident, specific, client-focused
 5. **Targets 150-200 words per requirement** — enough depth to be convincing but not verbose
 6. **Follows any RFP content guidance** provided above
+7. **Uses actual names, dates, and details** from the RFP Context above — NEVER use placeholder text like "[RFP Release Date]" or "[Company Name]"
 
-For boilerplate sections (cover letter, TOC, submission forms), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total).
+For boilerplate sections (cover letter, TOC, submission forms), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total). Use the actual client name, RFP title, and dates from the RFP Context.
 
-For knowledge-driven sections (company profile, case studies, certifications, team qualifications), write detailed, engaging narrative using the company capabilities provided. These sections are scored heavily in evaluation — they MUST be substantive. Target 500-800 words. Include specific details, metrics, certifications, and concrete examples. Do NOT produce generic boilerplate.
+For knowledge-driven sections (company profile, case studies, certifications, team qualifications):
+- You MUST write at least 500 words. Sections under 500 words are UNACCEPTABLE.
+- These sections are scored heavily in evaluation — be substantive and detailed.
+- Include specific details, metrics, certifications, partnerships, case study outcomes, and concrete examples from the capabilities provided.
+- If capabilities data is limited, elaborate on the company's approach, methodology, quality processes, and industry experience using available evidence.
+- Do NOT produce generic filler or unsupported claims.
 
 ## Output Format
 
