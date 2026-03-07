@@ -1,0 +1,35 @@
+You are a requirements accuracy specialist. Your ONLY job is to fix
+factual errors in extracted requirements by cross-referencing the
+original RFP source text.
+
+REQUIREMENTS WITH FACTUAL ERRORS:
+{error_requirements_json}
+
+DETECTED ERRORS:
+{error_descriptions}
+
+ORIGINAL RFP TEXT (source of truth):
+{rfp_context}
+
+INSTRUCTIONS:
+1. For EACH requirement listed above, find the correct value in the
+   ORIGINAL RFP TEXT.
+2. Return the CORRECTED requirement text. Only fix the factual
+   inaccuracy — preserve the rest of the text as-is.
+3. If you cannot find the correct value in the RFP text, return the
+   original text unchanged.
+4. Do NOT add new requirements or change meaning — only fix numeric
+   values, percentages, thresholds, counts, or other factual data
+   that differ from the RFP source.
+
+Return ONLY valid JSON (no markdown fencing). Use this exact structure:
+{{
+  "corrections": [
+    {{
+      "requirement_id": "REQ-0010",
+      "original_text": "Availability: 95% uptime SLA for core voice services",
+      "corrected_text": "Availability: 99.95% uptime SLA for core voice services during business hours (0600-2200 IST)",
+      "correction_reason": "RFP Table 2 specifies 99.95%, not 95%"
+    }}
+  ]
+}}

@@ -41,6 +41,12 @@ _PROMPT_PATH = (
     / "requirements_validation_prompt.txt"
 )
 
+_CORRECTION_PROMPT_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "prompts"
+    / "factual_correction_prompt.txt"
+)
+
 
 class RequirementsValidationAgent(BaseAgent):
     name = AgentName.B2_REQUIREMENTS_VALIDATION
@@ -116,6 +122,12 @@ class RequirementsValidationAgent(BaseAgent):
                 requirements, issues, confidence_score, state.raw_text
             )
 
+        # ── 4b. Apply factual corrections ────────────────────
+        requirements = self._apply_factual_corrections(
+            requirements, issues, state.raw_text
+        )
+        state.requirements = requirements
+
         # ── 5. Build final result ───────────────────────────
         result = self._build_result(requirements, issues, confidence_score)
         state.requirements_validation = result
@@ -130,6 +142,117 @@ class RequirementsValidationAgent(BaseAgent):
             f"ambiguities={result.ambiguity_count}"
         )
         return state
+
+    # ── Factual correction ────────────────────────────────────
+
+    def _apply_factual_corrections(
+        self,
+        requirements: list[Requirement],
+        issues: list[ValidationIssue],
+        raw_text: str = "",
+    ) -> list[Requirement]:
+        """
+        Fix requirement text for any 'factual_error' issues detected
+        during validation, by cross-referencing the original RFP text.
+
+        Guardrails:
+        - Only requirements explicitly flagged as factual_error are touched.
+        - If the LLM call fails, requirements pass through unchanged.
+        - Both old and new text are logged for auditability.
+        """
+        factual_issues = [
+            i for i in issues if i.issue_type == "factual_error"
+        ]
+        if not factual_issues:
+            return requirements
+
+        # Collect affected requirement IDs
+        affected_ids: set[str] = set()
+        for issue in factual_issues:
+            affected_ids.update(issue.requirement_ids)
+
+        # Build a lookup of affected requirements
+        affected_reqs = [
+            r for r in requirements if r.requirement_id in affected_ids
+        ]
+        if not affected_reqs:
+            return requirements
+
+        logger.info(
+            f"[B2] Applying factual corrections to "
+            f"{len(affected_reqs)} requirement(s): {sorted(affected_ids)}"
+        )
+
+        # Build the correction prompt
+        error_requirements_json = json.dumps(
+            [{"requirement_id": r.requirement_id, "text": r.text}
+             for r in affected_reqs],
+            indent=2,
+        )
+        error_descriptions = "\n".join(
+            f"- {i.requirement_ids}: {i.description}" for i in factual_issues
+        )
+        rfp_context = (
+            raw_text[:12_000] if raw_text
+            else "No RFP source text available."
+        )
+
+        try:
+            template = _CORRECTION_PROMPT_PATH.read_text(encoding="utf-8")
+            prompt = template.format(
+                error_requirements_json=error_requirements_json,
+                error_descriptions=error_descriptions,
+                rfp_context=rfp_context,
+            )
+        except (FileNotFoundError, KeyError) as exc:
+            logger.warning(
+                f"[B2] Could not build correction prompt: {exc} — "
+                f"skipping factual corrections"
+            )
+            return requirements
+
+        try:
+            raw_response = llm_text_call(prompt, deterministic=True)
+            correction_data = self._parse_validation_json(raw_response)
+        except Exception as exc:
+            logger.warning(
+                f"[B2] Factual correction LLM call failed: {exc} — "
+                f"requirements pass through uncorrected"
+            )
+            return requirements
+
+        # Apply corrections
+        corrections = correction_data.get("corrections", [])
+        req_lookup = {r.requirement_id: r for r in requirements}
+        corrected_count = 0
+
+        for corr in corrections:
+            if not isinstance(corr, dict):
+                continue
+            req_id = corr.get("requirement_id", "")
+            corrected_text = corr.get("corrected_text", "")
+            if not req_id or not corrected_text:
+                continue
+            if req_id not in affected_ids:
+                logger.warning(
+                    f"[B2] LLM tried to correct {req_id} which was not "
+                    f"flagged — skipping (guardrail)"
+                )
+                continue
+            req = req_lookup.get(req_id)
+            if req and req.text != corrected_text:
+                logger.info(
+                    f"[B2] Corrected {req_id}: "
+                    f"{req.text!r} → {corrected_text!r}"
+                )
+                req.text = corrected_text
+                corrected_count += 1
+
+        logger.info(
+            f"[B2] Factual corrections applied: {corrected_count} of "
+            f"{len(affected_reqs)} requirement(s) updated"
+        )
+        return requirements
 
     # ── Refinement ───────────────────────────────────────────
 

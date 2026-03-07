@@ -767,6 +767,159 @@ class TestRequirementsValidationAgent:
         assert "24/7 support" in captured_prompts[1]
         assert "SAML 2.0" in captured_prompts[1]
 
+    def test_factual_error_corrects_requirement_text(self, monkeypatch):
+        """When validation detects a factual_error, requirement text is auto-corrected."""
+        from rfp_automation.agents import RequirementsValidationAgent
+        from rfp_automation.models.schemas import Requirement
+        from rfp_automation.models.enums import (
+            RequirementType, RequirementClassification,
+            RequirementCategory, ImpactLevel,
+        )
+
+        # Requirement with wrong uptime value
+        requirements = [
+            Requirement(
+                requirement_id="REQ-010", text="Availability: 95% uptime SLA",
+                type=RequirementType.MANDATORY,
+                classification=RequirementClassification.NON_FUNCTIONAL,
+                category=RequirementCategory.TECHNICAL, impact=ImpactLevel.HIGH,
+                source_section="SLA Requirements",
+            ),
+        ]
+
+        call_count = {"n": 0}
+
+        def mock_llm(prompt, deterministic=False):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                # Validation call: detects factual error
+                return json.dumps({
+                    "confidence_score": 0.75,
+                    "issues": [{
+                        "issue_type": "factual_error",
+                        "requirement_ids": ["REQ-010"],
+                        "description": "Requirement says 95% but RFP says 99.95%",
+                        "severity": "critical",
+                    }],
+                    "requirement_notes": {},
+                })
+            else:
+                # Correction call: provides corrected text
+                return json.dumps({
+                    "corrections": [{
+                        "requirement_id": "REQ-010",
+                        "original_text": "Availability: 95% uptime SLA",
+                        "corrected_text": "Availability: 99.95% uptime SLA for core voice services",
+                        "correction_reason": "RFP specifies 99.95%, not 95%",
+                    }],
+                })
+
+        monkeypatch.setattr(
+            "rfp_automation.agents.requirement_validation_agent.llm_text_call",
+            mock_llm,
+        )
+
+        state = self._validation_state(requirements=requirements)
+        state["raw_text"] = "Availability 99.95% uptime SLA for core voice services"
+
+        agent = RequirementsValidationAgent()
+        result = agent.process(state)
+
+        # The requirement text should now be corrected
+        req = result["requirements"][0]
+        assert "99.95%" in req["text"], f"Expected '99.95%' in corrected text, got: {req['text']}"
+        assert req["text"] != "Availability: 95% uptime SLA", "Text should have been corrected"
+        # Validation call + correction call = 2
+        assert call_count["n"] == 2
+
+    def test_factual_correction_fails_gracefully(self, monkeypatch):
+        """If the correction LLM call throws, requirements pass through unchanged."""
+        from rfp_automation.agents import RequirementsValidationAgent
+        from rfp_automation.models.schemas import Requirement
+        from rfp_automation.models.enums import (
+            RequirementType, RequirementClassification,
+            RequirementCategory, ImpactLevel,
+        )
+
+        requirements = [
+            Requirement(
+                requirement_id="REQ-010", text="Availability: 95% uptime SLA",
+                type=RequirementType.MANDATORY,
+                classification=RequirementClassification.NON_FUNCTIONAL,
+                category=RequirementCategory.TECHNICAL, impact=ImpactLevel.HIGH,
+                source_section="SLA",
+            ),
+        ]
+
+        call_count = {"n": 0}
+
+        def mock_llm(prompt, deterministic=False):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                # Validation call: detects factual error
+                return json.dumps({
+                    "confidence_score": 0.75,
+                    "issues": [{
+                        "issue_type": "factual_error",
+                        "requirement_ids": ["REQ-010"],
+                        "description": "Wrong uptime value",
+                        "severity": "critical",
+                    }],
+                    "requirement_notes": {},
+                })
+            else:
+                # Correction call: fails
+                raise RuntimeError("LLM service unavailable")
+
+        monkeypatch.setattr(
+            "rfp_automation.agents.requirement_validation_agent.llm_text_call",
+            mock_llm,
+        )
+
+        state = self._validation_state(requirements=requirements)
+        state["raw_text"] = "Some RFP text with 99.95% uptime"
+
+        agent = RequirementsValidationAgent()
+        result = agent.process(state)
+
+        # Requirement text should be unchanged (fail-safe)
+        req = result["requirements"][0]
+        assert req["text"] == "Availability: 95% uptime SLA"
+        assert result["status"] == "ARCHITECTURE_PLANNING"
+
+    def test_no_factual_errors_skips_correction(self, monkeypatch):
+        """When no factual_error issues exist, no correction LLM call is made."""
+        from rfp_automation.agents import RequirementsValidationAgent
+
+        call_count = {"n": 0}
+
+        def mock_llm(prompt, deterministic=False):
+            call_count["n"] += 1
+            # Only validation call, no factual errors
+            return json.dumps({
+                "confidence_score": 0.92,
+                "issues": [{
+                    "issue_type": "ambiguity",
+                    "requirement_ids": ["REQ-001"],
+                    "description": "Vague language",
+                    "severity": "warning",
+                }],
+                "requirement_notes": {},
+            })
+
+        monkeypatch.setattr(
+            "rfp_automation.agents.requirement_validation_agent.llm_text_call",
+            mock_llm,
+        )
+
+        agent = RequirementsValidationAgent()
+        result = agent.process(self._validation_state())
+
+        # Only 1 LLM call (validation) — no correction call
+        assert call_count["n"] == 1
+        # Original text unchanged
+        assert result["requirements"][0]["text"] == "System must support SSO via SAML 2.0"
+
 
 # ═══════════════════════════════════════════════════════════
 # B1 Section-Based Grouping
