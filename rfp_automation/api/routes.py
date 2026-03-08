@@ -287,6 +287,10 @@ async def get_rfp_status(rfp_id: str):
         proposal = result_data.get("assembled_proposal")
         if isinstance(proposal, dict) and proposal.get("full_narrative"):
             agent_outputs["C3_NARRATIVE_ASSEMBLY"] = proposal
+        # D1 Technical Validation
+        tech_val = result_data.get("technical_validation")
+        if isinstance(tech_val, dict) and tech_val.get("decision"):
+            agent_outputs["D1_TECHNICAL_VALIDATION"] = tech_val
 
     return StatusResponse(
         rfp_id=run["rfp_id"],

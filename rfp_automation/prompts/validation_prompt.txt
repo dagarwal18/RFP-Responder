@@ -1,20 +1,24 @@
-You are validating a proposal against original requirements.
+You are validating a proposal against original RFP requirements.
 
-Original Requirements:
+## REQUIREMENTS
 {requirements}
 
-Proposal Text:
+## PROPOSAL
 {proposal}
 
-Check:
-1. Completeness — Are all mandatory requirements addressed?
-2. Alignment — Do responses genuinely answer requirements (not just keywords)?
-3. Realism — Are claims supportable (no overpromising)?
-4. Consistency — No contradictions between sections?
+## CHECKS
+1. COMPLETENESS — Are all mandatory requirements addressed with specific details (not generic filler)?
+2. ALIGNMENT — Do responses genuinely answer the requirement's intent (not just keyword matching)?
+3. REALISM — Are claims supportable, timelines reasonable, no overpromising?
+4. CONSISTENCY — No contradictions between sections (timelines, SLAs, capabilities)?
 
-Return JSON with:
-- decision: PASS or REJECT
-- checks: array of {check_name, passed, issues}
-- critical_failures: count
-- warnings: count
-- feedback_for_revision: string (if REJECT)
+## OUTPUT — Return ONLY valid JSON:
+{{"decision":"PASS or REJECT","checks":[{{"check_name":"completeness","passed":true,"issues":[]}},{{"check_name":"alignment","passed":true,"issues":[]}},{{"check_name":"realism","passed":true,"issues":[]}},{{"check_name":"consistency","passed":true,"issues":[]}}],"critical_failures":0,"warnings":0,"feedback_for_revision":""}}
+
+## RULES
+- completeness/alignment failures = CRITICAL → decision = REJECT
+- realism/consistency failures = WARNINGS → decision = PASS
+- critical_failures = count of completeness+alignment issues
+- warnings = count of realism+consistency issues
+- feedback_for_revision: if REJECT, describe what needs fixing. If PASS, leave empty.
+- Be precise. Only flag issues with specific evidence.

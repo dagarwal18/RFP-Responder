@@ -2454,9 +2454,71 @@
               </details>` : ''}
             </div></details>`;
         }
+        // D1 Technical Validation
+        if (outputs.D1_TECHNICAL_VALIDATION) {
+          const d1 = outputs.D1_TECHNICAL_VALIDATION;
+          const decision = (d1.decision || 'PASS').toUpperCase();
+          const isPass = decision === 'PASS';
+          const checks = d1.checks || [];
+          const critFail = d1.critical_failures || 0;
+          const warns = d1.warnings || 0;
+          const feedback = d1.feedback_for_revision || '';
+          const retryCount = d1.retry_count || 0;
+
+          const decBg = isPass ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+          const decFg = isPass ? '#10b981' : '#ef4444';
+          const decIcon = isPass ? '✓' : '✗';
+
+          let checksHtml = '';
+          if (checks.length) {
+            checksHtml = `<div style="margin-top:12px">
+              <table style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead><tr style="border-bottom:1px solid var(--border);text-align:left">
+                  <th style="padding:6px">Check</th><th style="padding:6px">Status</th><th style="padding:6px">Issues</th>
+                </tr></thead>
+                <tbody>${checks.map(c => {
+              const cPass = c.passed;
+              const issues = c.issues || [];
+              return `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:6px;font-weight:600;text-transform:capitalize">${c.check_name}</td>
+                    <td style="padding:6px"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${cPass ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};color:${cPass ? '#10b981' : '#ef4444'};text-transform:uppercase">${cPass ? 'PASS' : 'FAIL'}</span></td>
+                    <td style="padding:6px;font-size:11px;color:var(--text-secondary)">${issues.length ? issues.map(i => `<div style="margin-bottom:2px">• ${i}</div>`).join('') : '—'}</td>
+                  </tr>`;
+            }).join('')}</tbody>
+              </table>
+            </div>`;
+          }
+
+          html += `<details style="margin-bottom:12px" open><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔍 D1 — Technical Validation</summary>
+            <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border)">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="padding:8px 16px;border-radius:10px;background:${decBg};border:1px solid ${decFg}33;text-align:center;min-width:100px">
+                  <div style="font-size:22px;font-weight:700;color:${decFg}">${decIcon} ${decision}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Decision</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:${critFail ? '#ef4444' : '#10b981'}">${critFail}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Critical</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:${warns ? '#f59e0b' : '#10b981'}">${warns}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Warnings</div>
+                </div>
+                ${retryCount ? `<div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:var(--accent-light)">${retryCount}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Retries</div>
+                </div>` : ''}
+              </div>
+              ${checksHtml}
+              ${feedback ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px">
+                <strong style="color:#ef4444;display:block;margin-bottom:4px">Feedback for Revision:</strong>
+                <div style="color:var(--text-secondary);font-size:12px;line-height:1.6;white-space:pre-wrap">${feedback}</div>
+              </div>` : ''}
+            </div></details>`;
+        }
         // Other agents — raw JSON
         for (const [key, val] of Object.entries(outputs)) {
-          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING', 'C3_NARRATIVE_ASSEMBLY'].includes(key)) continue;
+          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING', 'C3_NARRATIVE_ASSEMBLY', 'D1_TECHNICAL_VALIDATION'].includes(key)) continue;
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
             <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
         }
