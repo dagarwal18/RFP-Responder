@@ -111,7 +111,20 @@ class RequirementWritingAgent(BaseAgent):
 
         # ── 7. Prepare RFP metadata for prompt injection ──
         rfp_meta = state.rfp_metadata
+
+        # Resolve company name from KB → config
+        company_name = ""
+        try:
+            from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
+            kb_profile = KnowledgeStore().query_company_profile()
+            company_name = kb_profile.get("company_name", "")
+        except Exception:
+            pass  # KB unavailable — fall back to config
+        if not company_name:
+            company_name = get_settings().company_name or ""
+
         rfp_metadata_block = (
+            f"Proposing Company: {company_name or 'Not configured'}\n"
             f"Client: {rfp_meta.client_name}\n"
             f"RFP Title: {rfp_meta.rfp_title}\n"
             f"RFP Number: {rfp_meta.rfp_number}\n"
@@ -153,6 +166,21 @@ class RequirementWritingAgent(BaseAgent):
                 )
                 continue
 
+            # ── 7a2. Build neighboring section context ───
+            idx = sorted_sections.index(section)
+            prev_ctx = "This is the first section of the proposal."
+            next_ctx = "This is the last section of the proposal."
+            if idx > 0:
+                prev_s = sorted_sections[idx - 1]
+                prev_title = self._get_attr(prev_s, "title", "")
+                prev_desc = self._get_attr(prev_s, "description", "")
+                prev_ctx = f"{prev_title}: {prev_desc[:200]}" if prev_desc else prev_title
+            if idx < len(sorted_sections) - 1:
+                next_s = sorted_sections[idx + 1]
+                next_title = self._get_attr(next_s, "title", "")
+                next_desc = self._get_attr(next_s, "description", "")
+                next_ctx = f"{next_title}: {next_desc[:200]}" if next_desc else next_title
+
             # ── 7b. Resolve requirements for this section ─
             req_ids = self._get_attr(section, "requirement_ids", [])
             req_texts = []
@@ -185,6 +213,8 @@ class RequirementWritingAgent(BaseAgent):
                 capabilities=capabilities,
                 rfp_instructions=rfp_instructions,
                 rfp_metadata=rfp_metadata_block,
+                prev_section_context=prev_ctx,
+                next_section_context=next_ctx,
             )
 
             # ── 7e. Call LLM ────────────────────────────
@@ -325,6 +355,8 @@ class RequirementWritingAgent(BaseAgent):
         capabilities: str,
         rfp_instructions: str,
         rfp_metadata: str = "",
+        prev_section_context: str = "",
+        next_section_context: str = "",
     ) -> str:
         """Load the prompt template and inject context with token-aware truncation."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
@@ -356,6 +388,8 @@ class RequirementWritingAgent(BaseAgent):
             .replace("{capabilities}", capabilities[:budget_caps])
             .replace("{rfp_instructions}", (rfp_instructions or "No specific response instructions.")[:budget_inst])
             .replace("{rfp_metadata}", rfp_metadata or "No metadata available.")
+            .replace("{prev_section_context}", prev_section_context or "No previous section.")
+            .replace("{next_section_context}", next_section_context or "No next section.")
         )
 
     def _parse_response(

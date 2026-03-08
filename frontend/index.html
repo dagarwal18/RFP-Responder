@@ -1248,9 +1248,58 @@
       </div>
     </div>
 
-
-
-
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!--  COMPANY PROFILE PANEL                              -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-header">
+        <h2>🏢 Company Profile</h2>
+        <span class="badge" id="companyProfileBadge"
+          style="background:rgba(99,102,241,0.15);color:var(--accent-light)">—</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">
+          Your company details used in proposal documents. Changes are saved to the database and will be used in all
+          future pipeline runs.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <label
+              style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Company
+              Name</label>
+            <input type="text" id="cpName" placeholder="e.g. Acme Corp"
+              style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:14px" />
+          </div>
+          <div>
+            <label
+              style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Description</label>
+            <textarea id="cpDescription" rows="3" placeholder="Brief company description…"
+              style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:13px;resize:vertical"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label
+                style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Headquarters</label>
+              <input type="text" id="cpHeadquarters" placeholder="e.g. London, UK"
+                style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:13px" />
+            </div>
+            <div>
+              <label
+                style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Website</label>
+              <input type="text" id="cpWebsite" placeholder="e.g. https://example.com"
+                style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:13px" />
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+            <button type="button" class="btn btn-outline btn-sm" onclick="loadCompanyProfile()"
+              style="padding:8px 16px">↩ Reset</button>
+            <button type="button" class="btn btn-primary" id="cpSaveBtn" onclick="saveCompanyProfile()"
+              style="padding:8px 20px">💾 Save Profile</button>
+          </div>
+        </div>
+        <div id="cpStatus" style="margin-top:10px;font-size:12px;display:none"></div>
+      </div>
+    </div>
 
   </main>
 
@@ -2432,11 +2481,81 @@
       if (!_statsInterval) _statsInterval = setInterval(loadKBStats, 60000);
     }
 
+    // ── Company Profile ─────────────────────────────
+    const CP_DEFAULTS = {
+      company_name: 'Vodafone Business',
+      company_description: 'Global telecommunications and technology company providing unified communications, cloud, IoT, and security solutions to enterprises across 65+ countries.',
+      headquarters: 'London, UK',
+      website: 'https://www.vodafone.com/business',
+    };
+
+    async function loadCompanyProfile() {
+      try {
+        const res = await fetch(`${API}/api/knowledge/company-profile`);
+        const data = await res.json();
+        const p = data.profile || {};
+        // Use saved values, or fall back to defaults if empty
+        document.getElementById('cpName').value = p.company_name || CP_DEFAULTS.company_name;
+        document.getElementById('cpDescription').value = p.company_description || CP_DEFAULTS.company_description;
+        document.getElementById('cpHeadquarters').value = p.headquarters || CP_DEFAULTS.headquarters;
+        document.getElementById('cpWebsite').value = p.website || CP_DEFAULTS.website;
+        const badge = document.getElementById('companyProfileBadge');
+        badge.textContent = p.company_name ? '✓ Saved' : 'Default';
+        badge.style.background = p.company_name ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)';
+        badge.style.color = p.company_name ? 'var(--success)' : 'var(--warning)';
+      } catch (e) {
+        console.warn('Failed to load company profile:', e);
+        // Fill with defaults anyway
+        document.getElementById('cpName').value = CP_DEFAULTS.company_name;
+        document.getElementById('cpDescription').value = CP_DEFAULTS.company_description;
+        document.getElementById('cpHeadquarters').value = CP_DEFAULTS.headquarters;
+        document.getElementById('cpWebsite').value = CP_DEFAULTS.website;
+      }
+    }
+
+    async function saveCompanyProfile() {
+      const btn = document.getElementById('cpSaveBtn');
+      const statusEl = document.getElementById('cpStatus');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Saving…';
+      statusEl.style.display = 'none';
+      try {
+        const body = {
+          company_name: document.getElementById('cpName').value.trim(),
+          company_description: document.getElementById('cpDescription').value.trim(),
+          headquarters: document.getElementById('cpHeadquarters').value.trim(),
+          website: document.getElementById('cpWebsite').value.trim(),
+        };
+        const res = await fetch(`${API}/api/knowledge/company-profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        statusEl.textContent = '✓ Profile saved successfully';
+        statusEl.style.color = 'var(--success)';
+        statusEl.style.display = 'block';
+        const badge = document.getElementById('companyProfileBadge');
+        badge.textContent = '✓ Saved';
+        badge.style.background = 'rgba(16,185,129,0.15)';
+        badge.style.color = 'var(--success)';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+      } catch (e) {
+        statusEl.textContent = '✗ Failed to save: ' + e.message;
+        statusEl.style.color = 'var(--error)';
+        statusEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '💾 Save Profile';
+      }
+    }
+
     checkHealth();
     loadKBStats();
     loadKBFiles();
     loadRuns();
     loadPolicies();
+    loadCompanyProfile();
     resumePolling();
   </script>
 </body>

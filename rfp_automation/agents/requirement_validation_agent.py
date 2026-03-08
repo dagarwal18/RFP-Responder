@@ -122,10 +122,21 @@ class RequirementsValidationAgent(BaseAgent):
                 requirements, issues, confidence_score, state.raw_text
             )
 
-        # ── 4b. Apply factual corrections ────────────────────
-        requirements = self._apply_factual_corrections(
+        # ── 4b. Apply factual corrections ────────────────
+        requirements, corrected_ids = self._apply_factual_corrections(
             requirements, issues, state.raw_text
         )
+        # Remove stale factual_error issues for corrected requirements
+        if corrected_ids:
+            issues = [
+                i for i in issues
+                if i.issue_type != "factual_error"
+                or not all(rid in corrected_ids for rid in i.requirement_ids)
+            ]
+            logger.info(
+                f"[B2] Pruned stale factual_error issues for "
+                f"{len(corrected_ids)} corrected requirement(s)"
+            )
         state.requirements = requirements
 
         # ── 5. Build final result ───────────────────────────
@@ -150,10 +161,14 @@ class RequirementsValidationAgent(BaseAgent):
         requirements: list[Requirement],
         issues: list[ValidationIssue],
         raw_text: str = "",
-    ) -> list[Requirement]:
+    ) -> tuple[list[Requirement], set[str]]:
         """
         Fix requirement text for any 'factual_error' issues detected
         during validation, by cross-referencing the original RFP text.
+
+        Returns:
+            (requirements, corrected_ids) — the updated list and the set of
+            requirement IDs that were successfully corrected.
 
         Guardrails:
         - Only requirements explicitly flagged as factual_error are touched.
@@ -164,7 +179,7 @@ class RequirementsValidationAgent(BaseAgent):
             i for i in issues if i.issue_type == "factual_error"
         ]
         if not factual_issues:
-            return requirements
+            return requirements, set()
 
         # Collect affected requirement IDs
         affected_ids: set[str] = set()
@@ -176,7 +191,7 @@ class RequirementsValidationAgent(BaseAgent):
             r for r in requirements if r.requirement_id in affected_ids
         ]
         if not affected_reqs:
-            return requirements
+            return requirements, set()
 
         logger.info(
             f"[B2] Applying factual corrections to "
@@ -209,7 +224,7 @@ class RequirementsValidationAgent(BaseAgent):
                 f"[B2] Could not build correction prompt: {exc} — "
                 f"skipping factual corrections"
             )
-            return requirements
+            return requirements, set()
 
         try:
             raw_response = llm_text_call(prompt, deterministic=True)
@@ -219,12 +234,13 @@ class RequirementsValidationAgent(BaseAgent):
                 f"[B2] Factual correction LLM call failed: {exc} — "
                 f"requirements pass through uncorrected"
             )
-            return requirements
+            return requirements, set()
 
         # Apply corrections
         corrections = correction_data.get("corrections", [])
         req_lookup = {r.requirement_id: r for r in requirements}
         corrected_count = 0
+        corrected_ids: set[str] = set()
 
         for corr in corrections:
             if not isinstance(corr, dict):
@@ -247,12 +263,13 @@ class RequirementsValidationAgent(BaseAgent):
                 )
                 req.text = corrected_text
                 corrected_count += 1
+                corrected_ids.add(req_id)
 
         logger.info(
             f"[B2] Factual corrections applied: {corrected_count} of "
             f"{len(affected_reqs)} requirement(s) updated"
         )
-        return requirements
+        return requirements, corrected_ids
 
     # ── Refinement ───────────────────────────────────────────
 

@@ -27,19 +27,30 @@ Use these as proof points and evidence in your response. Reference specific cert
 
 {rfp_instructions}
 
+## Neighboring Sections Context
+
+This section sits between:
+- Previous section: {prev_section_context}
+- Next section: {next_section_context}
+
+Ensure your content flows naturally from and to these sections. Where appropriate, reference shared themes or build upon points raised in neighboring sections.
+
 ## Writing Instructions
 
-Write a professional, persuasive proposal section that:
+Write like a senior director at the proposing company — authoritative, analytical, and strategic. Your response should:
 
-1. **Addresses EVERY listed requirement** — confirm understanding, then explain our solution approach with specific details
-2. **Provides evidence** — reference actual certifications, products, case studies, and metrics from the capabilities above
-3. **Uses concrete language** — no vague claims like "best-in-class" or "industry-leading" without backing evidence
-4. **Maintains professional tone** — confident, specific, client-focused
-5. **Targets 150-200 words per requirement** — enough depth to be convincing but not verbose
-6. **Follows any RFP content guidance** provided above
-7. **Uses actual names, dates, and details** from the RFP Context above — NEVER use placeholder text like "[RFP Release Date]" or "[Company Name]"
+1. **Address EVERY listed requirement** — first demonstrate understanding of the client's need, then explain our solution approach with specific details and measurable commitments
+2. **Balance facts with strategic inference** — don't just state capabilities, explain WHY our approach is the right fit for this client's specific context. Draw logical connections between the client's requirements and our strengths
+3. **Provide evidence** — reference actual certifications, products, case studies, and metrics from the capabilities above. Back every claim with a proof point
+4. **Use concrete language** — no vague claims like "best-in-class" or "industry-leading" without backing evidence. Prefer specific numbers, timelines, and deliverables
+5. **Maintain professional tone** — confident but not boastful, specific, client-focused. Write as if presenting to the client's evaluation committee
+6. **Target 150-200 words per requirement** — enough depth to be convincing but not verbose
+7. **Follow any RFP content guidance** provided above
+8. **Use actual names, dates, and details** from the RFP Context above — NEVER use placeholder text like "[Vendor Name]", "[Company Name]", "[RFP Release Date]", or "[Date]"
+9. **Ensure consistency with RFP scope** — Do NOT include claims or statistics that contradict the RFP's stated scope (e.g., user counts, company size, geographic coverage). If capability data mentions a different scale than the RFP, adapt or omit it
+10. **Connect to the broader proposal** — reference how this section's commitments align with and reinforce the themes from neighboring sections described above
 
-For boilerplate sections (cover letter, TOC, submission forms), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total). Use the actual client name, RFP title, and dates from the RFP Context.
+For boilerplate sections (cover letter, TOC, submission forms), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total). Use the actual client name, RFP title, dates, and proposing company name from the RFP Context.
 
 For knowledge-driven sections (company profile, case studies, certifications, team qualifications):
 - You MUST write at least 500 words. Sections under 500 words are UNACCEPTABLE.

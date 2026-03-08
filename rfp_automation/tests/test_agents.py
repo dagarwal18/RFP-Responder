@@ -1401,7 +1401,7 @@ class TestWritingAgent:
         matrix = result["writing_result"]["coverage_matrix"]
         coverage_by_id = {c["requirement_id"]: c for c in matrix}
         assert coverage_by_id["REQ-001"]["coverage_quality"] == "full"
-        assert coverage_by_id["REQ-002"]["coverage_quality"] == "missing"
+        assert coverage_by_id["REQ-002"]["coverage_quality"] == "partial"  # assigned by C1 but not confirmed by LLM
 
     def test_writing_skips_commercial_legal(self, monkeypatch):
         """Commercial and legal sections get placeholder content, not LLM calls."""

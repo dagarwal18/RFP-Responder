@@ -419,8 +419,28 @@ class ParsingService:
 
             # New heading → flush current buffer, start fresh
             if block_type == "heading":
-                _flush()
                 heading_text = block_text.strip()
+
+                # ── Reject false-positive headings ────────
+                # Spec-lines like "8 medium rooms (8-12 person capacity)\n–"
+                # are sometimes classified as headings by font/bold heuristics
+                # but corrupt the breadcrumb for all subsequent chunks.
+                _is_false_heading = False
+                if re.match(r'^\d+\s+(small|medium|large|extra)\b', heading_text, re.IGNORECASE):
+                    _is_false_heading = True
+                elif heading_text.rstrip().endswith(('\u2013', '\u2014', '\u2012', '-', ',')):
+                    _is_false_heading = True
+                elif '\n' in heading_text and heading_text.count('\n') >= 2:
+                    _is_false_heading = True
+
+                if _is_false_heading:
+                    # Treat as paragraph instead
+                    current_text_parts.append(block_text)
+                    current_size += block_len
+                    current_page_end = block_page
+                    continue
+
+                _flush()
                 level = _get_heading_level(heading_text)
                 
                 if level > 0:
@@ -537,6 +557,14 @@ def _classify_block(
     # Heading detection: larger font or bold AND short text
     is_larger = body_font_size > 0 and max_font_size >= body_font_size + 1.5
     is_short = len(stripped) < 200 and len(lines) <= 3
+
+    # ── Reject false-positive headings ────────────────
+    # Multi-line blocks and lines ending with dashes or commas
+    # are specification fragments, not headings.
+    if '\n' in stripped and stripped.count('\n') >= 2:
+        return "paragraph"
+    if stripped.rstrip().endswith(('\u2013', '\u2014', '\u2012', '-', ',')):
+        return "paragraph"
 
     if is_short and (is_larger or has_bold):
         return "heading"

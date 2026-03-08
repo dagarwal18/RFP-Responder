@@ -343,7 +343,7 @@ class NarrativeAssemblyAgent(BaseAgent):
 
     def _clean_known_placeholders(self, text: str, rfp_metadata: Any) -> str:
         """Replace resolvable placeholder patterns with actual data from
-        rfp_metadata so they don't get flagged as unresolved."""
+        rfp_metadata and company profile so they don't get flagged as unresolved."""
         client = self._get_attr(rfp_metadata, "client_name", "")
         rfp_num = self._get_attr(rfp_metadata, "rfp_number", "")
         rfp_title = self._get_attr(rfp_metadata, "rfp_title", "")
@@ -366,6 +366,22 @@ class NarrativeAssemblyAgent(BaseAgent):
             replacements.append(
                 (re.compile(r"\[Date\]", re.IGNORECASE), issue_date)
             )
+
+        # ── Resolve vendor/company name (MongoDB company profile) ──
+        company_name = ""
+        try:
+            from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
+            kb_profile = KnowledgeStore().query_company_profile()
+            company_name = kb_profile.get("company_name", "")
+        except Exception:
+            pass  # KB unavailable
+
+        if company_name:
+            replacements.extend([
+                (re.compile(r"\[Vendor\s+Name\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Your\s+Company\s+Name\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Company\s+Name\]", re.IGNORECASE), company_name),
+            ])
 
         for pattern, value in replacements:
             text = pattern.sub(value, text)
@@ -470,17 +486,14 @@ class NarrativeAssemblyAgent(BaseAgent):
         if client:
             title_line += f"\n\nPrepared for: {client}"
 
-        # "Prepared by:" from KB → config → placeholder
+        # "Prepared by:" from MongoDB company profile → placeholder
         company_name = ""
         try:
             from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
             kb_profile = KnowledgeStore().query_company_profile()
             company_name = kb_profile.get("company_name", "")
         except Exception:
-            pass  # KB unavailable — fall back to config
-        if not company_name:
-            settings = get_settings()
-            company_name = getattr(settings, "company_name", "") or ""
+            pass  # KB unavailable
         prepared_by = company_name if company_name else "[Vendor Name]"
         title_line += f"\n\nPrepared by: {prepared_by}"
 

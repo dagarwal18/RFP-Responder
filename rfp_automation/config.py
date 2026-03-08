@@ -31,7 +31,6 @@ class Settings(BaseSettings):
     #  APP / API SERVER — defaults, overridable via .env
     # ═══════════════════════════════════════════════════════
     app_name: str = "RFP Response Automation"
-    company_name: str = ""          # Vendor/proposer name for proposal docs
     debug: bool = True
     api_host: str = "0.0.0.0"
     api_port: int = 8000
