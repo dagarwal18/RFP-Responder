@@ -59,6 +59,7 @@ class StatusResponse(BaseModel):
     pipeline_log: list[dict[str, str]] = []
     result: dict[str, Any] | None = None
     agent_outputs: dict[str, Any] = {}
+    llm_stats: dict[str, Any] = {}
 
 
 class ApprovalRequest(BaseModel):
@@ -292,6 +293,10 @@ async def get_rfp_status(rfp_id: str):
         if isinstance(tech_val, dict) and tech_val.get("decision"):
             agent_outputs["D1_TECHNICAL_VALIDATION"] = tech_val
 
+    # ── LLM call stats per agent ─────────────────────────
+    from rfp_automation.services.llm_service import LLMCallTracker
+    llm_stats = LLMCallTracker.get().get_all_stats()
+
     return StatusResponse(
         rfp_id=run["rfp_id"],
         status=run["status"],
@@ -301,6 +306,7 @@ async def get_rfp_status(rfp_id: str):
         pipeline_log=run.get("pipeline_log", []),
         result=run.get("result"),
         agent_outputs=agent_outputs,
+        llm_stats=llm_stats,
     )
 
 

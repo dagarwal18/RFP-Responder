@@ -50,6 +50,7 @@ _PART_SPLIT_PATTERN = re.compile(r"\s*\(Part\s+\d+\)\s*$")  # "Title (Part N)"
 _META_SECTION_TITLES_LOWER = {
     "table of contents",
     "executive summary",
+    "cover letter",
 }
 
 # Placeholder patterns to detect in final output
@@ -119,12 +120,19 @@ class NarrativeAssemblyAgent(BaseAgent):
         )
 
         # ── 2b. Filter meta sections C3 handles itself ──
+        #     Extract cover letter content before filtering it out
+        cover_letter_content = ""
+        for s in ordered_sections:
+            if getattr(s, "title", "").strip().lower() == "cover letter":
+                cover_letter_content = getattr(s, "content", "") or ""
+                break
+
         pre_filter_count = len(ordered_sections)
         ordered_sections = self._filter_meta_sections(ordered_sections)
         if len(ordered_sections) < pre_filter_count:
             logger.info(
                 f"[C3] Filtered {pre_filter_count - len(ordered_sections)} "
-                f"meta sections (TOC, Executive Summary)"
+                f"meta sections (TOC, Executive Summary, Cover Letter)"
             )
 
         section_order = [s.section_id for s in ordered_sections]
@@ -171,6 +179,7 @@ class NarrativeAssemblyAgent(BaseAgent):
 
         # ── 9. Assemble full document ───────────────────
         full_narrative = self._assemble_document(
+            cover_letter=cover_letter_content,
             executive_summary=executive_summary,
             groups=groups,
             transitions=transitions,
@@ -466,6 +475,7 @@ class NarrativeAssemblyAgent(BaseAgent):
 
     def _assemble_document(
         self,
+        cover_letter: str,
         executive_summary: str,
         groups: list[SectionGroup],
         transitions: dict[int, str],
@@ -498,6 +508,11 @@ class NarrativeAssemblyAgent(BaseAgent):
         title_line += f"\n\nPrepared by: {prepared_by}"
 
         parts.append(title_line)
+
+        # ── Cover Letter (C2 content) ────────────────────
+        if cover_letter and cover_letter.strip():
+            parts.append("---\n\n## Cover Letter\n")
+            parts.append(cover_letter.strip())
 
         # ── Executive Summary ───────────────────────────
         parts.append("---\n\n## Executive Summary\n")

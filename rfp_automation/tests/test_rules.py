@@ -51,7 +51,7 @@ class TestValidationRules:
 
     def test_prohibited_phrase_flagged(self):
         vr = ValidationRules()
-        violations = vr.check_validation_rules("We guarantee 100% uptime forever.")
+        violations = vr.check_validation_rules("We have guaranteed 100% uptime forever.")
         assert len(violations) > 0
         rules = [v["rule"] for v in violations]
         assert "prohibited_language" in rules

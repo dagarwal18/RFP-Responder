@@ -67,9 +67,12 @@ def _with_checkpoint(node_name: str, fn: Callable) -> Callable:
     Also handles the 'skip before' logic for reruns: if the state
     contains '_rerun_start_from', agents before that point return
     the state unchanged (instant pass-through).
+
+    Tracks per-agent LLM call count and timing via LLMCallTracker.
     """
     def wrapper(state: dict[str, Any]) -> dict[str, Any]:
         from rfp_automation.persistence.checkpoint import AGENT_ORDER
+        from rfp_automation.services.llm_service import LLMCallTracker
 
         # ── Skip logic for reruns ─────────────────────
         start_from = state.get("_rerun_start_from")
@@ -80,8 +83,15 @@ def _with_checkpoint(node_name: str, fn: Callable) -> Callable:
                 logger.info(f"⏭ [{node_name}] Skipped (rerun starts from {start_from})")
                 return state  # pass through unchanged
 
+        # ── Track LLM calls for this agent ────────────
+        tracker = LLMCallTracker.get()
+        tracker.set_context(node_name)
+
         # ── Normal execution ──────────────────────────
         result = fn(state)
+
+        # ── Finish tracking ───────────────────────────
+        tracker.finish_context(node_name)
 
         # Extract rfp_id from state for checkpoint filename
         rfp_id = (

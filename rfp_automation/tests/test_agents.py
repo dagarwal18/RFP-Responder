@@ -1647,8 +1647,11 @@ class TestNarrativeAssemblyAgent:
                                            addressed_in_section="SEC-02", coverage_quality="full")],
         ))
 
-        # SEC-01 (priority 1) should come before SEC-02 (priority 3)
-        assert result["assembled_proposal"]["section_order"] == ["SEC-01", "SEC-02"]
+        # Cover Letter is now filtered as a meta section (placed before exec summary)
+        # so section_order should only contain the body section
+        assert result["assembled_proposal"]["section_order"] == ["SEC-02"]
+        # But cover letter content should still appear in the full narrative
+        assert "Dear client." in result["assembled_proposal"]["full_narrative"]
 
     def test_narrative_split_section_reassembly(self, monkeypatch):
         """Category-split sections grouped under parent heading in output."""
