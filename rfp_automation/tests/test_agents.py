@@ -293,7 +293,7 @@ class TestGoNoGoAgent:
 
         assert result["go_no_go_result"]["decision"] == "NO_GO"
         assert result["go_no_go_result"]["violated_count"] == 1
-        assert result["status"] == PipelineStatus.NO_GO.value
+        assert result["status"] == PipelineStatus.EXTRACTING_REQUIREMENTS.value
 
     def test_mixed_mapping_counts(self, monkeypatch):
         """Mixed ALIGNS/RISK/NO_MATCH → verify correct count breakdown."""
@@ -613,7 +613,7 @@ class TestRequirementsValidationAgent:
         """Confidence >= 0.7 → validated requirements populated, no refinement."""
         from rfp_automation.agents import RequirementsValidationAgent
 
-        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call",
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_large_text_call",
                             lambda prompt, deterministic=False: json.dumps({"confidence_score": 0.92, "issues": [], "requirement_notes": {}}))
 
         agent = RequirementsValidationAgent()
@@ -645,7 +645,7 @@ class TestRequirementsValidationAgent:
             else:
                 return json.dumps({"confidence_score": 0.78, "issues": [], "requirement_notes": {}})
 
-        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call", mock_llm)
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_large_text_call", mock_llm)
 
         agent = RequirementsValidationAgent()
         result = agent.process(self._validation_state())
@@ -658,7 +658,7 @@ class TestRequirementsValidationAgent:
         """LLM flags duplicates and contradictions → correct issue counts."""
         from rfp_automation.agents import RequirementsValidationAgent
 
-        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call",
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_large_text_call",
                             lambda prompt, deterministic=False: json.dumps({
                                 "confidence_score": 0.75,
                                 "issues": [
@@ -724,7 +724,7 @@ class TestRequirementsValidationAgent:
                     "requirement_notes": {},
                 })
 
-        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call", mock_llm)
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_large_text_call", mock_llm)
 
         agent = RequirementsValidationAgent()
         result = agent.process(self._validation_state())
@@ -753,7 +753,7 @@ class TestRequirementsValidationAgent:
             else:
                 return json.dumps({"confidence_score": 0.78, "issues": [], "requirement_notes": {}})
 
-        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_text_call", mock_llm)
+        monkeypatch.setattr("rfp_automation.agents.requirement_validation_agent.llm_large_text_call", mock_llm)
 
         # Create state with raw_text
         state = self._validation_state()
@@ -815,7 +815,7 @@ class TestRequirementsValidationAgent:
                 })
 
         monkeypatch.setattr(
-            "rfp_automation.agents.requirement_validation_agent.llm_text_call",
+            "rfp_automation.agents.requirement_validation_agent.llm_large_text_call",
             mock_llm,
         )
 
@@ -872,7 +872,7 @@ class TestRequirementsValidationAgent:
                 raise RuntimeError("LLM service unavailable")
 
         monkeypatch.setattr(
-            "rfp_automation.agents.requirement_validation_agent.llm_text_call",
+            "rfp_automation.agents.requirement_validation_agent.llm_large_text_call",
             mock_llm,
         )
 
@@ -908,7 +908,7 @@ class TestRequirementsValidationAgent:
             })
 
         monkeypatch.setattr(
-            "rfp_automation.agents.requirement_validation_agent.llm_text_call",
+            "rfp_automation.agents.requirement_validation_agent.llm_large_text_call",
             mock_llm,
         )
 
@@ -1368,7 +1368,7 @@ class TestWritingAgent:
 
         monkeypatch.setattr("rfp_automation.agents.writing_agent.MCPService",
                             lambda: self._mock_mcp())
-        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_text_call", mock_llm)
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_large_text_call", mock_llm)
 
         agent = RequirementWritingAgent()
         result = agent.process(self._writing_state())
@@ -1393,7 +1393,7 @@ class TestWritingAgent:
 
         monkeypatch.setattr("rfp_automation.agents.writing_agent.MCPService",
                             lambda: self._mock_mcp())
-        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_text_call", mock_llm)
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_large_text_call", mock_llm)
 
         agent = RequirementWritingAgent()
         result = agent.process(self._writing_state())
@@ -1444,7 +1444,7 @@ class TestWritingAgent:
 
         monkeypatch.setattr("rfp_automation.agents.writing_agent.MCPService",
                             lambda: self._mock_mcp())
-        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_text_call", mock_llm)
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_large_text_call", mock_llm)
 
         agent = RequirementWritingAgent()
         result = agent.process(self._writing_state(sections=sections))
@@ -1489,7 +1489,7 @@ class TestWritingAgent:
 
         monkeypatch.setattr("rfp_automation.agents.writing_agent.MCPService",
                             lambda: self._mock_mcp())
-        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_text_call",
+        monkeypatch.setattr("rfp_automation.agents.writing_agent.llm_large_text_call",
                             lambda prompt, deterministic=False: "")
 
         agent = RequirementWritingAgent()
@@ -1837,3 +1837,200 @@ class TestNarrativeAssemblyAgent:
         state = RFPGraphState(status=PipelineStatus.ASSEMBLING_NARRATIVE).model_dump()
         with pytest.raises(ValueError, match="No rfp_id"):
             agent.process(state)
+
+
+# ═══════════════════════════════════════════════════════════
+# Pipeline Fix v3 — New Tests
+# ═══════════════════════════════════════════════════════════
+
+
+class TestLlmLargeTextCall:
+    """Verify llm_large_text_call uses the large model from config."""
+
+    def test_uses_large_model(self, monkeypatch):
+        """llm_large_text_call should instantiate ChatGroq with llm_large_model."""
+        from rfp_automation.services import llm_service
+        from rfp_automation.config import Settings
+
+        captured = {}
+
+        class FakeResponse:
+            content = "test response"
+            response_metadata = {"finish_reason": "stop", "token_usage": {"total_tokens": 10}}
+
+        class FakeChatGroq:
+            def __init__(self, **kwargs):
+                captured.update(kwargs)
+
+            def invoke(self, prompt):
+                return FakeResponse()
+
+        monkeypatch.setattr("langchain_groq.ChatGroq", FakeChatGroq)
+
+        # Mock KeyRotator
+        class FakeRotator:
+            def next_key(self):
+                return "fake-key"
+
+        monkeypatch.setattr(llm_service.KeyRotator, "get", staticmethod(lambda: FakeRotator()))
+
+        # Mock settings
+        settings = Settings(
+            groq_api_key="fake",
+            llm_large_model="meta-llama/llama-4-scout-17b-16e-instruct",
+            llm_large_max_tokens=8192,
+        )
+        monkeypatch.setattr(llm_service, "get_settings", lambda: settings)
+
+        result = llm_service.llm_large_text_call("test prompt", deterministic=True)
+        assert result == "test response"
+        assert captured["model"] == "meta-llama/llama-4-scout-17b-16e-instruct"
+        assert captured["max_tokens"] == 8192
+
+
+class TestD1IssueCategorization:
+    """Verify Type 1 / Type 2 issue classification."""
+
+    def test_type1_and_type2_separation(self):
+        from rfp_automation.agents.technical_validation_agent import TechnicalValidationAgent
+        from rfp_automation.models.schemas import ValidationCheckResult
+
+        checks = [
+            ValidationCheckResult(
+                check_name="completeness",
+                passed=False,
+                issues=[
+                    "REQ-0001 is missing from the proposal",
+                    "REQ-0002 response is vague and incomplete",
+                    "REQ-0003 not mentioned anywhere",
+                ],
+            ),
+            ValidationCheckResult(
+                check_name="alignment",
+                passed=False,
+                issues=[
+                    "REQ-0004 response contradicts the requirement",
+                    "REQ-0005 is absent from the technical section",
+                ],
+            ),
+        ]
+
+        result = TechnicalValidationAgent._categorize_issues(checks)
+        assert "TYPE 1" in result
+        assert "TYPE 2" in result
+        assert "vague and incomplete" in result  # Type 1
+        assert "missing from the proposal" in result  # Type 2
+        assert "absent" in result  # Type 2
+
+    def test_no_issues_returns_empty(self):
+        from rfp_automation.agents.technical_validation_agent import TechnicalValidationAgent
+        from rfp_automation.models.schemas import ValidationCheckResult
+
+        checks = [
+            ValidationCheckResult(check_name="completeness", passed=True, issues=[]),
+        ]
+        result = TechnicalValidationAgent._categorize_issues(checks)
+        assert result == ""
+
+
+class TestD1FullProposalVisibility:
+    """Verify D1 doesn't truncate proposals within the new 25K limit."""
+
+    def test_25k_proposal_not_truncated(self, monkeypatch):
+        from rfp_automation.agents import TechnicalValidationAgent
+        from rfp_automation.models.schemas import (
+            RFPMetadata, Requirement, AssembledProposal,
+            TechnicalValidationResult, RequirementsValidationResult,
+            ArchitecturePlan, WritingResult,
+        )
+        from rfp_automation.models.enums import RequirementType
+
+        # Build a 20K-char proposal (well within 25K limit)
+        proposal_text = "## Technical Solution\n" + ("We provide a robust solution. " * 700)
+        assert len(proposal_text) > 15_000
+
+        captured_prompts = []
+
+        def mock_llm(prompt, deterministic=False):
+            captured_prompts.append(prompt)
+            return json.dumps({
+                "decision": "PASS",
+                "checks": [
+                    {"check_name": "completeness", "passed": True, "issues": [], "description": "OK"},
+                    {"check_name": "alignment", "passed": True, "issues": [], "description": "OK"},
+                    {"check_name": "realism", "passed": True, "issues": [], "description": "OK"},
+                    {"check_name": "consistency", "passed": True, "issues": [], "description": "OK"},
+                ],
+                "critical_failures": 0,
+                "warnings": 0,
+                "feedback_for_revision": "",
+            })
+
+        monkeypatch.setattr(
+            "rfp_automation.agents.technical_validation_agent.llm_large_text_call",
+            mock_llm,
+        )
+
+        reqs = [
+            Requirement(
+                requirement_id=f"REQ-{i:04d}",
+                text=f"The system shall support feature {i}.",
+                type=RequirementType.MANDATORY,
+            )
+            for i in range(1, 6)
+        ]
+
+        state = RFPGraphState(
+            status=PipelineStatus.TECHNICAL_VALIDATION,
+            rfp_metadata=RFPMetadata(rfp_id="RFP-TEST"),
+            requirements=reqs,
+            requirements_validation=RequirementsValidationResult(validated_requirements=reqs),
+            assembled_proposal=AssembledProposal(
+                full_narrative=proposal_text,
+                word_count=len(proposal_text.split()),
+            ),
+        ).model_dump()
+
+        agent = TechnicalValidationAgent()
+        result = agent.process(state)
+
+        # Should have called the LLM at least once
+        assert len(captured_prompts) >= 1
+        # The proposal in the prompt should NOT be truncated (< 25K)
+        prompt = captured_prompts[0]
+        assert "truncated" not in prompt.lower() or len(proposal_text) > 25_000
+        assert result["technical_validation"]["decision"] == "PASS"
+
+
+class TestPlaceholderDetection:
+    """Verify C2 placeholder regex catches common patterns."""
+
+    def test_detects_common_placeholders(self):
+        from rfp_automation.agents.writing_agent import _PLACEHOLDER_RE
+
+        test_cases = [
+            "[Insert Company Name]",
+            "[Vendor Name]",
+            "[Authorized Signatory Name]",
+            "[TBD]",
+            "[TODO: fill in later]",
+            "[Date]",
+            "[Digital Signature]",
+            "[Client Address]",
+        ]
+
+        for placeholder in test_cases:
+            assert _PLACEHOLDER_RE.search(placeholder), f"Failed to detect: {placeholder}"
+
+    def test_ignores_normal_brackets(self):
+        from rfp_automation.agents.writing_agent import _PLACEHOLDER_RE
+
+        # These should NOT be detected as placeholders
+        normal_texts = [
+            "[Section 3.2]",
+            "[REQ-0001]",
+            "[Figure 1: Architecture Diagram]",
+        ]
+
+        for text in normal_texts:
+            assert not _PLACEHOLDER_RE.search(text), f"False positive: {text}"

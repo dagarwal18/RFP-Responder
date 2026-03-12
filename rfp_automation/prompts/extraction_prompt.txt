@@ -49,6 +49,9 @@ WHAT IS NOT A REQUIREMENT:
 - Background context or informational statements.
 - Aspirational language without obligation verbs.
 - Naked list headers with no actionable content.
+- Evaluation scoring criteria or rubrics (e.g., "Solution architecture and design (10%)").
+- Evaluation methodology or selection process descriptions.
+- Phase descriptions of the evaluation process.
 
 SECTION: {section_title}
 

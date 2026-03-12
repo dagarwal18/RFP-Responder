@@ -545,7 +545,12 @@ class ArchitecturePlanningAgent(BaseAgent):
                            "payment", "licensing"],
             "OPERATIONAL": ["support", "maintenance", "operational", "sla",
                             "service", "monitoring", "management"],
+            "TRAINING": ["training", "change", "adoption", "workshop", "learning"],
+            "SUBMISSION": ["submission", "proposal", "format", "deadline", "forms"],
+            "EVALUATION": ["evaluation", "scoring", "criteria", "assessment"],
         }
+
+        _SLA_KEYWORDS = {"sla", "uptime", "downtime", "availability", "resolution"}
 
         # Classification → preferred section keywords
         _CLASS_KEYWORDS: dict[str, list[str]] = {
@@ -626,6 +631,10 @@ class ArchitecturePlanningAgent(BaseAgent):
                 title_kws = set(re.findall(r"[a-z]{4,}", lower_title))
                 overlap = req_words & title_kws
                 score += len(overlap) * 2
+
+                # Negative filter: SLA requirements in training sections
+                if any(kw in req_text for kw in _SLA_KEYWORDS) and "training" in lower_title:
+                    score -= 5
 
                 if score > best_score:
                     best_score = score

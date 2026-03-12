@@ -46,6 +46,10 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.2
     llm_max_tokens: int = 8192
 
+    # ── Large-context model (for validation, writing) ───
+    llm_large_model: str = "meta-llama/llama-4-scout-17b-16e-instruct"
+    llm_large_max_tokens: int = 8192
+
     # ── VLM (HuggingFace Inference API) ─────────────────
     vlm_provider: str = "huggingface"  # "huggingface" or "groq"
     vlm_model: str = "Qwen/Qwen3-VL-8B-Instruct:novita"

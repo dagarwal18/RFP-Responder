@@ -35,7 +35,7 @@ from rfp_automation.models.schemas import (
     ResponseSection,
 )
 from rfp_automation.mcp import MCPService
-from rfp_automation.services.llm_service import llm_text_call
+from rfp_automation.services.llm_service import llm_text_call, llm_large_text_call
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,11 @@ _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "writing_pro
 # Section types that C2 writes content for.
 # commercial and legal are handled by E1 and E2 respectively.
 _WRITABLE_SECTION_TYPES = {"requirement_driven", "knowledge_driven", "boilerplate"}
+
+_PLACEHOLDER_RE = re.compile(
+    r'\[(?:Insert|Vendor|Company|Client|Authorized|Name|Address|'
+    r'Date|Digital Signature|TBD|TODO)[^\]]*\]', re.IGNORECASE,
+)
 
 
 class RequirementWritingAgent(BaseAgent):
@@ -256,7 +261,7 @@ class RequirementWritingAgent(BaseAgent):
                 f"[C2] Writing section {section_id}: {title} | "
                 f"type={section_type} | {len(req_ids)} requirements"
             )
-            raw_response = llm_text_call(prompt, deterministic=True)
+            raw_response = llm_large_text_call(prompt, deterministic=True)
             logger.debug(
                 f"[C2] LLM response for {section_id} "
                 f"({len(raw_response)} chars): {raw_response[:500]}"
@@ -266,6 +271,9 @@ class RequirementWritingAgent(BaseAgent):
             content, addressed, word_count = self._parse_response(
                 raw_response, section_id
             )
+
+            # ── 7g. Detect placeholders ─────────────────
+            self._detect_placeholders(content, section_id)
 
             section_responses.append(
                 SectionResponse(
@@ -447,6 +455,9 @@ class RequirementWritingAgent(BaseAgent):
             logger.warning(f"[C2] Empty LLM response for section {section_id}")
             return "", [], 0
 
+        # Strip <think>...</think> tags that Qwen models emit
+        text = re.sub(r"<think>[\s\S]*?</think>", "", text).strip()
+
         # Strip markdown code fences
         fence_match = re.search(
             r"```(?:json)?\s*\n?(.*?)\n?\s*```",
@@ -497,6 +508,14 @@ class RequirementWritingAgent(BaseAgent):
         )
         fallback_content = raw_response.strip()
         return fallback_content, [], len(fallback_content.split())
+
+    @staticmethod
+    def _detect_placeholders(content: str, section_id: str) -> list[str]:
+        """Detect unfilled placeholder brackets in generated content."""
+        found = _PLACEHOLDER_RE.findall(content)
+        if found:
+            logger.warning(f"[C2] {len(found)} placeholder(s) in {section_id}: {found}")
+        return found
 
     def _build_coverage_matrix(
         self,

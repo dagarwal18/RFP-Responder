@@ -31,7 +31,7 @@ from rfp_automation.models.schemas import (
     ValidationIssue,
 )
 from rfp_automation.models.state import RFPGraphState
-from rfp_automation.services.llm_service import llm_text_call
+from rfp_automation.services.llm_service import llm_text_call, llm_large_text_call
 
 logger = logging.getLogger(__name__)
 
@@ -74,11 +74,11 @@ class RequirementsValidationAgent(BaseAgent):
             indent=2,
         )
         # Inject original RFP text so LLM can cross-check factual accuracy
-        # Budget: template ~2.8K + requirements ≤8K + rfp_context ≤5K
-        #       = ~15-16K chars ≈ 4000-4200 tokens (within 6000 TPM)
-        rfp_context = state.raw_text[:5_000] if state.raw_text else "No RFP source text available."
+        # Budget: template ~2.8K + requirements ≤12K + rfp_context ≤15K
+        #       = ~30K chars — feasible with Llama 4 Scout (30K TPM)
+        rfp_context = state.raw_text[:15_000] if state.raw_text else "No RFP source text available."
         prompt = template.format(
-            requirements_json=requirements_json[:8_000],
+            requirements_json=requirements_json[:12_000],
             rfp_context=rfp_context,
         )
 
@@ -91,7 +91,7 @@ class RequirementsValidationAgent(BaseAgent):
         # ── 2. Call LLM for validation ──────────────────────
         logger.info(f"[B2] Calling LLM for validation ({len(prompt)} char prompt)")
         try:
-            raw_response = llm_text_call(prompt, deterministic=True)
+            raw_response = llm_large_text_call(prompt, deterministic=True)
             logger.debug(
                 f"[B2] Validation LLM response ({len(raw_response)} chars):\n"
                 f"{raw_response[:2000]}"
@@ -247,7 +247,7 @@ class RequirementsValidationAgent(BaseAgent):
             return requirements, set()
 
         try:
-            raw_response = llm_text_call(prompt, deterministic=True)
+            raw_response = llm_large_text_call(prompt, deterministic=True)
             correction_data = self._parse_validation_json(raw_response)
         except Exception as exc:
             logger.warning(
@@ -338,7 +338,7 @@ class RequirementsValidationAgent(BaseAgent):
         )
 
         try:
-            raw = llm_text_call(refinement_prompt, deterministic=True)
+            raw = llm_large_text_call(refinement_prompt, deterministic=True)
             refined_data = self._parse_validation_json(raw)
             new_confidence = float(refined_data.get("confidence_score", original_confidence))
             new_issues = self._build_issues(refined_data.get("issues", []))
@@ -385,17 +385,33 @@ class RequirementsValidationAgent(BaseAgent):
             lines = [l for l in lines if not l.strip().startswith("```")]
             text = "\n".join(lines)
 
-        # Extract JSON object
+        # Extract JSON object or array
         try:
-            start = text.index("{")
-            end = text.rindex("}") + 1
+            obj_start = text.find("{")
+            arr_start = text.find("[")
+            
+            starts = [s for s in (obj_start, arr_start) if s != -1]
+            if not starts:
+                raise ValueError("No JSON structure")
+                
+            start = min(starts)
+            if start == obj_start:
+                end = text.rindex("}") + 1
+            else:
+                end = text.rindex("]") + 1
+                
             text = text[start:end]
         except ValueError:
-            logger.warning("[B2] No JSON object found in LLM response")
+            logger.warning("[B2] No JSON object/array found in LLM response")
             return {}
 
         try:
             data = json.loads(text)
+            if isinstance(data, list):
+                if data and isinstance(data[0], dict) and "corrected_text" in data[0]:
+                    data = {"corrections": data}
+                else:
+                    data = {"issues": data}
         except json.JSONDecodeError as exc:
             logger.warning(f"[B2] JSON parse error: {exc} — attempting repair")
             data = self._attempt_json_repair(text, "B2")

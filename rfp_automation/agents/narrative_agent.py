@@ -627,7 +627,7 @@ class NarrativeAssemblyAgent(BaseAgent):
         total = len(coverage_matrix)
         full = partial = 0
         for entry in coverage_matrix:
-            quality = entry.coverage_quality if hasattr(entry, "coverage_quality") else entry.get("coverage_quality", "")
+            quality = str(entry.coverage_quality if hasattr(entry, "coverage_quality") else entry.get("coverage_quality", "")).lower().strip()
             if quality == "full":
                 full += 1
             elif quality == "partial":
@@ -651,7 +651,7 @@ class NarrativeAssemblyAgent(BaseAgent):
         for entry in coverage_matrix:
             req_id = entry.requirement_id if hasattr(entry, "requirement_id") else entry.get("requirement_id", "")
             section_id = entry.addressed_in_section if hasattr(entry, "addressed_in_section") else entry.get("addressed_in_section", "")
-            quality = entry.coverage_quality if hasattr(entry, "coverage_quality") else entry.get("coverage_quality", "")
+            quality = str(entry.coverage_quality if hasattr(entry, "coverage_quality") else entry.get("coverage_quality", "")).lower().strip()
 
             # Resolve SEC-XX to human-readable title
             if section_title_map and section_id:
@@ -677,9 +677,9 @@ class NarrativeAssemblyAgent(BaseAgent):
 
         total = len(coverage_matrix)
         full = sum(1 for e in coverage_matrix
-                   if (e.coverage_quality if hasattr(e, "coverage_quality") else e.get("coverage_quality", "")) == "full")
+                   if str(e.coverage_quality if hasattr(e, "coverage_quality") else e.get("coverage_quality", "")).lower().strip() == "full")
         partial = sum(1 for e in coverage_matrix
-                      if (e.coverage_quality if hasattr(e, "coverage_quality") else e.get("coverage_quality", "")) == "partial")
+                      if str(e.coverage_quality if hasattr(e, "coverage_quality") else e.get("coverage_quality", "")).lower().strip() == "partial")
         missing = total - full - partial
 
         full_pct = (full / total * 100) if total else 0

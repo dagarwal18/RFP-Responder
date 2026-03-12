@@ -180,6 +180,9 @@ class RequirementsExtractionAgent(BaseAgent):
                     parsed = self._parse_requirements_json(raw_response, section_name, global_id_counter)
                     for req in parsed:
                         req.source_chunk_indices = chunk_indices
+                        # SLA sanity warning
+                        if "uptime" in req.text.lower() and re.search(r'\b(9[0-5])%\b', req.text):
+                            logger.warning(f"[B1] Suspicious SLA in {req.requirement_id}: {req.text[:100]} — verify against source")
                     all_requirements.extend(parsed)
                     global_id_counter += len(parsed)
                     i += batch_candidates_count # move forward

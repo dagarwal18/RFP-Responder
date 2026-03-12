@@ -39,7 +39,7 @@ from rfp_automation.models.schemas import (
     ValidationCheckResult,
 )
 from rfp_automation.models.state import RFPGraphState
-from rfp_automation.services.llm_service import llm_text_call
+from rfp_automation.services.llm_service import llm_text_call, llm_large_text_call
 
 logger = logging.getLogger(__name__)
 
@@ -53,10 +53,10 @@ _PROMPT_PATH = (
 # Groq free tier ≈ 6000 TPM.  We target ~4500 tokens for the
 # prompt (≈18 000 chars) leaving room for the response.
 _SINGLE_CALL_MAX_CHARS = 10_000   # switch to multi-pass above this
-_MAX_PROPOSAL_CHARS = 8_000
-_MAX_REQUIREMENTS_CHARS = 6_000
+_MAX_PROPOSAL_CHARS = 25_000
+_MAX_REQUIREMENTS_CHARS = 12_000
 _MAX_REQ_TEXT_LEN = 120
-_MAX_REQUIREMENTS_COUNT = 60
+_MAX_REQUIREMENTS_COUNT = 150
 
 # Multi-pass budget per call
 _PASS_MAX_PROPOSAL_CHARS = 4_000
@@ -132,6 +132,8 @@ class TechnicalValidationAgent(BaseAgent):
 
         # ── Compute counts & decision ─────────────────────
         critical_checks = {"completeness", "alignment"}
+        if prev_retry < 2:
+            critical_checks.add("realism")
         critical_failures = 0
         warnings = 0
 
@@ -150,6 +152,21 @@ class TechnicalValidationAgent(BaseAgent):
         new_retry_count = prev_retry + (
             1 if decision == ValidationDecision.REJECT else 0
         )
+
+        # ── Categorize issues (Type 1 / Type 2) ──────────
+        if decision == ValidationDecision.REJECT:
+            categorized = self._categorize_issues(checks)
+            if categorized:
+                feedback = categorized
+
+            # ── Feedback loop detection ───────────────────
+            prev_feedback = state.technical_validation.feedback_for_revision
+            if prev_feedback and feedback:
+                prev_reqs = set(re.findall(r'REQ-\d+', prev_feedback))
+                curr_reqs = set(re.findall(r'REQ-\d+', feedback))
+                if prev_reqs and len(prev_reqs & curr_reqs) / len(prev_reqs) > 0.8:
+                    logger.warning("[D1] Feedback loop: 80%+ same REQs flagged — marking for human review")
+                    feedback = f"[STUCK LOOP] {feedback}"
 
         result = TechnicalValidationResult(
             decision=decision,
@@ -194,7 +211,7 @@ class TechnicalValidationAgent(BaseAgent):
         returns (None, None) to signal the caller to retry with multi-pass.
         """
         try:
-            raw = llm_text_call(prompt, deterministic=True)
+            raw = llm_large_text_call(prompt, deterministic=True)
         except Exception as exc:
             logger.error(f"[D1] Single-call LLM failed: {exc}")
             return self._default_checks(), ""
@@ -328,7 +345,7 @@ class TechnicalValidationAgent(BaseAgent):
             f"[D1] Multi-pass: {check_name} ({len(prompt)} chars)"
         )
         try:
-            raw = llm_text_call(prompt, deterministic=True)
+            raw = llm_large_text_call(prompt, deterministic=True)
             data = self._parse_json(raw)
             issues = [
                 str(i).strip() for i in data.get("issues", [])
@@ -419,6 +436,27 @@ class TechnicalValidationAgent(BaseAgent):
             )
             for n in ("completeness", "alignment", "realism", "consistency")
         ]
+
+    @staticmethod
+    def _categorize_issues(checks: list[ValidationCheckResult]) -> str:
+        """Categorize issues:
+        Type 1: Present in proposal but poorly written / incomplete
+        Type 2: Not present in proposal at all
+        """
+        type1, type2 = [], []
+        for check in checks:
+            for issue in check.issues:
+                if any(kw in issue.lower() for kw in ["missing", "not mentioned", "absent", "no reference"]):
+                    type2.append(f"[{check.check_name}] {issue}")
+                else:
+                    type1.append(f"[{check.check_name}] {issue}")
+
+        parts = []
+        if type1:
+            parts.append("TYPE 1 — In capabilities but poorly written:\n" + "\n".join(f"  • {i}" for i in type1))
+        if type2:
+            parts.append("TYPE 2 — Not present in capabilities:\n" + "\n".join(f"  • {i}" for i in type2))
+        return "\n\n".join(parts) if parts else ""
 
     # ── JSON parsing ─────────────────────────────────────
 

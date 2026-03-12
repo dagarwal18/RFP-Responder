@@ -423,3 +423,79 @@ def llm_deterministic_call(prompt: str, max_retries: int = 1) -> str:
         )
 
     return _strip_think_tags(content)
+
+
+def llm_large_text_call(
+    prompt: str, max_retries: int = 2, deterministic: bool = False,
+) -> str:
+    """LLM call using the large-context model (Llama 4 Scout).
+
+    Use for agents that need bigger input windows:
+    B2 validation, C2 writing, D1 technical validation.
+    """
+    tracker = LLMCallTracker.get()
+    settings = get_settings()
+    rotator = KeyRotator.get()
+
+    tag = "[LLM-LARGE]"
+    logger.debug(f"{tag} Prompt length: {len(prompt)} chars")
+    logger.debug(f"{tag} Prompt preview:\n{prompt[:500]}{'…' if len(prompt) > 500 else ''}")
+
+    from langchain_groq import ChatGroq
+
+    api_key = rotator.next_key()
+    llm = ChatGroq(
+        api_key=api_key,
+        model=settings.llm_large_model,
+        temperature=0.0 if deterministic else settings.llm_temperature,
+        max_tokens=settings.llm_large_max_tokens,
+        **({"model_kwargs": {"top_p": 1.0, "seed": 42}} if deterministic else {}),
+    )
+
+    attempts = max_retries + 1
+    content = ""
+
+    for attempt in range(1, attempts + 1):
+        t0 = time.perf_counter()
+        try:
+            response = llm.invoke(prompt)
+        except Exception as exc:
+            exc_str = str(exc)
+            if "413" in exc_str or "429" in exc_str or "503" in exc_str or "rate_limit" in exc_str.lower():
+                if attempt < attempts:
+                    wait = min(30, 10 * attempt)
+                    logger.warning(
+                        f"{tag} Rate limit hit (attempt {attempt}/{attempts}). "
+                        f"Waiting {wait}s for TPM window to reset..."
+                    )
+                    time.sleep(wait)
+                    continue
+                else:
+                    logger.error(f"{tag} Rate limit exceeded on final attempt: {exc}")
+            raise
+        elapsed = time.perf_counter() - t0
+        content = response.content or ""
+
+        meta = getattr(response, "response_metadata", {}) or {}
+        finish_reason = meta.get("finish_reason", "unknown")
+        usage = meta.get("token_usage") or meta.get("usage", {})
+        total_tokens = _extract_token_count(response)
+        logger.info(
+            f"{tag} Response received in {elapsed:.2f}s | "
+            f"Response length: {len(content)} chars | "
+            f"finish_reason={finish_reason} | tokens={usage}"
+        )
+        logger.debug(f"{tag} Full response:\n{content}")
+
+        tracker.record_call(tokens_used=total_tokens)
+
+        if content.strip():
+            return _strip_think_tags(content)
+
+        logger.warning(
+            f"{tag} Empty response on attempt {attempt}/{attempts} "
+            f"(finish_reason={finish_reason}). "
+            f"{'Retrying…' if attempt < attempts else 'No retries left.'}"
+        )
+
+    return _strip_think_tags(content)

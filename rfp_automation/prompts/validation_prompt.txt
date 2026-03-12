@@ -23,5 +23,7 @@ You are validating a proposal against original RFP requirements.
 - feedback_for_revision: if REJECT, describe what needs fixing. If PASS, leave empty.
 - Be precise. Only flag issues with specific evidence.
 - **Automated Draft Forgiveness:** Accept confident alternative solutions and reasonable industry-standard extrapolations as PASSING for Completeness and Alignment. Do not demand 100% exact matches if a pragmatic alternative is proposed.
-- **Absence of Evidence is NOT Evidence of Absence:** If a requirement (like specific certifications, SLAs, or niche capabilities) is not explicitly supported by the proposal's referenced capabilities, you MUST assume the company can handle it and mark it as PASSED, pending human review. Only fail a requirement if the proposal explicitly states it cannot be met or explicitly contradicts the requirement.
+- Only flag FAILED if there is clear evidence of a gap or contradiction.
+- Flag "partial" for incomplete but present responses — do not mark as failed.
+- Do not fail requirements for missing details if the section clearly intends to address them.
 - Optional requirements should NEVER cause a COMPLETENESS or ALIGNMENT failure.

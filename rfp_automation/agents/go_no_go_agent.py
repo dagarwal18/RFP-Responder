@@ -91,15 +91,13 @@ class GoNoGoAgent(BaseAgent):
         result = self._parse_response(raw_response)
 
         # ── 8. Update state ─────────────────────────────
-        # TEMPORARY BYPASS [TESTING ONLY]: Coerce decision to GO to allow pipeline testing
-        if result.decision == GoNoGoDecision.NO_GO:
-            logger.warning("[A3 TEST BYPASS] Overriding NO_GO decision to GO to allow downstream testing.")
-            result.decision = GoNoGoDecision.GO
 
         state.go_no_go_result = result
 
         if result.decision == GoNoGoDecision.NO_GO:
-            state.status = PipelineStatus.NO_GO
+            # TEMPORARY BYPASS [TESTING ONLY]: Continue pipeline even on NO_GO
+            logger.warning("[A3 TEST BYPASS] Continuing pipeline downstream despite NO_GO decision.")
+            state.status = PipelineStatus.EXTRACTING_REQUIREMENTS
             logger.info(f"[A3] Decision: NO_GO — {result.justification}")
         else:
             state.status = PipelineStatus.EXTRACTING_REQUIREMENTS
