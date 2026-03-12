@@ -73,16 +73,17 @@ class RequirementsValidationAgent(BaseAgent):
             [r.model_dump(mode="json") for r in requirements],
             indent=2,
         )
-        # Inject original RFP text so LLM can cross-check factual accuracy
-        # Budget: template ~2.8K + requirements ≤12K + rfp_context ≤15K
-        #       = ~30K chars — feasible with Llama 4 Scout (30K TPM)
-        rfp_context = state.raw_text[:15_000] if state.raw_text else "No RFP source text available."
+        # Inject original RFP text so LLM can cross-check factual accuracy.
+        # This agent calls llm_large_text_call → Llama 4 Scout
+        # with 131K context window and 30K TPM per key.
+        # Budget: ~25K tokens input comfortably fits all requirements + full RFP text.
+        rfp_context = state.raw_text[:80_000] if state.raw_text else "No RFP source text available."
         prompt = template.format(
-            requirements_json=requirements_json[:12_000],
+            requirements_json=requirements_json[:50_000],
             rfp_context=rfp_context,
         )
 
-        if len(prompt) > 18_000:
+        if len(prompt) > 100_000:
             logger.warning(
                 f"[B2] Prompt is large ({len(prompt)} chars ≈ "
                 f"{len(prompt) // 4} tokens) — may hit TPM limits"

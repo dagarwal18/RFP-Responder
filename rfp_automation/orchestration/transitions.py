@@ -39,14 +39,17 @@ def route_after_structuring(state: dict[str, Any]) -> str:
 
 def route_after_go_no_go(state: dict[str, Any]) -> str:
     """
-    NO_GO → end.
     GO   → proceed to B1 Requirements Extraction.
+    NO_GO → BYPASS: still proceed to B1 (decision stays in state for frontend display).
     """
     result = state.get("go_no_go_result", {})
     decision = result.get("decision", "GO")
 
     if decision == "NO_GO":
-        return "end_no_go"
+        logger.warning(
+            "[ROUTING] Go/No-Go returned NO_GO — bypassing termination, "
+            "continuing pipeline. Decision preserved in state for frontend."
+        )
     return "b1_requirements_extraction"
 
 

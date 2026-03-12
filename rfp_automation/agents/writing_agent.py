@@ -405,13 +405,13 @@ class RequirementWritingAgent(BaseAgent):
         template = _PROMPT_PATH.read_text(encoding="utf-8")
 
         # ── Token-aware budget ────────────────────────────
+        # This agent calls llm_large_text_call → Llama 4 Scout
+        # with 131K context window and 30K TPM per key.
+        # Budget: ~25K tokens input (~100K chars) with 8K reserved for output.
         chars_per_token = 4
-        settings = get_settings()
-        max_tokens = settings.llm_max_tokens
-        reserved_output = 2500  # tokens for LLM response (section prose)
-        template_overhead = len(template) // chars_per_token + 200
+        input_budget_tokens = 25_000
         available_chars = max(
-            (max_tokens - reserved_output - template_overhead) * chars_per_token,
+            input_budget_tokens * chars_per_token,
             4000,
         )
 
@@ -481,7 +481,10 @@ class RequirementWritingAgent(BaseAgent):
                     candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
                     data = json.loads(candidate)
                 except json.JSONDecodeError:
-                    data = None
+                    # Attempt JSON repair for truncated output
+                    data = self._attempt_json_repair(
+                        text[obj_start : obj_end + 1], section_id
+                    )
             else:
                 data = None
 
@@ -501,13 +504,22 @@ class RequirementWritingAgent(BaseAgent):
 
             return content, addressed, actual_word_count
 
-        # Fallback: treat entire response as content
+        # Fallback: treat entire response as content, but recover REQ-IDs
         logger.warning(
             f"[C2] Could not parse JSON for section {section_id} — "
-            f"using raw text as content"
+            f"using raw text as content (recovering REQ-IDs from text)"
         )
         fallback_content = raw_response.strip()
-        return fallback_content, [], len(fallback_content.split())
+        # Auto-recover requirements_addressed from REQ-XXXX patterns
+        recovered_ids = list(dict.fromkeys(
+            re.findall(r'\bREQ-\d{4}\b', fallback_content)
+        ))
+        if recovered_ids:
+            logger.info(
+                f"[C2] Recovered {len(recovered_ids)} requirement IDs "
+                f"from prose for {section_id}: {recovered_ids}"
+            )
+        return fallback_content, recovered_ids, len(fallback_content.split())
 
     @staticmethod
     def _detect_placeholders(content: str, section_id: str) -> list[str]:
@@ -516,6 +528,29 @@ class RequirementWritingAgent(BaseAgent):
         if found:
             logger.warning(f"[C2] {len(found)} placeholder(s) in {section_id}: {found}")
         return found
+
+    @staticmethod
+    def _attempt_json_repair(text: str, section_id: str) -> dict | None:
+        """Try to fix common JSON issues from truncated LLM output."""
+        tag = f"[C2] JSON repair ({section_id})"
+        # Strip trailing commas
+        repaired = re.sub(r",\s*([}\]])", r"\1", text)
+        # Close unclosed strings
+        if repaired.count('"') % 2 != 0:
+            repaired += '"'
+        # Close unclosed arrays
+        open_brackets = repaired.count("[") - repaired.count("]")
+        repaired += "]" * max(open_brackets, 0)
+        # Close unclosed braces
+        open_braces = repaired.count("{") - repaired.count("}")
+        repaired += "}" * max(open_braces, 0)
+        try:
+            data = json.loads(repaired)
+            logger.info(f"{tag} Repair succeeded")
+            return data
+        except json.JSONDecodeError:
+            logger.debug(f"{tag} Repair failed")
+            return None
 
     def _build_coverage_matrix(
         self,
