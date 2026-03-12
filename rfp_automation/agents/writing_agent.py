@@ -9,6 +9,7 @@ Inputs:
   - requirements_validation.validated_requirements (from B2)
   - Falls back to requirements (raw B1 output) if B2 returned empty
   - Company capabilities from MCP Knowledge Store
+  - technical_validation.feedback_for_revision — D1 feedback on retry
 
 Outputs:
   - writing_result: WritingResult with section_responses + coverage_matrix
@@ -109,6 +110,12 @@ class RequirementWritingAgent(BaseAgent):
         # ── 6. RFP response instructions (from C1) ─────
         rfp_instructions = state.architecture_plan.rfp_response_instructions or ""
 
+        # ── 6b. Check for D1 revision feedback ──────────
+        revision_feedback = ""
+        if state.technical_validation and state.technical_validation.feedback_for_revision:
+            revision_feedback = state.technical_validation.feedback_for_revision
+            logger.info(f"[C2] D1 revision feedback present ({len(revision_feedback)} chars) — will inject into prompts")
+
         # ── 7. Prepare RFP metadata for prompt injection ──
         rfp_meta = state.rfp_metadata
 
@@ -203,7 +210,33 @@ class RequirementWritingAgent(BaseAgent):
                 self._get_attr(section, "mapped_capabilities", []),
             )
 
-            # ── 9d. Build prompt ────────────────────────
+            # ── 7d. Filter revision feedback for this section ─
+            section_feedback = ""
+            if revision_feedback and req_ids:
+                feedback_lines = []
+                import re
+                # Split feedback by common delimiters to isolate individual points
+                parts = re.split(r'[;|\n]', revision_feedback)
+                for part in parts:
+                    part = part.strip()
+                    if not part:
+                        continue
+                        
+                    # CRITICAL FIX: Use strict word boundaries to prevent REQ-001 matching REQ-0011
+                    # Keep feedback if it explicitly mentions a REQ belonging to this section
+                    if any(re.search(rf'\b{re.escape(rid)}\b', part) for rid in req_ids):
+                        # Clean up leading categories (e.g. "Completeness: REQ-001...")
+                        clean_part = re.sub(r'^(Completeness|Alignment|Realism|Consistency):\s*', '', part)
+                        feedback_lines.append(f"- {clean_part}")
+                
+                if feedback_lines:
+                    section_feedback = "The Technical Validation Agent flagged these issues in your previous draft that MUST BE FIXED:\n" + "\n".join(feedback_lines)
+            elif revision_feedback and not req_ids:
+                # If section has no mapped reqs but there is feedback (e.g. executive summary realism),
+                # maybe pass general points. But for now, safer to just omit.
+                pass
+
+            # ── 7e. Build prompt ────────────────────────
             prompt = self._build_prompt(
                 section_title=title,
                 section_type=section_type,
@@ -215,9 +248,10 @@ class RequirementWritingAgent(BaseAgent):
                 rfp_metadata=rfp_metadata_block,
                 prev_section_context=prev_ctx,
                 next_section_context=next_ctx,
+                revision_feedback=section_feedback,
             )
 
-            # ── 7e. Call LLM ────────────────────────────
+            # ── 7f. Call LLM ────────────────────────────
             logger.info(
                 f"[C2] Writing section {section_id}: {title} | "
                 f"type={section_type} | {len(req_ids)} requirements"
@@ -357,6 +391,7 @@ class RequirementWritingAgent(BaseAgent):
         rfp_metadata: str = "",
         prev_section_context: str = "",
         next_section_context: str = "",
+        revision_feedback: str = "",
     ) -> str:
         """Load the prompt template and inject context with token-aware truncation."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
@@ -378,6 +413,13 @@ class RequirementWritingAgent(BaseAgent):
         budget_inst = int(available_chars * 0.15)
         budget_guide = int(available_chars * 0.10)
 
+        # Build revision feedback block
+        feedback_block = (
+            revision_feedback[:2000]
+            if revision_feedback
+            else "No revision feedback — this is the initial writing pass."
+        )
+
         return (
             template
             .replace("{section_title}", section_title)
@@ -390,6 +432,7 @@ class RequirementWritingAgent(BaseAgent):
             .replace("{rfp_metadata}", rfp_metadata or "No metadata available.")
             .replace("{prev_section_context}", prev_section_context or "No previous section.")
             .replace("{next_section_context}", next_section_context or "No next section.")
+            .replace("{revision_feedback}", feedback_block)
         )
 
     def _parse_response(

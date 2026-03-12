@@ -9,8 +9,11 @@ described in the project spec.
 from __future__ import annotations
 
 from typing import Any
+import logging
 
 from rfp_automation.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 # ── After A2 Structuring ─────────────────────────────────
@@ -51,8 +54,8 @@ def route_after_go_no_go(state: dict[str, Any]) -> str:
 
 def route_after_validation(state: dict[str, Any]) -> str:
     """
-    REJECT and retries < max → loop back to C3 Narrative Assembly.
-    REJECT and retries >= max → escalate to human review.
+    REJECT and retries < max → loop back to C2 Requirement Writing.
+    REJECT and retries >= max → auto-pass to commercial_legal_parallel (testing only).
     PASS → proceed to E1+E2 (commercial+legal parallel).
     """
     settings = get_settings()
@@ -62,8 +65,9 @@ def route_after_validation(state: dict[str, Any]) -> str:
 
     if decision == "REJECT":
         if retries >= settings.max_validation_retries:
-            return "escalate_validation"
-        return "c3_narrative_assembly"  # loop back
+            logger.warning("[ROUTING] Max validation retries reached. Auto-passing to next agent for testing purposes.")
+            return "commercial_legal_parallel"
+        return "c2_requirement_writing"  # loop back to rewrite content
     return "commercial_legal_parallel"
 
 

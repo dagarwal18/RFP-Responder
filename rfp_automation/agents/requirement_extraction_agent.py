@@ -362,6 +362,10 @@ class RequirementsExtractionAgent(BaseAgent):
 
         for i, item in enumerate(data):
             try:
+                if not isinstance(item, dict):
+                    logger.warning(f"[B1] Skipping non-dict item in JSON array: {item}")
+                    continue
+
                 req_text = item.get("text", "").strip()
 
                 # Skip empty text

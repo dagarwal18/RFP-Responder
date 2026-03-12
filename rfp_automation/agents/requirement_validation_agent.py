@@ -74,11 +74,19 @@ class RequirementsValidationAgent(BaseAgent):
             indent=2,
         )
         # Inject original RFP text so LLM can cross-check factual accuracy
-        rfp_context = state.raw_text[:8_000] if state.raw_text else "No RFP source text available."
+        # Budget: template ~2.8K + requirements ≤8K + rfp_context ≤5K
+        #       = ~15-16K chars ≈ 4000-4200 tokens (within 6000 TPM)
+        rfp_context = state.raw_text[:5_000] if state.raw_text else "No RFP source text available."
         prompt = template.format(
-            requirements_json=requirements_json[:12_000],
+            requirements_json=requirements_json[:8_000],
             rfp_context=rfp_context,
         )
+
+        if len(prompt) > 18_000:
+            logger.warning(
+                f"[B2] Prompt is large ({len(prompt)} chars ≈ "
+                f"{len(prompt) // 4} tokens) — may hit TPM limits"
+            )
 
         # ── 2. Call LLM for validation ──────────────────────
         logger.info(f"[B2] Calling LLM for validation ({len(prompt)} char prompt)")
@@ -99,8 +107,20 @@ class RequirementsValidationAgent(BaseAgent):
 
         # ── 3. Parse validation response ────────────────────
         validation_data = self._parse_validation_json(raw_response)
-        confidence_score = float(validation_data.get("confidence_score", 0.0))
         issues = self._build_issues(validation_data.get("issues", []))
+
+        # Confidence: use LLM value, but apply heuristic if it returned 0.0
+        # with no issues (likely a parse or LLM output quirk).
+        raw_conf = validation_data.get("confidence_score")
+        if raw_conf is None or (raw_conf == 0 and not issues):
+            # Heuristic: base 0.90, subtract 0.05 per issue
+            confidence_score = max(0.90 - 0.05 * len(issues), 0.10)
+            logger.warning(
+                f"[B2] LLM returned no / zero confidence with {len(issues)} "
+                f"issues — using heuristic: {confidence_score:.3f}"
+            )
+        else:
+            confidence_score = float(raw_conf)
 
         logger.info(
             f"[B2] Validation result: confidence={confidence_score:.3f}, "
@@ -345,8 +365,19 @@ class RequirementsValidationAgent(BaseAgent):
     # ── JSON parsing ─────────────────────────────────────────
 
     def _parse_validation_json(self, raw_response: str) -> dict[str, Any]:
-        """Parse the LLM validation response into a dict."""
+        """Parse the LLM validation response into a dict.
+
+        Robustness layers:
+        1. Strip <think>…</think> reasoning tags (Qwen3 models)
+        2. Strip markdown code fences
+        3. Locate outermost { … } JSON object
+        4. On parse failure, attempt structural repair (remove trailing comma,
+           truncated strings, etc.)
+        """
         text = raw_response.strip()
+
+        # Strip <think>…</think> tags that Qwen models emit
+        text = re.sub(r"<think>[\s\S]*?</think>", "", text).strip()
 
         # Strip markdown code fences
         if text.startswith("```"):
@@ -366,10 +397,45 @@ class RequirementsValidationAgent(BaseAgent):
         try:
             data = json.loads(text)
         except json.JSONDecodeError as exc:
-            logger.warning(f"[B2] JSON parse error: {exc}")
-            return {}
+            logger.warning(f"[B2] JSON parse error: {exc} — attempting repair")
+            data = self._attempt_json_repair(text, "B2")
+            if data is None:
+                return {}
 
         return data if isinstance(data, dict) else {}
+
+    @staticmethod
+    def _attempt_json_repair(text: str, agent_tag: str) -> dict | None:
+        """Try to fix common JSON issues from LLM output."""
+        import re as _re
+
+        # 1. Remove trailing commas before } or ]
+        repaired = _re.sub(r",\s*([}\]])", r"\1", text)
+        try:
+            data = json.loads(repaired)
+            logger.info(f"[{agent_tag}] JSON repaired (trailing comma fix)")
+            return data
+        except json.JSONDecodeError:
+            pass
+
+        # 2. Truncated output — find last valid } and close
+        last_brace = text.rfind("}")
+        if last_brace > 0:
+            candidate = text[:last_brace + 1]
+            # Balance braces
+            open_count = candidate.count("{")
+            close_count = candidate.count("}")
+            if open_count > close_count:
+                candidate += "}" * (open_count - close_count)
+            try:
+                data = json.loads(candidate)
+                logger.info(f"[{agent_tag}] JSON repaired (truncation fix)")
+                return data
+            except json.JSONDecodeError:
+                pass
+
+        logger.error(f"[{agent_tag}] JSON repair failed — returning None")
+        return None
 
     # ── Issue building ───────────────────────────────────────
 

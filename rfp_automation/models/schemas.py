@@ -201,6 +201,7 @@ class ValidationCheckResult(BaseModel):
     check_name: str  # "completeness" | "alignment" | "realism" | "consistency"
     passed: bool = True
     issues: list[str] = []
+    description: str = ""  # LLM explanation of WHY this check passed/failed
 
 
 class TechnicalValidationResult(BaseModel):

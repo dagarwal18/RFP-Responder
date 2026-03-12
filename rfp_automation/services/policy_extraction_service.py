@@ -241,3 +241,105 @@ class PolicyExtractionService:
             if match:
                 max_num = max(max_num, int(match.group(1)))
         return max_num + 1
+
+    # ── Derived file sync ────────────────────────────
+
+    # Categories that map to capabilities.json
+    _CAPABILITY_CATEGORIES = {"capability", "commercial", "governance", "operational"}
+    # Categories that map to certifications.json
+    _CERTIFICATION_CATEGORIES = {"certification", "compliance"}
+
+    @staticmethod
+    def sync_derived_files() -> dict[str, int]:
+        """Derive capabilities.json and certifications.json from extracted_policies.json.
+
+        Called after each document upload to keep the structured KB files
+        in sync with the LLM-extracted policies.  Returns counts of
+        entries written to each file.
+        """
+        policies = PolicyExtractionService._load_policies_static()
+        if not policies:
+            logger.info("[PolicySync] No extracted policies — skipping sync")
+            return {"capabilities": 0, "certifications": 0}
+
+        data_dir = _POLICIES_PATH.parent
+
+        # ── Build capabilities ──────────────────────────
+        caps: list[dict] = []
+        for i, pol in enumerate(policies):
+            cat = pol.get("category", "")
+            if cat not in PolicyExtractionService._CAPABILITY_CATEGORIES:
+                continue
+
+            text = pol.get("policy_text", "").strip()
+            if not text or len(text) < 10:
+                continue
+
+            # Derive a short name from the first sentence / 80 chars
+            name = text.split(".")[0][:80].strip()
+            if not name:
+                name = text[:80]
+
+            # Extract keyword-style tags from the text
+            tags = _extract_tags(text)
+
+            caps.append({
+                "id": f"cap-doc-{i:03d}",
+                "name": name,
+                "description": text[:500],
+                "category": cat,
+                "tags": tags,
+                "evidence": pol.get("source_section", ""),
+                "source_policy_id": pol.get("policy_id", ""),
+            })
+
+        # ── Build certifications ────────────────────────
+        certs: dict[str, bool] = {}
+        for pol in policies:
+            cat = pol.get("category", "")
+            if cat not in PolicyExtractionService._CERTIFICATION_CATEGORIES:
+                continue
+
+            text = pol.get("policy_text", "").strip()
+            if not text:
+                continue
+
+            # Use the first sentence as the cert name
+            cert_name = text.split(".")[0][:100].strip()
+            if cert_name:
+                certs[cert_name] = True
+
+        # ── Write files ─────────────────────────────────
+        caps_path = data_dir / "capabilities.json"
+        caps_path.write_text(
+            json.dumps(caps, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+
+        certs_path = data_dir / "certifications.json"
+        certs_path.write_text(
+            json.dumps(certs, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+
+        logger.info(
+            f"[PolicySync] Synced {len(caps)} capabilities, "
+            f"{len(certs)} certifications from {len(policies)} policies"
+        )
+        return {"capabilities": len(caps), "certifications": len(certs)}
+
+
+def _extract_tags(text: str) -> list[str]:
+    """Extract simple keyword tags from policy text."""
+    # Common domain keywords to look for
+    _KEYWORDS = [
+        "cloud", "security", "compliance", "api", "5g", "bss", "oss",
+        "billing", "charging", "fraud", "revenue", "sla", "kubernetes",
+        "devops", "automation", "ai", "ml", "analytics", "migration",
+        "telecom", "network", "infrastructure", "monitoring", "testing",
+        "certification", "iso", "soc", "pci", "gdpr", "trai", "gst",
+        "tmf", "3gpp", "diameter", "sip", "nfv", "sdn", "iot",
+        "microservices", "container", "docker", "agile", "ci-cd",
+        "encryption", "authentication", "rbac", "saml", "oauth",
+    ]
+    text_lower = text.lower()
+    return [kw for kw in _KEYWORDS if kw in text_lower][:8]  # cap at 8 tags
+

@@ -190,6 +190,26 @@ def _sync_upload_process(
     )
     policies_count = len(new_policies)
 
+    # Sync derived KB files (capabilities.json, certifications.json)
+    # from the full set of extracted policies, then re-seed Pinecone
+    sync_counts = {"capabilities": 0, "certifications": 0}
+    try:
+        sync_counts = PolicyExtractionService.sync_derived_files()
+        logger.info(
+            f"[KB] Synced derived files: {sync_counts['capabilities']} capabilities, "
+            f"{sync_counts['certifications']} certifications"
+        )
+
+        # Re-seed Pinecone with updated capabilities so C2 uses them
+        from rfp_automation.mcp.knowledge_loader import seed_capabilities, seed_certifications_to_mongo
+        from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
+        store = KnowledgeStore()
+        seed_capabilities(store)
+        seed_certifications_to_mongo(store)
+        logger.info("[KB] Re-seeded Pinecone and MongoDB with document-derived knowledge")
+    except Exception as e:
+        logger.warning(f"[KB] Derived file sync/re-seed failed (non-fatal): {e}")
+
     return KBUploadResponse(
         doc_id=doc_id,
         doc_type=doc_type,
@@ -197,7 +217,12 @@ def _sync_upload_process(
         filename=filename,
         chunks_stored=chunks_stored,
         policies_extracted=policies_count,
-        message=f"Stored {chunks_stored} chunks as '{doc_type}' from {filename}. Extracted {policies_count} policies.",
+        message=(
+            f"Stored {chunks_stored} chunks as '{doc_type}' from {filename}. "
+            f"Extracted {policies_count} policies. "
+            f"Synced {sync_counts['capabilities']} capabilities, "
+            f"{sync_counts['certifications']} certifications."
+        ),
     )
 
 

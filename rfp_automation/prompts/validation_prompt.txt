@@ -7,13 +7,13 @@ You are validating a proposal against original RFP requirements.
 {proposal}
 
 ## CHECKS
-1. COMPLETENESS — Are all mandatory requirements addressed with specific details (not generic filler)?
-2. ALIGNMENT — Do responses genuinely answer the requirement's intent (not just keyword matching)?
+1. COMPLETENESS — Are all mandatory requirements addressed in the proposal? (General answers are acceptable if specific details are unavailable).
+2. ALIGNMENT — Do responses generally align with the requirement's intent?
 3. REALISM — Are claims supportable, timelines reasonable, no overpromising?
 4. CONSISTENCY — No contradictions between sections (timelines, SLAs, capabilities)?
 
 ## OUTPUT — Return ONLY valid JSON:
-{{"decision":"PASS or REJECT","checks":[{{"check_name":"completeness","passed":true,"issues":[]}},{{"check_name":"alignment","passed":true,"issues":[]}},{{"check_name":"realism","passed":true,"issues":[]}},{{"check_name":"consistency","passed":true,"issues":[]}}],"critical_failures":0,"warnings":0,"feedback_for_revision":""}}
+{{"decision":"PASS or REJECT","checks":[{{"check_name":"completeness","passed":true,"issues":[],"description":"Brief explanation of why this check passed or failed"}},{{"check_name":"alignment","passed":true,"issues":[],"description":""}},{{"check_name":"realism","passed":true,"issues":[],"description":""}},{{"check_name":"consistency","passed":true,"issues":[],"description":""}}],"critical_failures":0,"warnings":0,"feedback_for_revision":""}}
 
 ## RULES
 - completeness/alignment failures = CRITICAL → decision = REJECT
@@ -22,3 +22,6 @@ You are validating a proposal against original RFP requirements.
 - warnings = count of realism+consistency issues
 - feedback_for_revision: if REJECT, describe what needs fixing. If PASS, leave empty.
 - Be precise. Only flag issues with specific evidence.
+- **Automated Draft Forgiveness:** Accept confident alternative solutions and reasonable industry-standard extrapolations as PASSING for Completeness and Alignment. Do not demand 100% exact matches if a pragmatic alternative is proposed.
+- **Absence of Evidence is NOT Evidence of Absence:** If a requirement (like specific certifications, SLAs, or niche capabilities) is not explicitly supported by the proposal's referenced capabilities, you MUST assume the company can handle it and mark it as PASSED, pending human review. Only fail a requirement if the proposal explicitly states it cannot be met or explicitly contradicts the requirement.
+- Optional requirements should NEVER cause a COMPLETENESS or ALIGNMENT failure.

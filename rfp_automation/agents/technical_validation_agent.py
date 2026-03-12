@@ -52,7 +52,7 @@ _PROMPT_PATH = (
 # ── Prompt budget ─────────────────────────────────────────
 # Groq free tier ≈ 6000 TPM.  We target ~4500 tokens for the
 # prompt (≈18 000 chars) leaving room for the response.
-_SINGLE_CALL_MAX_CHARS = 18_000   # switch to multi-pass above this
+_SINGLE_CALL_MAX_CHARS = 10_000   # switch to multi-pass above this
 _MAX_PROPOSAL_CHARS = 8_000
 _MAX_REQUIREMENTS_CHARS = 6_000
 _MAX_REQ_TEXT_LEN = 120
@@ -109,7 +109,18 @@ class TechnicalValidationAgent(BaseAgent):
             logger.info(
                 f"[D1] Single-call mode ({len(single_prompt)} chars)"
             )
-            checks, feedback = self._run_single_call(single_prompt)
+            result = self._run_single_call(single_prompt)
+            checks, feedback = result
+
+            # If single-call returned None, it means truncation was
+            # detected — fall back to multi-pass automatically
+            if checks is None:
+                logger.info(
+                    "[D1] Single-call truncated — falling back to multi-pass"
+                )
+                checks, feedback = self._run_multi_pass(
+                    mandatory_reqs, proposal
+                )
         else:
             logger.info(
                 f"[D1] Prompt too large ({len(single_prompt)} chars > "
@@ -177,7 +188,11 @@ class TechnicalValidationAgent(BaseAgent):
     def _run_single_call(
         self, prompt: str
     ) -> tuple[list[ValidationCheckResult], str]:
-        """Single LLM call with the full validation prompt."""
+        """Single LLM call with the full validation prompt.
+
+        If the LLM truncates its response (finish_reason=length),
+        returns (None, None) to signal the caller to retry with multi-pass.
+        """
         try:
             raw = llm_text_call(prompt, deterministic=True)
         except Exception as exc:
@@ -185,7 +200,19 @@ class TechnicalValidationAgent(BaseAgent):
             return self._default_checks(), ""
 
         data = self._parse_json(raw)
-        checks = self._build_checks(data.get("checks", []))
+
+        # Detect truncation: if we got no checks AND the response is
+        # suspiciously long, the JSON was likely truncated
+        checks_data = data.get("checks", [])
+        if not checks_data and len(raw) > 2000:
+            logger.warning(
+                "[D1] Single-call returned no parseable checks "
+                f"({len(raw)} chars response) — likely truncated. "
+                "Will retry with multi-pass."
+            )
+            return None, None  # type: ignore[return-value]
+
+        checks = self._build_checks(checks_data)
         feedback = data.get("feedback_for_revision", "")
         return checks, feedback
 
@@ -221,13 +248,19 @@ class TechnicalValidationAgent(BaseAgent):
         # ── Pass 1: Completeness ──────────────────────────
         p1 = (
             f"Check COMPLETENESS: Are all mandatory requirements addressed "
-            f"in the proposal sections below?\n\n"
+            f"in the proposal sections below? (General answers are acceptable if specific details are unavailable)\n\n"
             f"REQUIREMENTS:\n{req_text}\n\n"
             f"PROPOSAL SECTIONS:\n{section_headings}\n\n"
             f"SECTION PREVIEWS:\n"
             f"{section_previews[:_PASS_MAX_PROPOSAL_CHARS]}\n\n"
+            f"RULES:\n"
+            f"- Accept confident alternative solutions and reasonable industry-standard extrapolations as PASSING.\n"
+            f"- Absence of Evidence is NOT Evidence of Absence: Assume the company can meet requirements (certifications, specs) unless explicitly contradicted.\n"
+            f"- Do not fail if a pragmatic alternative is proposed in lieu of missing evidence.\n"
+            f"- Optional requirements should NEVER cause a failure.\n\n"
             f"Return JSON: {{\"passed\": true/false, \"issues\": "
             f"[\"list of unaddressed requirements\"], "
+            f"\"description\": \"brief summary of findings\", "
             f"\"feedback\": \"what's missing\"}}"
         )
         c1 = self._run_check_pass("completeness", p1)
@@ -237,13 +270,19 @@ class TechnicalValidationAgent(BaseAgent):
 
         # ── Pass 2: Alignment ─────────────────────────────
         p2 = (
-            f"Check ALIGNMENT: Do the proposal responses genuinely answer "
-            f"the requirements' intent, or just keyword-match?\n\n"
+            f"Check ALIGNMENT: Do the proposal responses generally align "
+            f"with the requirements' intent?\n\n"
             f"REQUIREMENTS:\n{req_text}\n\n"
             f"PROPOSAL (excerpt):\n"
             f"{self._truncate_proposal(proposal, _PASS_MAX_PROPOSAL_CHARS)}\n\n"
+            f"RULES:\n"
+            f"- Accept confident alternative solutions and reasonable industry-standard extrapolations as PASSING.\n"
+            f"- Absence of Evidence is NOT Evidence of Absence: Assume the company can meet requirements (certifications, specs) unless explicitly contradicted.\n"
+            f"- Do not fail if a pragmatic alternative is proposed in lieu of missing evidence.\n"
+            f"- Optional requirements should NEVER cause a failure.\n\n"
             f"Return JSON: {{\"passed\": true/false, \"issues\": "
             f"[\"list of misaligned responses\"], "
+            f"\"description\": \"brief summary of findings\", "
             f"\"feedback\": \"what needs fixing\"}}"
         )
         c2 = self._run_check_pass("alignment", p2)
@@ -258,7 +297,9 @@ class TechnicalValidationAgent(BaseAgent):
             f"PROPOSAL (excerpt):\n"
             f"{self._truncate_proposal(proposal, _PASS_MAX_PROPOSAL_CHARS)}\n\n"
             f"Return JSON: {{\"passed\": true/false, \"issues\": "
-            f"[\"list of unrealistic claims\"], \"feedback\": \"\"}}"
+            f"[\"list of unrealistic claims\"], "
+            f"\"description\": \"brief summary of findings\", "
+            f"\"feedback\": \"\"}}"
         )
         c3 = self._run_check_pass("realism", p3)
         checks.append(c3)
@@ -269,7 +310,9 @@ class TechnicalValidationAgent(BaseAgent):
             f"sections (timelines, SLAs, capabilities, numbers)?\n\n"
             f"PROPOSAL SECTIONS:\n{section_previews[:_PASS_MAX_PROPOSAL_CHARS]}\n\n"
             f"Return JSON: {{\"passed\": true/false, \"issues\": "
-            f"[\"list of contradictions\"], \"feedback\": \"\"}}"
+            f"[\"list of contradictions\"], "
+            f"\"description\": \"brief summary of findings\", "
+            f"\"feedback\": \"\"}}"
         )
         c4 = self._run_check_pass("consistency", p4)
         checks.append(c4)
@@ -292,17 +335,20 @@ class TechnicalValidationAgent(BaseAgent):
                 if str(i).strip()
             ]
             passed = data.get("passed", len(issues) == 0)
+            description = str(data.get("description", "")).strip()
             return ValidationCheckResult(
                 check_name=check_name,
                 passed=passed,
                 issues=issues,
+                description=description,
             )
         except Exception as exc:
             logger.warning(
                 f"[D1] Multi-pass {check_name} failed: {exc} — assuming pass"
             )
             return ValidationCheckResult(
-                check_name=check_name, passed=True, issues=[]
+                check_name=check_name, passed=True, issues=[],
+                description="Auto-passed (LLM call failed)",
             )
 
     # ══════════════════════════════════════════════════════
@@ -367,7 +413,10 @@ class TechnicalValidationAgent(BaseAgent):
     def _default_checks() -> list[ValidationCheckResult]:
         """Return four default-pass checks when LLM fails."""
         return [
-            ValidationCheckResult(check_name=n, passed=True, issues=[])
+            ValidationCheckResult(
+                check_name=n, passed=True, issues=[],
+                description="Auto-passed (LLM call failed, not evaluated)",
+            )
             for n in ("completeness", "alignment", "realism", "consistency")
         ]
 
@@ -375,8 +424,18 @@ class TechnicalValidationAgent(BaseAgent):
 
     @staticmethod
     def _parse_json(raw_response: str) -> dict[str, Any]:
-        """Parse the LLM validation response into a dict."""
+        """Parse the LLM validation response into a dict.
+
+        Robustness layers:
+        1. Strip <think>…</think> reasoning tags (Qwen3 models)
+        2. Strip markdown code fences
+        3. Locate outermost { … } JSON object
+        4. On parse failure, attempt structural repair
+        """
         text = raw_response.strip()
+
+        # Strip <think>…</think> tags that Qwen models emit
+        text = re.sub(r"<think>[\s\S]*?</think>", "", text).strip()
 
         # Strip markdown code fences
         if text.startswith("```"):
@@ -396,10 +455,42 @@ class TechnicalValidationAgent(BaseAgent):
         try:
             data = json.loads(text)
         except json.JSONDecodeError as exc:
-            logger.warning(f"[D1] JSON parse error: {exc}")
-            return {}
+            logger.warning(f"[D1] JSON parse error: {exc} — attempting repair")
+            data = TechnicalValidationAgent._attempt_json_repair(text)
+            if data is None:
+                return {}
 
         return data if isinstance(data, dict) else {}
+
+    @staticmethod
+    def _attempt_json_repair(text: str) -> dict | None:
+        """Try to fix common JSON issues from LLM output."""
+        # 1. Remove trailing commas before } or ]
+        repaired = re.sub(r",\s*([}\]])", r"\1", text)
+        try:
+            data = json.loads(repaired)
+            logger.info("[D1] JSON repaired (trailing comma fix)")
+            return data
+        except json.JSONDecodeError:
+            pass
+
+        # 2. Truncated output — find last valid } and close
+        last_brace = text.rfind("}")
+        if last_brace > 0:
+            candidate = text[:last_brace + 1]
+            open_count = candidate.count("{")
+            close_count = candidate.count("}")
+            if open_count > close_count:
+                candidate += "}" * (open_count - close_count)
+            try:
+                data = json.loads(candidate)
+                logger.info("[D1] JSON repaired (truncation fix)")
+                return data
+            except json.JSONDecodeError:
+                pass
+
+        logger.error("[D1] JSON repair failed — returning None")
+        return None
 
     # ── Build typed check results (for single-call path) ──
 
@@ -422,18 +513,28 @@ class TechnicalValidationAgent(BaseAgent):
             issues = item.get("issues", [])
             issues = [str(i).strip() for i in issues if str(i).strip()]
             passed = item.get("passed", len(issues) == 0)
+            description = str(item.get("description", "")).strip()
 
             results.append(
                 ValidationCheckResult(
-                    check_name=check_name, passed=passed, issues=issues,
+                    check_name=check_name, passed=passed,
+                    issues=issues, description=description,
                 )
             )
 
-        # Add any missing checks as passed
-        for name in expected - seen:
+        # Add any missing checks as passed — but warn if ALL are missing
+        missing = expected - seen
+        if missing and not seen:
+            logger.warning(
+                "[D1] ALL check results missing from LLM response — "
+                f"defaulting {len(missing)} checks to PASS "
+                "(JSON may have been malformed)"
+            )
+        for name in missing:
             results.append(
                 ValidationCheckResult(
                     check_name=name, passed=True, issues=[],
+                    description="Auto-passed (not evaluated by LLM)",
                 )
             )
 

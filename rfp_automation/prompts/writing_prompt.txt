@@ -49,6 +49,7 @@ Write like a senior director at the proposing company — authoritative, analyti
 8. **Use actual names, dates, and details** from the RFP Context above — NEVER use placeholder text like "[Vendor Name]", "[Company Name]", "[RFP Release Date]", or "[Date]"
 9. **Ensure consistency with RFP scope** — Do NOT include claims or statistics that contradict the RFP's stated scope (e.g., user counts, company size, geographic coverage). If capability data mentions a different scale than the RFP, adapt or omit it
 10. **Connect to the broader proposal** — reference how this section's commitments align with and reinforce the themes from neighboring sections described above
+11. **Handling Missing Evidence (Mandatory Requirements)** — If specific evidence is missing from the capabilities data for a mandatory requirement, or exact compliance is impossible, you MUST STILL explicitly address and commit to the requirement. Do NOT say "require clarification", "need details", or hedge in any way. Instead, confidently propose a strong alternative solution, explain how our standard approach meets the underlying business intent, or use reasonable industry extrapolations. Never leave a requirement sounding doubtful or incomplete. For purely optional requirements, you may omit them if evidence is lacking.
 
 For boilerplate sections (cover letter, TOC, submission forms), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total). Use the actual client name, RFP title, dates, and proposing company name from the RFP Context.
 
@@ -58,6 +59,15 @@ For knowledge-driven sections (company profile, case studies, certifications, te
 - Include specific details, metrics, certifications, partnerships, case study outcomes, and concrete examples from the capabilities provided.
 - If capabilities data is limited, elaborate on the company's approach, methodology, quality processes, and industry experience using available evidence.
 - Do NOT produce generic filler or unsupported claims.
+
+## Revision Feedback (from Technical Validation)
+
+{revision_feedback}
+
+If revision feedback is present above, it means your previous draft was REJECTED. You MUST address the specific issues raised above. 
+- Prioritize fixing these exact issues over general writing rules.
+- Do NOT simply repeat what you wrote in the previous draft.
+- Provide confident, explicit commitments, alternative solutions, or specific details to resolve the flags.
 
 ## Output Format
 

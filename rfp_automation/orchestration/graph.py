@@ -255,7 +255,7 @@ def build_graph() -> StateGraph:
         "d1_technical_validation",
         route_after_validation,
         {
-            "c3_narrative_assembly": "c3_narrative_assembly",  # retry loop
+            "c2_requirement_writing": "c2_requirement_writing",  # retry loop
             "commercial_legal_parallel": "commercial_legal_parallel",
             "escalate_validation": "escalate_validation",
         },

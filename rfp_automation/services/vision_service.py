@@ -20,7 +20,9 @@ import io
 import json
 import logging
 import time
-from typing import Any
+import re
+from typing import Any, List
+from pathlib import Path
 
 from rfp_automation.config import get_settings
 
@@ -344,10 +346,28 @@ class VisionService:
             tables = json.loads(text)
         except json.JSONDecodeError as e:
             logger.warning(
-                f"[VisionService] Failed to parse VLM JSON for page {page_number} "
-                f"region {region_idx}: {e}"
+                f"[VisionService] Original JSON parse failed for page {page_number} "
+                f"region {region_idx}: {e}. Attempting structural repair..."
             )
-            return []
+            # Try to repair truncated JSON (e.g. missing ']}' at the end)
+            tables = None
+            json_array_match = re.search(r'\[\s*\{', text)
+            if json_array_match:
+                fragment = text[json_array_match.start():]
+                last_brace = fragment.rfind("}")
+                if last_brace != -1:
+                    repaired = fragment[:last_brace + 1] + "]"
+                    try:
+                        tables = json.loads(repaired)
+                        logger.info(f"[VisionService] Successfully repaired truncated JSON on page {page_number}")
+                    except json.JSONDecodeError:
+                        pass
+            
+            if tables is None:
+                logger.warning(
+                    f"[VisionService] Structural repair failed for page {page_number} region {region_idx}"
+                )
+                return []
 
         if not isinstance(tables, list):
             tables = [tables]

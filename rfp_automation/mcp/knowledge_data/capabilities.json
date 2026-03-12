@@ -1,98 +1,2075 @@
 [
   {
-    "id": "cap-001",
-    "name": "Cloud Infrastructure & Migration",
-    "description": "End-to-end cloud infrastructure design, deployment, and migration services across AWS, Azure, and GCP. Includes lift-and-shift, re-platforming, and cloud-native application development.",
-    "category": "cloud",
-    "tags": ["aws", "azure", "gcp", "migration", "infrastructure"],
-    "evidence": "Successfully migrated 50+ enterprise workloads to cloud, achieving average 40% cost reduction."
+    "id": "cap-doc-000",
+    "name": "Vodafone connects over 275 million customers across 15 countries through mobile",
+    "description": "Vodafone connects over 275 million customers across 15 countries through mobile and fixed services.",
+    "category": "capability",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "Company Overview",
+    "source_policy_id": "POL-001"
   },
   {
-    "id": "cap-002",
-    "name": "Cybersecurity & Compliance",
-    "description": "Comprehensive cybersecurity services including threat assessment, penetration testing, SIEM deployment, zero-trust architecture, and compliance framework implementation (NIST, SOC 2, ISO 27001).",
-    "category": "security",
-    "tags": ["cybersecurity", "compliance", "penetration-testing", "SIEM", "zero-trust"],
-    "evidence": "Achieved SOC 2 Type II compliance for 20+ clients. Zero major security incidents across managed services."
+    "id": "cap-doc-001",
+    "name": "Vodafone serves an additional 66 million customers through joint ventures and as",
+    "description": "Vodafone serves an additional 66 million customers through joint ventures and associates.",
+    "category": "capability",
+    "tags": [
+      "soc"
+    ],
+    "evidence": "Company Overview",
+    "source_policy_id": "POL-002"
   },
   {
-    "id": "cap-003",
-    "name": "DevOps & CI/CD Automation",
-    "description": "DevOps transformation services including CI/CD pipeline design, Infrastructure as Code (Terraform, Pulumi), container orchestration (Kubernetes, Docker), and GitOps workflows.",
-    "category": "devops",
-    "tags": ["devops", "ci-cd", "kubernetes", "terraform", "docker", "gitops"],
-    "evidence": "Reduced deployment frequency from monthly to daily for Fortune 500 clients. 99.95% pipeline reliability."
+    "id": "cap-doc-002",
+    "name": "Vodafone's portfolio includes fixed-line broadband, television services, Interne",
+    "description": "Vodafone's portfolio includes fixed-line broadband, television services, Internet of Things (IoT) connectivity with over 205 million connections, and financial technology (FinTech) services reaching 88 million users globally.",
+    "category": "capability",
+    "tags": [
+      "iot"
+    ],
+    "evidence": "Portfolio Overview",
+    "source_policy_id": "POL-003"
   },
   {
-    "id": "cap-004",
-    "name": "AI/ML Solutions & Data Engineering",
-    "description": "Machine learning model development, MLOps pipelines, NLP solutions, computer vision, and large-scale data engineering. Experience with LLMs, RAG architectures, and AI governance.",
-    "category": "ai_ml",
-    "tags": ["machine-learning", "nlp", "computer-vision", "data-engineering", "llm", "rag"],
-    "evidence": "Deployed 30+ production ML models. Built enterprise RAG systems processing 10M+ documents."
+    "id": "cap-doc-003",
+    "name": "Vodafone Business serves 4",
+    "description": "Vodafone Business serves 4.7 million enterprise customers, representing 26% of group service revenue and addressing a €144 billion addressable market.",
+    "category": "capability",
+    "tags": [
+      "revenue"
+    ],
+    "evidence": "Business Services",
+    "source_policy_id": "POL-004"
   },
   {
-    "id": "cap-005",
-    "name": "Enterprise Application Development",
-    "description": "Full-stack application development using modern frameworks (React, Angular, .NET, Java Spring). Microservices architecture, API design, and legacy system modernization.",
-    "category": "development",
-    "tags": ["full-stack", "microservices", "api", "react", "java", "dotnet"],
-    "evidence": "Delivered 100+ enterprise applications. Average 35% improvement in system performance after modernization."
+    "id": "cap-doc-004",
+    "name": "Vodafone invests in cutting‑edge technologies including 5G, artificial intellige",
+    "description": "Vodafone invests in cutting‑edge technologies including 5G, artificial intelligence, and IoT to provide faster, more reliable, and personalized services.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "iot"
+    ],
+    "evidence": "Technology Investment",
+    "source_policy_id": "POL-005"
   },
   {
-    "id": "cap-006",
-    "name": "Data Analytics & Business Intelligence",
-    "description": "End-to-end data analytics solutions including data warehousing (Snowflake, BigQuery), ETL pipelines, dashboard development (Power BI, Tableau), and advanced analytics.",
-    "category": "analytics",
-    "tags": ["analytics", "business-intelligence", "data-warehouse", "etl", "power-bi", "tableau"],
-    "evidence": "Built data platforms processing 5TB+ daily. Enabled data-driven decision making for 40+ organizations."
+    "id": "cap-doc-005",
+    "name": "Vodafone develops next‑generation networks with significant investments in 5G in",
+    "description": "Vodafone develops next‑generation networks with significant investments in 5G infrastructure across key markets.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "oss",
+      "network",
+      "infrastructure"
+    ],
+    "evidence": "Technology Investment",
+    "source_policy_id": "POL-006"
   },
   {
-    "id": "cap-007",
-    "name": "Managed IT Services & Support",
-    "description": "24/7 managed services including infrastructure monitoring, incident response, helpdesk support, patch management, and SLA-backed service delivery.",
-    "category": "managed_services",
-    "tags": ["managed-services", "monitoring", "incident-response", "helpdesk", "sla"],
-    "evidence": "99.99% uptime SLA achievement across 200+ managed environments. Average 15-minute incident response time."
+    "id": "cap-doc-006",
+    "name": "Vodafone creates an inclusive digital ecosystem that bridges the digital divide,",
+    "description": "Vodafone creates an inclusive digital ecosystem that bridges the digital divide, particularly in underserved rural communities.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Digital Inclusion",
+    "source_policy_id": "POL-007"
   },
   {
-    "id": "cap-008",
-    "name": "Project & Program Management",
-    "description": "PMO services, Agile transformation, project delivery using Scrum/SAFe/Kanban, risk management, and stakeholder communication. PMP and SAFe certified team.",
-    "category": "project_management",
-    "tags": ["project-management", "agile", "scrum", "safe", "pmo"],
-    "evidence": "95% on-time delivery rate across 500+ projects. Average client satisfaction score of 4.7/5.0."
+    "id": "cap-doc-007",
+    "name": "Vodafone provides financial inclusion through mobile payment solutions, notably",
+    "description": "Vodafone provides financial inclusion through mobile payment solutions, notably M‑Pesa.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "FinTech Services",
+    "source_policy_id": "POL-008"
   },
   {
-    "id": "cap-009",
-    "name": "Network & Telecommunications",
-    "description": "Network design and implementation, SD-WAN, VPN, unified communications, and network security. Expertise in Cisco, Palo Alto, and Fortinet platforms.",
-    "category": "networking",
-    "tags": ["networking", "sd-wan", "vpn", "telecommunications", "cisco"],
-    "evidence": "Designed and deployed networks for 50+ locations. Average 60% improvement in network performance."
+    "id": "cap-doc-008",
+    "name": "Vodafone offers cloud computing, IoT platforms, cybersecurity, and unified commu",
+    "description": "Vodafone offers cloud computing, IoT platforms, cybersecurity, and unified communications services.",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "security",
+      "iot"
+    ],
+    "evidence": "Digital Services",
+    "source_policy_id": "POL-009"
   },
   {
-    "id": "cap-010",
-    "name": "Digital Transformation & Consulting",
-    "description": "Strategic technology consulting, digital transformation roadmaps, technology assessment, vendor selection, and organizational change management.",
-    "category": "consulting",
-    "tags": ["consulting", "digital-transformation", "strategy", "change-management"],
-    "evidence": "Guided 25+ organizations through digital transformation. Average ROI of 300% within 18 months."
+    "id": "cap-doc-009",
+    "name": "Vodafone operates owned networks in 15 countries and partner networks in 46 coun",
+    "description": "Vodafone operates owned networks in 15 countries and partner networks in 46 countries.",
+    "category": "capability",
+    "tags": [
+      "network"
+    ],
+    "evidence": "Global Operations",
+    "source_policy_id": "POL-010"
   },
   {
-    "id": "cap-011",
-    "name": "Government & Public Sector Solutions",
-    "description": "FedRAMP-compliant cloud solutions, government-grade security implementations, and public sector digital services. Experience with federal, state, and local government contracts.",
-    "category": "government",
-    "tags": ["government", "fedramp", "public-sector", "compliance", "federal"],
-    "evidence": "Delivered 15+ government contracts worth $50M+. FedRAMP Moderate authorization achieved for 3 platforms."
+    "id": "cap-doc-010",
+    "name": "Vodafone Global Enterprise serves multinational corporate clients across 65 coun",
+    "description": "Vodafone Global Enterprise serves multinational corporate clients across 65 countries.",
+    "category": "capability",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "Enterprise Services",
+    "source_policy_id": "POL-011"
   },
   {
-    "id": "cap-012",
-    "name": "Quality Assurance & Testing",
-    "description": "Comprehensive QA services including automated testing, performance testing, security testing, accessibility testing, and test strategy development.",
-    "category": "qa",
-    "tags": ["qa", "testing", "automation", "performance-testing", "accessibility"],
-    "evidence": "Achieved 95%+ automated test coverage for enterprise clients. Reduced production defects by 70% on average."
+    "id": "cap-doc-011",
+    "name": "Vodafone provides mobile telecommunications services (voice, data, messaging)",
+    "description": "Vodafone provides mobile telecommunications services (voice, data, messaging).",
+    "category": "capability",
+    "tags": [
+      "telecom"
+    ],
+    "evidence": "Core Services",
+    "source_policy_id": "POL-012"
+  },
+  {
+    "id": "cap-doc-012",
+    "name": "Vodafone provides fixed‑line broadband and television services",
+    "description": "Vodafone provides fixed‑line broadband and television services.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Core Services",
+    "source_policy_id": "POL-013"
+  },
+  {
+    "id": "cap-doc-013",
+    "name": "Vodafone aims to achieve net‑zero carbon emissions by 2040",
+    "description": "Vodafone aims to achieve net‑zero carbon emissions by 2040.",
+    "category": "governance",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Sustainability Vision",
+    "source_policy_id": "POL-014"
+  },
+  {
+    "id": "cap-doc-014",
+    "name": "Vodafone commits to environmental sustainability through renewable energy adopti",
+    "description": "Vodafone commits to environmental sustainability through renewable energy adoption and carbon‑emission reduction initiatives.",
+    "category": "governance",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Sustainability Vision",
+    "source_policy_id": "POL-015"
+  },
+  {
+    "id": "cap-doc-015",
+    "name": "Vodafone’s mission is to become a new‑generation connectivity and digital servic",
+    "description": "Vodafone’s mission is to become a new‑generation connectivity and digital services provider for Europe and Africa, enabling an inclusive and sustainable digital society.",
+    "category": "governance",
+    "tags": [
+      "ai",
+      "soc"
+    ],
+    "evidence": "Mission Statement",
+    "source_policy_id": "POL-016"
+  },
+  {
+    "id": "cap-doc-016",
+    "name": "Vodafone’s vision includes driving digital inclusion and sustainable practices,",
+    "description": "Vodafone’s vision includes driving digital inclusion and sustainable practices, making technology accessible to underserved communities.",
+    "category": "governance",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Vision Statement",
+    "source_policy_id": "POL-017"
+  },
+  {
+    "id": "cap-doc-017",
+    "name": "Vodafone strives to deliver superior customer experiences through technological",
+    "description": "Vodafone strives to deliver superior customer experiences through technological innovation.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Customer Experience",
+    "source_policy_id": "POL-018"
+  },
+  {
+    "id": "cap-doc-018",
+    "name": "Net‑zero emissions must be achieved no later than the year 2040",
+    "description": "Net‑zero emissions must be achieved no later than the year 2040.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Sustainability Target",
+    "source_policy_id": "POL-019"
+  },
+  {
+    "id": "cap-doc-019",
+    "name": "All prices are subject to annual inflationary adjustments and applicable taxes",
+    "description": "All prices are subject to annual inflationary adjustments and applicable taxes.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "General Catalog",
+    "source_policy_id": "POL-020"
+  },
+  {
+    "id": "cap-doc-021",
+    "name": "EU roaming (fair use policy applies)",
+    "description": "EU roaming (fair use policy applies).",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-022"
+  },
+  {
+    "id": "cap-doc-022",
+    "name": "Minimum contract term: 12 or 24 months",
+    "description": "Minimum contract term: 12 or 24 months.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-023"
+  },
+  {
+    "id": "cap-doc-023",
+    "name": "Data rollover (up to next month, selected plans)",
+    "description": "Data rollover (up to next month, selected plans).",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-024"
+  },
+  {
+    "id": "cap-doc-024",
+    "name": "5G network access at no additional charge",
+    "description": "5G network access at no additional charge.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "network"
+    ],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-025"
+  },
+  {
+    "id": "cap-doc-025",
+    "name": "VeryMe Rewards loyalty program access",
+    "description": "VeryMe Rewards loyalty program access.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-026"
+  },
+  {
+    "id": "cap-doc-026",
+    "name": "Entertainment add-on options (Amazon Prime Video, Spotify Premium)",
+    "description": "Entertainment add-on options (Amazon Prime Video, Spotify Premium).",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-027"
+  },
+  {
+    "id": "cap-doc-027",
+    "name": "Flexible prepaid plans with no long-term commitments",
+    "description": "Flexible prepaid plans with no long-term commitments.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-028"
+  },
+  {
+    "id": "cap-doc-028",
+    "name": "Unlimited UK calls and texts",
+    "description": "Unlimited UK calls and texts.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-029"
+  },
+  {
+    "id": "cap-doc-029",
+    "name": "Unlimited standard SMS and MMS messages within UK",
+    "description": "Unlimited standard SMS and MMS messages within UK.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-030"
+  },
+  {
+    "id": "cap-doc-030",
+    "name": "Unlimited minutes to UK standard mobiles and landlines (01, 02, 03)",
+    "description": "Unlimited minutes to UK standard mobiles and landlines (01, 02, 03).",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Section 1: Consumer Mobile Services",
+    "source_policy_id": "POL-031"
+  },
+  {
+    "id": "cap-doc-031",
+    "name": "Unlimited Lite plan price will increase to £17",
+    "description": "Unlimited Lite plan price will increase to £17.44 in April 2026.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Unlimited Lite Plan",
+    "source_policy_id": "POL-032"
+  },
+  {
+    "id": "cap-doc-032",
+    "name": "Unlimited plan price will increase to £21",
+    "description": "Unlimited plan price will increase to £21.80 in April 2026.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Unlimited Plan",
+    "source_policy_id": "POL-033"
+  },
+  {
+    "id": "cap-doc-033",
+    "name": "Unlimited Max plan price will increase to £28",
+    "description": "Unlimited Max plan price will increase to £28.34 in April 2026.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Unlimited Max Plan",
+    "source_policy_id": "POL-034"
+  },
+  {
+    "id": "cap-doc-034",
+    "name": "Unlimited Plus Xtra plan price will increase to £24",
+    "description": "Unlimited Plus Xtra plan price will increase to £24.99 in April 2027.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Unlimited Plus Xtra Plan",
+    "source_policy_id": "POL-035"
+  },
+  {
+    "id": "cap-doc-035",
+    "name": "Pay As You Go Big Value Bundles are offered",
+    "description": "Pay As You Go Big Value Bundles are offered.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Pay As You Go Big Value Bundles",
+    "source_policy_id": "POL-036"
+  },
+  {
+    "id": "cap-doc-036",
+    "name": "Vodafone provides FinTech & Mobile Financial Services",
+    "description": "Vodafone provides FinTech & Mobile Financial Services.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Key Product Categories",
+    "source_policy_id": "POL-037"
+  },
+  {
+    "id": "cap-doc-037",
+    "name": "Vodafone provides Enterprise Digital Services (Cloud, Security, Unified Communic",
+    "description": "Vodafone provides Enterprise Digital Services (Cloud, Security, Unified Communications).",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "security"
+    ],
+    "evidence": "Key Product Categories",
+    "source_policy_id": "POL-038"
+  },
+  {
+    "id": "cap-doc-038",
+    "name": "Vodafone provides Internet of Things (IoT) Connectivity & Platforms",
+    "description": "Vodafone provides Internet of Things (IoT) Connectivity & Platforms.",
+    "category": "capability",
+    "tags": [
+      "iot"
+    ],
+    "evidence": "Key Product Categories",
+    "source_policy_id": "POL-039"
+  },
+  {
+    "id": "cap-doc-039",
+    "name": "Vodafone provides 5G Ultra network capability",
+    "description": "Vodafone provides 5G Ultra network capability.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "network"
+    ],
+    "evidence": "Key Product Categories",
+    "source_policy_id": "POL-040"
+  },
+  {
+    "id": "cap-doc-040",
+    "name": "Vodafone leverages AI-powered solutions",
+    "description": "Vodafone leverages AI-powered solutions.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Key Product Categories",
+    "source_policy_id": "POL-041"
+  },
+  {
+    "id": "cap-doc-041",
+    "name": "Confidential — Internal Use Only: The document must not be disclosed outside Vod",
+    "description": "Confidential — Internal Use Only: The document must not be disclosed outside Vodafone India or its authorized personnel.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Confidentiality Notice",
+    "source_policy_id": "POL-042"
+  },
+  {
+    "id": "cap-doc-042",
+    "name": "The Marketing & Brand Guide is intended solely for internal teams involved in ma",
+    "description": "The Marketing & Brand Guide is intended solely for internal teams involved in marketing, communications, product development, and commercial strategy.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Executive Summary",
+    "source_policy_id": "POL-043"
+  },
+  {
+    "id": "cap-doc-043",
+    "name": "Vodafone Idea Limited must trade commercially under the unified brand name 'Vi'",
+    "description": "Vodafone Idea Limited must trade commercially under the unified brand name 'Vi'.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Brand Architecture",
+    "source_policy_id": "POL-044"
+  },
+  {
+    "id": "cap-doc-044",
+    "name": "5G coverage must reach at least 50 cities by the end of FY25 for major operators",
+    "description": "5G coverage must reach at least 50 cities by the end of FY25 for major operators.",
+    "category": "operational",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "5G Rollout & Network Evolution",
+    "source_policy_id": "POL-045"
+  },
+  {
+    "id": "cap-doc-045",
+    "name": "Vi utilizes the following spectrum bands: Sub‑GHz (700 MHz), mid‑band (3",
+    "description": "Vi utilizes the following spectrum bands: Sub‑GHz (700 MHz), mid‑band (3.5 GHz), and mmWave (26 GHz).",
+    "category": "capability",
+    "tags": [],
+    "evidence": "5G Rollout & Network Evolution",
+    "source_policy_id": "POL-046"
+  },
+  {
+    "id": "cap-doc-046",
+    "name": "Vi offers enterprise 5G services including network slicing and private 5G",
+    "description": "Vi offers enterprise 5G services including network slicing and private 5G.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "network"
+    ],
+    "evidence": "5G Rollout & Network Evolution",
+    "source_policy_id": "POL-047"
+  },
+  {
+    "id": "cap-doc-047",
+    "name": "Vi's average revenue per user (ARPU) target for FY24‑25 is INR 145 with a minimu",
+    "description": "Vi's average revenue per user (ARPU) target for FY24‑25 is INR 145 with a minimum year‑over‑year growth of 10%.",
+    "category": "commercial",
+    "tags": [
+      "revenue"
+    ],
+    "evidence": "Premiumization & ARPU Improvement",
+    "source_policy_id": "POL-048"
+  },
+  {
+    "id": "cap-doc-050",
+    "name": "Vi's brand identity guidelines require all marketing assets to reflect the value",
+    "description": "Vi's brand identity guidelines require all marketing assets to reflect the values of togetherness, optimism, and digital empowerment.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Brand Guidelines & Identity",
+    "source_policy_id": "POL-051"
+  },
+  {
+    "id": "cap-doc-051",
+    "name": "Vi's partnerships with OTT platforms (Netflix, Amazon Prime, SonyLIV) are to be",
+    "description": "Vi's partnerships with OTT platforms (Netflix, Amazon Prime, SonyLIV) are to be leveraged to provide digital lifestyle subscriptions via SIM cards.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Convergence of Telecom & Digital Services",
+    "source_policy_id": "POL-052"
+  },
+  {
+    "id": "cap-doc-052",
+    "name": "Achieve net-zero emissions by 2040",
+    "description": "Achieve net-zero emissions by 2040.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Vision",
+    "source_policy_id": "POL-053"
+  },
+  {
+    "id": "cap-doc-053",
+    "name": "Provide seamless connectivity solutions to people and businesses globally",
+    "description": "Provide seamless connectivity solutions to people and businesses globally.",
+    "category": "capability",
+    "tags": [
+      "ml"
+    ],
+    "evidence": "Vision",
+    "source_policy_id": "POL-054"
+  },
+  {
+    "id": "cap-doc-054",
+    "name": "Make technology accessible to underserved communities, driving digital inclusion",
+    "description": "Make technology accessible to underserved communities, driving digital inclusion and sustainable practices.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Vision",
+    "source_policy_id": "POL-055"
+  },
+  {
+    "id": "cap-doc-055",
+    "name": "Invest in cutting‑edge technologies including 5G, artificial intelligence, and I",
+    "description": "Invest in cutting‑edge technologies including 5G, artificial intelligence, and IoT to deliver faster, more reliable, and personalized services.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "iot"
+    ],
+    "evidence": "Vision",
+    "source_policy_id": "POL-056"
+  },
+  {
+    "id": "cap-doc-056",
+    "name": "Develop next‑generation networks with significant investments in 5G infrastructu",
+    "description": "Develop next‑generation networks with significant investments in 5G infrastructure across key markets.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "oss",
+      "network",
+      "infrastructure"
+    ],
+    "evidence": "Vision",
+    "source_policy_id": "POL-057"
+  },
+  {
+    "id": "cap-doc-057",
+    "name": "Create an inclusive digital ecosystem that bridges the digital divide, particula",
+    "description": "Create an inclusive digital ecosystem that bridges the digital divide, particularly in underserved rural communities.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Vision",
+    "source_policy_id": "POL-058"
+  },
+  {
+    "id": "cap-doc-058",
+    "name": "Maintain an Internet of Things (IoT) connectivity portfolio with over 205 millio",
+    "description": "Maintain an Internet of Things (IoT) connectivity portfolio with over 205 million connections.",
+    "category": "capability",
+    "tags": [
+      "ai",
+      "iot"
+    ],
+    "evidence": "Company Profile",
+    "source_policy_id": "POL-059"
+  },
+  {
+    "id": "cap-doc-059",
+    "name": "Offer financial technology (FinTech) services reaching 88 million users globally",
+    "description": "Offer financial technology (FinTech) services reaching 88 million users globally.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Company Profile",
+    "source_policy_id": "POL-060"
+  },
+  {
+    "id": "cap-doc-060",
+    "name": "Serve 4",
+    "description": "Serve 4.7 million enterprise customers, representing 26% of group service revenue.",
+    "category": "capability",
+    "tags": [
+      "revenue"
+    ],
+    "evidence": "Company Profile",
+    "source_policy_id": "POL-061"
+  },
+  {
+    "id": "cap-doc-061",
+    "name": "Target a €144 billion addressable market",
+    "description": "Target a €144 billion addressable market.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Company Profile",
+    "source_policy_id": "POL-062"
+  },
+  {
+    "id": "cap-doc-062",
+    "name": "Connect over 275 million customers across 15 countries",
+    "description": "Connect over 275 million customers across 15 countries.",
+    "category": "capability",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "Company Profile",
+    "source_policy_id": "POL-063"
+  },
+  {
+    "id": "cap-doc-063",
+    "name": "Become a new‑generation connectivity and digital services provider for Europe an",
+    "description": "Become a new‑generation connectivity and digital services provider for Europe and Africa, enabling an inclusive and sustainable digital society.",
+    "category": "governance",
+    "tags": [
+      "ai",
+      "soc"
+    ],
+    "evidence": "Mission",
+    "source_policy_id": "POL-064"
+  },
+  {
+    "id": "cap-doc-064",
+    "name": "Connect people and businesses globally through seamless connectivity solutions",
+    "description": "Connect people and businesses globally through seamless connectivity solutions.",
+    "category": "governance",
+    "tags": [
+      "ml"
+    ],
+    "evidence": "Vision",
+    "source_policy_id": "POL-065"
+  },
+  {
+    "id": "cap-doc-065",
+    "name": "Total Customers (Owned Networks): 275 million",
+    "description": "Total Customers (Owned Networks): 275 million",
+    "category": "capability",
+    "tags": [
+      "network"
+    ],
+    "evidence": "Table 1: Vodafone Global Operations Overview",
+    "source_policy_id": "POL-066"
+  },
+  {
+    "id": "cap-doc-066",
+    "name": "Total Customers (Including JVs): 341 million",
+    "description": "Total Customers (Including JVs): 341 million",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Table 1: Vodafone Global Operations Overview",
+    "source_policy_id": "POL-067"
+  },
+  {
+    "id": "cap-doc-067",
+    "name": "Countries with Owned Operations: 15",
+    "description": "Countries with Owned Operations: 15",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Table 1: Vodafone Global Operations Overview",
+    "source_policy_id": "POL-068"
+  },
+  {
+    "id": "cap-doc-068",
+    "name": "Countries with Partner Networks: 46",
+    "description": "Countries with Partner Networks: 46",
+    "category": "capability",
+    "tags": [
+      "network"
+    ],
+    "evidence": "Table 1: Vodafone Global Operations Overview",
+    "source_policy_id": "POL-069"
+  },
+  {
+    "id": "cap-doc-069",
+    "name": "FinTech Users: 88 million",
+    "description": "FinTech Users: 88 million",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Table 1: Vodafone Global Operations Overview",
+    "source_policy_id": "POL-070"
+  },
+  {
+    "id": "cap-doc-070",
+    "name": "Business Customers: 4",
+    "description": "Business Customers: 4.7 million",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Table 1: Vodafone Global Operations Overview",
+    "source_policy_id": "POL-071"
+  },
+  {
+    "id": "cap-doc-071",
+    "name": "IoT Connections: 205 million",
+    "description": "IoT Connections: 205 million",
+    "category": "capability",
+    "tags": [
+      "iot"
+    ],
+    "evidence": "Table 1: Vodafone Global Operations Overview",
+    "source_policy_id": "POL-072"
+  },
+  {
+    "id": "cap-doc-072",
+    "name": "Capital Expenditure (2025): €37",
+    "description": "Capital Expenditure (2025): €37.4 billion",
+    "category": "capability",
+    "tags": [
+      "api"
+    ],
+    "evidence": "Capital Expenditure",
+    "source_policy_id": "POL-073"
+  },
+  {
+    "id": "cap-doc-073",
+    "name": "Capital Expenditure (2024): €36",
+    "description": "Capital Expenditure (2024): €36.7 billion",
+    "category": "capability",
+    "tags": [
+      "api"
+    ],
+    "evidence": "Capital Expenditure",
+    "source_policy_id": "POL-074"
+  },
+  {
+    "id": "cap-doc-074",
+    "name": "FTSE 100 constituent",
+    "description": "FTSE 100 constituent",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Company Size & Scale",
+    "source_policy_id": "POL-075"
+  },
+  {
+    "id": "cap-doc-075",
+    "name": "27th global market cap ranking",
+    "description": "27th global market cap ranking",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Company Size & Scale",
+    "source_policy_id": "POL-076"
+  },
+  {
+    "id": "cap-doc-076",
+    "name": "Environmental sustainability through renewable energy adoption and carbon emissi",
+    "description": "Environmental sustainability through renewable energy adoption and carbon emission reduction initiatives",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Company Size & Scale",
+    "source_policy_id": "POL-077"
+  },
+  {
+    "id": "cap-doc-077",
+    "name": "Innovation in digital services including cloud computing, IoT platforms, cyberse",
+    "description": "Innovation in digital services including cloud computing, IoT platforms, cybersecurity, and unified communications",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "security",
+      "iot"
+    ],
+    "evidence": "Company Size & Scale",
+    "source_policy_id": "POL-078"
+  },
+  {
+    "id": "cap-doc-078",
+    "name": "Financial inclusion through mobile payment solutions, notably M-Pesa, which has",
+    "description": "Financial inclusion through mobile payment solutions, notably M-Pesa, which has transformed financial access in emerging markets",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Company Size & Scale",
+    "source_policy_id": "POL-079"
+  },
+  {
+    "id": "cap-doc-079",
+    "name": "Primary Industry: Telecommunications Services",
+    "description": "Primary Industry: Telecommunications Services",
+    "category": "capability",
+    "tags": [
+      "telecom"
+    ],
+    "evidence": "Primary Industry",
+    "source_policy_id": "POL-080"
+  },
+  {
+    "id": "cap-doc-080",
+    "name": "Mobile telecommunications (voice, data, messaging)",
+    "description": "Mobile telecommunications (voice, data, messaging)",
+    "category": "capability",
+    "tags": [
+      "telecom"
+    ],
+    "evidence": "Sub-Sectors",
+    "source_policy_id": "POL-081"
+  },
+  {
+    "id": "cap-doc-081",
+    "name": "Fixed-line broadband and television services",
+    "description": "Fixed-line broadband and television services",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Sub-Sectors",
+    "source_policy_id": "POL-082"
+  },
+  {
+    "id": "cap-doc-082",
+    "name": "Internet of Things (IoT) connectivity and platforms",
+    "description": "Internet of Things (IoT) connectivity and platforms",
+    "category": "capability",
+    "tags": [
+      "iot"
+    ],
+    "evidence": "Sub-Sectors",
+    "source_policy_id": "POL-083"
+  },
+  {
+    "id": "cap-doc-083",
+    "name": "Cloud computing and enterprise digital services",
+    "description": "Cloud computing and enterprise digital services",
+    "category": "capability",
+    "tags": [
+      "cloud"
+    ],
+    "evidence": "Sub-Sectors",
+    "source_policy_id": "POL-084"
+  },
+  {
+    "id": "cap-doc-084",
+    "name": "Financial technology (mobile payments and banking)",
+    "description": "Financial technology (mobile payments and banking)",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Sub-Sectors",
+    "source_policy_id": "POL-085"
+  },
+  {
+    "id": "cap-doc-085",
+    "name": "Cybersecurity and unified communications",
+    "description": "Cybersecurity and unified communications",
+    "category": "capability",
+    "tags": [
+      "security"
+    ],
+    "evidence": "Sub-Sectors",
+    "source_policy_id": "POL-086"
+  },
+  {
+    "id": "cap-doc-086",
+    "name": "Primary Listing: London Stock Exchange (FTSE 100 Index)",
+    "description": "Primary Listing: London Stock Exchange (FTSE 100 Index)",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Stock Exchange Listings",
+    "source_policy_id": "POL-087"
+  },
+  {
+    "id": "cap-doc-087",
+    "name": "Secondary Listing: NASDAQ (American Depositary Receipts)",
+    "description": "Secondary Listing: NASDAQ (American Depositary Receipts)",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Stock Exchange Listings",
+    "source_policy_id": "POL-088"
+  },
+  {
+    "id": "cap-doc-088",
+    "name": "Vodafone Business serves 4",
+    "description": "Vodafone Business serves 4.7 million business customers globally with cloud, IoT, security, unified communications, and managed services.",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "security",
+      "iot"
+    ],
+    "evidence": "Current Era – Digital Services",
+    "source_policy_id": "POL-089"
+  },
+  {
+    "id": "cap-doc-089",
+    "name": "Vodafone Consumer Services provides mobile and fixed services for residential cu",
+    "description": "Vodafone Consumer Services provides mobile and fixed services for residential customers across Europe and Africa, including voice, data, broadband, and television.",
+    "category": "capability",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "Current Era – Digital Services",
+    "source_policy_id": "POL-090"
+  },
+  {
+    "id": "cap-doc-090",
+    "name": "Vodafone FinTech Services offers mobile financial services, including the M-Pesa",
+    "description": "Vodafone FinTech Services offers mobile financial services, including the M-Pesa platform.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Current Era – Digital Services",
+    "source_policy_id": "POL-091"
+  },
+  {
+    "id": "cap-doc-091",
+    "name": "Acquisition of Cable & Wireless Worldwide provides Vodafone access to fixed-line",
+    "description": "Acquisition of Cable & Wireless Worldwide provides Vodafone access to fixed-line network infrastructure.",
+    "category": "capability",
+    "tags": [
+      "network",
+      "infrastructure"
+    ],
+    "evidence": "Infrastructure and Digital Services Era (2011-2020)",
+    "source_policy_id": "POL-092"
+  },
+  {
+    "id": "cap-doc-092",
+    "name": "Acquisition of Bluefish Communications formed the nucleus of Vodafone's Unified",
+    "description": "Acquisition of Bluefish Communications formed the nucleus of Vodafone's Unified Communications and Collaboration practice.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Infrastructure and Digital Services Era (2011-2020)",
+    "source_policy_id": "POL-093"
+  },
+  {
+    "id": "cap-doc-093",
+    "name": "Vodafone has made massive investments in 4G/LTE network rollout across European",
+    "description": "Vodafone has made massive investments in 4G/LTE network rollout across European markets.",
+    "category": "capability",
+    "tags": [
+      "oss",
+      "network"
+    ],
+    "evidence": "Infrastructure and Digital Services Era (2011-2020)",
+    "source_policy_id": "POL-094"
+  },
+  {
+    "id": "cap-doc-094",
+    "name": "Vodafone launched and expanded the M-Pesa mobile money platform, transforming fi",
+    "description": "Vodafone launched and expanded the M-Pesa mobile money platform, transforming financial inclusion in Africa.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Infrastructure and Digital Services Era (2011-2020)",
+    "source_policy_id": "POL-095"
+  },
+  {
+    "id": "cap-doc-095",
+    "name": "Vodafone Global Enterprise serves multinational corporate clients across 65 coun",
+    "description": "Vodafone Global Enterprise serves multinational corporate clients across 65 countries.",
+    "category": "capability",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "2007 – Establishment of Vodafone Global Enterprise",
+    "source_policy_id": "POL-096"
+  },
+  {
+    "id": "cap-doc-096",
+    "name": "Vodafone expanded its presence across Africa and Asia-Pacific regions",
+    "description": "Vodafone expanded its presence across Africa and Asia-Pacific regions.",
+    "category": "capability",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "Expansion and Global Transformation (1997-2010)",
+    "source_policy_id": "POL-097"
+  },
+  {
+    "id": "cap-doc-097",
+    "name": "Strategic acquisitions in Turkey (Telsim) and a majority stake in Hutchison Essa",
+    "description": "Strategic acquisitions in Turkey (Telsim) and a majority stake in Hutchison Essar (India) extend Vodafone's market footprint.",
+    "category": "capability",
+    "tags": [
+      "iso"
+    ],
+    "evidence": "Expansion and Global Transformation (1997-2010)",
+    "source_policy_id": "POL-098"
+  },
+  {
+    "id": "cap-doc-098",
+    "name": "Merger with AirTouch Communications created a transatlantic telecommunications p",
+    "description": "Merger with AirTouch Communications created a transatlantic telecommunications powerhouse.",
+    "category": "capability",
+    "tags": [
+      "ai",
+      "telecom"
+    ],
+    "evidence": "1999 – Merger with AirTouch Communications",
+    "source_policy_id": "POL-099"
+  },
+  {
+    "id": "cap-doc-099",
+    "name": "Acquisition of Mannesmann AG for £112 billion was the largest corporate takeover",
+    "description": "Acquisition of Mannesmann AG for £112 billion was the largest corporate takeover in history, expanding Vodafone's global scale.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "2000 – Acquisition of Mannesmann AG",
+    "source_policy_id": "POL-100"
+  },
+  {
+    "id": "cap-doc-100",
+    "name": "Vodafone serves 88 million users with mobile money, payments, and banking soluti",
+    "description": "Vodafone serves 88 million users with mobile money, payments, and banking solutions.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Overview",
+    "source_policy_id": "POL-101"
+  },
+  {
+    "id": "cap-doc-101",
+    "name": "Vodafone Global Enterprise provides specialized services to multinational corpor",
+    "description": "Vodafone Global Enterprise provides specialized services to multinational corporations including Deutsche Post, The Linde Group, Unilever, and Volkswagen Group.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Vodafone Global Enterprise",
+    "source_policy_id": "POL-102"
+  },
+  {
+    "id": "cap-doc-102",
+    "name": "Vodafone maintains direct network ownership and operations in 15 markets across",
+    "description": "Vodafone maintains direct network ownership and operations in 15 markets across Europe and Africa.",
+    "category": "capability",
+    "tags": [
+      "oss",
+      "ai",
+      "network"
+    ],
+    "evidence": "Controlled Operations",
+    "source_policy_id": "POL-103"
+  },
+  {
+    "id": "cap-doc-103",
+    "name": "Vodafone has been executing 5G and Digital Transformation initiatives since 2020",
+    "description": "Vodafone has been executing 5G and Digital Transformation initiatives since 2020.",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "5G and Digital Transformation",
+    "source_policy_id": "POL-104"
+  },
+  {
+    "id": "cap-doc-104",
+    "name": "Vodafone commits to invest €8 billion annually in capital expenditure, primarily",
+    "description": "Vodafone commits to invest €8 billion annually in capital expenditure, primarily for 5G network deployment.",
+    "category": "operational",
+    "tags": [
+      "api",
+      "5g",
+      "network"
+    ],
+    "evidence": "5G and Digital Transformation",
+    "source_policy_id": "POL-105"
+  },
+  {
+    "id": "cap-doc-105",
+    "name": "Vodafone maintains strategic partnerships with Microsoft, Google, and Accenture",
+    "description": "Vodafone maintains strategic partnerships with Microsoft, Google, and Accenture to deliver cloud and AI‑powered services.",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "ai"
+    ],
+    "evidence": "Strategic partnerships",
+    "source_policy_id": "POL-106"
+  },
+  {
+    "id": "cap-doc-106",
+    "name": "Vodafone merged Vodafone UK with Three UK, approved December 2024 and completed",
+    "description": "Vodafone merged Vodafone UK with Three UK, approved December 2024 and completed May 2025.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Merger Announcement",
+    "source_policy_id": "POL-107"
+  },
+  {
+    "id": "cap-doc-107",
+    "name": "Vodafone expanded IoT services to 205 million connections for enterprise and ind",
+    "description": "Vodafone expanded IoT services to 205 million connections for enterprise and industrial customers.",
+    "category": "capability",
+    "tags": [
+      "iot"
+    ],
+    "evidence": "IoT Expansion",
+    "source_policy_id": "POL-108"
+  },
+  {
+    "id": "cap-doc-108",
+    "name": "Vodafone developed FinTech services that reach 88 million users globally",
+    "description": "Vodafone developed FinTech services that reach 88 million users globally.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "FinTech Services",
+    "source_policy_id": "POL-109"
+  },
+  {
+    "id": "cap-doc-109",
+    "name": "Vodafone invested £200 million in digital skills programs in 2024",
+    "description": "Vodafone invested £200 million in digital skills programs in 2024.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Digital Skills Investment",
+    "source_policy_id": "POL-110"
+  },
+  {
+    "id": "cap-doc-110",
+    "name": "Vodafone operates joint ventures and associate partnerships in 5 markets, servin",
+    "description": "Vodafone operates joint ventures and associate partnerships in 5 markets, serving 66 million customers.",
+    "category": "capability",
+    "tags": [
+      "soc"
+    ],
+    "evidence": "Joint Ventures & Associates",
+    "source_policy_id": "POL-111"
+  },
+  {
+    "id": "cap-doc-111",
+    "name": "Vodafone leverages partner networks in 46 markets to provide roaming and service",
+    "description": "Vodafone leverages partner networks in 46 markets to provide roaming and service partnerships extending global reach.",
+    "category": "capability",
+    "tags": [
+      "network"
+    ],
+    "evidence": "Partner Networks",
+    "source_policy_id": "POL-112"
+  },
+  {
+    "id": "cap-doc-112",
+    "name": "Vodafone’s core value of 5G Network Leadership mandates accelerated deployment o",
+    "description": "Vodafone’s core value of 5G Network Leadership mandates accelerated deployment of 5G.",
+    "category": "governance",
+    "tags": [
+      "5g",
+      "network"
+    ],
+    "evidence": "Core Values",
+    "source_policy_id": "POL-113"
+  },
+  {
+    "id": "cap-doc-113",
+    "name": "Achieve net-zero greenhouse gas emissions by 2040",
+    "description": "Achieve net-zero greenhouse gas emissions by 2040.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Sustainability – Environmental commitment with net-zero emissions target by 2040",
+    "source_policy_id": "POL-114"
+  },
+  {
+    "id": "cap-doc-114",
+    "name": "Reduce carbon emissions by 30% by 2024 compared to the 2020 baseline",
+    "description": "Reduce carbon emissions by 30% by 2024 compared to the 2020 baseline.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Sustainability – Environmental commitment with net-zero emissions target by 2040",
+    "source_policy_id": "POL-115"
+  },
+  {
+    "id": "cap-doc-115",
+    "name": "Connect 2 million rural households to high-speed internet in FY 2024 as part of",
+    "description": "Connect 2 million rural households to high-speed internet in FY 2024 as part of digital inclusion initiatives.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Inclusion – Digital inclusion initiatives connecting 2 million rural households to high-speed internet in FY 2024",
+    "source_policy_id": "POL-116"
+  },
+  {
+    "id": "cap-doc-116",
+    "name": "Handle 50 million customer queries in 2024 using AI-powered chatbots",
+    "description": "Handle 50 million customer queries in 2024 using AI-powered chatbots.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Customer Experience Enhancement – Deployment of AI-powered customer service solutions (50 million queries handled by AI chatbots in 2024)",
+    "source_policy_id": "POL-117"
+  },
+  {
+    "id": "cap-doc-117",
+    "name": "Invest £1",
+    "description": "Invest £1.5 billion in research and development during FY 2024.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Innovation – Continuous investment in research and development (£1.5 billion in FY 2024)",
+    "source_policy_id": "POL-118"
+  },
+  {
+    "id": "cap-doc-118",
+    "name": "Deliver superior customer experiences through reliable network services, cutting",
+    "description": "Deliver superior customer experiences through reliable network services, cutting-edge technology, and responsive support.",
+    "category": "operational",
+    "tags": [
+      "network"
+    ],
+    "evidence": "Customer Centricity – Dedication to delivering superior customer experiences through reliable network services, cutting-edge technology, and responsive support",
+    "source_policy_id": "POL-119"
+  },
+  {
+    "id": "cap-doc-119",
+    "name": "Maintain ethical business practices and transparent governance aligned with inte",
+    "description": "Maintain ethical business practices and transparent governance aligned with international standards and regulatory requirements.",
+    "category": "governance",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Integrity – Ethical business practices and transparent governance aligned with international standards and regulatory requirements",
+    "source_policy_id": "POL-120"
+  },
+  {
+    "id": "cap-doc-120",
+    "name": "Develop platforms, cybersecurity, and AI-powered solutions as strategic prioriti",
+    "description": "Develop platforms, cybersecurity, and AI-powered solutions as strategic priorities for 2025-2027.",
+    "category": "capability",
+    "tags": [
+      "security",
+      "ai"
+    ],
+    "evidence": "Strategic Priorities (2025-2027)",
+    "source_policy_id": "POL-121"
+  },
+  {
+    "id": "cap-doc-121",
+    "name": "Grow the FinTech user base to exceed 88 million, with a focus on African markets",
+    "description": "Grow the FinTech user base to exceed 88 million, with a focus on African markets.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Financial Technology Expansion – Growth of FinTech user base beyond 88 million, particularly in African markets where mobile money transforms financial access",
+    "source_policy_id": "POL-122"
+  },
+  {
+    "id": "cap-doc-122",
+    "name": "Optimize portfolio, streamline assets, and standardize operations to improve fin",
+    "description": "Optimize portfolio, streamline assets, and standardize operations to improve financial performance and shareholder value.",
+    "category": "operational",
+    "tags": [
+      "ml"
+    ],
+    "evidence": "Operational Efficiency – Portfolio optimization, asset streamlining, and operational standardization to improve financial performance and shareholder value",
+    "source_policy_id": "POL-123"
+  },
+  {
+    "id": "cap-doc-123",
+    "name": "Progress toward net-zero emissions by 2040 through renewable energy investments",
+    "description": "Progress toward net-zero emissions by 2040 through renewable energy investments and energy-efficiency measures.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Sustainability Leadership – Continued progress toward net-zero emissions by 2040 through renewable energy investments and energy efficiency measures",
+    "source_policy_id": "POL-124"
+  },
+  {
+    "id": "cap-doc-124",
+    "name": "Deploy AI-powered customer service solutions to improve response times and satis",
+    "description": "Deploy AI-powered customer service solutions to improve response times and satisfaction, handling 50 million queries in 2024.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Customer Experience Enhancement – Deployment of AI-powered customer service solutions (50 million queries handled by AI chatbots in 2024) to improve response times and satisfaction",
+    "source_policy_id": "POL-125"
+  },
+  {
+    "id": "cap-doc-125",
+    "name": "Achieve 26",
+    "description": "Achieve 26.1% growth over the last two years in B2B digital services, including cloud computing and IoT.",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "iot"
+    ],
+    "evidence": "Digital Services Growth – Expansion of B2B digital services (26.1% growth over last 2 years) including cloud computing, IoT",
+    "source_policy_id": "POL-126"
+  },
+  {
+    "id": "cap-doc-126",
+    "name": "Create a connected digital society where data flows rapidly, linking people, com",
+    "description": "Create a connected digital society where data flows rapidly, linking people, communities, and devices via 5G and IoT innovations.",
+    "category": "operational",
+    "tags": [
+      "api",
+      "5g",
+      "soc",
+      "iot"
+    ],
+    "evidence": "Digital Society – Commitment to creating a connected digital society where data flows rapidly, connecting people, communities, and devices through innovations like 5G and IoT",
+    "source_policy_id": "POL-127"
+  },
+  {
+    "id": "cap-doc-127",
+    "name": "Confidentiality: Public",
+    "description": "Confidentiality: Public",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Header",
+    "source_policy_id": "POL-128"
+  },
+  {
+    "id": "cap-doc-128",
+    "name": "All prices are subject to annual inflationary adjustments and applicable taxes",
+    "description": "All prices are subject to annual inflationary adjustments and applicable taxes.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Pricing Overview",
+    "source_policy_id": "POL-129"
+  },
+  {
+    "id": "cap-doc-130",
+    "name": "Unlimited Lite plan price increases to £17",
+    "description": "Unlimited Lite plan price increases to £17.44 in April 2026.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Pay Monthly Plans",
+    "source_policy_id": "POL-131"
+  },
+  {
+    "id": "cap-doc-131",
+    "name": "Vodafone serves over 275 million customers across 15 markets with owned operatio",
+    "description": "Vodafone serves over 275 million customers across 15 markets with owned operations, plus an additional 66 million through joint ventures and associates.",
+    "category": "capability",
+    "tags": [
+      "oss",
+      "soc"
+    ],
+    "evidence": "Company Overview",
+    "source_policy_id": "POL-132"
+  },
+  {
+    "id": "cap-doc-132",
+    "name": "Our product portfolio leverages cutting‑edge technologies including 5G Ultra, Io",
+    "description": "Our product portfolio leverages cutting‑edge technologies including 5G Ultra, IoT connectivity, cloud computing, and AI‑powered solutions.",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "5g",
+      "ai",
+      "iot"
+    ],
+    "evidence": "Company Overview",
+    "source_policy_id": "POL-133"
+  },
+  {
+    "id": "cap-doc-133",
+    "name": "Product categories include Consumer Mobile Services, Business Mobile Solutions,",
+    "description": "Product categories include Consumer Mobile Services, Business Mobile Solutions, Fixed Broadband & Home Services, Internet of Things (IoT) Connectivity & Platforms, Enterprise Digital Services, FinTech & Mobile Financial Services.",
+    "category": "capability",
+    "tags": [
+      "iot"
+    ],
+    "evidence": "Key Product Categories",
+    "source_policy_id": "POL-134"
+  },
+  {
+    "id": "cap-doc-134",
+    "name": "The company offers standard unlimited usage",
+    "description": "The company offers standard unlimited usage.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-135"
+  },
+  {
+    "id": "cap-doc-135",
+    "name": "Maximum available speeds are provided to customers",
+    "description": "Maximum available speeds are provided to customers.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-136"
+  },
+  {
+    "id": "cap-doc-136",
+    "name": "Premium 5G Ultra access is available",
+    "description": "Premium 5G Ultra access is available.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "ai"
+    ],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-137"
+  },
+  {
+    "id": "cap-doc-137",
+    "name": "Entertainment add‑ons are available for purchase",
+    "description": "Entertainment add‑ons are available for purchase.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-138"
+  },
+  {
+    "id": "cap-doc-138",
+    "name": "Plus Xtra is priced at £22",
+    "description": "Plus Xtra is priced at £22.91 per month.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-139"
+  },
+  {
+    "id": "cap-doc-139",
+    "name": "Download speed is limited to a maximum of 100 Mbps",
+    "description": "Download speed is limited to a maximum of 100 Mbps.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-140"
+  },
+  {
+    "id": "cap-doc-140",
+    "name": "Euro Roam is priced at £24",
+    "description": "Euro Roam is priced at £24.99 per month, effective April 2027.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-141"
+  },
+  {
+    "id": "cap-doc-141",
+    "name": "5G service is provided at no extra cost",
+    "description": "5G service is provided at no extra cost.",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-142"
+  },
+  {
+    "id": "cap-doc-142",
+    "name": "European roaming is included in the plan",
+    "description": "European roaming is included in the plan.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-143"
+  },
+  {
+    "id": "cap-doc-143",
+    "name": "Pay‑monthly mobile plans are offered to consumers",
+    "description": "Pay‑monthly mobile plans are offered to consumers.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-144"
+  },
+  {
+    "id": "cap-doc-144",
+    "name": "Unlimited data plans are available",
+    "description": "Unlimited data plans are available.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "SECTION 1: Consumer Mobile Services",
+    "source_policy_id": "POL-145"
+  },
+  {
+    "id": "cap-doc-145",
+    "name": "Essential 5GB plan is priced at £10 per month for a 12‑month contract",
+    "description": "Essential 5GB plan is priced at £10 per month for a 12‑month contract.",
+    "category": "commercial",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Table 1: Vodafone Unlimited Data Plans (Prices ex. VAT)",
+    "source_policy_id": "POL-146"
+  },
+  {
+    "id": "cap-doc-146",
+    "name": "Standard plan price will increase to £21",
+    "description": "Standard plan price will increase to £21.80 in April 2026.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Standard unlimited usage",
+    "source_policy_id": "POL-147"
+  },
+  {
+    "id": "cap-doc-147",
+    "name": "Maximum monthly charge for the Standard unlimited plan is £26",
+    "description": "Maximum monthly charge for the Standard unlimited plan is £26.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Standard unlimited usage",
+    "source_policy_id": "POL-148"
+  },
+  {
+    "id": "cap-doc-148",
+    "name": "Maximum monthly charge for maximum available speeds will increase to £28",
+    "description": "Maximum monthly charge for maximum available speeds will increase to £28.34 in April 2026.",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Maximum available speeds",
+    "source_policy_id": "POL-149"
+  },
+  {
+    "id": "cap-doc-149",
+    "name": "Standard plan provides 15GB of data at £14 per month",
+    "description": "Standard plan provides 15GB of data at £14 per month.",
+    "category": "commercial",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Table 2: Vodafone Capped Data Plans",
+    "source_policy_id": "POL-150"
+  },
+  {
+    "id": "cap-doc-151",
+    "name": "Plus plan provides 30GB of data at £18 per month",
+    "description": "Plus plan provides 30GB of data at £18 per month.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 2: Vodafone Capped Data Plans",
+    "source_policy_id": "POL-152"
+  },
+  {
+    "id": "cap-doc-153",
+    "name": "Premium plan provides 100GB of data at £24 per month",
+    "description": "Premium plan provides 100GB of data at £24 per month.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 2: Vodafone Capped Data Plans",
+    "source_policy_id": "POL-154"
+  },
+  {
+    "id": "cap-doc-155",
+    "name": "All plans include unlimited UK calls and texts",
+    "description": "All plans include unlimited UK calls and texts.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-156"
+  },
+  {
+    "id": "cap-doc-156",
+    "name": "All plans include 5G network access on compatible devices at no additional charg",
+    "description": "All plans include 5G network access on compatible devices at no additional charge.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "network"
+    ],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-157"
+  },
+  {
+    "id": "cap-doc-158",
+    "name": "All plans include VeryMe Rewards membership",
+    "description": "All plans include VeryMe Rewards membership.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-159"
+  },
+  {
+    "id": "cap-doc-159",
+    "name": "Selected plans offer data rollover up to the next month",
+    "description": "Selected plans offer data rollover up to the next month.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-160"
+  },
+  {
+    "id": "cap-doc-160",
+    "name": "All plans provide unlimited minutes to UK standard mobiles and landlines (01, 02",
+    "description": "All plans provide unlimited minutes to UK standard mobiles and landlines (01, 02, 03).",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-161"
+  },
+  {
+    "id": "cap-doc-161",
+    "name": "All plans provide unlimited standard SMS and MMS messages within the UK",
+    "description": "All plans provide unlimited standard SMS and MMS messages within the UK.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-162"
+  },
+  {
+    "id": "cap-doc-162",
+    "name": "Entertainment add-on options such as Amazon Prime Video and Spotify Premium are",
+    "description": "Entertainment add-on options such as Amazon Prime Video and Spotify Premium are available.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-163"
+  },
+  {
+    "id": "cap-doc-164",
+    "name": "Flexible prepaid plans are offered with no long-term commitments",
+    "description": "Flexible prepaid plans are offered with no long-term commitments.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-165"
+  },
+  {
+    "id": "cap-doc-165",
+    "name": "7GB Bundle is priced at £10 and includes unlimited UK calls & texts",
+    "description": "7GB Bundle is priced at £10 and includes unlimited UK calls & texts.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Bundle Name",
+    "source_policy_id": "POL-166"
+  },
+  {
+    "id": "cap-doc-166",
+    "name": "15GB Bundle is priced at £15 and includes unlimited UK calls & texts and Zone A",
+    "description": "15GB Bundle is priced at £15 and includes unlimited UK calls & texts and Zone A roaming.",
+    "category": "commercial",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Bundle Name",
+    "source_policy_id": "POL-167"
+  },
+  {
+    "id": "cap-doc-167",
+    "name": "40GB Bundle is priced at £20 and includes unlimited UK calls & texts and Zone A",
+    "description": "40GB Bundle is priced at £20 and includes unlimited UK calls & texts and Zone A roaming.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Bundle Name",
+    "source_policy_id": "POL-168"
+  },
+  {
+    "id": "cap-doc-168",
+    "name": "Zone A roaming is included in the 15GB and 40GB bundles",
+    "description": "Zone A roaming is included in the 15GB and 40GB bundles.",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Bundle Name",
+    "source_policy_id": "POL-169"
+  },
+  {
+    "id": "cap-doc-169",
+    "name": "Data rollover is limited to the next month and only for selected plans",
+    "description": "Data rollover is limited to the next month and only for selected plans.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Unlimited UK calls and texts",
+    "source_policy_id": "POL-170"
+  },
+  {
+    "id": "cap-doc-170",
+    "name": "100GB Bundle priced at £25 includes 100GB data, unlimited UK calls & texts, and",
+    "description": "100GB Bundle priced at £25 includes 100GB data, unlimited UK calls & texts, and Zone A roaming.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "100GB Bundle",
+    "source_policy_id": "POL-171"
+  },
+  {
+    "id": "cap-doc-171",
+    "name": "Unlimited Bundle priced at £30 includes unlimited calls, texts, data, and Zone A",
+    "description": "Unlimited Bundle priced at £30 includes unlimited calls, texts, data, and Zone A roaming.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Unlimited Bundle",
+    "source_policy_id": "POL-172"
+  },
+  {
+    "id": "cap-doc-172",
+    "name": "Standard PAYG call rate is 35p per minute",
+    "description": "Standard PAYG call rate is 35p per minute.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "PAYG Standard Rates (Without Bundle)",
+    "source_policy_id": "POL-173"
+  },
+  {
+    "id": "cap-doc-173",
+    "name": "Standard PAYG text rate is 10p per message",
+    "description": "Standard PAYG text rate is 10p per message.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "PAYG Standard Rates (Without Bundle)",
+    "source_policy_id": "POL-174"
+  },
+  {
+    "id": "cap-doc-174",
+    "name": "Standard PAYG data rate is £1 per day for 500MB",
+    "description": "Standard PAYG data rate is £1 per day for 500MB.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "PAYG Standard Rates (Without Bundle)",
+    "source_policy_id": "POL-175"
+  },
+  {
+    "id": "cap-doc-175",
+    "name": "Bundles automatically renew every 30 days if sufficient credit is available",
+    "description": "Bundles automatically renew every 30 days if sufficient credit is available.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Auto-Renewal",
+    "source_policy_id": "POL-176"
+  },
+  {
+    "id": "cap-doc-176",
+    "name": "Customers may opt out of auto‑renewal at any time by calling 2345",
+    "description": "Customers may opt out of auto‑renewal at any time by calling 2345.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Auto-Renewal",
+    "source_policy_id": "POL-177"
+  },
+  {
+    "id": "cap-doc-177",
+    "name": "SIM Only 10GB plan costs £8 per month",
+    "description": "SIM Only 10GB plan costs £8 per month.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "SIM Only 10GB",
+    "source_policy_id": "POL-178"
+  },
+  {
+    "id": "cap-doc-178",
+    "name": "SIM Only 10GB plan provides 10GB of data",
+    "description": "SIM Only 10GB plan provides 10GB of data.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "SIM Only 10GB",
+    "source_policy_id": "POL-179"
+  },
+  {
+    "id": "cap-doc-179",
+    "name": "SIM Only 10GB plan operates on a 30‑day rolling contract term",
+    "description": "SIM Only 10GB plan operates on a 30‑day rolling contract term.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "SIM Only 10GB",
+    "source_policy_id": "POL-180"
+  },
+  {
+    "id": "cap-doc-180",
+    "name": "SIM Only 20GB plan costs £12 per month",
+    "description": "SIM Only 20GB plan costs £12 per month.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "SIM Only 20GB",
+    "source_policy_id": "POL-181"
+  },
+  {
+    "id": "cap-doc-181",
+    "name": "SIM Only 20GB plan provides 20GB of data",
+    "description": "SIM Only 20GB plan provides 20GB of data.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "SIM Only 20GB",
+    "source_policy_id": "POL-182"
+  },
+  {
+    "id": "cap-doc-182",
+    "name": "SIM Only 20GB plan operates on a 30‑day rolling contract term",
+    "description": "SIM Only 20GB plan operates on a 30‑day rolling contract term.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "SIM Only 20GB",
+    "source_policy_id": "POL-183"
+  },
+  {
+    "id": "cap-doc-183",
+    "name": "SIM Only 50GB plan costs £16 per month",
+    "description": "SIM Only 50GB plan costs £16 per month.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "SIM Only 50GB",
+    "source_policy_id": "POL-184"
+  },
+  {
+    "id": "cap-doc-184",
+    "name": "SIM Only 50GB plan provides 50GB of data",
+    "description": "SIM Only 50GB plan provides 50GB of data.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "SIM Only 50GB",
+    "source_policy_id": "POL-185"
+  },
+  {
+    "id": "cap-doc-185",
+    "name": "SIM Only 50GB plan has a 12‑month contract term",
+    "description": "SIM Only 50GB plan has a 12‑month contract term.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "SIM Only 50GB",
+    "source_policy_id": "POL-186"
+  },
+  {
+    "id": "cap-doc-186",
+    "name": "All bundles include Zone A roaming",
+    "description": "All bundles include Zone A roaming.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Zone A roaming included",
+    "source_policy_id": "POL-187"
+  },
+  {
+    "id": "cap-doc-187",
+    "name": "Big Value Bundles are 30‑day bundles unless a different contract term is specifi",
+    "description": "Big Value Bundles are 30‑day bundles unless a different contract term is specified.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Big Value Bundles (30-Day Bundles)",
+    "source_policy_id": "POL-188"
+  },
+  {
+    "id": "cap-doc-188",
+    "name": "No upfront costs are charged for any SIM Only plan",
+    "description": "No upfront costs are charged for any SIM Only plan.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 4: SIM Only Plan Pricing",
+    "source_policy_id": "POL-189"
+  },
+  {
+    "id": "cap-doc-189",
+    "name": "Contracts may only be either 30‑day or 12‑month flexible terms",
+    "description": "Contracts may only be either 30‑day or 12‑month flexible terms.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 4: SIM Only Plan Pricing",
+    "source_policy_id": "POL-190"
+  },
+  {
+    "id": "cap-doc-190",
+    "name": "Customers are allowed to keep their existing phone number when switching plans",
+    "description": "Customers are allowed to keep their existing phone number when switching plans.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Table 4: SIM Only Plan Pricing",
+    "source_policy_id": "POL-191"
+  },
+  {
+    "id": "cap-doc-191",
+    "name": "Full 5G network access is included with all plans",
+    "description": "Full 5G network access is included with all plans.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "network"
+    ],
+    "evidence": "Table 4: SIM Only Plan Pricing",
+    "source_policy_id": "POL-192"
+  },
+  {
+    "id": "cap-doc-192",
+    "name": "EU roaming is included with all plans",
+    "description": "EU roaming is included with all plans.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Table 4: SIM Only Plan Pricing",
+    "source_policy_id": "POL-193"
+  },
+  {
+    "id": "cap-doc-193",
+    "name": "The SIM Only 100GB plan is priced at £20 per month for a 12‑month term and provi",
+    "description": "The SIM Only 100GB plan is priced at £20 per month for a 12‑month term and provides 100 GB of data.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 4: SIM Only Plan Pricing",
+    "source_policy_id": "POL-194"
+  },
+  {
+    "id": "cap-doc-194",
+    "name": "The SIM Only Unlimited plan is priced at £25 per month for a 12‑month term and p",
+    "description": "The SIM Only Unlimited plan is priced at £25 per month for a 12‑month term and provides unlimited data.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 4: SIM Only Plan Pricing",
+    "source_policy_id": "POL-195"
+  },
+  {
+    "id": "cap-doc-195",
+    "name": "iPhone 16 Pro financing requires an upfront payment of £99 and £42 per month for",
+    "description": "iPhone 16 Pro financing requires an upfront payment of £99 and £42 per month for 24 months.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 5: Popular Smartphone Pricing (Sample Configurations)",
+    "source_policy_id": "POL-196"
+  },
+  {
+    "id": "cap-doc-196",
+    "name": "Samsung Galaxy S25 Ultra financing requires an upfront payment of £79 and £38 pe",
+    "description": "Samsung Galaxy S25 Ultra financing requires an upfront payment of £79 and £38 per month for 24 months.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 5: Popular Smartphone Pricing (Sample Configurations)",
+    "source_policy_id": "POL-197"
+  },
+  {
+    "id": "cap-doc-197",
+    "name": "Google Pixel 10 Pro financing requires an upfront payment of £49 and £32 per mon",
+    "description": "Google Pixel 10 Pro financing requires an upfront payment of £49 and £32 per month for 24 months.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 5: Popular Smartphone Pricing (Sample Configurations)",
+    "source_policy_id": "POL-198"
+  },
+  {
+    "id": "cap-doc-198",
+    "name": "Samsung Galaxy A16 financing requires no upfront payment and £15 per month for 2",
+    "description": "Samsung Galaxy A16 financing requires no upfront payment and £15 per month for 24 months.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 5: Popular Smartphone Pricing (Sample Configurations)",
+    "source_policy_id": "POL-199"
+  },
+  {
+    "id": "cap-doc-199",
+    "name": "HONOR Magic V5 (Foldable) financing requires an upfront payment of £149 and £45",
+    "description": "HONOR Magic V5 (Foldable) financing requires an upfront payment of £149 and £45 per month for 36 months.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Table 5: Popular Smartphone Pricing (Sample Configurations)",
+    "source_policy_id": "POL-200"
+  },
+  {
+    "id": "cap-doc-200",
+    "name": "Device financing and handset offers are available for popular smartphones",
+    "description": "Device financing and handset offers are available for popular smartphones.",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Device Features Highlight",
+    "source_policy_id": "POL-201"
+  },
+  {
+    "id": "cap-doc-201",
+    "name": "Samsung Galaxy S25 Ultra includes flagship performance, an advanced camera syste",
+    "description": "Samsung Galaxy S25 Ultra includes flagship performance, an advanced camera system, and an S Pen.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Device Features Highlight",
+    "source_policy_id": "POL-202"
+  },
+  {
+    "id": "cap-doc-202",
+    "name": "iPhone 16 refurbished price starts at £549",
+    "description": "iPhone 16 refurbished price starts at £549",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "iPhone 16",
+    "source_policy_id": "POL-203"
+  },
+  {
+    "id": "cap-doc-203",
+    "name": "iPhone 16 Pro refurbished price starts at £749",
+    "description": "iPhone 16 Pro refurbished price starts at £749",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "iPhone 16 Pro",
+    "source_policy_id": "POL-204"
+  },
+  {
+    "id": "cap-doc-204",
+    "name": "iPhone 14 refurbished price starts at £399",
+    "description": "iPhone 14 refurbished price starts at £399",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "iPhone 14",
+    "source_policy_id": "POL-205"
+  },
+  {
+    "id": "cap-doc-205",
+    "name": "iPhone 12 refurbished price starts at £299",
+    "description": "iPhone 12 refurbished price starts at £299",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "iPhone 12",
+    "source_policy_id": "POL-206"
+  },
+  {
+    "id": "cap-doc-206",
+    "name": "Samsung Galaxy S24 5G refurbished price starts at £499",
+    "description": "Samsung Galaxy S24 5G refurbished price starts at £499",
+    "category": "commercial",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Samsung Galaxy S24 5G",
+    "source_policy_id": "POL-207"
+  },
+  {
+    "id": "cap-doc-207",
+    "name": "Professional reconditioning and testing are performed on all refurbished devices",
+    "description": "Professional reconditioning and testing are performed on all refurbished devices",
+    "category": "capability",
+    "tags": [
+      "testing"
+    ],
+    "evidence": "Refurbished Device Benefits",
+    "source_policy_id": "POL-208"
+  },
+  {
+    "id": "cap-doc-208",
+    "name": "Each refurbished device includes a 12-month warranty",
+    "description": "Each refurbished device includes a 12-month warranty",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Refurbished Device Benefits",
+    "source_policy_id": "POL-209"
+  },
+  {
+    "id": "cap-doc-209",
+    "name": "A 30-day money-back guarantee is offered on refurbished devices",
+    "description": "A 30-day money-back guarantee is offered on refurbished devices",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Refurbished Device Benefits",
+    "source_policy_id": "POL-210"
+  },
+  {
+    "id": "cap-doc-210",
+    "name": "All accessories are included with refurbished devices",
+    "description": "All accessories are included with refurbished devices",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Refurbished Device Benefits",
+    "source_policy_id": "POL-211"
+  },
+  {
+    "id": "cap-doc-211",
+    "name": "Refurbished devices are marketed as an environmentally sustainable choice",
+    "description": "Refurbished devices are marketed as an environmentally sustainable choice",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Refurbished Device Benefits",
+    "source_policy_id": "POL-212"
+  },
+  {
+    "id": "cap-doc-212",
+    "name": "The Refurbished Device Program is offered to customers",
+    "description": "The Refurbished Device Program is offered to customers",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Refurbished Device Program",
+    "source_policy_id": "POL-213"
+  },
+  {
+    "id": "cap-doc-213",
+    "name": "Entertainment add-on packages are available for an additional £6-8 per month",
+    "description": "Entertainment add-on packages are available for an additional £6-8 per month",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Entertainment Add-Ons",
+    "source_policy_id": "POL-214"
   }
 ]
