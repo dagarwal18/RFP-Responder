@@ -49,8 +49,9 @@ A multi-agent AI system that automates end-to-end RFP (Request for Proposal) res
 
 | Layer | Technology |
 |---|---|
-| LLM | Groq Cloud (`llama-4-maverick-17b-128e-instruct`) via `langchain-groq` |
-| VLM | HuggingFace Inference API (`Qwen/Qwen3-VL-8B-Instruct`) |
+| LLM (Primary) | Groq Cloud (`qwen/qwen3-32b`) — used by B1 extraction, A2, A3, C1 |
+| LLM (Large) | Groq Cloud (`meta-llama/llama-4-scout-17b-16e-instruct`) — used by C2, B2, D1, C3 (131K context) |
+| VLM | HuggingFace / Novita (`Qwen/Qwen3-VL-8B-Instruct:novita`) |
 | Orchestration | LangGraph state machine (17 nodes, 5 conditional edges) |
 | Vector DB | Pinecone Serverless (AWS us-east-1, cosine similarity) |
 | Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`, 384 dims) |
@@ -92,9 +93,21 @@ Only secrets go in `.env` — all model names, thresholds, and behavior params a
 | Variable | Required | Description |
 |---|---|---|
 | `GROQ_API_KEY` | Yes | Groq Cloud API key (LLM) |
+| `GROQ_API_KEYS` | No | Comma-separated keys for round-robin rotation |
 | `HUGGINGFACE_API_KEY` | Yes | HuggingFace API key (VLM table extraction) |
 | `PINECONE_API_KEY` | Yes | Pinecone API key |
 | `MONGODB_URI` | No (default: `mongodb://localhost:27017`) | MongoDB connection string |
+
+## Dual-Model LLM Strategy
+
+The system uses two LLM models via Groq Cloud, selected based on agent requirements:
+
+| Model | Config Key | Context Window | TPM Limit | Used By |
+|---|---|---|---|---|
+| `qwen/qwen3-32b` | `llm_model` | ~32K tokens | 6K TPM | B1 (extraction), A2, A3, C1 |
+| `meta-llama/llama-4-scout-17b-16e-instruct` | `llm_large_model` | ~131K tokens | 30K TPM | C2 (writing), B2 (validation), D1 (technical validation), C3 (assembly) |
+
+Both share `max_tokens=8192` for **output** generation. The key difference is **input context capacity** — agents processing large documents (full proposals, all requirements) use the Llama model. API key rotation (`groq_api_keys`) distributes calls across multiple keys.
 
 ## API Endpoints
 
@@ -135,33 +148,37 @@ Swagger UI at `/docs`. Dashboard at `/`.
 ## Pipeline Flow
 
 ```
-A1 Intake → A2 Structuring → A3 Go/No-Go ──→ END (NO_GO)
-                 │ low                │ GO
-                 │ confidence         ▼
-                 ├──→ retry (≤3x)    B1 Req Extraction
-                 └──→ ESCALATE       → B2 Req Validation
-                                     → C1 Architecture
-                                     → C2 Writing
-                                     → C3 Assembly
-                                        │
-                                        ▼
-                                    D1 Validation
-                                    │ REJECT (≤3x)
-                                    ├──→ C3 (retry)
-                                    │ PASS
-                                    ▼
-                            E1 Commercial ┐
-                            E2 Legal      ┤ (parallel)
-                                          │
-                                    BLOCK → END
-                                    CLEAR ↓
-                                    F1 Readiness
-                                        │
-                                Human Approval Gate
-                                    REJECT → END
-                                    APPROVE ↓
-                                    F2 Submission → END
+A1 Intake → A2 Structuring → A3 Go/No-Go ──→ B1 Req Extraction
+                 │ low                              (always continues,
+                 │ confidence                        NO_GO status preserved
+                 ├──→ retry (≤3x)                    for frontend display)
+                 └──→ ESCALATE                       │
+                                                     ▼
+                                            B2 Req Validation
+                                            → C1 Architecture
+                                            → C2 Writing
+                                            → C3 Assembly
+                                               │
+                                               ▼
+                                           D1 Validation
+                                           │ REJECT (≤3x)
+                                           ├──→ C3 (retry)
+                                           │ PASS
+                                           ▼
+                                   E1 Commercial ┐
+                                   E2 Legal      ┤ (parallel)
+                                                 │
+                                           BLOCK → END
+                                           CLEAR ↓
+                                           F1 Readiness
+                                               │
+                                       Human Approval Gate
+                                           REJECT → END
+                                           APPROVE ↓
+                                           F2 Submission → END
 ```
+
+> **Note:** The Go/No-Go decision (A3) no longer terminates the pipeline on `NO_GO`. The decision is preserved in `go_no_go_result` for frontend display, but the pipeline always continues to B1. This allows users to see the full RFP analysis even when the system recommends against bidding.
 
 ## Agent Status
 
@@ -169,13 +186,13 @@ A1 Intake → A2 Structuring → A3 Go/No-Go ──→ END (NO_GO)
 |---|---|---|
 | A1 IntakeAgent | ✅ | PDF parsing, HuggingFace VLM table extraction, Pinecone embedding |
 | A2 StructuringAgent | ✅ | LLM section classification (6 categories) with retry loop |
-| A3 GoNoGoAgent | ✅ | Policy rules + LLM risk scoring + requirement mapping |
-| B1 RequirementsExtractionAgent | ✅ | Two-layer extraction (rule-based + LLM) + 3-tier dedup |
-| B2 RequirementsValidationAgent | ✅ | Grounded refinement with hallucination guards |
+| A3 GoNoGoAgent | ✅ | Policy rules + LLM risk scoring + requirement mapping (bypass on NO_GO) |
+| B1 RequirementsExtractionAgent | ✅ | Two-layer extraction (rule-based + LLM) + 3-tier dedup + JSON repair |
+| B2 RequirementsValidationAgent | ✅ | Grounded refinement with hallucination guards (Llama, 50K/80K limits) |
 | C1 ArchitecturePlanningAgent | ✅ | Programmatic gap-fill + auto-split overloaded sections (≤20 reqs) |
-| C2 RequirementWritingAgent | ✅ | Token budgeting + RFP metadata injection + 3-tier coverage matrix |
+| C2 RequirementWritingAgent | ✅ | Token budgeting (Llama 25K input) + RFP metadata injection + 3-tier coverage matrix |
 | C3 NarrativeAssemblyAgent | ✅ | LLM exec summary + transitions, split-section reassembly, coverage appendix |
-| D1 TechnicalValidationAgent | ⬜ | Stub |
+| D1 TechnicalValidationAgent | ✅ | Single-call/multi-pass validation, 4 checks (completeness/alignment/realism/consistency) |
 | E1 CommercialAgent | ⬜ | Stub |
 | E2 LegalAgent | ⬜ | Stub |
 | F1 FinalReadinessAgent | ⬜ | Stub |
@@ -186,7 +203,7 @@ A1 Intake → A2 Structuring → A3 Go/No-Go ──→ END (NO_GO)
 | Point | Agent | Condition | Outcome |
 |---|---|---|---|
 | Structuring confidence | A2 | confidence < 0.6 after 3 retries | Escalate → END |
-| Go / No-Go | A3 | Policy violation or low scores | NO_GO → END |
+| Go / No-Go | A3 | Policy violation or low scores | Status set to NO_GO, pipeline **continues** |
 | Technical validation | D1 | REJECT | Loop to C3 (max 3x) → escalate |
 | Legal veto | E2 | BLOCK (critical risk) | LEGAL_BLOCK → END |
 | Human approval | F1 | REJECT | REJECTED → END |
@@ -199,7 +216,7 @@ pytest rfp_automation/tests/ -v
 
 | Test File | Coverage |
 |---|---|
-| `test_agents.py` | Per-agent unit tests |
+| `test_agents.py` | Per-agent unit tests (48 passing) |
 | `test_pipeline.py` | End-to-end pipeline tests |
 | `test_rules.py` | MCP rule layer tests (policy, validation, commercial, legal) |
 | `test_api.py` | API endpoint tests |
@@ -208,7 +225,17 @@ pytest rfp_automation/tests/ -v
 | `test_quality_fixes.py` | C2 quality fix verification |
 | `test_stage4.py` | Stage 4 integration tests |
 
+## Quality Metrics (Latest Run)
+
+| Metric | Value |
+|---|---|
+| Requirements extracted (B1) | 88–104 depending on RFP complexity |
+| Coverage quality (C2 → D1) | 90–95% full, 5-10% partial, 0% missing |
+| D1 validation decision | PASS (0 critical failures, 0 warnings) |
+| Pipeline completion time | ~7–8 minutes end-to-end (A1→D1) |
+| Word count (assembled proposal) | ~8,500 words across 13–15 sections |
+
 ## Documentation
 
 - **[Documentation/project-description.md](Documentation/project-description.md)** — Full system spec with agent descriptions, state schema, configuration reference
-- **[Documentation/implementation-plan.md](Documentation/implementation-plan.md)** — Current status, C3 design, remaining agent plans
+- **[Documentation/implementation-plan.md](Documentation/implementation-plan.md)** — Current status, remaining agent plans, deployment

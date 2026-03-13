@@ -1,7 +1,7 @@
 # RFP Response Automation — Implementation Plan
 
-> **Last Updated:** 2026-03-06
-> **Current Progress:** 8 of 13 agents fully implemented (A1–C2), pipeline runs through C2 with stubs for C3–F2
+> **Last Updated:** 2026-03-13
+> **Current Progress:** 10 of 13 agents fully implemented (A1–D1), pipeline runs through D1 with stubs for E1–F2
 
 ---
 
@@ -11,13 +11,13 @@
 |---|---|---|
 | A1 IntakeAgent | ✅ Done | PDF parsing, HuggingFace VLM table extraction (`vision_service.py`), Pinecone embedding, regex metadata |
 | A2 StructuringAgent | ✅ Done | LLM section classification (6 categories), confidence scoring, retry loop (max 3) |
-| A3 GoNoGoAgent | ✅ Done | LLM risk analysis + MCP policy rules, requirement-to-policy mapping table |
-| B1 RequirementsExtractionAgent | ✅ Done | Two-layer extraction (`obligation_detector.py` + LLM), 3-tier embedding dedup, temp=0/seed=42 |
-| B2 RequirementsValidationAgent | ✅ Done | Duplicate/contradiction/ambiguity detection, grounded refinement with hallucination guards |
+| A3 GoNoGoAgent | ✅ Done | LLM risk analysis + MCP policy rules, requirement-to-policy mapping table, NO_GO bypass (continues pipeline) |
+| B1 RequirementsExtractionAgent | ✅ Done | Two-layer extraction (`obligation_detector.py` + LLM), 3-tier embedding dedup, temp=0/seed=42, JSON repair for truncated output |
+| B2 RequirementsValidationAgent | ✅ Done | Grounded refinement with hallucination guards, Llama model with 50K/80K char limits |
 | C1 ArchitecturePlanningAgent | ✅ Done | LLM section design + programmatic gap-fill + auto-split (max 20 reqs/section) |
-| C2 RequirementWritingAgent | ✅ Done | Per-section prose, token budgeting, RFP metadata injection, 3-tier coverage matrix |
+| C2 RequirementWritingAgent | ✅ Done | Per-section prose, Llama token budgeting (~25K input budget), RFP metadata injection, 3-tier coverage matrix, JSON repair |
 | C3 NarrativeAssemblyAgent | ✅ Done | LLM exec summary + transitions, split-section reassembly, coverage appendix, placeholder detection |
-| D1 TechnicalValidationAgent | ⬜ Stub | `NotImplementedError` |
+| D1 TechnicalValidationAgent | ✅ Done | Single-call/multi-pass validation, 4 checks (completeness/alignment/realism/consistency), Llama 4 Scout budgets |
 | E1 CommercialAgent | ⬜ Stub | `NotImplementedError` |
 | E2 LegalAgent | ⬜ Stub | `NotImplementedError` |
 | F1 FinalReadinessAgent | ⬜ Stub | `NotImplementedError` |
@@ -28,7 +28,7 @@
 | Component | File(s) | Notes |
 |---|---|---|
 | State models | `models/enums.py`, `schemas.py`, `state.py` | 20+ Pydantic v2 models, `PipelineStatus` enum |
-| Orchestration | `orchestration/graph.py`, `transitions.py` | 17-node LangGraph, 5 conditional edges, `run_pipeline()` + `run_pipeline_from()` |
+| Orchestration | `orchestration/graph.py`, `transitions.py` | 17-node LangGraph, 5 conditional edges, `run_pipeline()` + `run_pipeline_from()`, Go/No-Go bypass |
 | MCP Server | `mcp/mcp_server.py` + vector_store + rules | Pinecone + MongoDB + BM25 + 4 rule layers + rules_config |
 | KB Seed Data | `mcp/knowledge_data/` | 6 JSON files (capabilities, certs, pricing, legal, proposals, policies) |
 | KB Loader | `mcp/knowledge_loader.py` | `seed_all()` function to bootstrap KB |
@@ -38,56 +38,41 @@
 | Persistence | `persistence/` | MongoDB client, state repo (in-memory), JSON checkpoints per agent |
 | Tests | `tests/` | 8 test files covering agents, pipeline, rules, API, extraction, obligation detection, quality fixes |
 | Prompts | `prompts/` | 9 prompt templates (A2, A3, B1, B2, C1, C2, D1, E2, policy extraction) |
-| Config | `config.py` + `.env` | Secrets in `.env`, model params hardcoded in `config.py` |
+| Config | `config.py` + `.env` | Dual-model setup: Qwen3-32B (primary) + Llama 4 Scout (large context), secrets in `.env` |
+
+### Dual-Model LLM Architecture
+
+The system uses two Groq Cloud models based on agent context requirements:
+
+| Model | Config Key | Context | TPM | Agents |
+|---|---|---|---|---|
+| `qwen/qwen3-32b` | `llm_model` | ~32K | 6K | B1, A2, A3, C1 (deterministic extraction/structuring) |
+| `meta-llama/llama-4-scout-17b-16e-instruct` | `llm_large_model` | ~131K | 30K | C2, B2, D1, C3 (large-context writing/validation) |
+
+Both share `max_tokens=8192` for output generation. Agents that process large inputs (full proposals, all requirements) use the Llama model via `llm_large_text_call()`. API key rotation (`groq_api_keys`) distributes calls across multiple keys.
 
 ---
 
-## Next: C3 Narrative Assembly Agent
+## Recent Fixes (March 2026)
 
-### Inputs
-- `writing_result.section_responses[]` — individual section content from C2
-- `architecture_plan.sections` — section ordering and structure from C1
-- `rfp_metadata` — client name, RFP title/number for document headers
-- `writing_result.coverage_matrix` — requirement coverage data
+### Token Budget Corrections
 
-### Expected Outputs
-- `assembled_proposal.executive_summary` — 300-500 word summary
-- `assembled_proposal.full_proposal_text` — complete narrative document
-- `assembled_proposal.section_order` — ordered section IDs
-- `assembled_proposal.total_word_count` — total word count
-- `assembled_proposal.coverage_appendix` — requirement traceability matrix
+Several agents had budget calculations based on `llm_max_tokens=8192` (an **output** limit), treating it as an input context limit. This caused severe data truncation:
 
-### Implementation Approach
+| Agent | Issue | Fix |
+|---|---|---|
+| B1 | `MAX_CONTEXT_LEN` too small for Qwen's actual ~32K context | Increased to ~32K context, added `_repair_truncated_json_array()` for resilience |
+| B2 | Requirements JSON truncated at 12K chars, RFP text at 15K | Raised to 50K/80K chars respectively to use Llama's capacity |
+| C2 | Budget computed from 8192 output tokens instead of ~25K input budget | Recalculated using Llama's actual capacity (~100K chars), added JSON repair |
+| D1 | Proposal and requirements truncated at small limits | `_SINGLE_CALL_MAX_CHARS=80K`, `_MAX_PROPOSAL_CHARS=100K`, `_MAX_REQUIREMENTS_CHARS=50K` |
 
-1. **Section ordering** — Sort C2 section responses by C1 priority (ascending = highest priority first)
-2. **Executive summary generation** — LLM call with: RFP metadata, section titles, coverage stats, key strengths
-3. **Transition generation** — LLM call for smooth transitions between sections
-4. **Document assembly** — Concatenate: cover letter → executive summary → TOC → ordered sections → compliance matrix → coverage appendix
-5. **Quality checks:**
-   - No placeholder text (`[...]`, `{{...}}`)
-   - Within submission length limits
-   - All sections present and non-empty
-   - Coverage appendix matches coverage matrix
+### Go/No-Go Bypass
 
-### State writes
-- `assembled_proposal` — `AssembledProposal`
-- `status → TECHNICAL_VALIDATION`
+Modified `route_after_go_no_go()` in `transitions.py` to always route to `b1_requirements_extraction`, regardless of the decision. The `NO_GO` decision is preserved in `go_no_go_result` for frontend display but does not terminate the pipeline.
 
 ---
 
-## Remaining Agents (D1–F2)
-
-### D1 — Technical Validation Agent
-
-**Purpose:** Validate assembled proposal against original requirements.
-
-**Plan:**
-1. Retrieve original requirements from state
-2. Compare proposal content against each requirement
-3. Run 4 validation checks: completeness, alignment, realism, consistency
-4. Apply MCP Validation Rules (`rules/validation_rules.py` — prohibited language, SLA compliance)
-5. Decision: PASS if no critical failures and warnings ≤ 5, else REJECT
-6. On REJECT: increment retry counter, provide actionable section-specific feedback → route to C3
+## Remaining Agents (E1–F2)
 
 ### E1 — Commercial Agent
 
@@ -133,12 +118,16 @@
 
 ---
 
-## Quality Metrics (C2 Baseline — Latest Run)
+## Quality Metrics (Latest Run — March 2026)
 
-- **Requirement coverage:** 92.0% full, 0.7% partial, 7.2% missing
-- **Word count accuracy:** Exact — uses actual `len(content.split())`
-- **Max reqs per section:** 20 (enforced by C1 auto-splitting)
-- **Total output:** ~4,700 words across 18 sections
+| Metric | Value |
+|---|---|
+| Requirements extracted (B1) | 88 (from ~71 pre-fix) |
+| Coverage quality (D1) | 90.9% full, 9.1% partial, 0% missing |
+| D1 validation decision | PASS (0 critical failures, 0 warnings) |
+| Pipeline completion time | ~7–8 minutes (A1→D1) |
+| Assembled proposal word count | ~8,500 words across 13 sections |
+| All 4 D1 checks | ✅ completeness, alignment, realism, consistency |
 
 ---
 

@@ -140,16 +140,15 @@ class RequirementsExtractionAgent(BaseAgent):
                 ]
 
             # Layer 2: LLM structuring/classification (Batched Extraction)
-            MAX_CONTEXT_LEN = 8000
+            # Qwen3-32B context window ≈ 32K tokens.  Output cap = 8192 tokens.
+            # Input budget ≈ 32K - 8K = ~24K tokens ≈ 96K chars.
+            # We use conservative estimates to avoid prompt overflow.
+            MAX_CONTEXT_LEN = 20_000   # section context (was 8000)
             section_context = truncate_at_boundary(raw_text, MAX_CONTEXT_LEN)
-            
-            output_budget_tokens = int(settings.llm_max_tokens * settings.extraction_min_output_headroom_ratio)
-            input_budget_tokens = settings.llm_max_tokens - output_budget_tokens
-            overhead_tokens = len(section_context) // 4 + 400
-            
-            # Start with maximum safe candidate tokens
-            available_candidate_tokens = max(500, input_budget_tokens - overhead_tokens)
-            max_candidate_chars = available_candidate_tokens * 4
+
+            INPUT_BUDGET_CHARS = 80_000  # ~20K tokens for the full prompt
+            overhead_chars = len(section_context) + 1600  # context + template
+            max_candidate_chars = max(2000, INPUT_BUDGET_CHARS - overhead_chars)
             
             before_section_reqs = len(all_requirements)
             
@@ -329,17 +328,13 @@ class RequirementsExtractionAgent(BaseAgent):
             json_array_match = re.search(r'\[\s*\{', text)
             if json_array_match:
                 fragment = text[json_array_match.start():]
-                last_brace = fragment.rfind("}")
-                if last_brace != -1:
-                    repaired = fragment[:last_brace + 1] + "]"
-                    try:
-                        data = json.loads(repaired)
-                        logger.warning(f"[B1] Recovered partial JSON array with {len(data)} items")
-                    except json.JSONDecodeError as exc_inner:
-                        logger.error(f"[B1] FATAL JSON PARSE FAIL after repair: {fragment[:300]}")
-                        raise ExtractionBatchError("Unrecoverable JSON syntax") from exc_inner
+                # Close any unclosed strings, then trim to last complete object
+                repaired = self._repair_truncated_json_array(fragment)
+                if repaired is not None:
+                    data = repaired
+                    logger.warning(f"[B1] Recovered partial JSON array with {len(data)} items")
                 else:
-                    logger.error(f"[B1] FATAL JSON PARSE FAIL: No objects to recover")
+                    logger.error(f"[B1] FATAL JSON PARSE FAIL after repair: {fragment[:300]}")
                     raise ExtractionBatchError("Unrecoverable JSON syntax")
             else:
                 # No JSON array found at all
@@ -416,6 +411,56 @@ class RequirementsExtractionAgent(BaseAgent):
                 continue
 
         return requirements
+
+    # ── Truncated JSON repair ─────────────────────────────────
+
+    @staticmethod
+    def _repair_truncated_json_array(fragment: str) -> list[dict] | None:
+        """Repair a truncated JSON array of objects.
+
+        When finish_reason=length, the LLM output is cut mid-JSON.
+        Strategy:
+          1. Find the last complete object (ending with '}')
+          2. Close any unclosed strings before that point
+          3. Trim to last '}' and close the array with ']'
+          4. Try progressively shorter prefixes if parsing fails
+        """
+        # Try simple close first: trim to last '}', add ']'
+        last_brace = fragment.rfind("}")
+        if last_brace == -1:
+            return None
+
+        for attempt in range(5):
+            candidate = fragment[:last_brace + 1] + "]"
+            try:
+                data = json.loads(candidate)
+                if isinstance(data, list):
+                    return data
+            except json.JSONDecodeError:
+                pass
+
+            # Close any unclosed string: find odd number of unescaped quotes
+            # by adding a closing quote before the last '}'
+            candidate_fixed = fragment[:last_brace]
+            # Count quotes after the last complete object boundary
+            last_obj_boundary = candidate_fixed.rfind("},")
+            if last_obj_boundary == -1:
+                last_obj_boundary = candidate_fixed.find("{")
+            tail = candidate_fixed[last_obj_boundary:] if last_obj_boundary != -1 else candidate_fixed
+            quote_count = tail.count('"') - tail.count('\\"')
+            if quote_count % 2 == 1:
+                # Odd quotes = unclosed string. Strip to last complete object
+                last_brace = fragment.rfind("}", 0, last_brace)
+                if last_brace == -1:
+                    return None
+                continue
+
+            # Try stripping the last partial object
+            last_brace = fragment.rfind("}", 0, last_brace)
+            if last_brace == -1:
+                return None
+
+        return None
 
     # ── Deduplication (embedding-based + text fallback) ──────
 

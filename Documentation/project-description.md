@@ -11,7 +11,7 @@ A multi-agent AI system that automates the end-to-end process of responding to R
 ### Core Design Principles
 
 - **MCP Server as Central Hub** — all agents retrieve context from the MCP server rather than passing raw data through state. Agents query, reason, and write outputs to shared graph state.
-- **12-Stage Pipeline** — each stage is an independent agent with a single responsibility.
+- **13-Stage Pipeline** — each stage is an independent agent with a single responsibility.
 - **Governance Built In** — veto points (A3, E2), validation loops (D1→C3), and a human approval gate (F1) before submission.
 
 ### MCP Server Layers
@@ -48,8 +48,9 @@ Located in `mcp/knowledge_data/`:
 | Component | Technology |
 |---|---|
 | Language | Python 3.10+ |
-| LLM | Groq Cloud (`llama-4-maverick-17b-128e-instruct`) via `langchain-groq` |
-| VLM | HuggingFace Inference API (`Qwen/Qwen3-VL-8B-Instruct`) for table extraction |
+| LLM (Primary) | Groq Cloud (`qwen/qwen3-32b`) via `langchain-groq` — ~32K context, used by B1, A2, A3, C1 |
+| LLM (Large) | Groq Cloud (`meta-llama/llama-4-scout-17b-16e-instruct`) — ~131K context, used by C2, B2, D1, C3 |
+| VLM | HuggingFace / Novita (`Qwen/Qwen3-VL-8B-Instruct:novita`) for table extraction |
 | Orchestration | LangGraph (state machine — 17 nodes, 5 conditional edges) |
 | Vector DB | Pinecone Serverless (AWS us-east-1, cosine similarity) |
 | Embeddings | Sentence Transformers (`all-MiniLM-L6-v2`, 384 dimensions) |
@@ -93,8 +94,8 @@ RFP-Responder/
 │   │   ├── requirement_validation_agent.py  # B2 — RequirementsValidationAgent ✅
 │   │   ├── architecture_agent.py        # C1 — ArchitecturePlanningAgent ✅
 │   │   ├── writing_agent.py             # C2 — RequirementWritingAgent ✅
-│   │   ├── narrative_agent.py           # C3 — NarrativeAssemblyAgent (stub)
-│   │   ├── technical_validation_agent.py    # D1 — TechnicalValidationAgent (stub)
+│   │   ├── narrative_agent.py           # C3 — NarrativeAssemblyAgent ✅
+│   │   ├── technical_validation_agent.py    # D1 — TechnicalValidationAgent ✅
 │   │   ├── commercial_agent.py          # E1 — CommercialAgent (stub)
 │   │   ├── legal_agent.py               # E2 — LegalAgent (stub)
 │   │   ├── final_readiness_agent.py     # F1 — FinalReadinessAgent (stub)
@@ -200,14 +201,16 @@ RFP-Responder/
 
 ---
 
-## Pipeline: 12-Stage Flow
+## Pipeline: 13-Stage Flow
 
 ```
-A1 → A2 ──┬── (retry loop, max 3) ──→ A3 ──┬── GO ──→ B1 → B2 → C1 → C2 → C3 → D1 ──┬── PASS ──→ E1+E2 → F1 → F2 → END
-           │                                │                                           │
-           └── escalate_structuring → END    └── NO_GO → END                             ├── REJECT → C3 (retry, max 3)
-                                                                                         └── escalate_validation → END
+A1 → A2 ──┬── (retry loop, max 3) ──→ A3 ──→ B1 → B2 → C1 → C2 → C3 → D1 ──┬── PASS ──→ E1+E2 → F1 → F2 → END
+           │                           │                                       │
+           └── escalate → END          └── (NO_GO: status preserved,           ├── REJECT → C3 (retry, max 3)
+                                             pipeline always continues)         └── escalate_validation → END
 ```
+
+> **Note:** A3 Go/No-Go no longer terminates the pipeline on `NO_GO`. The decision is preserved for frontend display, but processing always continues to B1.
 
 ---
 
@@ -265,7 +268,9 @@ Makes the strategic **GO / NO_GO** decision by evaluating the RFP against compan
 
 > **Note:** A3's output is **advisory only** — it does NOT filter the requirements list.
 
-**State writes:** `go_no_go_result`, `status → EXTRACTING_REQUIREMENTS` or `NO_GO`
+**State writes:** `go_no_go_result`, `status → EXTRACTING_REQUIREMENTS`
+
+> **Go/No-Go Bypass:** Even if the decision is `NO_GO`, the pipeline always continues to B1. The `NO_GO` decision is preserved in `go_no_go_result` for frontend display, but does not terminate the pipeline. This allows users to see the full RFP analysis.
 
 ---
 
@@ -348,19 +353,41 @@ Generates prose response for each section from C1's architecture plan.
 
 ---
 
-#### C3 — Narrative Assembly Agent *(stub)*
+#### C3 — Narrative Assembly Agent ✅
 
-Combines section responses into a cohesive proposal document with executive summary, section transitions, and coverage appendix. Participates in D1→C3 retry loop.
+| Property | Value |
+|---|---|
+| **Class** | `NarrativeAssemblyAgent` |
+| **File** | `agents/narrative_agent.py` |
+| **Uses LLM** | ✅ Yes — `llm_large_text_call()` (Llama 4 Scout) |
+| **Uses MCP** | ❌ No |
 
-**Expected outputs:** `assembled_proposal` (executive_summary, full_proposal_text, section_order, word_count, coverage_appendix)
+Combines C2's section responses into a cohesive proposal document with LLM-generated executive summary, inter-section transitions, and a comprehensive coverage appendix. Handles split-section reassembly (sections that were auto-split by C1 are merged back). Detects and warns about placeholder text (`[...]`, `{{...}}`). Participates in D1→C3 retry loop.
+
+**State writes:** `assembled_proposal` (executive_summary, full_narrative, section_order, word_count, coverage_appendix), `status → TECHNICAL_VALIDATION`
 
 ---
 
 ### Phase D — Quality Assurance
 
-#### D1 — Technical Validation Agent *(stub)*
+#### D1 — Technical Validation Agent ✅
 
-Validates the assembled proposal against original requirements. Checks: completeness, alignment, realism, consistency.
+| Property | Value |
+|---|---|
+| **Class** | `TechnicalValidationAgent` |
+| **File** | `agents/technical_validation_agent.py` |
+| **Uses LLM** | ✅ Yes — `llm_large_text_call()` (Llama 4 Scout) |
+| **Uses MCP** | ❌ No |
+| **Has Retry Loop** | ✅ Up to 3 retries (routes back to C3) |
+
+Validates the assembled proposal against original requirements using single-call or multi-pass processing (auto-selected based on input size). Runs 4 validation checks: **completeness** (all requirements addressed), **alignment** (responses match requirement intent), **realism** (no overpromising), **consistency** (no contradictions between sections).
+
+**Budget constants (Llama 4 Scout):**
+- Single-call threshold: 80K chars (proposals under this use one LLM call)
+- Max proposal chars: 100K | Max requirements chars: 50K
+- Per-pass budgets: ~20-30K chars for multi-pass mode
+
+**State writes:** `technical_validation` (decision, checks, critical_failures, warnings, feedback_for_revision, retry_count), `status → COMMERCIAL_REVIEW`
 
 **Routing:** PASS → E1+E2 | REJECT → C3 (max 3 retries) | REJECT after 3 → escalate → END
 
@@ -454,7 +481,7 @@ The shared state object (`RFPGraphState` in `models/state.py`):
 | Gate | Agent | Condition | Outcome |
 |---|---|---|---|
 | **Structuring Confidence** | A2 | confidence < 0.6 after 3 retries | Escalate to human → END |
-| **Go / No-Go** | A3 | Policy violation or low scores | NO_GO → END |
+| **Go / No-Go** | A3 | Policy violation or low scores | Status set to NO_GO, pipeline **continues** |
 | **Technical Validation** | D1 | REJECT | Loop to C3 (max 3), then escalate → END |
 | **Legal Review** | E2 | BLOCK (critical risk) | Legal Block → END |
 | **Human Approval** | F1 | REJECT | Rejected → END |
@@ -479,11 +506,13 @@ All settings via `rfp_automation/config.py` using `pydantic-settings`.
 
 | Setting | Default | Description |
 |---|---|---|
-| `llm_model` | `llama-4-maverick-17b-128e-instruct` | Groq LLM model |
+| `llm_model` | `qwen/qwen3-32b` | Primary LLM (B1, A2, A3, C1) — ~32K context |
+| `llm_large_model` | `meta-llama/llama-4-scout-17b-16e-instruct` | Large-context LLM (C2, B2, D1, C3) — ~131K context |
 | `llm_temperature` | `0.2` | Default LLM temperature |
-| `llm_max_tokens` | `8192` | Max tokens per LLM call |
+| `llm_max_tokens` | `8192` | Max **output** tokens per LLM call |
+| `llm_large_max_tokens` | `8192` | Max **output** tokens per large LLM call |
 | `vlm_provider` | `huggingface` | VLM provider (`huggingface` or `groq`) |
-| `vlm_model` | `Qwen/Qwen3-VL-8B-Instruct` | VLM model name |
+| `vlm_model` | `Qwen/Qwen3-VL-8B-Instruct:novita` | VLM model name |
 | `vlm_max_tokens` | `4096` | Max tokens per VLM call |
 | `vlm_enabled` | `true` | Feature flag for VLM processing |
 | `extraction_llm_temperature` | `0.0` | Deterministic LLM temperature |
