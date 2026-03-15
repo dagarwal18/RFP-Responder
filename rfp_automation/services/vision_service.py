@@ -258,18 +258,14 @@ class VisionService:
                 raise ValueError("HUGGINGFACE_API_KEY (or keys) is not set — required for HuggingFace VLM calls")
                 
             import random
-            selected_key = random.choice(keys)
+            start_idx = random.randint(0, len(keys) - 1)
             
             url = "https://router.huggingface.co/v1/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {selected_key}",
-                "Content-Type": "application/json",
-            }
         elif provider == "groq":
             if not self._settings.groq_api_key:
                 raise ValueError("GROQ_API_KEY is not set — required for Groq VLM calls")
             url = "https://api.groq.com/openai/v1/chat/completions"
-            headers = {
+            base_headers = {
                 "Authorization": f"Bearer {self._settings.groq_api_key}",
                 "Content-Type": "application/json",
             }
@@ -300,10 +296,28 @@ class VisionService:
         }
 
         for attempt in range(1, max_retries + 1):
+            if provider == "huggingface":
+                current_key_idx = (start_idx + attempt - 1) % len(keys)
+                headers = {
+                    "Authorization": f"Bearer {keys[current_key_idx]}",
+                    "Content-Type": "application/json",
+                }
+            elif provider == "groq":
+                headers = base_headers
+
             try:
                 t0 = time.perf_counter()
                 resp = requests.post(url, json=payload, headers=headers, timeout=60)
                 elapsed = time.perf_counter() - t0
+
+                if resp.status_code == 403:
+                    logger.warning(
+                        f"[VLM] 403 Forbidden (attempt {attempt}/{max_retries}). "
+                        f"Likely invalid or missing permissions on token."
+                    )
+                    if attempt < max_retries:
+                        time.sleep(1.0 * attempt)
+                        continue
 
                 if resp.status_code == 429:
                     # Rate limited — back off
