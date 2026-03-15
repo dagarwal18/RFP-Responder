@@ -248,11 +248,21 @@ class VisionService:
         provider = self._settings.vlm_provider
 
         if provider == "huggingface":
-            if not self._settings.huggingface_api_key:
-                raise ValueError("HUGGINGFACE_API_KEY is not set — required for HuggingFace VLM calls")
+            keys = []
+            if self._settings.huggingface_api_keys:
+                keys = [k.strip() for k in self._settings.huggingface_api_keys.split(",") if k.strip()]
+            if not keys and self._settings.huggingface_api_key:
+                keys = [self._settings.huggingface_api_key]
+                
+            if not keys:
+                raise ValueError("HUGGINGFACE_API_KEY (or keys) is not set — required for HuggingFace VLM calls")
+                
+            import random
+            selected_key = random.choice(keys)
+            
             url = "https://router.huggingface.co/v1/chat/completions"
             headers = {
-                "Authorization": f"Bearer {self._settings.huggingface_api_key}",
+                "Authorization": f"Bearer {selected_key}",
                 "Content-Type": "application/json",
             }
         elif provider == "groq":

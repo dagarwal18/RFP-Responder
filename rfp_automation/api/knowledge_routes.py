@@ -336,7 +336,30 @@ async def delete_policy(policy_id: str):
     """Delete a policy."""
     if not PolicyExtractionService.delete_policy(policy_id):
         raise HTTPException(status_code=404, detail=f"Policy {policy_id} not found")
+        
+    def _sync():
+        # Re-derive capabilities.json and certifications.json without the deleted policy
+        sync_counts = PolicyExtractionService.sync_derived_files()
+        logger.info(f"[KB] Synced derived files post-deletion: {sync_counts}")
+        
+        # Erase existing dynamic vectors/config
+        from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
+        store = KnowledgeStore()
+        store.clear_capabilities_and_certifications()
+        
+        # Re-seed remaining capabilities and certifications
+        from rfp_automation.mcp.knowledge_loader import seed_capabilities, seed_certifications_to_mongo
+        seed_capabilities(store)
+        seed_certifications_to_mongo(store)
+        logger.info("[KB] Successfully re-seeded knowledge store post-deletion")
+        
+    try:
+        await asyncio.to_thread(_sync)
+    except Exception as e:
+        logger.error(f"[KB] Failed to execute sync cleanup logic: {e}")
+        
     return {"message": f"Policy {policy_id} deleted"}
+
 
 
 @knowledge_router.delete("/policies")
@@ -353,6 +376,16 @@ async def delete_all_policies():
         logger.info("[KB] Cleared derived capabilities and certifications JSON files")
     except Exception as e:
         logger.warning(f"[KB] Failed to clear derived JSON files: {e}")
+
+    # Clear vectors/configs
+    def _sync():
+        from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
+        KnowledgeStore().clear_capabilities_and_certifications()
+        
+    try:
+        await asyncio.to_thread(_sync)
+    except Exception as e:
+        logger.warning(f"[KB] Failed to clear vectors config: {e}")
 
     logger.info(f"[KB] Deleted all {count} policies")
     return {"message": f"Deleted all {count} policies and derived JSON files", "deleted_count": count}

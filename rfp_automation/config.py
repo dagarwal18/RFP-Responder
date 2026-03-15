@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     pinecone_api_key: str = ""
     mongodb_uri: str = "mongodb://localhost:27017"
     huggingface_api_key: str = ""
+    huggingface_api_keys: str = "" # comma-separated keys for round-robin
     aws_access_key: str = ""
     aws_secret_key: str = ""
 

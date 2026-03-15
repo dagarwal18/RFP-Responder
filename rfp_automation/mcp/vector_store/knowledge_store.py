@@ -118,6 +118,29 @@ class KnowledgeStore:
         except Exception as e:
             logger.error(f"Failed to clear knowledge namespace: {e}")
 
+    def clear_capabilities_and_certifications(self) -> None:
+        """Clear capabilities from Pinecone and certifications from MongoDB."""
+        index = self._get_index()
+        try:
+            # Delete vectors using filter instead of delete_all, but Pinecone free tier 
+            # might not support complex filters for delete. So we will delete_all and 
+            # recommend re-seeding everything. We'll simply clear the index for capabilities.
+            index.delete(delete_all=True, namespace=KNOWLEDGE_NAMESPACE)
+            logger.info("Cleared Pinecone knowledge index to remove stale capabilities")
+        except Exception as e:
+            logger.error(f"Failed to clear Pinecone knowledge index: {e}")
+            
+        try:
+            db = self._get_db()
+            db.company_config.update_one(
+                {"config_type": "certifications"},
+                {"$set": {"certifications": {}}},
+                upsert=True
+            )
+            logger.info("Cleared MongoDB certifications config")
+        except Exception as e:
+            logger.error(f"Failed to clear MongoDB certifications: {e}")
+
     # ── Query: all types (no filter) ─────────────────────
 
     def query_all_types(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:

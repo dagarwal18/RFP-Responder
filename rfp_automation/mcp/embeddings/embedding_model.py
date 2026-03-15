@@ -22,12 +22,23 @@ class EmbeddingModel:
         # BAAI/bge-m3 uses 1024 dimension vectors
         self._dimension = 1024
         
-        if not self.settings.huggingface_api_key:
-            raise ValueError("HUGGINGFACE_API_KEY is not set — required for embedding.")
+        # Setup multi-key support
+        keys = []
+        if self.settings.huggingface_api_keys:
+            keys = [k.strip() for k in self.settings.huggingface_api_keys.split(",") if k.strip()]
+        if not keys and self.settings.huggingface_api_key:
+            keys = [self.settings.huggingface_api_key]
+            
+        if not keys:
+            raise ValueError("HUGGINGFACE_API_KEY (or keys) is not set — required for embedding.")
+            
+        # Select a random key for this instance to distribute load
+        import random
+        selected_key = random.choice(keys)
             
         self._client = InferenceClient(
             provider="hf-inference",
-            api_key=self.settings.huggingface_api_key,
+            api_key=selected_key,
         )
 
     @property
