@@ -1038,6 +1038,9 @@
           <button type="button" class="btn btn-outline btn-sm" id="kbSeedBtn">
             🌱 Seed from JSON
           </button>
+          <button type="button" class="btn btn-outline btn-sm" id="kbClearIndexBtn" style="color:#ef4444;border-color:#ef4444" onclick="clearIndex()">
+            🗑 Clear Index
+          </button>
         </div>
 
         <!-- Stats -->
@@ -1490,6 +1493,30 @@
         resumePolling();
       }
     });
+
+    // Clear Index
+    window.clearIndex = async function () {
+      const btn = document.getElementById('kbClearIndexBtn');
+      if (!confirm('Clear the entire knowledge base index? This will delete all vectors and cannot be undone.')) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Clearing…';
+      addLog('kbLog', 'Clearing knowledge base index…', 'info');
+      pausePolling();
+
+      try {
+        const data = await apiFetch('/api/knowledge/index', { method: 'DELETE' });
+        addLog('kbLog', `✓ ${data.message}`, 'success');
+        loadKBStats();
+        loadKBFiles();
+      } catch (e) {
+        addLog('kbLog', `✗ Clear failed: ${e.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🗑 Clear Index';
+        resumePolling();
+      }
+    };
 
     // Stats
     async function loadKBStats() {
@@ -2525,9 +2552,152 @@
               </div>` : ''}
             </div></details>`;
         }
+        // E1 Commercial
+        if (outputs.E1_COMMERCIAL) {
+          const e1 = outputs.E1_COMMERCIAL;
+          const decision = (e1.decision || 'APPROVED').toUpperCase();
+          const items = e1.line_items || [];
+          const cur = e1.currency || 'USD';
+          const total = (e1.total_price || 0).toLocaleString();
+          const flags = e1.validation_flags || [];
+          const conf = e1.confidence || 0;
+
+          const decBg = decision === 'APPROVED' ? 'rgba(16,185,129,0.15)' : (decision === 'FLAGGED' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)');
+          const decFg = decision === 'APPROVED' ? '#10b981' : (decision === 'FLAGGED' ? '#f59e0b' : '#ef4444');
+          const decIcon = decision === 'APPROVED' ? '✓' : (decision === 'FLAGGED' ? '⚠' : '✗');
+
+          html += `<details style="margin-bottom:12px" open><summary style="cursor:pointer;font-weight:600;padding:8px 0">💰 E1 — Commercial Review</summary>
+            <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border)">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="padding:8px 16px;border-radius:10px;background:${decBg};border:1px solid ${decFg}33;text-align:center;min-width:100px">
+                  <div style="font-size:22px;font-weight:700;color:${decFg}">${decIcon} ${decision}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Decision</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center;min-width:140px">
+                  <div style="font-size:20px;font-weight:700;color:var(--accent-light)">${cur} ${total}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Total Price</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${(conf * 100).toFixed(0)}%</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Confidence</div>
+                </div>
+              </div>
+              
+              ${flags.length ? `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px">
+                <strong style="color:#f59e0b;font-size:12px;display:block;margin-bottom:4px">Validation Flags:</strong>
+                ${flags.map(f => `<div style="font-size:11px;color:var(--text-secondary)">• ${f}</div>`).join('')}
+              </div>` : ''}
+
+              ${items.length ? `<div style="margin-top:12px">
+                <strong style="margin-bottom:8px;display:block;font-size:12px">Pricing Line Items:</strong>
+                <table style="width:100%;border-collapse:collapse;font-size:12px">
+                  <thead><tr style="border-bottom:1px solid var(--border);text-align:left">
+                    <th style="padding:6px">Category</th><th style="padding:6px">Label</th><th style="padding:6px;text-align:right">Total</th>
+                  </tr></thead>
+                  <tbody>${items.map(it => `
+                    <tr style="border-bottom:1px solid var(--border)">
+                      <td style="padding:6px"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:rgba(59,130,246,0.15);color:#3b82f6">${it.category || '—'}</span></td>
+                      <td style="padding:6px;color:var(--text-secondary)">${it.label || '—'}</td>
+                      <td style="padding:6px;text-align:right;font-weight:600">${cur} ${(it.total || 0).toLocaleString()}</td>
+                    </tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>` : ''}
+              
+              ${(e1.assumptions && e1.assumptions.length) || (e1.exclusions && e1.exclusions.length) ? `<div style="display:flex;gap:16px;margin-top:16px">
+                ${e1.assumptions && e1.assumptions.length ? `<div style="flex:1">
+                  <strong style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Assumptions</strong>
+                  <ul style="margin:4px 0 0;padding-left:16px;font-size:11px;color:var(--text-secondary)">
+                    ${e1.assumptions.map(a => `<li>${a}</li>`).join('')}
+                  </ul>
+                </div>` : ''}
+                ${e1.exclusions && e1.exclusions.length ? `<div style="flex:1">
+                  <strong style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Exclusions</strong>
+                  <ul style="margin:4px 0 0;padding-left:16px;font-size:11px;color:var(--text-secondary)">
+                    ${e1.exclusions.map(e => `<li>${e}</li>`).join('')}
+                  </ul>
+                </div>` : ''}
+              </div>` : ''}
+            </div></details>`;
+        }
+
+        // E2 Legal
+        if (outputs.E2_LEGAL) {
+          const e2 = outputs.E2_LEGAL;
+          const decision = (e2.decision || 'APPROVED').toUpperCase();
+          const checks = e2.compliance_checks || [];
+          const blocks = e2.block_reasons || [];
+          const register = e2.risk_register_summary || '';
+          const conf = e2.confidence || 0;
+
+          const decBg = decision === 'APPROVED' ? 'rgba(16,185,129,0.15)' : (decision === 'CONDITIONAL' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)');
+          const decFg = decision === 'APPROVED' ? '#10b981' : (decision === 'CONDITIONAL' ? '#f59e0b' : '#ef4444');
+          const decIcon = decision === 'APPROVED' ? '✓' : (decision === 'CONDITIONAL' ? '⚠' : '✗');
+
+          const certColors = {
+            LOW: { bg: 'rgba(34,197,94,0.1)', fg: '#22c55e' },
+            MEDIUM: { bg: 'rgba(245,158,11,0.1)', fg: '#f59e0b' },
+            HIGH: { bg: 'rgba(249,115,22,0.1)', fg: '#f97316' },
+            CRITICAL: { bg: 'rgba(239,68,68,0.1)', fg: '#ef4444' }
+          };
+
+          html += `<details style="margin-bottom:12px" open><summary style="cursor:pointer;font-weight:600;padding:8px 0">⚖️ E2 — Legal & Compliance</summary>
+            <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border)">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="padding:8px 16px;border-radius:10px;background:${decBg};border:1px solid ${decFg}33;text-align:center;min-width:100px">
+                  <div style="font-size:22px;font-weight:700;color:${decFg}">${decIcon} ${decision}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Decision</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${checks.length}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Cert Checks</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700;color:${blocks.length ? '#ef4444' : '#10b981'}">${blocks.length}</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Blockers</div>
+                </div>
+                <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+                  <div style="font-size:20px;font-weight:700">${(conf * 100).toFixed(0)}%</div>
+                  <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Confidence</div>
+                </div>
+              </div>
+
+              ${blocks.length ? `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px">
+                <strong style="color:#ef4444;font-size:12px;display:block;margin-bottom:4px">Blocking Reasons (Veto):</strong>
+                ${blocks.map(b => `<div style="font-size:11px;color:var(--text-secondary)">• ${b}</div>`).join('')}
+              </div>` : ''}
+
+              ${register ? `<div style="margin-bottom:12px">
+                <strong style="font-size:12px;display:block;margin-bottom:4px">Risk Register Summary:</strong>
+                <div style="padding:10px;background:var(--surface-2);border-radius:6px;font-size:11px;line-height:1.6;color:var(--text-secondary);white-space:pre-wrap">${register}</div>
+              </div>` : ''}
+
+              ${checks.length ? `<div style="margin-top:12px">
+                <strong style="margin-bottom:8px;display:block;font-size:12px">Compliance Matrix:</strong>
+                <table style="width:100%;border-collapse:collapse;font-size:12px">
+                  <thead><tr style="border-bottom:1px solid var(--border);text-align:left">
+                    <th style="padding:6px">Certification</th><th style="padding:6px">Status</th><th style="padding:6px">Gap Severity</th>
+                  </tr></thead>
+                  <tbody>${checks.map(c => {
+                    const sev = (c.gap_severity || 'low').toUpperCase();
+                    const sevStyle = certColors[sev] || certColors.LOW;
+                    const isHeld = !!c.held;
+                    return `
+                    <tr style="border-bottom:1px solid var(--border)">
+                      <td style="padding:6px;font-weight:600">${c.certification || '—'}</td>
+                      <td style="padding:6px"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${isHeld ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};color:${isHeld ? '#10b981' : '#ef4444'}">${isHeld ? 'HELD' : 'MISSING'}</span></td>
+                      <td style="padding:6px">${isHeld ? '—' : `<span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${sevStyle.bg};color:${sevStyle.fg}">${sev}</span>`}</td>
+                    </tr>`;
+                  }).join('')}
+                  </tbody>
+                </table>
+              </div>` : ''}
+            </div></details>`;
+        }
+
         // Other agents — raw JSON
         for (const [key, val] of Object.entries(outputs)) {
-          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING', 'C3_NARRATIVE_ASSEMBLY', 'D1_TECHNICAL_VALIDATION'].includes(key)) continue;
+          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING', 'C3_NARRATIVE_ASSEMBLY', 'D1_TECHNICAL_VALIDATION', 'E1_COMMERCIAL', 'E2_LEGAL'].includes(key)) continue;
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
             <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
         }

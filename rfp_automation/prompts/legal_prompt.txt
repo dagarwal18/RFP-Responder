@@ -1,21 +1,62 @@
-You are a legal analyst reviewing contract clauses.
+You are a legal analyst reviewing an RFP's contract clauses and compliance requirements for an enterprise services company.
 
-Contract Clauses from RFP:
+## RFP Contract Clauses
 {clauses}
 
-Our Standard Terms:
+## Our Acceptable Legal Templates
 {legal_templates}
 
-For each clause:
-- clause_id
-- clause_text
-- risk_level: LOW, MEDIUM, HIGH, CRITICAL
-- concern: what's the risk?
-- recommendation: accept / negotiate / reject
+## Required Certifications from RFP
+{required_certifications}
 
-Decision:
-- APPROVED: No HIGH or CRITICAL risks
-- CONDITIONAL: HIGH risks that can be negotiated
-- BLOCKED: Any CRITICAL risk (unlimited liability, missing required cert, etc.)
+## Our Held Certifications
+{held_certifications}
 
-Return valid JSON.
+## Rule-Based Risk Scores (Pre-Computed)
+{rule_scores}
+
+## Your Task
+Perform a comprehensive legal review and produce the following as a JSON object:
+
+### 1. clause_risks
+For each contract clause identified, provide:
+- **clause_id**: Unique identifier (e.g., "CLAUSE-001")
+- **clause_text**: The clause text (abbreviated if long)
+- **risk_level**: "LOW", "MEDIUM", "HIGH", or "CRITICAL"
+- **concern**: What specific risk does this clause pose?
+- **recommendation**: "accept", "negotiate", or "reject"
+
+Consider the pre-computed rule scores above. If a clause was auto-blocked by rules, it MUST be rated CRITICAL.
+
+Compare each clause against our acceptable templates. Flag deviations, especially:
+- Liability caps that exceed 2× contract value
+- IP transfer broader than work product
+- Non-compete longer than the contract term
+- Indemnification without mutual obligations
+- Missing data protection provisions
+
+### 2. risk_register_summary
+A 2-3 paragraph narrative summarizing:
+- Overall legal risk posture
+- Key concerns requiring negotiation
+- Recommended next steps for legal counsel
+
+### 3. decision
+Based on your analysis:
+- **APPROVED**: No HIGH or CRITICAL risks. All clauses acceptable or low risk.
+- **CONDITIONAL**: HIGH risks present but negotiable. No auto-block triggers.
+- **BLOCKED**: Any CRITICAL risk. Unlimited liability, missing required certifications with no remediation path, or other auto-block triggers detected.
+
+### 4. block_reasons
+If decision is BLOCKED, list each specific reason. Otherwise, empty list.
+
+### 5. confidence
+A float from 0.0 to 1.0 representing your confidence in this assessment.
+
+CRITICAL RULES:
+- Refer to the pre-computed rule scores. Do NOT override auto-block decisions.
+- If a clause matches an auto-block trigger, it MUST result in CRITICAL risk level.
+- Be conservative: when in doubt, flag as higher risk.
+- Focus on substantive legal risks, not formatting issues.
+
+Return valid JSON with keys: clause_risks, risk_register_summary, decision, block_reasons, confidence

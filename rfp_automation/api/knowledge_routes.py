@@ -341,11 +341,38 @@ async def delete_policy(policy_id: str):
 
 @knowledge_router.delete("/policies")
 async def delete_all_policies():
-    """Delete all extracted policies."""
+    """Delete all extracted policies and derived JSON files."""
     count = len(PolicyExtractionService.get_all_policies())
     PolicyExtractionService._save_policies_static([])
+    
+    # Explicitly clear derived capability and certification JSONs
+    try:
+        data_dir = PolicyExtractionService._POLICIES_PATH.parent
+        (data_dir / "capabilities.json").write_text("[]", encoding="utf-8")
+        (data_dir / "certifications.json").write_text("{}", encoding="utf-8")
+        logger.info("[KB] Cleared derived capabilities and certifications JSON files")
+    except Exception as e:
+        logger.warning(f"[KB] Failed to clear derived JSON files: {e}")
+
     logger.info(f"[KB] Deleted all {count} policies")
-    return {"message": f"Deleted all {count} policies", "deleted_count": count}
+    return {"message": f"Deleted all {count} policies and derived JSON files", "deleted_count": count}
+
+
+@knowledge_router.delete("/index")
+async def clear_index():
+    """Clear the Pinecone knowledge index."""
+    def _sync():
+        from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
+        KnowledgeStore().clear_index()
+    
+    try:
+        await asyncio.to_thread(_sync)
+        # Clear the in-memory uploaded files list as well
+        global _kb_files
+        _kb_files.clear()
+        return {"message": "Knowledge base index cleared."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ── Knowledge base status ───────────────────────────────

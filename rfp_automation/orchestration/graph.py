@@ -160,22 +160,55 @@ def commercial_legal_parallel(state: dict[str, Any]) -> dict[str, Any]:
     """
     logger.info("Running E1 Commercial + E2 Legal (sequential mock of parallel)")
 
+    # Extract rfp_id for checkpoint saving
+    rfp_id = (
+        state.get("tracking_rfp_id", "")
+        or (state.get("rfp_metadata", {}) or {}).get("rfp_id", "")
+        or "unknown"
+    )
+
     state = _e1.process(state)
+    # Save E1 checkpoint individually
+    try:
+        save_checkpoint(rfp_id, "e1_commercial", state)
+    except Exception as exc:
+        logger.warning(f"Checkpoint save failed for e1_commercial: {exc}")
+
     state = _e2.process(state)
+    # Save E2 checkpoint individually
+    try:
+        save_checkpoint(rfp_id, "e2_legal", state)
+    except Exception as exc:
+        logger.warning(f"Checkpoint save failed for e2_legal: {exc}")
 
     # ── Fan-in gate: combine E1 + E2 ────────────────────
-    legal_decision = state.get("legal_result", {}).get("decision", "APPROVED")
-    legal_blocks = state.get("legal_result", {}).get("block_reasons", [])
+    commercial = state.get("commercial_result", {})
+    legal = state.get("legal_result", {})
 
+    legal_decision = legal.get("decision", "APPROVED")
+    commercial_decision = commercial.get("decision", "APPROVED")
+
+    # E2 BLOCKED always overrides → pipeline ends
     if legal_decision == "BLOCKED":
         gate_decision = CommercialLegalGateDecision.BLOCK.value
+        logger.warning(
+            f"[GATE] E2 Legal BLOCKED — reasons: "
+            f"{legal.get('block_reasons', [])}"
+        )
     else:
         gate_decision = CommercialLegalGateDecision.CLEAR.value
 
+    # Log E1 flags (informational, never blocks)
+    if commercial_decision == "FLAGGED":
+        logger.warning(
+            f"[GATE] E1 Commercial FLAGGED — flags: "
+            f"{commercial.get('validation_flags', [])}"
+        )
+
     state["commercial_legal_gate"] = {
         "gate_decision": gate_decision,
-        "commercial": state.get("commercial_result", {}),
-        "legal": state.get("legal_result", {}),
+        "commercial": commercial,
+        "legal": legal,
     }
 
     return state

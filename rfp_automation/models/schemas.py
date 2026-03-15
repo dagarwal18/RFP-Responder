@@ -216,20 +216,28 @@ class TechnicalValidationResult(BaseModel):
 # ── E1 Commercial ────────────────────────────────────────
 
 
-class PricingBreakdown(BaseModel):
-    base_cost: float = 0.0
-    per_requirement_cost: float = 0.0
-    complexity_multiplier: float = 1.0
-    risk_margin: float = 0.0
-    total_price: float = 0.0
-    payment_terms: str = ""
-    assumptions: list[str] = []
-    exclusions: list[str] = []
+class PricingLineItem(BaseModel):
+    """A single line item in the pricing breakdown."""
+    label: str                    # e.g. "Implementation Services"
+    quantity: float
+    unit: str                     # "hours", "units", "fixed"
+    unit_rate: float
+    total: float
+    category: str                 # maps to RequirementCategory
 
 
 class CommercialResult(BaseModel):
-    pricing: PricingBreakdown = Field(default_factory=PricingBreakdown)
-    commercial_narrative: str = ""
+    decision: str = "APPROVED"    # APPROVED | FLAGGED | REJECTED
+    total_price: float = 0.0
+    currency: str = "USD"
+    line_items: list[PricingLineItem] = []
+    risk_margin_pct: float = 0.0
+    payment_schedule: list[dict] = []   # [{"milestone": str, "amount": float, "due": str}]
+    assumptions: list[str] = []
+    exclusions: list[str] = []
+    commercial_narrative: str = ""      # LLM-generated prose
+    validation_flags: list[str] = []    # warnings from commercial_rules.py
+    confidence: float = 0.0             # 0.0–1.0
 
 
 # ── E2 Legal ──────────────────────────────────────────────
@@ -240,15 +248,25 @@ class ContractClauseRisk(BaseModel):
     clause_text: str
     risk_level: RiskLevel = RiskLevel.LOW
     concern: str = ""
-    recommendation: str = ""
+    recommendation: str = ""     # "accept" | "negotiate" | "reject"
+
+
+class ComplianceCheck(BaseModel):
+    """Certification compliance check result."""
+    certification: str
+    held: bool = False
+    required: bool = False
+    gap_severity: str = "low"    # "low" | "medium" | "high" | "critical"
 
 
 class LegalResult(BaseModel):
     decision: LegalDecision = LegalDecision.APPROVED
     clause_risks: list[ContractClauseRisk] = []
-    compliance_status: dict[str, bool] = {}  # cert_name -> held?
+    compliance_checks: list[ComplianceCheck] = []
+    compliance_status: dict[str, bool] = {}  # cert_name -> held? (backward compat)
     block_reasons: list[str] = []
-    risk_register_summary: str = ""
+    risk_register_summary: str = ""     # LLM-generated narrative
+    confidence: float = 0.0             # 0.0–1.0
 
 
 # ── E1 + E2 Combined Gate ────────────────────────────────

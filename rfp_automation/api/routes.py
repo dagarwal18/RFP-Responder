@@ -292,6 +292,14 @@ async def get_rfp_status(rfp_id: str):
         tech_val = result_data.get("technical_validation")
         if isinstance(tech_val, dict) and tech_val.get("decision"):
             agent_outputs["D1_TECHNICAL_VALIDATION"] = tech_val
+        # E1 Commercial
+        comm = result_data.get("commercial_result")
+        if isinstance(comm, dict) and comm.get("decision"):
+            agent_outputs["E1_COMMERCIAL"] = comm
+        # E2 Legal
+        legal = result_data.get("legal_result")
+        if isinstance(legal, dict) and legal.get("decision"):
+            agent_outputs["E2_LEGAL"] = legal
 
     # ── LLM call stats per agent ─────────────────────────
     from rfp_automation.services.llm_service import LLMCallTracker

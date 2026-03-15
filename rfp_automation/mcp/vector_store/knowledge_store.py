@@ -109,6 +109,15 @@ class KnowledgeStore:
         logger.info(f"Ingested {len(texts)} {doc_type} docs into knowledge store")
         return len(texts)
 
+    def clear_index(self) -> None:
+        """Clear the entire Pinecone knowledge namespace."""
+        index = self._get_index()
+        try:
+            index.delete(delete_all=True, namespace=KNOWLEDGE_NAMESPACE)
+            logger.info("Cleared entire knowledge namespace in Pinecone")
+        except Exception as e:
+            logger.error(f"Failed to clear knowledge namespace: {e}")
+
     # ── Query: all types (no filter) ─────────────────────
 
     def query_all_types(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
