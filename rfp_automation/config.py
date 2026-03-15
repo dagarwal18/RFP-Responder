@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     extraction_llm_top_p: float = 1.0
 
     # -- Embeddings
-    embedding_model: str = "all-MiniLM-L6-v2"
+    embedding_model: str = "BAAI/bge-m3"
 
     # ═══════════════════════════════════════════════════════
     #  INFRASTRUCTURE — connection params
@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     aws_s3_bucket: str = ""
     aws_region: str = "us-east-1"
 
-    pinecone_index_name: str = "rfp-automation"
+    pinecone_index_name: str = "rfp-automation-m3"
     pinecone_cloud: str = "aws"
     pinecone_region: str = "us-east-1"
 
