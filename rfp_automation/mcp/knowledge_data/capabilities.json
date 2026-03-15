@@ -11,116 +11,104 @@
     "source_policy_id": "POL-001"
   },
   {
-    "id": "cap-doc-002",
-    "name": "The catalog covers Implementation CapEx pricing by workstream, Annual Managed Se",
-    "description": "The catalog covers Implementation CapEx pricing by workstream, Annual Managed Services (AMS) OpEx by service tier, Software license structures, Optional and add-on modules, Volume-based pricing tiers for subscriber scale, and Payment milestone schedules.",
+    "id": "cap-doc-001",
+    "name": "Implementation CapEx pricing is a one-time, milestone-linked cost of INR 312 Cro",
+    "description": "Implementation CapEx pricing is a one-time, milestone-linked cost of INR 312 Crores in Year 0.",
     "category": "commercial",
     "tags": [],
-    "evidence": "Document Purpose & Scope",
+    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
+    "source_policy_id": "POL-002"
+  },
+  {
+    "id": "cap-doc-002",
+    "name": "Annual Managed Services (AMS) OpEx in Year 1 is INR 68 Crores, commencing from P",
+    "description": "Annual Managed Services (AMS) OpEx in Year 1 is INR 68 Crores, commencing from Phase 3 go-live.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
     "source_policy_id": "POL-003"
   },
   {
     "id": "cap-doc-003",
-    "name": "The Five-Year Total Cost of Ownership (TCO) structure is contractually anchored",
-    "description": "The Five-Year Total Cost of Ownership (TCO) structure is contractually anchored and applicable as a reference baseline for all comparable Tier-1 telecom BSS/OSS transformation engagements.",
+    "name": "AMS OpEx in Year 2 includes a 4% escalation over Year 1, totaling INR 72 Crores",
+    "description": "AMS OpEx in Year 2 includes a 4% escalation over Year 1, totaling INR 72 Crores.",
     "category": "commercial",
-    "tags": [
-      "bss",
-      "oss",
-      "telecom"
-    ],
+    "tags": [],
     "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
     "source_policy_id": "POL-004"
   },
   {
     "id": "cap-doc-004",
-    "name": "Year 0 Implementation CapEx is INR 312 Crores, one-time and milestone-linked",
-    "description": "Year 0 Implementation CapEx is INR 312 Crores, one-time and milestone-linked.",
+    "name": "AMS OpEx in Year 3 includes a 4% escalation over Year 2, totaling INR 76 Crores",
+    "description": "AMS OpEx in Year 3 includes a 4% escalation over Year 2, totaling INR 76 Crores.",
     "category": "commercial",
     "tags": [],
     "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
     "source_policy_id": "POL-005"
   },
   {
-    "id": "cap-doc-005",
-    "name": "Year 1 OpEx (Post Go-Live Stabilization) is INR 68 Crores, with AMS commencement",
-    "description": "Year 1 OpEx (Post Go-Live Stabilization) is INR 68 Crores, with AMS commencement from Phase 3 go-live.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
-    "source_policy_id": "POL-006"
-  },
-  {
     "id": "cap-doc-006",
-    "name": "Year 2 OpEx is INR 72 Crores, with a 4% escalation over Year 1",
-    "description": "Year 2 OpEx is INR 72 Crores, with a 4% escalation over Year 1.",
+    "name": "The catalog covers Implementation CapEx pricing by workstream, Annual Managed Se",
+    "description": "The catalog covers Implementation CapEx pricing by workstream, Annual Managed Services (AMS) OpEx by service tier, software license structures, optional modules, volume-based pricing tiers, and payment milestone schedules.",
     "category": "commercial",
     "tags": [],
-    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
+    "evidence": "Document Purpose & Scope",
     "source_policy_id": "POL-007"
   },
   {
     "id": "cap-doc-007",
-    "name": "Year 3 OpEx is INR 76 Crores, with a 4% escalation over Year 2",
-    "description": "Year 3 OpEx is INR 76 Crores, with a 4% escalation over Year 2.",
+    "name": "Year 4 operational expenditure (OpEx) is INR 79 Crores with a 4% annual escalati",
+    "description": "Year 4 operational expenditure (OpEx) is INR 79 Crores with a 4% annual escalation rate from Year 3.",
     "category": "commercial",
     "tags": [],
-    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
+    "evidence": "Year 4 — OpEx",
     "source_policy_id": "POL-008"
   },
   {
     "id": "cap-doc-008",
-    "name": "Year 4 operational expenditure (OpEx) is INR 79 Crores with a 4% annual escalati",
-    "description": "Year 4 operational expenditure (OpEx) is INR 79 Crores with a 4% annual escalation from Year 3.",
+    "name": "Year 5 operational expenditure (OpEx) is INR 83 Crores with a 4% annual escalati",
+    "description": "Year 5 operational expenditure (OpEx) is INR 83 Crores with a 4% annual escalation rate from Year 4.",
     "category": "commercial",
     "tags": [],
-    "evidence": "Year 4 — OpEx",
+    "evidence": "Year 5 — OpEx",
     "source_policy_id": "POL-009"
   },
   {
     "id": "cap-doc-009",
-    "name": "Year 5 operational expenditure (OpEx) is INR 83 Crores with a 4% annual escalati",
-    "description": "Year 5 operational expenditure (OpEx) is INR 83 Crores with a 4% annual escalation from Year 4.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Year 5 — OpEx",
-    "source_policy_id": "POL-010"
-  },
-  {
-    "id": "cap-doc-010",
-    "name": "The 5-year total cost of ownership is INR 690 Crores, excluding optional modules",
-    "description": "The 5-year total cost of ownership is INR 690 Crores, excluding optional modules and including cloud IaaS pass-through at cost.",
+    "name": "The 5-Year Total Cost of Ownership is INR 690 Crores, excluding optional modules",
+    "description": "The 5-Year Total Cost of Ownership is INR 690 Crores, excluding optional modules and including cloud IaaS pass-through at cost.",
     "category": "commercial",
     "tags": [
       "cloud"
     ],
     "evidence": "5-YEAR TOTAL COST OF OWNERSHIP",
+    "source_policy_id": "POL-010"
+  },
+  {
+    "id": "cap-doc-010",
+    "name": "Year 0 implementation capital expenditure (CapEx) is INR 312 Crores, structured",
+    "description": "Year 0 implementation capital expenditure (CapEx) is INR 312 Crores, structured across five delivery workstreams as defined in the RFP scope of work.",
+    "category": "commercial",
+    "tags": [
+      "api",
+      "oss"
+    ],
+    "evidence": "3. Implementation CapEx — Workstream Breakdown",
     "source_policy_id": "POL-011"
   },
   {
     "id": "cap-doc-011",
-    "name": "Year 0 implementation CapEx is INR 312 Crores, structured across five delivery w",
-    "description": "Year 0 implementation CapEx is INR 312 Crores, structured across five delivery workstreams as defined in the RFP scope of work.",
-    "category": "operational",
-    "tags": [
-      "oss"
-    ],
+    "name": "Stream A (Platform Design & Architecture) has an indicative cost of INR 22 Crore",
+    "description": "Stream A (Platform Design & Architecture) has an indicative cost of INR 22 Crores and a duration of 8 weeks (Phase 0).",
+    "category": "commercial",
+    "tags": [],
     "evidence": "3. Implementation CapEx — Workstream Breakdown",
     "source_policy_id": "POL-012"
   },
   {
     "id": "cap-doc-012",
-    "name": "Stream A (Platform Design & Architecture) has an indicative cost of INR 22 Crore",
-    "description": "Stream A (Platform Design & Architecture) has an indicative cost of INR 22 Crores and a duration of 8 weeks (Phase 0).",
-    "category": "operational",
-    "tags": [],
-    "evidence": "3. Implementation CapEx — Workstream Breakdown",
-    "source_policy_id": "POL-013"
-  },
-  {
-    "id": "cap-doc-013",
-    "name": "Stream B (Software Deployment & Configuration) includes all BSS/OSS modules, 40+",
-    "description": "Stream B (Software Deployment & Configuration) includes all BSS/OSS modules, 40+ integrations, and performance/security testing.",
+    "name": "Stream B (Software Deployment & Configuration) spans 34 weeks (Phase 1–2B) and i",
+    "description": "Stream B (Software Deployment & Configuration) spans 34 weeks (Phase 1–2B) and includes deployment of all BSS/OSS modules, 40+ integrations, and performance/security testing.",
     "category": "operational",
     "tags": [
       "security",
@@ -129,205 +117,223 @@
       "testing"
     ],
     "evidence": "3. Implementation CapEx — Workstream Breakdown",
-    "source_policy_id": "POL-014"
+    "source_policy_id": "POL-013"
   },
   {
-    "id": "cap-doc-014",
-    "name": "Stream C (Data Migration) involves 215M subscriber records, 24-month CDR history",
-    "description": "Stream C (Data Migration) involves 215M subscriber records, 24-month CDR history, and zero-revenue-leakage cutover.",
+    "id": "cap-doc-013",
+    "name": "Stream C (Data Migration) spans 28 weeks (Phase 2B–3) and involves migrating 215",
+    "description": "Stream C (Data Migration) spans 28 weeks (Phase 2B–3) and involves migrating 215M subscriber records, 24-month CDR history, and ensuring zero-revenue-leakage cutover.",
     "category": "operational",
     "tags": [
       "revenue",
       "migration"
     ],
     "evidence": "3. Implementation CapEx — Workstream Breakdown",
-    "source_policy_id": "POL-015"
+    "source_policy_id": "POL-014"
   },
   {
-    "id": "cap-doc-015",
-    "name": "Stream D (Training & Change Management) covers 200 super-users, 3,500+ ops staff",
-    "description": "Stream D (Training & Change Management) covers 200 super-users, 3,500+ ops staff, runbooks, and documentation.",
-    "category": "operational",
+    "id": "cap-doc-014",
+    "name": "Stream D (Training & Change Management) includes training for 200 super-users, 3",
+    "description": "Stream D (Training & Change Management) includes training for 200 super-users, 3,500+ operations staff, and delivery of runbooks and documentation.",
+    "category": "capability",
     "tags": [
       "ai",
       "trai"
     ],
     "evidence": "3. Implementation CapEx — Workstream Breakdown",
+    "source_policy_id": "POL-015"
+  },
+  {
+    "id": "cap-doc-015",
+    "name": "The cloud IaaS pass-through cost is included in the 5-Year Total Cost of Ownersh",
+    "description": "The cloud IaaS pass-through cost is included in the 5-Year Total Cost of Ownership at actual cost, with no markup applied.",
+    "category": "commercial",
+    "tags": [
+      "cloud"
+    ],
+    "evidence": "5-YEAR TOTAL COST OF OWNERSHIP",
     "source_policy_id": "POL-016"
   },
   {
     "id": "cap-doc-016",
-    "name": "Post-Go-Live Hypercare includes 90-day war-room support per phase with a 24x7 de",
-    "description": "Post-Go-Live Hypercare includes 90-day war-room support per phase with a 24x7 dedicated team.",
+    "name": "The implementation workstreams must adhere to the defined phase durations: 8 wee",
+    "description": "The implementation workstreams must adhere to the defined phase durations: 8 weeks for Phase 0, 34 weeks for Phases 1–2B, and 28 weeks for Phases 2B–3.",
     "category": "operational",
     "tags": [],
-    "evidence": "Post-Go-Live Hypercare",
+    "evidence": "3. Implementation CapEx — Workstream Breakdown",
     "source_policy_id": "POL-017"
   },
   {
     "id": "cap-doc-017",
-    "name": "Post-Go-Live Hypercare is implemented phase-by-phase, with 90 days allocated per",
-    "description": "Post-Go-Live Hypercare is implemented phase-by-phase, with 90 days allocated per phase.",
+    "name": "The data migration process must ensure zero-revenue-leakage during the cutover o",
+    "description": "The data migration process must ensure zero-revenue-leakage during the cutover of 215M subscriber records and 24-month CDR history.",
     "category": "operational",
-    "tags": [],
-    "evidence": "Post-Go-Live Hypercare",
+    "tags": [
+      "revenue",
+      "migration"
+    ],
+    "evidence": "3. Implementation CapEx — Workstream Breakdown",
     "source_policy_id": "POL-018"
   },
   {
     "id": "cap-doc-018",
-    "name": "The cost of Post-Go-Live Hypercare (34 Cr) is included in Year 0 Implementation",
-    "description": "The cost of Post-Go-Live Hypercare (34 Cr) is included in Year 0 Implementation CapEx.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Post-Go-Live Hypercare",
+    "name": "The platform design and architecture workstream includes As-Is assessment, targe",
+    "description": "The platform design and architecture workstream includes As-Is assessment, target architecture, cloud design, and data migration strategy.",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "migration"
+    ],
+    "evidence": "3. Implementation CapEx — Workstream Breakdown",
     "source_policy_id": "POL-019"
   },
   {
     "id": "cap-doc-019",
-    "name": "The Project Management & Governance team consists of a 150-person program team i",
-    "description": "The Project Management & Governance team consists of a 150-person program team including PMO, architecture board, and QA governance.",
-    "category": "operational",
-    "tags": [],
-    "evidence": "Project Management & Governance",
+    "name": "The software deployment and configuration workstream includes performance and se",
+    "description": "The software deployment and configuration workstream includes performance and security testing for all BSS/OSS modules and 40+ integrations.",
+    "category": "capability",
+    "tags": [
+      "security",
+      "bss",
+      "oss",
+      "testing"
+    ],
+    "evidence": "3. Implementation CapEx — Workstream Breakdown",
     "source_policy_id": "POL-020"
   },
   {
     "id": "cap-doc-020",
-    "name": "The total Year 0 Implementation CapEx is INR 312 Crores over an 18-month period",
-    "description": "The total Year 0 Implementation CapEx is INR 312 Crores over an 18-month period.",
-    "category": "commercial",
+    "name": "Post-Go-Live Hypercare includes 90-day war-room support per phase with a 24x7 de",
+    "description": "Post-Go-Live Hypercare includes 90-day war-room support per phase with a 24x7 dedicated team",
+    "category": "operational",
     "tags": [],
-    "evidence": "TOTAL Year 0 Implementation CapEx",
-    "source_policy_id": "POL-021"
+    "evidence": "Concurrent, all phases",
+    "source_policy_id": "POL-21"
   },
   {
     "id": "cap-doc-021",
-    "name": "Annual Managed Services (AMS) includes service tiers for Critical Systems (OCS,",
-    "description": "Annual Managed Services (AMS) includes service tiers for Critical Systems (OCS, Charging, Fraud) with L2/L3 Incident Management and Proactive Monitoring.",
+    "name": "Hypercare support is delivered phase-by-phase for 90 days each",
+    "description": "Hypercare support is delivered phase-by-phase for 90 days each",
     "category": "operational",
+    "tags": [],
+    "evidence": "Concurrent, all phases",
+    "source_policy_id": "POL-22"
+  },
+  {
+    "id": "cap-doc-022",
+    "name": "34 Cr is allocated for Post-Go-Live Hypercare and included in Year 0 budget",
+    "description": "34 Cr is allocated for Post-Go-Live Hypercare and included in Year 0 budget",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "Concurrent, all phases",
+    "source_policy_id": "POL-23"
+  },
+  {
+    "id": "cap-doc-023",
+    "name": "Project Management & Governance requires a 150-person programme team including P",
+    "description": "Project Management & Governance requires a 150-person programme team including PMO, architecture board, and QA governance",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Project Management & Governance",
+    "source_policy_id": "POL-24"
+  },
+  {
+    "id": "cap-doc-024",
+    "name": "Total Year 0 Implementation CapEx is INR 312 Crores over ~18 months",
+    "description": "Total Year 0 Implementation CapEx is INR 312 Crores over ~18 months",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "TOTAL",
+    "source_policy_id": "POL-25"
+  },
+  {
+    "id": "cap-doc-025",
+    "name": "Critical Systems (OCS, Charging, Fraud) service tier includes L2/L3 Incident Man",
+    "description": "Critical Systems (OCS, Charging, Fraud) service tier includes L2/L3 Incident Management + Proactive Monitoring",
+    "category": "capability",
     "tags": [
       "charging",
       "fraud",
       "monitoring"
     ],
     "evidence": "4.1 AMS Service Tiers",
-    "source_policy_id": "POL-022"
+    "source_policy_id": "POL-26"
   },
   {
-    "id": "cap-doc-022",
-    "name": "Annual Managed Services (AMS) includes service tiers for Billing & Revenue Assur",
-    "description": "Annual Managed Services (AMS) includes service tiers for Billing & Revenue Assurance with L2/L3 Incident Management and Billing Cycle Support.",
-    "category": "operational",
+    "id": "cap-doc-026",
+    "name": "Billing & Revenue Assurance service tier includes L2/L3 Incident + Billing cycle",
+    "description": "Billing & Revenue Assurance service tier includes L2/L3 Incident + Billing cycle support",
+    "category": "capability",
     "tags": [
       "billing",
       "revenue"
     ],
     "evidence": "4.1 AMS Service Tiers",
-    "source_policy_id": "POL-023"
-  },
-  {
-    "id": "cap-doc-023",
-    "name": "The 24x7 dedicated team is a capability provided during Post-Go-Live Hypercare",
-    "description": "The 24x7 dedicated team is a capability provided during Post-Go-Live Hypercare.",
-    "category": "capability",
-    "tags": [],
-    "evidence": "Post-Go-Live Hypercare",
-    "source_policy_id": "POL-024"
-  },
-  {
-    "id": "cap-doc-024",
-    "name": "24x7x365 availability during bill run; business hours otherwise for CRM & Order",
-    "description": "24x7x365 availability during bill run; business hours otherwise for CRM & Order Management",
-    "category": "operational",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "CRM & Order Management",
-    "source_policy_id": "POL-025"
-  },
-  {
-    "id": "cap-doc-025",
-    "name": "L2 Incident + Configuration changes for CRM & Order Management are available dur",
-    "description": "L2 Incident + Configuration changes for CRM & Order Management are available during business hours (8AM–8PM IST Mon–Sat)",
-    "category": "operational",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "CRM & Order Management",
-    "source_policy_id": "POL-026"
-  },
-  {
-    "id": "cap-doc-026",
-    "name": "Self-Care & Digital Channels support (L2 Incident + Content updates) is availabl",
-    "description": "Self-Care & Digital Channels support (L2 Incident + Content updates) is available during business hours Mon–Fri",
-    "category": "operational",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "Self-Care & Digital Channels",
-    "source_policy_id": "POL-027"
+    "source_policy_id": "POL-27"
   },
   {
     "id": "cap-doc-027",
-    "name": "Cloud Infrastructure (AWS) IaaS management includes 24x7 automated support and b",
-    "description": "Cloud Infrastructure (AWS) IaaS management includes 24x7 automated support and business hours manual support",
+    "name": "CRM & Order Management L2 Incident + Configuration changes are handled during bu",
+    "description": "CRM & Order Management L2 Incident + Configuration changes are handled during business hours (8AM–8PM IST Mon–Sat).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "CRM & Order Management",
+    "source_policy_id": "POL-028"
+  },
+  {
+    "id": "cap-doc-028",
+    "name": "Self-Care & Digital Channels L2 Incident + Content updates are handled during bu",
+    "description": "Self-Care & Digital Channels L2 Incident + Content updates are handled during business hours (Mon–Fri).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Self-Care & Digital Channels",
+    "source_policy_id": "POL-029"
+  },
+  {
+    "id": "cap-doc-029",
+    "name": "Cloud Infrastructure (AWS) IaaS management, cost optimization, and patching are",
+    "description": "Cloud Infrastructure (AWS) IaaS management, cost optimization, and patching are provided 24x7 automated and business hours manual.",
     "category": "operational",
     "tags": [
       "cloud",
       "infrastructure"
     ],
     "evidence": "Cloud Infrastructure (AWS)",
-    "source_policy_id": "POL-028"
-  },
-  {
-    "id": "cap-doc-028",
-    "name": "Two platform enhancement releases per year are included in the service",
-    "description": "Two platform enhancement releases per year are included in the service",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Enhancement Releases",
-    "source_policy_id": "POL-029"
-  },
-  {
-    "id": "cap-doc-029",
-    "name": "Major Enhancements (T&M) beyond the two base releases require separate quoting",
-    "description": "Major Enhancements (T&M) beyond the two base releases require separate quoting",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Major Enhancements (T&M)",
     "source_policy_id": "POL-030"
   },
   {
     "id": "cap-doc-030",
-    "name": "New module development for Major Enhancements is billed on a Time & Materials (T",
-    "description": "New module development for Major Enhancements is billed on a Time & Materials (T&M) basis",
+    "name": "Two platform enhancement releases per year are included as part of the standard",
+    "description": "Two platform enhancement releases per year are included as part of the standard service.",
     "category": "commercial",
     "tags": [],
-    "evidence": "Major Enhancements (T&M)",
+    "evidence": "Enhancement Releases",
     "source_policy_id": "POL-031"
   },
   {
     "id": "cap-doc-031",
-    "name": "The annual fee for Year 1 (FY2027–28) is INR 68 Crores, serving as the base year",
-    "description": "The annual fee for Year 1 (FY2027–28) is INR 68 Crores, serving as the base year with no escalation.",
+    "name": "Major Enhancements (T&M) beyond the 2 base releases or new module development ar",
+    "description": "Major Enhancements (T&M) beyond the 2 base releases or new module development are quoted separately and billed as time-and-material.",
     "category": "commercial",
     "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
+    "evidence": "Major Enhancements (T&M)",
     "source_policy_id": "POL-032"
   },
   {
     "id": "cap-doc-032",
-    "name": "Annual fees escalate by 4% per year, with the escalation amount specified for ea",
-    "description": "Annual fees escalate by 4% per year, with the escalation amount specified for each subsequent year (e.g., +4% in Year 2 = INR 2.72 Cr).",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
+    "name": "24x7x365 availability is required during bill run periods, with business hours s",
+    "description": "24x7x365 availability is required during bill run periods, with business hours support otherwise.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "24x7x365 during bill run; business hours otherwise",
     "source_policy_id": "POL-033"
   },
   {
     "id": "cap-doc-033",
-    "name": "The cumulative operational expenditure (OpEx) threshold for Year 1 is INR 68 Cro",
-    "description": "The cumulative operational expenditure (OpEx) threshold for Year 1 is INR 68 Crores.",
+    "name": "The annual fee for Year 1 (FY2027–28) is INR 68 Cr, serving as the base year",
+    "description": "The annual fee for Year 1 (FY2027–28) is INR 68 Cr, serving as the base year.",
     "category": "commercial",
     "tags": [],
     "evidence": "4.2 AMS Annual Pricing Schedule",
@@ -335,8 +341,8 @@
   },
   {
     "id": "cap-doc-034",
-    "name": "The cumulative OpEx threshold for Year 2 is INR 140 Crores",
-    "description": "The cumulative OpEx threshold for Year 2 is INR 140 Crores.",
+    "name": "The annual fee for Year 2 (FY2028–29) is INR 72 Cr, with a 4% escalation of INR",
+    "description": "The annual fee for Year 2 (FY2028–29) is INR 72 Cr, with a 4% escalation of INR 2.72 Cr.",
     "category": "commercial",
     "tags": [],
     "evidence": "4.2 AMS Annual Pricing Schedule",
@@ -344,8 +350,8 @@
   },
   {
     "id": "cap-doc-035",
-    "name": "The cumulative OpEx threshold for Year 3 is INR 216 Crores",
-    "description": "The cumulative OpEx threshold for Year 3 is INR 216 Crores.",
+    "name": "The annual fee for Year 3 (FY2029–30) is INR 76 Cr, with a 4% escalation of INR",
+    "description": "The annual fee for Year 3 (FY2029–30) is INR 76 Cr, with a 4% escalation of INR 2.88 Cr.",
     "category": "commercial",
     "tags": [],
     "evidence": "4.2 AMS Annual Pricing Schedule",
@@ -353,8 +359,8 @@
   },
   {
     "id": "cap-doc-036",
-    "name": "The cumulative OpEx threshold for Year 4 is INR 295 Crores",
-    "description": "The cumulative OpEx threshold for Year 4 is INR 295 Crores.",
+    "name": "The annual fee for Year 4 (FY2030–31) is INR 79 Cr, with a 4% escalation of INR",
+    "description": "The annual fee for Year 4 (FY2030–31) is INR 79 Cr, with a 4% escalation of INR 3.04 Cr.",
     "category": "commercial",
     "tags": [],
     "evidence": "4.2 AMS Annual Pricing Schedule",
@@ -362,8 +368,8 @@
   },
   {
     "id": "cap-doc-037",
-    "name": "The cumulative OpEx threshold for Year 5 is INR 378 Crores",
-    "description": "The cumulative OpEx threshold for Year 5 is INR 378 Crores.",
+    "name": "The annual fee for Year 5 (FY2031–32) is INR 83 Cr, with a 4% escalation of INR",
+    "description": "The annual fee for Year 5 (FY2031–32) is INR 83 Cr, with a 4% escalation of INR 3.16 Cr.",
     "category": "commercial",
     "tags": [],
     "evidence": "4.2 AMS Annual Pricing Schedule",
@@ -371,26 +377,17 @@
   },
   {
     "id": "cap-doc-038",
-    "name": "The maximum annual escalation rate is capped at 4% per year, which is below the",
-    "description": "The maximum annual escalation rate is capped at 4% per year, which is below the RFP-specified cap of 5% per the Wholesale Price Index (WPI).",
+    "name": "The total cumulative OpEx over FY2027–32 is INR 378 Crores",
+    "description": "The total cumulative OpEx over FY2027–32 is INR 378 Crores.",
     "category": "commercial",
     "tags": [],
     "evidence": "4.2 AMS Annual Pricing Schedule",
     "source_policy_id": "POL-039"
   },
   {
-    "id": "cap-doc-040",
-    "name": "The total AMS pricing over the five-year period (FY2027–32) is capped at INR 378",
-    "description": "The total AMS pricing over the five-year period (FY2027–32) is capped at INR 378 Crores.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
-    "source_policy_id": "POL-041"
-  },
-  {
     "id": "cap-doc-041",
     "name": "The extended warranty (Years 6–7) has a flat annual maintenance cost of INR 41 C",
-    "description": "The extended warranty (Years 6–7) has a flat annual maintenance cost of INR 41 Crores with no escalation.",
+    "description": "The extended warranty (Years 6–7) has a flat annual maintenance cost of INR 41 Cr with no escalation.",
     "category": "commercial",
     "tags": [
       "ai"
@@ -400,8 +397,8 @@
   },
   {
     "id": "cap-doc-042",
-    "name": "The extended warranty option must be exercised no later than 6 months before the",
-    "description": "The extended warranty option must be exercised no later than 6 months before the expiry of Year 5.",
+    "name": "The extended warranty (Years 6–7) must be exercised 6 months before Year 5 expir",
+    "description": "The extended warranty (Years 6–7) must be exercised 6 months before Year 5 expiry.",
     "category": "operational",
     "tags": [],
     "evidence": "5. Optional Modules & Add-On Pricing",
@@ -409,179 +406,3453 @@
   },
   {
     "id": "cap-doc-043",
-    "name": "The Advanced AI/ML Module (Churn Prediction + Next Best Action) has a setup cost",
-    "description": "The Advanced AI/ML Module (Churn Prediction + Next Best Action) has a setup cost of INR 18 Crores.",
-    "category": "commercial",
+    "name": "NexWave Technologies must not deploy end-of-life billing platforms for clients",
+    "description": "NexWave Technologies must not deploy end-of-life billing platforms for clients.",
+    "category": "operational",
     "tags": [
-      "ai",
-      "ml"
+      "billing"
     ],
-    "evidence": "Advanced AI/ML Module (Churn Prediction + Next Best Action)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-044"
   },
   {
     "id": "cap-doc-044",
-    "name": "The Advanced AI/ML Module (Churn Prediction + Next Best Action) has an annual ma",
-    "description": "The Advanced AI/ML Module (Churn Prediction + Next Best Action) has an annual maintenance cost of INR 4 Cr/year.",
-    "category": "commercial",
+    "name": "NexWave Technologies must ensure zero billing disruption during platform migrati",
+    "description": "NexWave Technologies must ensure zero billing disruption during platform migration for clients.",
+    "category": "operational",
     "tags": [
-      "ai",
-      "ml"
+      "billing",
+      "migration"
     ],
-    "evidence": "Advanced AI/ML Module (Churn Prediction + Next Best Action)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-045"
   },
   {
     "id": "cap-doc-045",
-    "name": "The Advanced AI/ML Module (Churn Prediction + Next Best Action) is delivered 6 m",
-    "description": "The Advanced AI/ML Module (Churn Prediction + Next Best Action) is delivered 6 months post order confirmation.",
-    "category": "commercial",
+    "name": "BSS/OSS transformation projects must be completed within a 22-month migration du",
+    "description": "BSS/OSS transformation projects must be completed within a 22-month migration duration for large-scale deployments.",
+    "category": "operational",
     "tags": [
-      "ai",
-      "ml"
+      "bss",
+      "oss",
+      "migration"
     ],
-    "evidence": "Advanced AI/ML Module (Churn Prediction + Next Best Action)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-046"
   },
   {
-    "id": "cap-doc-046",
-    "name": "Edge BSS for Private 5G (per enterprise site) has a setup cost of INR 45 Lakhs/s",
-    "description": "Edge BSS for Private 5G (per enterprise site) has a setup cost of INR 45 Lakhs/site.",
-    "category": "commercial",
-    "tags": [
-      "5g",
-      "bss"
-    ],
-    "evidence": "Edge BSS for Private 5G (per enterprise site)",
-    "source_policy_id": "POL-047"
-  },
-  {
     "id": "cap-doc-047",
-    "name": "Edge BSS for Private 5G (per enterprise site) has an annual maintenance cost of",
-    "description": "Edge BSS for Private 5G (per enterprise site) has an annual maintenance cost of INR 8 Lakhs/site/year.",
-    "category": "commercial",
+    "name": "NexWave Technologies must replace legacy platforms that lack convergent billing",
+    "description": "NexWave Technologies must replace legacy platforms that lack convergent billing capabilities for prepaid and postpaid services.",
+    "category": "operational",
     "tags": [
-      "5g",
-      "bss",
+      "billing",
       "ai"
     ],
-    "evidence": "Edge BSS for Private 5G (per enterprise site)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-048"
   },
   {
     "id": "cap-doc-048",
-    "name": "Edge BSS for Private 5G (per enterprise site) is billed under Annual Maintenance",
-    "description": "Edge BSS for Private 5G (per enterprise site) is billed under Annual Maintenance Services (AMS).",
-    "category": "commercial",
+    "name": "Order fulfillment cycles must not exceed 96 hours for BSS/OSS platforms to preve",
+    "description": "Order fulfillment cycles must not exceed 96 hours for BSS/OSS platforms to prevent subscriber churn.",
+    "category": "operational",
     "tags": [
-      "5g",
       "bss",
-      "ai"
+      "oss"
     ],
-    "evidence": "Edge BSS for Private 5G (per enterprise site)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-049"
   },
   {
     "id": "cap-doc-049",
-    "name": "Additional Language Pack (per regional language) has a one-time development cost",
-    "description": "Additional Language Pack (per regional language) has a one-time development cost of INR 80 Lakhs.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Additional Language Pack (per regional language)",
+    "name": "NexWave Technologies must deploy BSS/OSS solutions capable of supporting converg",
+    "description": "NexWave Technologies must deploy BSS/OSS solutions capable of supporting convergent billing for prepaid and postpaid subscribers.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "oss",
+      "billing",
+      "ai"
+    ],
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-050"
   },
   {
     "id": "cap-doc-050",
-    "name": "Additional Language Pack (per regional language) is included in base Annual Main",
-    "description": "Additional Language Pack (per regional language) is included in base Annual Maintenance Services (AMS).",
-    "category": "commercial",
+    "name": "NexWave Technologies must implement BSS/OSS platforms with 4G and 5G slicing cap",
+    "description": "NexWave Technologies must implement BSS/OSS platforms with 4G and 5G slicing capabilities.",
+    "category": "capability",
     "tags": [
-      "ai"
+      "5g",
+      "bss",
+      "oss"
     ],
-    "evidence": "Additional Language Pack (per regional language)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-051"
   },
   {
     "id": "cap-doc-051",
-    "name": "Additional Language Pack (per regional language) is delivered 6 months post orde",
-    "description": "Additional Language Pack (per regional language) is delivered 6 months post order.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Additional Language Pack (per regional language)",
+    "name": "NexWave Technologies must enforce zero tolerance for billing disruptions during",
+    "description": "NexWave Technologies must enforce zero tolerance for billing disruptions during platform migration projects.",
+    "category": "operational",
+    "tags": [
+      "billing",
+      "migration"
+    ],
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-052"
   },
   {
     "id": "cap-doc-052",
-    "name": "Additional Compliance Module (per regulatory framework) has a setup cost of INR",
-    "description": "Additional Compliance Module (per regulatory framework) has a setup cost of INR 25–60 Lakhs (scope-dependent).",
-    "category": "commercial",
+    "name": "NexWave Technologies must execute greenfield BSS/OSS transformation projects for",
+    "description": "NexWave Technologies must execute greenfield BSS/OSS transformation projects for clients requiring full platform replacement.",
+    "category": "capability",
     "tags": [
-      "compliance"
+      "bss",
+      "oss"
     ],
-    "evidence": "Additional Compliance Module (per regulatory framework)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-053"
   },
   {
     "id": "cap-doc-053",
-    "name": "Additional Compliance Module (per regulatory framework) has an annual maintenanc",
-    "description": "Additional Compliance Module (per regulatory framework) has an annual maintenance cost of INR 5–12 Lakhs/year.",
+    "name": "NexWave Technologies must ensure contract values for BSS/OSS transformations are",
+    "description": "NexWave Technologies must ensure contract values for BSS/OSS transformations are comparable to Tier-1 scale engagements.",
     "category": "commercial",
     "tags": [
-      "compliance",
-      "ai"
+      "bss",
+      "oss"
     ],
-    "evidence": "Additional Compliance Module (per regulatory framework)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-054"
   },
   {
     "id": "cap-doc-054",
-    "name": "Additional Compliance Module (per regulatory framework) is delivered 3–6 months",
-    "description": "Additional Compliance Module (per regulatory framework) is delivered 3–6 months post order.",
-    "category": "commercial",
+    "name": "NexWave Technologies must deliver BSS/OSS go-live dates within the agreed timeli",
+    "description": "NexWave Technologies must deliver BSS/OSS go-live dates within the agreed timeline (e.g., December 2022 for AsiaNet Wireless).",
+    "category": "operational",
     "tags": [
-      "compliance"
+      "bss",
+      "oss"
     ],
-    "evidence": "Additional Compliance Module (per regulatory framework)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-055"
   },
   {
     "id": "cap-doc-055",
-    "name": "Dedicated War Room Extension (beyond 90-day hypercare) has no setup cost",
-    "description": "Dedicated War Room Extension (beyond 90-day hypercare) has no setup cost.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Dedicated War Room Extension (beyond 90-day hypercare)",
+    "name": "NexWave Technologies must migrate at least 120 million subscribers in large-scal",
+    "description": "NexWave Technologies must migrate at least 120 million subscribers in large-scale BSS/OSS transformation projects.",
+    "category": "operational",
+    "tags": [
+      "bss",
+      "oss"
+    ],
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-056"
   },
   {
     "id": "cap-doc-056",
-    "name": "Dedicated War Room Extension (beyond 90-day hypercare) has a monthly cost of INR",
-    "description": "Dedicated War Room Extension (beyond 90-day hypercare) has a monthly cost of INR 1.2 Cr/month.",
-    "category": "commercial",
+    "name": "NexWave Technologies must replace legacy platforms with limited 4G capabilities",
+    "description": "NexWave Technologies must replace legacy platforms with limited 4G capabilities to avoid subscriber inconsistencies.",
+    "category": "operational",
     "tags": [],
-    "evidence": "Dedicated War Room Extension (beyond 90-day hypercare)",
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-057"
   },
   {
     "id": "cap-doc-057",
-    "name": "Dedicated War Room Extension (beyond 90-day hypercare) requires a 4-week notice",
-    "description": "Dedicated War Room Extension (beyond 90-day hypercare) requires a 4-week notice period and is available on request.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "Dedicated War Room Extension (beyond 90-day hypercare)",
+    "name": "NexWave Technologies must prioritize platform replacement for clients with end-o",
+    "description": "NexWave Technologies must prioritize platform replacement for clients with end-of-life legacy systems.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-058"
   },
   {
     "id": "cap-doc-058",
-    "name": "Volume Pricing Tiers are pre-agreed in the commercial contract to provide pricin",
-    "description": "Volume Pricing Tiers are pre-agreed in the commercial contract to provide pricing certainty as subscriber scale increases.",
+    "name": "TeleSphere OCS v7",
+    "description": "TeleSphere OCS v7.1 supports 3GPP Rel-16 Ro/Gy/Rf convergent charging for 120M subscribers.",
+    "category": "capability",
+    "tags": [
+      "charging",
+      "3gpp"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-059"
+  },
+  {
+    "id": "cap-doc-059",
+    "name": "TeleSphere Billing Engine generates convergent bills for postpaid and prepaid su",
+    "description": "TeleSphere Billing Engine generates convergent bills for postpaid and prepaid subscribers.",
+    "category": "capability",
+    "tags": [
+      "billing",
+      "ai"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-060"
+  },
+  {
+    "id": "cap-doc-060",
+    "name": "TeleSphere CRM provides a 360-degree customer view and replaces legacy Amdocs CR",
+    "description": "TeleSphere CRM provides a 360-degree customer view and replaces legacy Amdocs CRM.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-061"
+  },
+  {
+    "id": "cap-doc-061",
+    "name": "TeleSphere OMS uses BPMN-based order orchestration with 45 pre-built order workf",
+    "description": "TeleSphere OMS uses BPMN-based order orchestration with 45 pre-built order workflow types.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-062"
+  },
+  {
+    "id": "cap-doc-062",
+    "name": "TeleSphere NIM eliminates shadow inventory across 180,000 sites",
+    "description": "TeleSphere NIM eliminates shadow inventory across 180,000 sites.",
+    "category": "capability",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-063"
+  },
+  {
+    "id": "cap-doc-064",
+    "name": "Cloud deployment is active-active in AWS ap-southeast-1 (Singapore) and ap-south",
+    "description": "Cloud deployment is active-active in AWS ap-southeast-1 (Singapore) and ap-southeast-3 (Jakarta).",
+    "category": "operational",
+    "tags": [
+      "cloud"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-065"
+  },
+  {
+    "id": "cap-doc-065",
+    "name": "NexWave deployed the TeleSphere Migration Factory framework: Extract → Cleanse →",
+    "description": "NexWave deployed the TeleSphere Migration Factory framework: Extract → Cleanse → Transform → Load → Validate → Reconcile → Cutover.",
+    "category": "operational",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-066"
+  },
+  {
+    "id": "cap-doc-066",
+    "name": "Subscriber migration occurred in two phases: enterprise and postpaid (12M) in Ph",
+    "description": "Subscriber migration occurred in two phases: enterprise and postpaid (12M) in Phase A, followed by prepaid (108M) in Phase B.",
+    "category": "operational",
+    "tags": [
+      "ai",
+      "migration"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-067"
+  },
+  {
+    "id": "cap-doc-067",
+    "name": "A mandatory 60-day parallel run was executed for both migration phases",
+    "description": "A mandatory 60-day parallel run was executed for both migration phases.",
+    "category": "operational",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-068"
+  },
+  {
+    "id": "cap-doc-068",
+    "name": "Both legacy and new systems ran simultaneously with real-time reconciliation das",
+    "description": "Both legacy and new systems ran simultaneously with real-time reconciliation dashboards monitored 24x7 by a dedicated war-room team in Manila and Bengaluru.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-069"
+  },
+  {
+    "id": "cap-doc-069",
+    "name": "Zero billing disruption was achieved with 100% subscriber records migrated and n",
+    "description": "Zero billing disruption was achieved with 100% subscriber records migrated and no billing errors.",
+    "category": "capability",
+    "tags": [
+      "billing"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-070"
+  },
+  {
+    "id": "cap-doc-070",
+    "name": "OCS rating latency must be <41ms P99 at 1",
+    "description": "OCS rating latency must be <41ms P99 at 1.5M TPS post go-live.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-071"
+  },
+  {
+    "id": "cap-doc-071",
+    "name": "Order fulfillment cycles were reduced from 96 hours to <3",
+    "description": "Order fulfillment cycles were reduced from 96 hours to <3.8 hours average (96% improvement).",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-072"
+  },
+  {
+    "id": "cap-doc-072",
+    "name": "No-touch order rate increased to 94",
+    "description": "No-touch order rate increased to 94.7% (up from 28% on legacy OMS).",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-073"
+  },
+  {
+    "id": "cap-doc-073",
+    "name": "Shadow inventory was eliminated with 6",
+    "description": "Shadow inventory was eliminated with 6.2M Excel-based records decommissioned.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-074"
+  },
+  {
+    "id": "cap-doc-074",
+    "name": "Programme duration was 22 months (Phase A: 12 months; Phase B: 10 months)",
+    "description": "Programme duration was 22 months (Phase A: 12 months; Phase B: 10 months).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-075"
+  },
+  {
+    "id": "cap-doc-075",
+    "name": "Client sign-off was provided by Maria Santos, Head of IT, AsiaNet Wireless",
+    "description": "Client sign-off was provided by Maria Santos, Head of IT, AsiaNet Wireless.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-076"
+  },
+  {
+    "id": "cap-doc-076",
+    "name": "This engagement is the closest direct reference to Vi's requirements for greenfi",
+    "description": "This engagement is the closest direct reference to Vi's requirements for greenfield BSS/OSS, migration from Ericsson BSCS, 100M+ subscriber scale, zero-billing-disruption constraint, and convergent charging requirements.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "oss",
+      "billing",
+      "charging",
+      "ai",
+      "migration",
+      "trai"
+    ],
+    "evidence": "Main Case Study",
+    "source_policy_id": "POL-077"
+  },
+  {
+    "id": "cap-doc-077",
+    "name": "Stellar Mobile in Indonesia engaged NexWave for a full BSS transformation with a",
+    "description": "Stellar Mobile in Indonesia engaged NexWave for a full BSS transformation with a focus on prepaid.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "ai"
+    ],
+    "evidence": "Case Study 2: Stellar Mobile",
+    "source_policy_id": "POL-078"
+  },
+  {
+    "id": "cap-doc-078",
+    "name": "Stellar Mobile has 280 million subscribers, representing the largest NexWave dep",
+    "description": "Stellar Mobile has 280 million subscribers, representing the largest NexWave deployment.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Subscribers",
+    "source_policy_id": "POL-079"
+  },
+  {
+    "id": "cap-doc-079",
+    "name": "The legacy platform uses Huawei SDP for prepaid and Amdocs Ensemble for postpaid",
+    "description": "The legacy platform uses Huawei SDP for prepaid and Amdocs Ensemble for postpaid, preventing convergent charging.",
+    "category": "operational",
+    "tags": [
+      "charging",
+      "ai"
+    ],
+    "evidence": "Legacy Platform",
+    "source_policy_id": "POL-080"
+  },
+  {
+    "id": "cap-doc-080",
+    "name": "The legacy platform caused revenue leakage estimated at 2",
+    "description": "The legacy platform caused revenue leakage estimated at 2.3% of annual revenue (~$340M).",
+    "category": "operational",
+    "tags": [
+      "revenue"
+    ],
+    "evidence": "Legacy Platform",
+    "source_policy_id": "POL-081"
+  },
+  {
+    "id": "cap-doc-081",
+    "name": "The legacy platform could not scale beyond 800K TPS for real-time charging, caus",
+    "description": "The legacy platform could not scale beyond 800K TPS for real-time charging, causing peak-hour rate limiting.",
+    "category": "operational",
+    "tags": [
+      "charging"
+    ],
+    "evidence": "Legacy Platform",
+    "source_policy_id": "POL-082"
+  },
+  {
+    "id": "cap-doc-082",
+    "name": "The legacy platform blocked the client's 5G rollout pending OCS readiness for 5G",
+    "description": "The legacy platform blocked the client's 5G rollout pending OCS readiness for 5G SA Nchf interface.",
+    "category": "operational",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Legacy Platform",
+    "source_policy_id": "POL-083"
+  },
+  {
+    "id": "cap-doc-083",
+    "name": "The OCS TPS sustained 1",
+    "description": "The OCS TPS sustained 1.5M TPS in production and tested up to 2M TPS.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "OCS TPS (Production)",
+    "source_policy_id": "POL-084"
+  },
+  {
+    "id": "cap-doc-084",
+    "name": "The OCS Go-Live date is October 2023",
+    "description": "The OCS Go-Live date is October 2023.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Go-Live",
+    "source_policy_id": "POL-085"
+  },
+  {
+    "id": "cap-doc-085",
+    "name": "OCS rating latency must be <38ms at 1",
+    "description": "OCS rating latency must be <38ms at 1.5M TPS (production-proven).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "OCS Rating Latency (P99)",
+    "source_policy_id": "POL-086"
+  },
+  {
+    "id": "cap-doc-086",
+    "name": "OCS availability must be 99",
+    "description": "OCS availability must be 99.9997% (12-month post-go-live average).",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "OCS Availability",
+    "source_policy_id": "POL-087"
+  },
+  {
+    "id": "cap-doc-087",
+    "name": "NexWave deployed TeleSphere OCS v7",
+    "description": "NexWave deployed TeleSphere OCS v7.2 with 3GPP Rel-17 Ro/Gy/Rf and 5G SA Nchf interfaces.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "3gpp"
+    ],
+    "evidence": "NexWave Solution Deployed",
+    "source_policy_id": "POL-088"
+  },
+  {
+    "id": "cap-doc-088",
+    "name": "NexWave deployed TeleSphere Billing Engine for convergent bill generation for 28",
+    "description": "NexWave deployed TeleSphere Billing Engine for convergent bill generation for 280M subscribers.",
+    "category": "capability",
+    "tags": [
+      "billing"
+    ],
+    "evidence": "NexWave Solution Deployed",
+    "source_policy_id": "POL-089"
+  },
+  {
+    "id": "cap-doc-089",
+    "name": "NexWave deployed TeleSphere Revenue Assurance with Apache Flink for real-time st",
+    "description": "NexWave deployed TeleSphere Revenue Assurance with Apache Flink for real-time stream processing.",
+    "category": "capability",
+    "tags": [
+      "revenue"
+    ],
+    "evidence": "NexWave Solution Deployed",
+    "source_policy_id": "POL-090"
+  },
+  {
+    "id": "cap-doc-090",
+    "name": "NexWave deployed TeleSphere Fraud Management with LSTM-based ML model for SIM cl",
+    "description": "NexWave deployed TeleSphere Fraud Management with LSTM-based ML model for SIM clone detection.",
+    "category": "capability",
+    "tags": [
+      "fraud",
+      "ml"
+    ],
+    "evidence": "NexWave Solution Deployed",
+    "source_policy_id": "POL-091"
+  },
+  {
+    "id": "cap-doc-091",
+    "name": "The solution uses AWS ap-southeast-1 (Singapore) active-active with auto-scaling",
+    "description": "The solution uses AWS ap-southeast-1 (Singapore) active-active with auto-scaling for peak traffic.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "NexWave Solution Deployed",
+    "source_policy_id": "POL-092"
+  },
+  {
+    "id": "cap-doc-092",
+    "name": "OCS rating latency P99 must be <38ms at 1",
+    "description": "OCS rating latency P99 must be <38ms at 1.5M TPS (exceeds Vi requirement of <50ms).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "OCS Rating Latency P99",
+    "source_policy_id": "POL-093"
+  },
+  {
+    "id": "cap-doc-094",
+    "name": "OCS availability must be 99",
+    "description": "OCS availability must be 99.9997% (exceeds five-nines target).",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "OCS Availability (12 months)",
+    "source_policy_id": "POL-095"
+  },
+  {
+    "id": "cap-doc-095",
+    "name": "SIM clone alert-to-block time must be less than 3 minutes",
+    "description": "SIM clone alert-to-block time must be less than 3 minutes",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Fraud Detection",
+    "source_policy_id": "POL-096"
+  },
+  {
+    "id": "cap-doc-096",
+    "name": "False positive rate for SIM clone detection must not exceed 0",
+    "description": "False positive rate for SIM clone detection must not exceed 0.4%",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Fraud Detection",
+    "source_policy_id": "POL-097"
+  },
+  {
+    "id": "cap-doc-097",
+    "name": "5G SA Nchf interface is live and operational",
+    "description": "5G SA Nchf interface is live and operational",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "5G Charging",
+    "source_policy_id": "POL-098"
+  },
+  {
+    "id": "cap-doc-098",
+    "name": "Network slice usage-based charging is operational",
+    "description": "Network slice usage-based charging is operational",
+    "category": "capability",
+    "tags": [
+      "charging",
+      "network"
+    ],
+    "evidence": "5G Charging",
+    "source_policy_id": "POL-099"
+  },
+  {
+    "id": "cap-doc-099",
+    "name": "NexWave's production results exceed Vi OCS SLA thresholds of <50ms P99 at 1",
+    "description": "NexWave's production results exceed Vi OCS SLA thresholds of <50ms P99 at 1.5M TPS and 99.999% availability",
+    "category": "operational",
+    "tags": [
+      "sla",
+      "ai"
+    ],
+    "evidence": "Relevance to Vi RFP",
+    "source_policy_id": "POL-100"
+  },
+  {
+    "id": "cap-doc-100",
+    "name": "5G slice lifecycle management includes design, order, instantiate, assure, modif",
+    "description": "5G slice lifecycle management includes design, order, instantiate, assure, modify, and terminate",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "CASE STUDY 3: Crescent Telecom — Saudi Arabia",
+    "source_policy_id": "POL-101"
+  },
+  {
+    "id": "cap-doc-103",
+    "name": "Supported 5G slice types include eMBB (consumer broadband), URLLC (enterprise lo",
+    "description": "Supported 5G slice types include eMBB (consumer broadband), URLLC (enterprise low-latency), and mMTC (IoT/LPWA)",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "iot"
+    ],
+    "evidence": "CASE STUDY 3: Crescent Telecom — Saudi Arabia",
+    "source_policy_id": "POL-104"
+  },
+  {
+    "id": "cap-doc-104",
+    "name": "Enterprise self-service slice ordering API is available via TeleSphere Enterpris",
+    "description": "Enterprise self-service slice ordering API is available via TeleSphere Enterprise Portal",
+    "category": "capability",
+    "tags": [
+      "api",
+      "ai"
+    ],
+    "evidence": "CASE STUDY 3: Crescent Telecom — Saudi Arabia",
+    "source_policy_id": "POL-105"
+  },
+  {
+    "id": "cap-doc-105",
+    "name": "Slice assurance includes real-time KPI monitoring per slice",
+    "description": "Slice assurance includes real-time KPI monitoring per slice",
+    "category": "capability",
+    "tags": [
+      "monitoring"
+    ],
+    "evidence": "CASE STUDY 3: Crescent Telecom — Saudi Arabia",
+    "source_policy_id": "POL-106"
+  },
+  {
+    "id": "cap-doc-106",
+    "name": "SLA violation alerts must be delivered to enterprise customer portal within 2 mi",
+    "description": "SLA violation alerts must be delivered to enterprise customer portal within 2 minutes",
+    "category": "operational",
+    "tags": [
+      "sla"
+    ],
+    "evidence": "CASE STUDY 3: Crescent Telecom — Saudi Arabia",
+    "source_policy_id": "POL-107"
+  },
+  {
+    "id": "cap-doc-107",
+    "name": "5G slice billing uses usage-based charging via 5G SA Nchf interface",
+    "description": "5G slice billing uses usage-based charging via 5G SA Nchf interface",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "billing",
+      "charging"
+    ],
+    "evidence": "CASE STUDY 3: Crescent Telecom — Saudi Arabia",
+    "source_policy_id": "POL-108"
+  },
+  {
+    "id": "cap-doc-108",
+    "name": "5G slice billing includes per-slice CDRs and convergent invoices with other serv",
+    "description": "5G slice billing includes per-slice CDRs and convergent invoices with other services",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "billing"
+    ],
+    "evidence": "CASE STUDY 3: Crescent Telecom — Saudi Arabia",
+    "source_policy_id": "POL-109"
+  },
+  {
+    "id": "cap-doc-109",
+    "name": "5G SA slicing go-live must be completed within 12 months of contract award",
+    "description": "5G SA slicing go-live must be completed within 12 months of contract award",
+    "category": "operational",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "CASE STUDY 3: Crescent Telecom — Saudi Arabia",
+    "source_policy_id": "POL-110"
+  },
+  {
+    "id": "cap-doc-110",
+    "name": "NexWave Technologies has eMBB, URLLC, and mMTC slice types in commercial product",
+    "description": "NexWave Technologies has eMBB, URLLC, and mMTC slice types in commercial production.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Slice Types Live",
+    "source_policy_id": "POL-111"
+  },
+  {
+    "id": "cap-doc-111",
+    "name": "NexWave has 4 enterprise customers on paid 5G slice contracts at go-live",
+    "description": "NexWave has 4 enterprise customers on paid 5G slice contracts at go-live.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "ai"
+    ],
+    "evidence": "Enterprise Slice Customers",
+    "source_policy_id": "POL-112"
+  },
+  {
+    "id": "cap-doc-112",
+    "name": "End-to-end slice provisioning and activation for eMBB slices must be completed i",
+    "description": "End-to-end slice provisioning and activation for eMBB slices must be completed in less than 8 minutes.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Slice Ordering Time",
+    "source_policy_id": "POL-113"
+  },
+  {
+    "id": "cap-doc-113",
+    "name": "Real-time KPI alerts must be delivered to the enterprise portal with violation n",
+    "description": "Real-time KPI alerts must be delivered to the enterprise portal with violation notifications under 2 minutes.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "SLA Assurance",
+    "source_policy_id": "POL-114"
+  },
+  {
+    "id": "cap-doc-114",
+    "name": "Mohammed Al-Rashidi, VP IT, is available for Vi team site visits",
+    "description": "Mohammed Al-Rashidi, VP IT, is available for Vi team site visits.",
     "category": "commercial",
     "tags": [
       "ai"
     ],
-    "evidence": "6. Volume Pricing Tiers — Subscriber Scale",
-    "source_policy_id": "POL-059"
+    "evidence": "Site Visit Available",
+    "source_policy_id": "POL-115"
+  },
+  {
+    "id": "cap-doc-115",
+    "name": "NexWave is one of the few vendors globally with live 5G SA slicing in production",
+    "description": "NexWave is one of the few vendors globally with live 5G SA slicing in production.",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Relevance to Vi RFP",
+    "source_policy_id": "POL-116"
+  },
+  {
+    "id": "cap-doc-116",
+    "name": "AsiaNet (120M) is the primary reference for Greenfield BSS/OSS deployment",
+    "description": "AsiaNet (120M) is the primary reference for Greenfield BSS/OSS deployment.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "oss"
+    ],
+    "evidence": "Comparative Reference Summary",
+    "source_policy_id": "POL-117"
+  },
+  {
+    "id": "cap-doc-117",
+    "name": "Stellar (280M) supports 100M+ subscriber migration with zero billing disruption",
+    "description": "Stellar (280M) supports 100M+ subscriber migration with zero billing disruption.",
+    "category": "capability",
+    "tags": [
+      "billing",
+      "migration"
+    ],
+    "evidence": "Comparative Reference Summary",
+    "source_policy_id": "POL-118"
+  },
+  {
+    "id": "cap-doc-118",
+    "name": "Crescent (55M) partially supports 100M+ subscriber migration",
+    "description": "Crescent (55M) partially supports 100M+ subscriber migration.",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Comparative Reference Summary",
+    "source_policy_id": "POL-119"
+  },
+  {
+    "id": "cap-doc-119",
+    "name": "OCS performance must achieve <41ms P99 at 1",
+    "description": "OCS performance must achieve <41ms P99 at 1.5M TPS for AsiaNet (120M).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Comparative Reference Summary",
+    "source_policy_id": "POL-120"
+  },
+  {
+    "id": "cap-doc-120",
+    "name": "OCS performance must achieve <38ms P99 at 1",
+    "description": "OCS performance must achieve <38ms P99 at 1.5M TPS for Stellar (280M).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Comparative Reference Summary",
+    "source_policy_id": "POL-121"
+  },
+  {
+    "id": "cap-doc-121",
+    "name": "OCS must maintain 99",
+    "description": "OCS must maintain 99.999% availability",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "OCS 99.999% availability",
+    "source_policy_id": "POL-122"
+  },
+  {
+    "id": "cap-doc-122",
+    "name": "OCS must maintain 99",
+    "description": "OCS must maintain 99.9997% availability",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "OCS 99.999% availability",
+    "source_policy_id": "POL-123"
+  },
+  {
+    "id": "cap-doc-123",
+    "name": "Live 5G SA slice management is fully supported (primary reference)",
+    "description": "Live 5G SA slice management is fully supported (primary reference)",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Live 5G SA slice management",
+    "source_policy_id": "POL-124"
+  },
+  {
+    "id": "cap-doc-124",
+    "name": "Migration from Ericsson legacy platform is supported via BSCS migration",
+    "description": "Migration from Ericsson legacy platform is supported via BSCS migration",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Migration from Ericsson legacy platform",
+    "source_policy_id": "POL-125"
+  },
+  {
+    "id": "cap-doc-125",
+    "name": "Huawei SDP is used for partial BSCS migration",
+    "description": "Huawei SDP is used for partial BSCS migration",
+    "category": "operational",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Migration from Ericsson legacy platform",
+    "source_policy_id": "POL-126"
+  },
+  {
+    "id": "cap-doc-126",
+    "name": "Ericsson OSS is supported for migration",
+    "description": "Ericsson OSS is supported for migration",
+    "category": "capability",
+    "tags": [
+      "oss",
+      "migration"
+    ],
+    "evidence": "Migration from Ericsson legacy platform",
+    "source_policy_id": "POL-127"
+  },
+  {
+    "id": "cap-doc-127",
+    "name": "Real-time Revenue Assurance must detect leakage within <30 minutes",
+    "description": "Real-time Revenue Assurance must detect leakage within <30 minutes",
+    "category": "operational",
+    "tags": [
+      "revenue"
+    ],
+    "evidence": "Real-time Revenue Assurance",
+    "source_policy_id": "POL-128"
+  },
+  {
+    "id": "cap-doc-129",
+    "name": "Document control must use classification 'CONFIDENTIAL'",
+    "description": "Document control must use classification 'CONFIDENTIAL'",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Document Control",
+    "source_policy_id": "POL-130"
+  },
+  {
+    "id": "cap-doc-130",
+    "name": "Document version must be 2",
+    "description": "Document version must be 2.0",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Document Control",
+    "source_policy_id": "POL-131"
+  },
+  {
+    "id": "cap-doc-131",
+    "name": "Document must be approved by Rajesh Menon, CEO",
+    "description": "Document must be approved by Rajesh Menon, CEO",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Document Control",
+    "source_policy_id": "POL-132"
+  },
+  {
+    "id": "cap-doc-132",
+    "name": "Document must be dated April 2026",
+    "description": "Document must be dated April 2026",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Document Control",
+    "source_policy_id": "POL-133"
+  },
+  {
+    "id": "cap-doc-133",
+    "name": "Document must use document control identifier 'NWTECH-CS-2026-001'",
+    "description": "Document must use document control identifier 'NWTECH-CS-2026-001'",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Document Control",
+    "source_policy_id": "POL-134"
+  },
+  {
+    "id": "cap-doc-134",
+    "name": "Document type must be 'pricing'",
+    "description": "Document type must be 'pricing'",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "DOCUMENT TYPE",
+    "source_policy_id": "POL-135"
+  },
+  {
+    "id": "cap-doc-135",
+    "name": "Source filename must be 'vodafone_case_study",
+    "description": "Source filename must be 'vodafone_case_study.pdf'",
+    "category": "governance",
+    "tags": [],
+    "evidence": "SOURCE FILENAME",
+    "source_policy_id": "POL-136"
+  },
+  {
+    "id": "cap-doc-139",
+    "name": "NexWave Technologies Pvt",
+    "description": "NexWave Technologies Pvt. Ltd. has operated exclusively in the telecom sector for 15 years since its inception in 2009.",
+    "category": "capability",
+    "tags": [
+      "telecom"
+    ],
+    "evidence": "Corporate Overview",
+    "source_policy_id": "POL-140"
+  },
+  {
+    "id": "cap-doc-140",
+    "name": "Rajesh Menon, Chief Executive Officer, is the authorized signatory for legal and",
+    "description": "Rajesh Menon, Chief Executive Officer, is the authorized signatory for legal and contractual obligations of NexWave Technologies Pvt. Ltd.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Corporate Overview",
+    "source_policy_id": "POL-141"
+  },
+  {
+    "id": "cap-doc-141",
+    "name": "NexWave Technologies Pvt",
+    "description": "NexWave Technologies Pvt. Ltd. maintains an official website at www.nexwavetech.in for public and business communication.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Corporate Overview",
+    "source_policy_id": "POL-142"
+  },
+  {
+    "id": "cap-doc-142",
+    "name": "Procurement inquiries for NexWave Technologies Pvt",
+    "description": "Procurement inquiries for NexWave Technologies Pvt. Ltd. must be directed to the email address rfp.vi2026@nexwavetech.in.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Corporate Overview",
+    "source_policy_id": "POL-143"
+  },
+  {
+    "id": "cap-doc-148",
+    "name": "The company must maintain a global presence with offices, FTE counts, and primar",
+    "description": "The company must maintain a global presence with offices, FTE counts, and primary functions as specified in the document.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "3. Global Presence & Delivery Organization",
+    "source_policy_id": "POL-149"
+  },
+  {
+    "id": "cap-doc-149",
+    "name": "Bengaluru, India serves as the Global HQ and Primary Delivery Center with 4,200+",
+    "description": "Bengaluru, India serves as the Global HQ and Primary Delivery Center with 4,200+ FTE dedicated to BSS/OSS Engineering, AMS, and PMO.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "oss"
+    ],
+    "evidence": "Bengaluru, Karnataka, India",
+    "source_policy_id": "POL-150"
+  },
+  {
+    "id": "cap-doc-150",
+    "name": "Bengaluru, India must maintain a minimum of 4,200+ FTE for BSS/OSS Engineering,",
+    "description": "Bengaluru, India must maintain a minimum of 4,200+ FTE for BSS/OSS Engineering, AMS, and PMO operations.",
+    "category": "operational",
+    "tags": [
+      "bss",
+      "oss",
+      "ai"
+    ],
+    "evidence": "Bengaluru, Karnataka, India",
+    "source_policy_id": "POL-151"
+  },
+  {
+    "id": "cap-doc-151",
+    "name": "Chennai, India operates as the Secondary Delivery Center with 1,100+ FTE focused",
+    "description": "Chennai, India operates as the Secondary Delivery Center with 1,100+ FTE focused on Testing, QA, DevOps, and Data Engineering.",
+    "category": "capability",
+    "tags": [
+      "devops",
+      "ai",
+      "testing"
+    ],
+    "evidence": "Chennai, Tamil Nadu, India",
+    "source_policy_id": "POL-152"
+  },
+  {
+    "id": "cap-doc-152",
+    "name": "Chennai, India must maintain a minimum of 1,100+ FTE for Testing, QA, DevOps, an",
+    "description": "Chennai, India must maintain a minimum of 1,100+ FTE for Testing, QA, DevOps, and Data Engineering operations.",
+    "category": "operational",
+    "tags": [
+      "devops",
+      "ai",
+      "testing"
+    ],
+    "evidence": "Chennai, Tamil Nadu, India",
+    "source_policy_id": "POL-153"
+  },
+  {
+    "id": "cap-doc-153",
+    "name": "Mumbai, India handles Sales & Client Engagement with 800+ FTE dedicated to Pre-s",
+    "description": "Mumbai, India handles Sales & Client Engagement with 800+ FTE dedicated to Pre-sales, Account Management, and On-site delivery.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Mumbai, Maharashtra, India",
+    "source_policy_id": "POL-154"
+  },
+  {
+    "id": "cap-doc-154",
+    "name": "Mumbai, India must maintain a minimum of 800+ FTE for Sales & Client Engagement",
+    "description": "Mumbai, India must maintain a minimum of 800+ FTE for Sales & Client Engagement operations.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Mumbai, Maharashtra, India",
+    "source_policy_id": "POL-155"
+  },
+  {
+    "id": "cap-doc-155",
+    "name": "Singapore serves as the APAC Regional HQ with 180 FTE dedicated to Client servic",
+    "description": "Singapore serves as the APAC Regional HQ with 180 FTE dedicated to Client services and sales for APAC operators.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Singapore",
+    "source_policy_id": "POL-156"
+  },
+  {
+    "id": "cap-doc-156",
+    "name": "Singapore must maintain a minimum of 180 FTE for APAC Regional HQ operations",
+    "description": "Singapore must maintain a minimum of 180 FTE for APAC Regional HQ operations.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Singapore",
+    "source_policy_id": "POL-157"
+  },
+  {
+    "id": "cap-doc-157",
+    "name": "Dubai, UAE operates as the Middle East Office with 90 FTE focused on regional de",
+    "description": "Dubai, UAE operates as the Middle East Office with 90 FTE focused on regional delivery for MENA operators.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Dubai, UAE",
+    "source_policy_id": "POL-158"
+  },
+  {
+    "id": "cap-doc-158",
+    "name": "Dubai, UAE must maintain a minimum of 90 FTE for Middle East Office operations",
+    "description": "Dubai, UAE must maintain a minimum of 90 FTE for Middle East Office operations.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Dubai, UAE",
+    "source_policy_id": "POL-159"
+  },
+  {
+    "id": "cap-doc-159",
+    "name": "London, UK functions as the Europe Office with 30 FTE dedicated to Business deve",
+    "description": "London, UK functions as the Europe Office with 30 FTE dedicated to Business development and regulatory compliance.",
+    "category": "capability",
+    "tags": [
+      "compliance"
+    ],
+    "evidence": "London, UK",
+    "source_policy_id": "POL-160"
+  },
+  {
+    "id": "cap-doc-160",
+    "name": "London, UK must maintain a minimum of 30 FTE for Europe Office operations",
+    "description": "London, UK must maintain a minimum of 30 FTE for Europe Office operations.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "London, UK",
+    "source_policy_id": "POL-161"
+  },
+  {
+    "id": "cap-doc-161",
+    "name": "Total Global Employees must not exceed 8,400+ FTE",
+    "description": "Total Global Employees must not exceed 8,400+ FTE.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Workforce Metric",
+    "source_policy_id": "POL-162"
+  },
+  {
+    "id": "cap-doc-162",
+    "name": "India-Based Employees must not exceed 6,100+ FTE",
+    "description": "India-Based Employees must not exceed 6,100+ FTE.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Workforce Metric",
+    "source_policy_id": "POL-163"
+  },
+  {
+    "id": "cap-doc-163",
+    "name": "BSS/OSS Dedicated Engineers in India must exceed the RFP minimum of 500 FTE, cur",
+    "description": "BSS/OSS Dedicated Engineers in India must exceed the RFP minimum of 500 FTE, currently at 1,200+ FTE.",
+    "category": "operational",
+    "tags": [
+      "bss",
+      "oss"
+    ],
+    "evidence": "Workforce Metric",
+    "source_policy_id": "POL-164"
+  },
+  {
+    "id": "cap-doc-164",
+    "name": "A 150-person dedicated team is mobilized from Day 1 for the Vi engagement",
+    "description": "A 150-person dedicated team is mobilized from Day 1 for the Vi engagement.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Programme Team for Vi Engagement",
+    "source_policy_id": "POL-165"
+  },
+  {
+    "id": "cap-doc-165",
+    "name": "Engineers with 5G/SA Core Experience are part of the team",
+    "description": "Engineers with 5G/SA Core Experience are part of the team.",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Programme Team for Vi Engagement",
+    "source_policy_id": "POL-166"
+  },
+  {
+    "id": "cap-doc-169",
+    "name": "NexWave serves 28 mobile operators across 18 countries",
+    "description": "NexWave serves 28 mobile operators across 18 countries.",
+    "category": "capability",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "Client Portfolio & Tier-1 References",
+    "source_policy_id": "POL-170"
+  },
+  {
+    "id": "cap-doc-170",
+    "name": "Stellar Mobile (Indonesia) with 280M subscribers has completed a full BSS transf",
+    "description": "Stellar Mobile (Indonesia) with 280M subscribers has completed a full BSS transformation (TeleSphere OCS + CRM + Billing) by October 2023.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "billing"
+    ],
+    "evidence": "Client Portfolio & Tier-1 References",
+    "source_policy_id": "POL-171"
+  },
+  {
+    "id": "cap-doc-171",
+    "name": "AsiaNet Wireless (Philippines) with 120M subscribers has completed a greenfield",
+    "description": "AsiaNet Wireless (Philippines) with 120M subscribers has completed a greenfield BSS/OSS transformation (migration from Ericsson BSCS).",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "oss",
+      "migration"
+    ],
+    "evidence": "Client Portfolio & Tier-1 References",
+    "source_policy_id": "POL-172"
+  },
+  {
+    "id": "cap-doc-172",
+    "name": "Crescent Telecom in Saudi Arabia has 55 million subscribers",
+    "description": "Crescent Telecom in Saudi Arabia has 55 million subscribers.",
+    "category": "operational",
+    "tags": [
+      "telecom"
+    ],
+    "evidence": "Main Body",
+    "source_policy_id": "POL-173"
+  },
+  {
+    "id": "cap-doc-173",
+    "name": "Crescent Telecom in Saudi Arabia provides convergent billing, CRM, and 5G SA sli",
+    "description": "Crescent Telecom in Saudi Arabia provides convergent billing, CRM, and 5G SA slicing (live).",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "billing",
+      "telecom"
+    ],
+    "evidence": "Main Body",
+    "source_policy_id": "POL-174"
+  },
+  {
+    "id": "cap-doc-174",
+    "name": "BrightPath Mobile in Sri Lanka has 28 million subscribers",
+    "description": "BrightPath Mobile in Sri Lanka has 28 million subscribers.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Main Body",
+    "source_policy_id": "POL-175"
+  },
+  {
+    "id": "cap-doc-175",
+    "name": "BrightPath Mobile in Sri Lanka provides OCS, Order Management, Self-Care, and GS",
+    "description": "BrightPath Mobile in Sri Lanka provides OCS, Order Management, Self-Care, and GST e-invoicing.",
+    "category": "capability",
+    "tags": [
+      "gst"
+    ],
+    "evidence": "Main Body",
+    "source_policy_id": "POL-176"
+  },
+  {
+    "id": "cap-doc-176",
+    "name": "ConnectFirst in Bangladesh has 38 million subscribers",
+    "description": "ConnectFirst in Bangladesh has 38 million subscribers.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Main Body",
+    "source_policy_id": "POL-177"
+  },
+  {
+    "id": "cap-doc-177",
+    "name": "ConnectFirst in Bangladesh provides billing, CRM, and RA/FM capabilities",
+    "description": "ConnectFirst in Bangladesh provides billing, CRM, and RA/FM capabilities.",
+    "category": "capability",
+    "tags": [
+      "billing"
+    ],
+    "evidence": "Main Body",
+    "source_policy_id": "POL-178"
+  },
+  {
+    "id": "cap-doc-178",
+    "name": "Rajesh Menon, CEO & Authorized Signatory, is the signatory for all MSA and comme",
+    "description": "Rajesh Menon, CEO & Authorized Signatory, is the signatory for all MSA and commercial commitments.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "5. Key Leadership & Programme Team",
+    "source_policy_id": "POL-179"
+  },
+  {
+    "id": "cap-doc-179",
+    "name": "Suresh Krishnamurthy, Programme Director, has 20 years of BSS/OSS experience and",
+    "description": "Suresh Krishnamurthy, Programme Director, has 20 years of BSS/OSS experience and led AsiaNet Wireless 120M-sub transformation.",
+    "category": "governance",
+    "tags": [
+      "bss",
+      "oss"
+    ],
+    "evidence": "5. Key Leadership & Programme Team",
+    "source_policy_id": "POL-180"
+  },
+  {
+    "id": "cap-doc-181",
+    "name": "Arun Pillai is a 3GPP charging specialist with experience designing OCS at Stell",
+    "description": "Arun Pillai is a 3GPP charging specialist with experience designing OCS at Stellar Mobile (280M TPS-proven).",
+    "category": "capability",
+    "tags": [
+      "charging",
+      "ai",
+      "3gpp"
+    ],
+    "evidence": "Document Text",
+    "source_policy_id": "POL-182"
+  },
+  {
+    "id": "cap-doc-182",
+    "name": "Preethi Sundaram is a Salesforce + TeleSphere CRM and Siebel migration specialis",
+    "description": "Preethi Sundaram is a Salesforce + TeleSphere CRM and Siebel migration specialist.",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Document Text",
+    "source_policy_id": "POL-183"
+  },
+  {
+    "id": "cap-doc-183",
+    "name": "Vikram Rao specializes in network inventory + provisioning and Nokia & Huawei ad",
+    "description": "Vikram Rao specializes in network inventory + provisioning and Nokia & Huawei adapter integration.",
+    "category": "capability",
+    "tags": [
+      "network"
+    ],
+    "evidence": "Document Text",
+    "source_policy_id": "POL-184"
+  },
+  {
+    "id": "cap-doc-184",
+    "name": "Meena Goswami led 6 large-scale BSS migrations with 100M+ subscriber records and",
+    "description": "Meena Goswami led 6 large-scale BSS migrations with 100M+ subscriber records and zero billing disruption.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "billing",
+      "migration"
+    ],
+    "evidence": "Document Text",
+    "source_policy_id": "POL-185"
+  },
+  {
+    "id": "cap-doc-188",
+    "name": "The company has a 280M TPS-proven OCS design capability at Stellar Mobile",
+    "description": "The company has a 280M TPS-proven OCS design capability at Stellar Mobile.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Document Text",
+    "source_policy_id": "POL-189"
+  },
+  {
+    "id": "cap-doc-189",
+    "name": "The company has zero billing disruption certified for large-scale BSS migrations",
+    "description": "The company has zero billing disruption certified for large-scale BSS migrations.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "billing",
+      "migration"
+    ],
+    "evidence": "Document Text",
+    "source_policy_id": "POL-190"
+  },
+  {
+    "id": "cap-doc-190",
+    "name": "All externally-facing proposal documents, RFP responses, marketing collateral, a",
+    "description": "All externally-facing proposal documents, RFP responses, marketing collateral, and client communications must comply with the NexWave Technologies India Brand Guide.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Document Overview",
+    "source_policy_id": "POL-191"
+  },
+  {
+    "id": "cap-doc-191",
+    "name": "The tagline 'Powering India's Telecom Future' must be used on all India-market m",
+    "description": "The tagline 'Powering India's Telecom Future' must be used on all India-market materials including proposal covers, executive summaries, and marketing decks.",
+    "category": "governance",
+    "tags": [
+      "telecom"
+    ],
+    "evidence": "1.1 Company Identity Statement",
+    "source_policy_id": "POL-192"
+  },
+  {
+    "id": "cap-doc-192",
+    "name": "NexWave communications must consistently project the brand personality of Expert",
+    "description": "NexWave communications must consistently project the brand personality of Expert, Reliable, Innovative, and Committed.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "1.1 Company Identity Statement",
+    "source_policy_id": "POL-193"
+  },
+  {
+    "id": "cap-doc-194",
+    "name": "The product name 'TeleSphere BSS/OSS Suite' must be used in all external referen",
+    "description": "The product name 'TeleSphere BSS/OSS Suite' must be used in all external references to the company's product.",
+    "category": "governance",
+    "tags": [
+      "bss",
+      "oss"
+    ],
+    "evidence": "1.2 Legal Name & Registration Details",
+    "source_policy_id": "POL-195"
+  },
+  {
+    "id": "cap-doc-195",
+    "name": "The RFP automation system must be used to ensure generated proposals comply with",
+    "description": "The RFP automation system must be used to ensure generated proposals comply with brand standards.",
+    "category": "operational",
+    "tags": [
+      "automation"
+    ],
+    "evidence": "Document Overview",
+    "source_policy_id": "POL-196"
+  },
+  {
+    "id": "cap-doc-196",
+    "name": "NexWave Technologies Pvt",
+    "description": "NexWave Technologies Pvt. Ltd. is certified as India's leading BSS/OSS platform company, serving 28 mobile operators across 18 countries.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "oss"
+    ],
+    "evidence": "1.1 Company Identity Statement",
+    "source_policy_id": "POL-197"
+  },
+  {
+    "id": "cap-doc-197",
+    "name": "NexWave Technologies Pvt",
+    "description": "NexWave Technologies Pvt. Ltd. enables telecom operators to power their digital transformation through real-time convergent charging and 5G network slice monetization.",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "charging",
+      "telecom",
+      "network"
+    ],
+    "evidence": "1.1 Company Identity Statement",
+    "source_policy_id": "POL-198"
+  },
+  {
+    "id": "cap-doc-198",
+    "name": "The product name 'TeleSphere' must never be abbreviated as 'NWT' or 'NWTECH' in",
+    "description": "The product name 'TeleSphere' must never be abbreviated as 'NWT' or 'NWTECH' in client documents.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Product Short Form",
+    "source_policy_id": "POL-199"
+  },
+  {
+    "id": "cap-doc-201",
+    "name": "The official website URL is 'www",
+    "description": "The official website URL is 'www.nexwavetech.in'.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "Website",
+    "source_policy_id": "POL-202"
+  },
+  {
+    "id": "cap-doc-202",
+    "name": "The primary brand color 'NexWave Red' (#E60000) must be used for primary brand e",
+    "description": "The primary brand color 'NexWave Red' (#E60000) must be used for primary brand elements, headings, and call-to-action (CTA) buttons.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "2.1 Primary Brand Colours",
+    "source_policy_id": "POL-203"
+  },
+  {
+    "id": "cap-doc-203",
+    "name": "The primary brand color 'NexWave Navy' (#1A1A2E) must be used for body text and",
+    "description": "The primary brand color 'NexWave Navy' (#1A1A2E) must be used for body text and dark backgrounds.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "2.1 Primary Brand Colours",
+    "source_policy_id": "POL-204"
+  },
+  {
+    "id": "cap-doc-204",
+    "name": "The primary brand color 'Pure White' (#FFFFFF) must be used for page backgrounds",
+    "description": "The primary brand color 'Pure White' (#FFFFFF) must be used for page backgrounds and clean spaces.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "2.1 Primary Brand Colours",
+    "source_policy_id": "POL-205"
+  },
+  {
+    "id": "cap-doc-205",
+    "name": "The secondary brand color 'Light Gray' (#F5F5F5) must be used for table alternat",
+    "description": "The secondary brand color 'Light Gray' (#F5F5F5) must be used for table alternating rows and callouts.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "2.1 Primary Brand Colours",
+    "source_policy_id": "POL-206"
+  },
+  {
+    "id": "cap-doc-206",
+    "name": "The secondary brand color 'Mid Gray' (#888888) must be used for footer text, cap",
+    "description": "The secondary brand color 'Mid Gray' (#888888) must be used for footer text, captions, and metadata.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "2.1 Primary Brand Colours",
+    "source_policy_id": "POL-207"
+  },
+  {
+    "id": "cap-doc-207",
+    "name": "Never use more than 3 colours on a single page",
+    "description": "Never use more than 3 colours on a single page.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Colour usage rules",
+    "source_policy_id": "POL-208"
+  },
+  {
+    "id": "cap-doc-208",
+    "name": "Red is reserved for NexWave branding — do not use for warnings unless combined w",
+    "description": "Red is reserved for NexWave branding — do not use for warnings unless combined with text.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Colour usage rules",
+    "source_policy_id": "POL-209"
+  },
+  {
+    "id": "cap-doc-210",
+    "name": "Document Title (cover) must use Arial font, 52pt / Bold, NexWave Navy colour",
+    "description": "Document Title (cover) must use Arial font, 52pt / Bold, NexWave Navy colour.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Typography Standards",
+    "source_policy_id": "POL-211"
+  },
+  {
+    "id": "cap-doc-211",
+    "name": "Sub-Title (cover) must use Arial font, 26pt / Regular, NexWave Red colour",
+    "description": "Sub-Title (cover) must use Arial font, 26pt / Regular, NexWave Red colour.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Typography Standards",
+    "source_policy_id": "POL-212"
+  },
+  {
+    "id": "cap-doc-212",
+    "name": "Heading 1 must use Arial font, 28pt / Bold, NexWave Navy colour with red bottom",
+    "description": "Heading 1 must use Arial font, 28pt / Bold, NexWave Navy colour with red bottom border.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Typography Standards",
+    "source_policy_id": "POL-213"
+  },
+  {
+    "id": "cap-doc-213",
+    "name": "Primary font for client-facing documents must be Arial",
+    "description": "Primary font for client-facing documents must be Arial.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Document Formatting Standards",
+    "source_policy_id": "POL-214"
+  },
+  {
+    "id": "cap-doc-214",
+    "name": "Calibri, Times New Roman, or decorative fonts are prohibited in client-facing do",
+    "description": "Calibri, Times New Roman, or decorative fonts are prohibited in client-facing documents.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Document Formatting Standards",
+    "source_policy_id": "POL-215"
+  },
+  {
+    "id": "cap-doc-215",
+    "name": "Fallback font for client-facing documents must be Helvetica Neue",
+    "description": "Fallback font for client-facing documents must be Helvetica Neue.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Document Formatting Standards",
+    "source_policy_id": "POL-216"
+  },
+  {
+    "id": "cap-doc-216",
+    "name": "Page size for India market documents must be A4 (210mm x 297mm), not US Letter",
+    "description": "Page size for India market documents must be A4 (210mm x 297mm), not US Letter.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Document Formatting Standards",
+    "source_policy_id": "POL-217"
+  },
+  {
+    "id": "cap-doc-217",
+    "name": "All proposal documents must use 1-inch (72pt / 1440 DXA) margins on all sides",
+    "description": "All proposal documents must use 1-inch (72pt / 1440 DXA) margins on all sides.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Document Formatting Standards",
+    "source_policy_id": "POL-218"
+  },
+  {
+    "id": "cap-doc-218",
+    "name": "Content width for A4 documents with 1-inch margins must be approximately 9,026 D",
+    "description": "Content width for A4 documents with 1-inch margins must be approximately 9,026 DXA (6.27 inches).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Document Formatting Standards",
+    "source_policy_id": "POL-219"
+  },
+  {
+    "id": "cap-doc-219",
+    "name": "Body text in documents must use single line spacing with 8pt spacing before and",
+    "description": "Body text in documents must use single line spacing with 8pt spacing before and after paragraphs.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Document Formatting Standards",
+    "source_policy_id": "POL-220"
+  },
+  {
+    "id": "cap-doc-220",
+    "name": "Body text must be left-aligned; cover titles must be center-aligned",
+    "description": "Body text must be left-aligned; cover titles must be center-aligned.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Alignment",
+    "source_policy_id": "POL-221"
+  },
+  {
+    "id": "cap-doc-221",
+    "name": "Table cell padding must be Top: 80–100 DXA, Bottom: 80–100 DXA, Left: 120 DXA, R",
+    "description": "Table cell padding must be Top: 80–100 DXA, Bottom: 80–100 DXA, Left: 120 DXA, Right: 120 DXA.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Table Cell Padding",
+    "source_policy_id": "POL-222"
+  },
+  {
+    "id": "cap-doc-222",
+    "name": "Every page must include a header with 'Company name | Document title | Classific",
+    "description": "Every page must include a header with 'Company name | Document title | Classification level'.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Header (every page)",
+    "source_policy_id": "POL-223"
+  },
+  {
+    "id": "cap-doc-223",
+    "name": "Every page must include a footer with 'Document reference | Version | Classifica",
+    "description": "Every page must include a footer with 'Document reference | Version | Classification | Page number'.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "Footer (every page)",
+    "source_policy_id": "POL-224"
+  },
+  {
+    "id": "cap-doc-224",
+    "name": "Client proposals must include the cover page elements in the specified order",
+    "description": "Client proposals must include the cover page elements in the specified order.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.2 Document Cover Page Elements",
+    "source_policy_id": "POL-225"
+  },
+  {
+    "id": "cap-doc-225",
+    "name": "Document title must be 52pt Bold, NexWave Navy",
+    "description": "Document title must be 52pt Bold, NexWave Navy.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.2 Document Cover Page Elements",
+    "source_policy_id": "POL-226"
+  },
+  {
+    "id": "cap-doc-226",
+    "name": "Sub-title must be 26pt, NexWave Red, with a red bottom border line beneath it",
+    "description": "Sub-title must be 26pt, NexWave Red, with a red bottom border line beneath it.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.2 Document Cover Page Elements",
+    "source_policy_id": "POL-227"
+  },
+  {
+    "id": "cap-doc-227",
+    "name": "Prepared by / Submitted to lines must be 20pt, Mid Gray",
+    "description": "Prepared by / Submitted to lines must be 20pt, Mid Gray.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.2 Document Cover Page Elements",
+    "source_policy_id": "POL-228"
+  },
+  {
+    "id": "cap-doc-228",
+    "name": "Document reference, version, date, and classification must be 18pt, Mid Gray",
+    "description": "Document reference, version, date, and classification must be 18pt, Mid Gray.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.2 Document Cover Page Elements",
+    "source_policy_id": "POL-229"
+  },
+  {
+    "id": "cap-doc-229",
+    "name": "Classification banner (CONFIDENTIAL / INTERNAL USE ONLY) must be 18pt Bold, NexW",
+    "description": "Classification banner (CONFIDENTIAL / INTERNAL USE ONLY) must be 18pt Bold, NexWave Red.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.2 Document Cover Page Elements",
+    "source_policy_id": "POL-230"
+  },
+  {
+    "id": "cap-doc-230",
+    "name": "Table header row must have NexWave Navy background (#1A1A2E), white text, and 18",
+    "description": "Table header row must have NexWave Navy background (#1A1A2E), white text, and 18pt Bold font.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.3 Table Design Standards",
+    "source_policy_id": "POL-231"
+  },
+  {
+    "id": "cap-doc-231",
+    "name": "Alternating row shading must use White (#FFFFFF) and Light Gray (#F5F5F5) with S",
+    "description": "Alternating row shading must use White (#FFFFFF) and Light Gray (#F5F5F5) with ShadingType.CLEAR.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.3 Table Design Standards",
+    "source_policy_id": "POL-232"
+  },
+  {
+    "id": "cap-doc-232",
+    "name": "All table borders must be single line, 1pt, light gray (#DDDDDD)",
+    "description": "All table borders must be single line, 1pt, light gray (#DDDDDD).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.3 Table Design Standards",
+    "source_policy_id": "POL-233"
+  },
+  {
+    "id": "cap-doc-233",
+    "name": "Highlight/totals rows must use Light Red Tint (#FFF0F0) with bold text",
+    "description": "Highlight/totals rows must use Light Red Tint (#FFF0F0) with bold text.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.3 Table Design Standards",
+    "source_policy_id": "POL-234"
+  },
+  {
+    "id": "cap-doc-234",
+    "name": "Tables must specify both columnWidths (array) and individual cell widths (DXA) f",
+    "description": "Tables must specify both columnWidths (array) and individual cell widths (DXA) for consistent rendering.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4.3 Table Design Standards",
+    "source_policy_id": "POL-235"
+  },
+  {
+    "id": "cap-doc-235",
+    "name": "Percentage widths must not be used; only DXA values are allowed for cross-platfo",
+    "description": "Percentage widths must not be used; only DXA values are allowed for cross-platform compatibility.",
+    "category": "operational",
+    "tags": [
+      "oss"
+    ],
+    "evidence": "4.3 Table Design Standards",
+    "source_policy_id": "POL-236"
+  },
+  {
+    "id": "cap-doc-236",
+    "name": "All RFP responses must include the 'Executive Summary' section with 2 pages max,",
+    "description": "All RFP responses must include the 'Executive Summary' section with 2 pages max, Vi-specific content, and mirrored RFP language with quantified outcomes.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "5.1 Mandatory Sections for All RFP Responses",
+    "source_policy_id": "POL-237"
+  },
+  {
+    "id": "cap-doc-240",
+    "name": "Proposals for India enterprise/telecom sector must be in English only; rural/gov",
+    "description": "Proposals for India enterprise/telecom sector must be in English only; rural/government sector bids may be bilingual (Hindi + English).",
+    "category": "operational",
+    "tags": [
+      "telecom"
+    ],
+    "evidence": "5.2 India-Specific Proposal Requirements",
+    "source_policy_id": "POL-241"
+  },
+  {
+    "id": "cap-doc-241",
+    "name": "All prices in Indian Rupees (INR) with a forex protection statement ('all prices",
+    "description": "All prices in Indian Rupees (INR) with a forex protection statement ('all prices in INR; no forex exposure for client') for India proposals.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "5.2 India-Specific Proposal Requirements",
+    "source_policy_id": "POL-242"
+  },
+  {
+    "id": "cap-doc-242",
+    "name": "Payment terms for India proposals: Net 30 days from invoice with milestone-linke",
+    "description": "Payment terms for India proposals: Net 30 days from invoice with milestone-linked structure and bank guarantee for advance payment.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "5.2 India-Specific Proposal Requirements",
+    "source_policy_id": "POL-243"
+  },
+  {
+    "id": "cap-doc-245",
+    "name": "Include at least 3 client references with contact details and note availability",
+    "description": "Include at least 3 client references with contact details and note availability for site visits.",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "9. Client References",
+    "source_policy_id": "POL-246"
+  },
+  {
+    "id": "cap-doc-246",
+    "name": "Use the TeleSphere Migration Factory for data migration with a zero-leakage comm",
+    "description": "Use the TeleSphere Migration Factory for data migration with a zero-leakage commitment and parallel run plan.",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "5. Data Migration Strategy",
+    "source_policy_id": "POL-247"
+  },
+  {
+    "id": "cap-doc-247",
+    "name": "Define a phase plan, named team, milestone commitments, and critical blackout pe",
+    "description": "Define a phase plan, named team, milestone commitments, and critical blackout periods in implementation methodology.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "4. Implementation Methodology",
+    "source_policy_id": "POL-248"
+  },
+  {
+    "id": "cap-doc-248",
+    "name": "Include SLA schedule, hypercare plan, and 5-year AMS structure in support and AM",
+    "description": "Include SLA schedule, hypercare plan, and 5-year AMS structure in support and AMS model.",
+    "category": "operational",
+    "tags": [
+      "sla"
+    ],
+    "evidence": "6. Support & AMS Model",
+    "source_policy_id": "POL-249"
+  },
+  {
+    "id": "cap-doc-251",
+    "name": "Structure commercial proposal with milestone payments and TCO summary from docum",
+    "description": "Structure commercial proposal with milestone payments and TCO summary from document NWTECH-PPC-2026-001.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "7. Commercial Proposal",
+    "source_policy_id": "POL-252"
+  },
+  {
+    "id": "cap-doc-261",
+    "name": "AWS KMS with CloudHSM is used for key management, and all volumes are encrypted",
+    "description": "AWS KMS with CloudHSM is used for key management, and all volumes are encrypted at rest.",
+    "category": "capability",
+    "tags": [
+      "cloud"
+    ],
+    "evidence": "2. RFP Security Requirements — Full Compliance Matrix",
+    "source_policy_id": "POL-262"
+  },
+  {
+    "id": "cap-doc-263",
+    "name": "TLS 1",
+    "description": "TLS 1.2 is the minimum acceptable version for encryption in transit.",
+    "category": "capability",
+    "tags": [
+      "encryption"
+    ],
+    "evidence": "2. RFP Security Requirements — Full Compliance Matrix",
+    "source_policy_id": "POL-264"
+  },
+  {
+    "id": "cap-doc-265",
+    "name": "MFA is implemented via Azure AD / Okta with SAML 2",
+    "description": "MFA is implemented via Azure AD / Okta with SAML 2.0 / OAuth 2.0 / OIDC federation.",
+    "category": "capability",
+    "tags": [
+      "ml",
+      "saml",
+      "oauth"
+    ],
+    "evidence": "2. RFP Security Requirements — Full Compliance Matrix",
+    "source_policy_id": "POL-266"
+  },
+  {
+    "id": "cap-doc-267",
+    "name": "NexWave Technologies implements Role-Based Access Control (RBAC) and Attribute-B",
+    "description": "NexWave Technologies implements Role-Based Access Control (RBAC) and Attribute-Based Access Control (ABAC) with Privileged Access Management (PAM) integration.",
+    "category": "capability",
+    "tags": [
+      "rbac"
+    ],
+    "evidence": "Security Requirement",
+    "source_policy_id": "POL-268"
+  },
+  {
+    "id": "cap-doc-268",
+    "name": "CyberArk Privileged Access Management (PAM) is used for privileged access contro",
+    "description": "CyberArk Privileged Access Management (PAM) is used for privileged access control.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Implementation Detail",
+    "source_policy_id": "POL-269"
+  },
+  {
+    "id": "cap-doc-269",
+    "name": "Open Policy Agent (OPA) policy engine is used for Attribute-Based Access Control",
+    "description": "Open Policy Agent (OPA) policy engine is used for Attribute-Based Access Control (ABAC).",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Implementation Detail",
+    "source_policy_id": "POL-270"
+  },
+  {
+    "id": "cap-doc-280",
+    "name": "An active-active multi-region disaster recovery system is maintained with RPO <1",
+    "description": "An active-active multi-region disaster recovery system is maintained with RPO <15 minutes and RTO <1 hour, tested every 6 months.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Active-Active multi-region DR",
+    "source_policy_id": "POL-281"
+  },
+  {
+    "id": "cap-doc-298",
+    "name": "AWS KMS + CloudHSM used for key management",
+    "description": "AWS KMS + CloudHSM used for key management",
+    "category": "capability",
+    "tags": [
+      "cloud"
+    ],
+    "evidence": "Key Management",
+    "source_policy_id": "POL-299"
+  },
+  {
+    "id": "cap-doc-300",
+    "name": "Customer-managed keys (CMK) option is available for Vi",
+    "description": "Customer-managed keys (CMK) option is available for Vi",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "Key Management",
+    "source_policy_id": "POL-301"
+  },
+  {
+    "id": "cap-doc-301",
+    "name": "NexWave SOC (Bengaluru) responds to P1 security events within 15 minutes",
+    "description": "NexWave SOC (Bengaluru) responds to P1 security events within 15 minutes",
+    "category": "operational",
+    "tags": [
+      "security",
+      "soc"
+    ],
+    "evidence": "5.1 Incident Response Commitments",
+    "source_policy_id": "POL-302"
+  },
+  {
+    "id": "cap-doc-302",
+    "name": "Initial containment of P1 security events must occur within 1 hour",
+    "description": "Initial containment of P1 security events must occur within 1 hour",
+    "category": "operational",
+    "tags": [
+      "security",
+      "ai"
+    ],
+    "evidence": "5.1 Incident Response Commitments",
+    "source_policy_id": "POL-303"
+  },
+  {
+    "id": "cap-doc-303",
+    "name": "Critical (CVSS 9",
+    "description": "Critical (CVSS 9.0+) pen test findings must be remediated within 30 days of identification",
+    "category": "operational",
+    "tags": [],
+    "evidence": "5.1 Incident Response Commitments",
+    "source_policy_id": "POL-304"
+  },
+  {
+    "id": "cap-doc-304",
+    "name": "High-severity pen test findings must be remediated within 60 days of identificat",
+    "description": "High-severity pen test findings must be remediated within 60 days of identification",
+    "category": "operational",
+    "tags": [],
+    "evidence": "5.1 Incident Response Commitments",
+    "source_policy_id": "POL-305"
+  },
+  {
+    "id": "cap-doc-307",
+    "name": "NexWave operates a responsible disclosure program for vulnerability tracking",
+    "description": "NexWave operates a responsible disclosure program for vulnerability tracking",
+    "category": "capability",
+    "tags": [],
+    "evidence": "5.1 Incident Response Commitments",
+    "source_policy_id": "POL-308"
+  },
+  {
+    "id": "cap-doc-308",
+    "name": "Recovery Point Objective (RPO) must be less than 15 minutes",
+    "description": "Recovery Point Objective (RPO) must be less than 15 minutes",
+    "category": "operational",
+    "tags": [],
+    "evidence": "5.2 Business Continuity & Disaster Recovery",
+    "source_policy_id": "POL-309"
+  },
+  {
+    "id": "cap-doc-309",
+    "name": "Recovery Time Objective (RTO) must be less than 1 hour",
+    "description": "Recovery Time Objective (RTO) must be less than 1 hour",
+    "category": "operational",
+    "tags": [],
+    "evidence": "5.2 Business Continuity & Disaster Recovery",
+    "source_policy_id": "POL-310"
+  },
+  {
+    "id": "cap-doc-310",
+    "name": "Planned DR failover tests must be conducted every 6 months",
+    "description": "Planned DR failover tests must be conducted every 6 months",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "5.2 Business Continuity & Disaster Recovery",
+    "source_policy_id": "POL-311"
+  },
+  {
+    "id": "cap-doc-311",
+    "name": "24x7 Hypercare War Room must be maintained for 90 days post each phase go-live",
+    "description": "24x7 Hypercare War Room must be maintained for 90 days post each phase go-live",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "5.2 Business Continuity & Disaster Recovery",
+    "source_policy_id": "POL-312"
+  },
+  {
+    "id": "cap-doc-312",
+    "name": "Professional Indemnity insurance coverage must be INR 100 Crores per claim",
+    "description": "Professional Indemnity insurance coverage must be INR 100 Crores per claim",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "6. Insurance Coverage",
+    "source_policy_id": "POL-313"
+  },
+  {
+    "id": "cap-doc-313",
+    "name": "Professional Indemnity insurance must be provided by New India Assurance Co",
+    "description": "Professional Indemnity insurance must be provided by New India Assurance Co.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6. Insurance Coverage",
+    "source_policy_id": "POL-314"
+  },
+  {
+    "id": "cap-doc-314",
+    "name": "Professional Indemnity insurance policy period must cover FY2026-27 and be renew",
+    "description": "Professional Indemnity insurance policy period must cover FY2026-27 and be renewable annually",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6. Insurance Coverage",
+    "source_policy_id": "POL-315"
+  },
+  {
+    "id": "cap-doc-319",
+    "name": "Vendor outputs include software modules, configurations, documents, reports, dat",
+    "description": "Vendor outputs include software modules, configurations, documents, reports, data migration artifacts, or other outputs specified in the applicable SOW.",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "PART I — DEFINITIONS & SCOPE",
+    "source_policy_id": "POL-320"
+  },
+  {
+    "id": "cap-doc-320",
+    "name": "Services include implementation, software deployment, data migration, training,",
+    "description": "Services include implementation, software deployment, data migration, training, hypercare support, and Application Managed Services (AMS) as defined in the relevant SOW.",
+    "category": "capability",
+    "tags": [
+      "ai",
+      "migration",
+      "trai"
+    ],
+    "evidence": "PART I — DEFINITIONS & SCOPE",
+    "source_policy_id": "POL-321"
+  },
+  {
+    "id": "cap-doc-321",
+    "name": "The TeleSphere Suite is NexWave's proprietary BSS/OSS software platform, includi",
+    "description": "The TeleSphere Suite is NexWave's proprietary BSS/OSS software platform, including modules like OCS, Billing Engine, CRM, OMS, NIM, Revenue Assurance, Fraud Management, Self-Care, and SliceOrchestrator.",
+    "category": "capability",
+    "tags": [
+      "bss",
+      "oss",
+      "billing",
+      "fraud",
+      "revenue"
+    ],
+    "evidence": "PART I — DEFINITIONS & SCOPE",
+    "source_policy_id": "POL-322"
+  },
+  {
+    "id": "cap-doc-323",
+    "name": "A platform phase is accepted by the Client as production-ready only after succes",
+    "description": "A platform phase is accepted by the Client as production-ready only after successful completion of acceptance testing criteria defined in the SOW.",
+    "category": "operational",
+    "tags": [
+      "testing"
+    ],
+    "evidence": "PART I — DEFINITIONS & SCOPE",
+    "source_policy_id": "POL-324"
+  },
+  {
+    "id": "cap-doc-324",
+    "name": "The AMS Commencement Date is the Phase 3 Go-Live Date as specified in the commer",
+    "description": "The AMS Commencement Date is the Phase 3 Go-Live Date as specified in the commercial exhibit.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "1.7 AMS Commencement Date",
+    "source_policy_id": "POL-325"
+  },
+  {
+    "id": "cap-doc-325",
+    "name": "Modifications to SOW scope, timeline, or commercial terms must be formalized thr",
+    "description": "Modifications to SOW scope, timeline, or commercial terms must be formalized through the Change Control Process defined in Clause 7.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "1.7 AMS Commencement Date",
+    "source_policy_id": "POL-326"
+  },
+  {
+    "id": "cap-doc-326",
+    "name": "The Vendor must mobilize the programme team as specified in the SOW, including n",
+    "description": "The Vendor must mobilize the programme team as specified in the SOW, including named key personnel (Programme Director, Architecture Lead, and Domain Leads), from the contract effective date.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "2.1 Programme Team Commitment",
+    "source_policy_id": "POL-327"
+  },
+  {
+    "id": "cap-doc-327",
+    "name": "Named key personnel shall not be replaced without the Client's prior written con",
+    "description": "Named key personnel shall not be replaced without the Client's prior written consent, which shall not be unreasonably withheld.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "2.1 Programme Team Commitment",
+    "source_policy_id": "POL-328"
+  },
+  {
+    "id": "cap-doc-328",
+    "name": "In the event of an unavoidable replacement of named key personnel, the Vendor mu",
+    "description": "In the event of an unavoidable replacement of named key personnel, the Vendor must provide a candidate with equivalent or superior qualifications for Client approval within 15 business days.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "2.1 Programme Team Commitment",
+    "source_policy_id": "POL-329"
+  },
+  {
+    "id": "cap-doc-329",
+    "name": "The Vendor must commit to the milestone schedule defined in the applicable SOW",
+    "description": "The Vendor must commit to the milestone schedule defined in the applicable SOW.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "2.2 Milestone Commitments",
+    "source_policy_id": "POL-330"
+  },
+  {
+    "id": "cap-doc-330",
+    "name": "The Vendor must notify the Client in writing at least 20 business days in advanc",
+    "description": "The Vendor must notify the Client in writing at least 20 business days in advance if a milestone will not be met.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "2.2 Milestone Commitments",
+    "source_policy_id": "POL-331"
+  },
+  {
+    "id": "cap-doc-331",
+    "name": "Unexcused delays beyond 30 days on critical path milestones trigger delay credit",
+    "description": "Unexcused delays beyond 30 days on critical path milestones trigger delay credits defined in Schedule 2 (SLA & Service Credits).",
+    "category": "operational",
+    "tags": [
+      "sla"
+    ],
+    "evidence": "2.2 Milestone Commitments",
+    "source_policy_id": "POL-332"
+  },
+  {
+    "id": "cap-doc-332",
+    "name": "For subscriber data migration, the Vendor guarantees zero billing disruption and",
+    "description": "For subscriber data migration, the Vendor guarantees zero billing disruption and zero revenue leakage as defined in the Migration Acceptance Criteria (Appendix to SOW).",
+    "category": "operational",
+    "tags": [
+      "billing",
+      "revenue",
+      "migration"
+    ],
+    "evidence": "2.3 Data Migration — Zero Revenue Leakage",
+    "source_policy_id": "POL-333"
+  },
+  {
+    "id": "cap-doc-333",
+    "name": "Data migration acceptance requires 100% subscriber record count reconciliation",
+    "description": "Data migration acceptance requires 100% subscriber record count reconciliation.",
+    "category": "operational",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "2.3 Data Migration — Zero Revenue Leakage",
+    "source_policy_id": "POL-334"
+  },
+  {
+    "id": "cap-doc-334",
+    "name": "Data migration acceptance requires CDR value reconciliation within 0",
+    "description": "Data migration acceptance requires CDR value reconciliation within 0.01% tolerance.",
+    "category": "operational",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "2.3 Data Migration — Zero Revenue Leakage",
+    "source_policy_id": "POL-335"
+  },
+  {
+    "id": "cap-doc-335",
+    "name": "Data migration acceptance requires parallel run sign-off by the Client's billing",
+    "description": "Data migration acceptance requires parallel run sign-off by the Client's billing team.",
+    "category": "operational",
+    "tags": [
+      "billing",
+      "migration"
+    ],
+    "evidence": "2.3 Data Migration — Zero Revenue Leakage",
+    "source_policy_id": "POL-336"
+  },
+  {
+    "id": "cap-doc-336",
+    "name": "The Vendor must remedy billing errors attributable to migration activities withi",
+    "description": "The Vendor must remedy billing errors attributable to migration activities within 90 days of Go-Live at no additional cost.",
+    "category": "operational",
+    "tags": [
+      "billing",
+      "migration"
+    ],
+    "evidence": "2.3 Data Migration — Zero Revenue Leakage",
+    "source_policy_id": "POL-337"
+  },
+  {
+    "id": "cap-doc-337",
+    "name": "The platform must meet or exceed performance benchmarks specified in Schedule 1",
+    "description": "The platform must meet or exceed performance benchmarks specified in Schedule 1 (SLA Schedule) from the Go-Live Date.",
+    "category": "operational",
+    "tags": [
+      "sla"
+    ],
+    "evidence": "2.4 Performance Benchmarks",
+    "source_policy_id": "POL-338"
+  },
+  {
+    "id": "cap-doc-338",
+    "name": "Performance benchmarks include OCS rating latency (<50ms P99 at 1",
+    "description": "Performance benchmarks include OCS rating latency (<50ms P99 at 1.5M TPS), availability (99.999% for OCS/Charging), and bill run completion (10M accounts in <6 hours).",
+    "category": "operational",
+    "tags": [
+      "charging",
+      "ai"
+    ],
+    "evidence": "2.4 Performance Benchmarks",
+    "source_policy_id": "POL-339"
+  },
+  {
+    "id": "cap-doc-339",
+    "name": "Failure to meet performance benchmarks triggers service credits per Schedule 2",
+    "description": "Failure to meet performance benchmarks triggers service credits per Schedule 2.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "2.4 Performance Benchmarks",
+    "source_policy_id": "POL-340"
+  },
+  {
+    "id": "cap-doc-340",
+    "name": "The Client shall provide timely access to legacy system data, APIs, and document",
+    "description": "The Client shall provide timely access to legacy system data, APIs, and documentation necessary for migration and integration.",
+    "category": "governance",
+    "tags": [
+      "api",
+      "migration"
+    ],
+    "evidence": "3. Client Obligations",
+    "source_policy_id": "POL-341"
+  },
+  {
+    "id": "cap-doc-341",
+    "name": "The Client shall make available Subject Matter Experts for workshops, testing, a",
+    "description": "The Client shall make available Subject Matter Experts for workshops, testing, and UAT sign-off within agreed timelines.",
+    "category": "governance",
+    "tags": [
+      "ai",
+      "testing"
+    ],
+    "evidence": "3. Client Obligations",
+    "source_policy_id": "POL-342"
+  },
+  {
+    "id": "cap-doc-342",
+    "name": "The Client shall process Change Requests within 10 business days",
+    "description": "The Client shall process Change Requests within 10 business days.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "3. Client Obligations",
+    "source_policy_id": "POL-343"
+  },
+  {
+    "id": "cap-doc-343",
+    "name": "The Client shall process invoices within Net 30 days",
+    "description": "The Client shall process invoices within Net 30 days.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "3. Client Obligations",
+    "source_policy_id": "POL-344"
+  },
+  {
+    "id": "cap-doc-344",
+    "name": "The Client shall designate a named Programme Sponsor and Project Manager with au",
+    "description": "The Client shall designate a named Programme Sponsor and Project Manager with authority to approve deliverables.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "3. Client Obligations",
+    "source_policy_id": "POL-345"
+  },
+  {
+    "id": "cap-doc-345",
+    "name": "The Client shall provide access to Vi's data centers and network environments re",
+    "description": "The Client shall provide access to Vi's data centers and network environments required for on-premises integration points.",
+    "category": "operational",
+    "tags": [
+      "network"
+    ],
+    "evidence": "3. Client Obligations",
+    "source_policy_id": "POL-346"
+  },
+  {
+    "id": "cap-doc-361",
+    "name": "Implementation payments are milestone-linked as specified in the Commercial Exhi",
+    "description": "Implementation payments are milestone-linked as specified in the Commercial Exhibit.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6.1 Payment Schedule",
+    "source_policy_id": "POL-362"
+  },
+  {
+    "id": "cap-doc-362",
+    "name": "AMS payments are monthly in arrears from the AMS Commencement Date",
+    "description": "AMS payments are monthly in arrears from the AMS Commencement Date.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6.1 Payment Schedule",
+    "source_policy_id": "POL-363"
+  },
+  {
+    "id": "cap-doc-363",
+    "name": "All amounts are exclusive of applicable GST (currently 18% on software and profe",
+    "description": "All amounts are exclusive of applicable GST (currently 18% on software and professional services).",
+    "category": "commercial",
+    "tags": [
+      "gst"
+    ],
+    "evidence": "6.1 Payment Schedule",
+    "source_policy_id": "POL-364"
+  },
+  {
+    "id": "cap-doc-364",
+    "name": "Invoices shall be raised by the Vendor within 5 business days of milestone achie",
+    "description": "Invoices shall be raised by the Vendor within 5 business days of milestone achievement, accompanied by evidence of completion.",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "6.1 Payment Schedule",
+    "source_policy_id": "POL-365"
+  },
+  {
+    "id": "cap-doc-365",
+    "name": "Client shall pay undisputed invoices within Net 30 days of receipt",
+    "description": "Client shall pay undisputed invoices within Net 30 days of receipt.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6.2 Payment Timelines",
+    "source_policy_id": "POL-366"
+  },
+  {
+    "id": "cap-doc-366",
+    "name": "For disputed invoices, the Client shall raise a written dispute within 15 busine",
+    "description": "For disputed invoices, the Client shall raise a written dispute within 15 business days with specific grounds.",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "6.2 Payment Timelines",
+    "source_policy_id": "POL-367"
+  },
+  {
+    "id": "cap-doc-367",
+    "name": "Both parties shall resolve disputes within 30 days of the dispute notice",
+    "description": "Both parties shall resolve disputes within 30 days of the dispute notice.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6.2 Payment Timelines",
+    "source_policy_id": "POL-368"
+  },
+  {
+    "id": "cap-doc-368",
+    "name": "Undisputed portions of disputed invoices shall be paid within the original Net 3",
+    "description": "Undisputed portions of disputed invoices shall be paid within the original Net 30 timeline.",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "6.2 Payment Timelines",
+    "source_policy_id": "POL-369"
+  },
+  {
+    "id": "cap-doc-369",
+    "name": "Overdue amounts beyond 45 days shall accrue interest at SBI MCLR (1-year) + 2% p",
+    "description": "Overdue amounts beyond 45 days shall accrue interest at SBI MCLR (1-year) + 2% per annum, calculated daily.",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "6.2 Payment Timelines",
+    "source_policy_id": "POL-370"
+  },
+  {
+    "id": "cap-doc-370",
+    "name": "Persistent non-payment beyond 90 days (with a 30-day cure notice) shall entitle",
+    "description": "Persistent non-payment beyond 90 days (with a 30-day cure notice) shall entitle the Vendor to suspend non-critical services upon written notice.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6.2 Payment Timelines",
+    "source_policy_id": "POL-371"
+  },
+  {
+    "id": "cap-doc-371",
+    "name": "AMS fees shall escalate annually at the lower of: (a) 4% per year (contractually",
+    "description": "AMS fees shall escalate annually at the lower of: (a) 4% per year (contractually committed), or (b) the Wholesale Price Index (WPI) published by the Ministry of Commerce, Government of India.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6.4 AMS Price Escalation",
+    "source_policy_id": "POL-372"
+  },
+  {
+    "id": "cap-doc-372",
+    "name": "This cap is a contractual commitment and cannot be exceeded",
+    "description": "This cap is a contractual commitment and cannot be exceeded.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6.4 AMS Price Escalation",
+    "source_policy_id": "POL-373"
+  },
+  {
+    "id": "cap-doc-373",
+    "name": "Escalation applies from the second AMS year onward",
+    "description": "Escalation applies from the second AMS year onward.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "6.4 AMS Price Escalation",
+    "source_policy_id": "POL-374"
+  },
+  {
+    "id": "cap-doc-374",
+    "name": "All changes to agreed SOW scope, timeline, or commercial terms shall be governed",
+    "description": "All changes to agreed SOW scope, timeline, or commercial terms shall be governed by this Change Control Process.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "7. Change Control Process",
+    "source_policy_id": "POL-375"
+  },
+  {
+    "id": "cap-doc-375",
+    "name": "Either party may raise a Change Request ('CR') in writing using the standard CR",
+    "description": "Either party may raise a Change Request ('CR') in writing using the standard CR form.",
+    "category": "governance",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "7. Change Control Process",
+    "source_policy_id": "POL-376"
+  },
+  {
+    "id": "cap-doc-376",
+    "name": "The Vendor shall provide a commercial and timeline impact assessment within 10 b",
+    "description": "The Vendor shall provide a commercial and timeline impact assessment within 10 business days.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "7. Change Control Process",
+    "source_policy_id": "POL-377"
+  },
+  {
+    "id": "cap-doc-377",
+    "name": "The Client shall approve, reject, or counter-propose within 10 business days of",
+    "description": "The Client shall approve, reject, or counter-propose within 10 business days of receiving the impact assessment.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "7. Change Control Process",
+    "source_policy_id": "POL-378"
+  },
+  {
+    "id": "cap-doc-378",
+    "name": "No change shall be implemented without a written Change Order signed by both par",
+    "description": "No change shall be implemented without a written Change Order signed by both parties' authorized representatives.",
+    "category": "governance",
+    "tags": [],
+    "evidence": "7. Change Control Process",
+    "source_policy_id": "POL-379"
+  },
+  {
+    "id": "cap-doc-379",
+    "name": "CRs that reduce scope shall not entitle the Vendor to additional payment, but ma",
+    "description": "CRs that reduce scope shall not entitle the Vendor to additional payment, but may reduce milestone-linked payments proportionally as agreed.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "7. Change Control Process",
+    "source_policy_id": "POL-380"
+  },
+  {
+    "id": "cap-doc-380",
+    "name": "The parties acknowledge that service levels are material terms of the Agreement",
+    "description": "The parties acknowledge that service levels are material terms of the Agreement.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "8. SLA, Service Credits & Liquidated Damages",
+    "source_policy_id": "POL-381"
+  },
+  {
+    "id": "cap-doc-381",
+    "name": "The SLA schedule (Schedule 1) defines availability, latency, response, and resol",
+    "description": "The SLA schedule (Schedule 1) defines availability, latency, response, and resolution targets for each system component.",
+    "category": "operational",
+    "tags": [
+      "sla",
+      "ai"
+    ],
+    "evidence": "8. SLA, Service Credits & Liquidated Damages",
+    "source_policy_id": "POL-382"
+  },
+  {
+    "id": "cap-doc-382",
+    "name": "SLA measurement periods, exclusions (scheduled maintenance, force majeure, Clien",
+    "description": "SLA measurement periods, exclusions (scheduled maintenance, force majeure, Client-caused outages), and credit calculation methodologies are defined in Schedule 1.",
+    "category": "operational",
+    "tags": [
+      "sla",
+      "ai"
+    ],
+    "evidence": "8. SLA, Service Credits & Liquidated Damages",
+    "source_policy_id": "POL-383"
+  },
+  {
+    "id": "cap-doc-383",
+    "name": "OCS / Charging Engine has an SLA target of 99",
+    "description": "OCS / Charging Engine has an SLA target of 99.999% availability.",
+    "category": "operational",
+    "tags": [
+      "charging",
+      "sla",
+      "ai"
+    ],
+    "evidence": "8. SLA, Service Credits & Liquidated Damages",
+    "source_policy_id": "POL-384"
+  },
+  {
+    "id": "cap-doc-384",
+    "name": "Credit trigger for OCS / Charging Engine is <99",
+    "description": "Credit trigger for OCS / Charging Engine is <99.999% availability in a calendar month.",
+    "category": "operational",
+    "tags": [
+      "charging",
+      "ai"
+    ],
+    "evidence": "8. SLA, Service Credits & Liquidated Damages",
+    "source_policy_id": "POL-385"
+  },
+  {
+    "id": "cap-doc-385",
+    "name": "Monthly credit rate for OCS / Charging Engine is 2% of monthly AMS fee per 0",
+    "description": "Monthly credit rate for OCS / Charging Engine is 2% of monthly AMS fee per 0.001% shortfall.",
+    "category": "commercial",
+    "tags": [
+      "charging"
+    ],
+    "evidence": "8. SLA, Service Credits & Liquidated Damages",
+    "source_policy_id": "POL-386"
+  },
+  {
+    "id": "cap-doc-386",
+    "name": "CRM / Order Management must maintain 99",
+    "description": "CRM / Order Management must maintain 99.99% availability in a calendar month.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "System Component",
+    "source_policy_id": "POL-387"
+  },
+  {
+    "id": "cap-doc-387",
+    "name": "If CRM / Order Management availability falls below 99",
+    "description": "If CRM / Order Management availability falls below 99.99% in a calendar month, a service credit of 1% of monthly AMS fee is applied per 0.01% shortfall.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "System Component",
+    "source_policy_id": "POL-388"
+  },
+  {
+    "id": "cap-doc-388",
+    "name": "Self-Care Portal must maintain 99",
+    "description": "Self-Care Portal must maintain 99.95% availability in a calendar month.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "System Component",
+    "source_policy_id": "POL-389"
+  },
+  {
+    "id": "cap-doc-389",
+    "name": "If Self-Care Portal availability falls below 99",
+    "description": "If Self-Care Portal availability falls below 99.95% in a calendar month, a service credit of 0.5% of monthly AMS fee is applied per 0.05% shortfall.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "System Component",
+    "source_policy_id": "POL-390"
+  },
+  {
+    "id": "cap-doc-390",
+    "name": "OCS Rating Latency P99 must remain below 50ms at 1",
+    "description": "OCS Rating Latency P99 must remain below 50ms at 1.5M TPS.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "System Component",
+    "source_policy_id": "POL-391"
+  },
+  {
+    "id": "cap-doc-391",
+    "name": "If OCS Rating Latency P99 exceeds 50ms sustained for >30 minutes, a service cred",
+    "description": "If OCS Rating Latency P99 exceeds 50ms sustained for >30 minutes, a service credit of 1% of monthly AMS fee is applied per incident.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "System Component",
+    "source_policy_id": "POL-392"
+  },
+  {
+    "id": "cap-doc-392",
+    "name": "Critical Incident Response must occur within 15 minutes (P1)",
+    "description": "Critical Incident Response must occur within 15 minutes (P1).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "System Component",
+    "source_policy_id": "POL-393"
+  },
+  {
+    "id": "cap-doc-393",
+    "name": "If Critical Incident Response exceeds 15 minutes (P1), a service credit of 0",
+    "description": "If Critical Incident Response exceeds 15 minutes (P1), a service credit of 0.5% of monthly AMS fee is applied per breach.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "System Component",
+    "source_policy_id": "POL-394"
+  },
+  {
+    "id": "cap-doc-394",
+    "name": "Total service credits are capped at a maximum of 15% of monthly AMS fee in any m",
+    "description": "Total service credits are capped at a maximum of 15% of monthly AMS fee in any month.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "System Component",
+    "source_policy_id": "POL-395"
+  },
+  {
+    "id": "cap-doc-405",
+    "name": "In case of Client termination for Vendor's cause, the Vendor shall refund all mi",
+    "description": "In case of Client termination for Vendor's cause, the Vendor shall refund all milestone payments for undelivered milestones within 90 days.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "11.1 Termination for Cause",
+    "source_policy_id": "POL-406"
+  },
+  {
+    "id": "cap-doc-407",
+    "name": "Termination for convenience during the implementation phase requires payment of:",
+    "description": "Termination for convenience during the implementation phase requires payment of: (a) all completed milestone payments; (b) reasonable mobilization costs for work-in-progress (not to exceed 20% of remaining implementation CapEx); and (c) committed third-party costs that cannot be cancelled.",
+    "category": "commercial",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "11.2 Termination for Convenience",
+    "source_policy_id": "POL-408"
+  },
+  {
+    "id": "cap-doc-408",
+    "name": "The Vendor shall not be entitled to anticipated profits on unperformed work",
+    "description": "The Vendor shall not be entitled to anticipated profits on unperformed work.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "11.2 Termination for Convenience",
+    "source_policy_id": "POL-409"
+  },
+  {
+    "id": "cap-doc-409",
+    "name": "On termination or expiry, the Vendor shall provide exit assistance for up to 12",
+    "description": "On termination or expiry, the Vendor shall provide exit assistance for up to 12 months, including: knowledge transfer to the Client's designated successor vendor, data extraction in standard formats (CSV/JSON), platform documentation, and API specifications.",
+    "category": "operational",
+    "tags": [
+      "api"
+    ],
+    "evidence": "11.3 Exit Assistance",
+    "source_policy_id": "POL-410"
+  },
+  {
+    "id": "cap-doc-410",
+    "name": "Exit assistance is charged at the T&M rates defined in the Commercial Exhibit",
+    "description": "Exit assistance is charged at the T&M rates defined in the Commercial Exhibit.",
+    "category": "commercial",
+    "tags": [],
+    "evidence": "11.3 Exit Assistance",
+    "source_policy_id": "POL-411"
+  },
+  {
+    "id": "cap-doc-411",
+    "name": "The Vendor's obligation to maintain the platform continues during the exit assis",
+    "description": "The Vendor's obligation to maintain the platform continues during the exit assistance period.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "11.3 Exit Assistance",
+    "source_policy_id": "POL-412"
+  },
+  {
+    "id": "cap-doc-417",
+    "name": "Cloud-Native: All services containerized (Docker/Helm); deployed on Kubernetes (",
+    "description": "Cloud-Native: All services containerized (Docker/Helm); deployed on Kubernetes (EKS); infrastructure-as-code via Terraform",
+    "category": "capability",
+    "tags": [
+      "cloud",
+      "kubernetes",
+      "ai",
+      "infrastructure",
+      "container",
+      "docker"
+    ],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-418"
+  },
+  {
+    "id": "cap-doc-418",
+    "name": "Event-Driven Microservices: Domain-Driven Design (DDD) architecture; Apache Kafk",
+    "description": "Event-Driven Microservices: Domain-Driven Design (DDD) architecture; Apache Kafka v3.6 as central event bus (800K+ events/second capacity)",
+    "category": "capability",
+    "tags": [
+      "ai",
+      "microservices"
+    ],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-419"
+  },
+  {
+    "id": "cap-doc-420",
+    "name": "All services expose TM Forum-standard APIs natively",
+    "description": "All services expose TM Forum-standard APIs natively",
+    "category": "capability",
+    "tags": [
+      "api"
+    ],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-421"
+  },
+  {
+    "id": "cap-doc-421",
+    "name": "Active-Active Multi-Region: Mumbai primary + Hyderabad DR; automated geo-failove",
+    "description": "Active-Active Multi-Region: Mumbai primary + Hyderabad DR; automated geo-failover; no single point of failure",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-422"
+  },
+  {
+    "id": "cap-doc-422",
+    "name": "Horizontal Pod Autoscaler (HPA) for Kubernetes",
+    "description": "Horizontal Pod Autoscaler (HPA) for Kubernetes",
+    "category": "capability",
+    "tags": [
+      "kubernetes"
+    ],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-423"
+  },
+  {
+    "id": "cap-doc-423",
+    "name": "Tested to 300M subscribers without re-architecture",
+    "description": "Tested to 300M subscribers without re-architecture",
+    "category": "operational",
+    "tags": [],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-424"
+  },
+  {
+    "id": "cap-doc-424",
+    "name": "Prometheus + Grafana (metrics) for observability",
+    "description": "Prometheus + Grafana (metrics) for observability",
+    "category": "capability",
+    "tags": [],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-425"
+  },
+  {
+    "id": "cap-doc-425",
+    "name": "ELK stack (log aggregation) for observability",
+    "description": "ELK stack (log aggregation) for observability",
+    "category": "capability",
+    "tags": [],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-426"
+  },
+  {
+    "id": "cap-doc-426",
+    "name": "Jaeger (distributed tracing) for observability",
+    "description": "Jaeger (distributed tracing) for observability",
+    "category": "capability",
+    "tags": [],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-427"
+  },
+  {
+    "id": "cap-doc-427",
+    "name": "Splunk SIEM (security) for observability",
+    "description": "Splunk SIEM (security) for observability",
+    "category": "capability",
+    "tags": [
+      "security"
+    ],
+    "evidence": "1.1 Design Principles",
+    "source_policy_id": "POL-428"
+  },
+  {
+    "id": "cap-doc-428",
+    "name": "TeleSphere OCS version 7",
+    "description": "TeleSphere OCS version 7.2",
+    "category": "capability",
+    "tags": [],
+    "evidence": "1.2 Platform Component Map",
+    "source_policy_id": "POL-429"
+  },
+  {
+    "id": "cap-doc-430",
+    "name": "Production scale of 280M subscribers for TeleSphere OCS",
+    "description": "Production scale of 280M subscribers for TeleSphere OCS",
+    "category": "operational",
+    "tags": [],
+    "evidence": "1.2 Platform Component Map",
+    "source_policy_id": "POL-431"
+  },
+  {
+    "id": "cap-doc-431",
+    "name": "Production scale of 1",
+    "description": "Production scale of 1.5M TPS (transactions per second) for TeleSphere OCS",
+    "category": "operational",
+    "tags": [],
+    "evidence": "1.2 Platform Component Map",
+    "source_policy_id": "POL-432"
+  },
+  {
+    "id": "cap-doc-433",
+    "name": "TeleSphere CRM must use a SID-aligned data model",
+    "description": "TeleSphere CRM must use a SID-aligned data model.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere CRM v5.1",
+    "source_policy_id": "POL-434"
+  },
+  {
+    "id": "cap-doc-434",
+    "name": "TeleSphere CRM must manage 120M subscribers in AsiaNet Wireless",
+    "description": "TeleSphere CRM must manage 120M subscribers in AsiaNet Wireless.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere CRM v5.1",
+    "source_policy_id": "POL-435"
+  },
+  {
+    "id": "cap-doc-436",
+    "name": "TeleSphere OMS must use BPMN (Camunda) workflow standard",
+    "description": "TeleSphere OMS must use BPMN (Camunda) workflow standard.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere OMS v4.3",
+    "source_policy_id": "POL-437"
+  },
+  {
+    "id": "cap-doc-437",
+    "name": "TeleSphere OMS must achieve 94",
+    "description": "TeleSphere OMS must achieve 94.7% no-touch automation for AsiaNet.",
+    "category": "capability",
+    "tags": [
+      "automation"
+    ],
+    "evidence": "TeleSphere OMS v4.3",
+    "source_policy_id": "POL-438"
+  },
+  {
+    "id": "cap-doc-439",
+    "name": "TeleSphere NIM must use NETCONF/YANG protocol standards",
+    "description": "TeleSphere NIM must use NETCONF/YANG protocol standards.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere NIM v3.8",
+    "source_policy_id": "POL-440"
+  },
+  {
+    "id": "cap-doc-440",
+    "name": "TeleSphere NIM must manage 470,000+ nodes",
+    "description": "TeleSphere NIM must manage 470,000+ nodes.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere NIM v3.8",
+    "source_policy_id": "POL-441"
+  },
+  {
+    "id": "cap-doc-441",
+    "name": "TeleSphere RA/FM must use Apache Flink for real-time processing",
+    "description": "TeleSphere RA/FM must use Apache Flink for real-time processing.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere RA/FM v6.2",
+    "source_policy_id": "POL-442"
+  },
+  {
+    "id": "cap-doc-442",
+    "name": "TeleSphere RA/FM must employ LSTM ML models for analytics",
+    "description": "TeleSphere RA/FM must employ LSTM ML models for analytics.",
+    "category": "capability",
+    "tags": [
+      "ml",
+      "analytics"
+    ],
+    "evidence": "TeleSphere RA/FM v6.2",
+    "source_policy_id": "POL-443"
+  },
+  {
+    "id": "cap-doc-443",
+    "name": "TeleSphere RA/FM must detect leakage in <30 minutes",
+    "description": "TeleSphere RA/FM must detect leakage in <30 minutes.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere RA/FM v6.2",
+    "source_policy_id": "POL-444"
+  },
+  {
+    "id": "cap-doc-444",
+    "name": "TeleSphere RA/FM must block fraud in <3 minutes",
+    "description": "TeleSphere RA/FM must block fraud in <3 minutes.",
+    "category": "capability",
+    "tags": [
+      "fraud"
+    ],
+    "evidence": "TeleSphere RA/FM v6.2",
+    "source_policy_id": "POL-445"
+  },
+  {
+    "id": "cap-doc-446",
+    "name": "TeleSphere Self-Care must support PWA + iOS/Android platforms",
+    "description": "TeleSphere Self-Care must support PWA + iOS/Android platforms.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere Self-Care v4.0",
+    "source_policy_id": "POL-447"
+  },
+  {
+    "id": "cap-doc-447",
+    "name": "TeleSphere Self-Care must achieve 97",
+    "description": "TeleSphere Self-Care must achieve 97.2% NLP chatbot intent accuracy.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "TeleSphere Self-Care v4.0",
+    "source_policy_id": "POL-448"
+  },
+  {
+    "id": "cap-doc-450",
+    "name": "TeleSphere SliceOrchestrator must be live at Crescent Telecom for 5G SA (Q1 2024",
+    "description": "TeleSphere SliceOrchestrator must be live at Crescent Telecom for 5G SA (Q1 2024).",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "telecom"
+    ],
+    "evidence": "TeleSphere SliceOrchestrator v2.1",
+    "source_policy_id": "POL-451"
+  },
+  {
+    "id": "cap-doc-451",
+    "name": "TeleSphere CRM must process 280M accounts and 10M bill runs in 4",
+    "description": "TeleSphere CRM must process 280M accounts and 10M bill runs in 4.2 hours.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "v7.2 TMF676 + GST e-invoicing",
+    "source_policy_id": "POL-452"
+  },
+  {
+    "id": "cap-doc-454",
+    "name": "The Online Charging System (OCS) natively supports all 3GPP Release 17 Ro/Gy/Rf",
+    "description": "The Online Charging System (OCS) natively supports all 3GPP Release 17 Ro/Gy/Rf interfaces for online charging, policy & charging, and offline CDR.",
+    "category": "capability",
+    "tags": [
+      "charging",
+      "3gpp"
+    ],
+    "evidence": "2.1 Standards Compliance",
+    "source_policy_id": "POL-455"
+  },
+  {
+    "id": "cap-doc-455",
+    "name": "The OCS supports the 5G SA Nchf interface for network slice usage-based charging",
+    "description": "The OCS supports the 5G SA Nchf interface for network slice usage-based charging, which is live in production at Crescent Telecom (Q1 2024).",
+    "category": "capability",
+    "tags": [
+      "5g",
+      "charging",
+      "telecom",
+      "network"
+    ],
+    "evidence": "2.1 Standards Compliance",
+    "source_policy_id": "POL-456"
+  },
+  {
+    "id": "cap-doc-456",
+    "name": "The OCS achieves a P99 rating latency of <38ms at 1",
+    "description": "The OCS achieves a P99 rating latency of <38ms at 1.5M transactions per second (TPS), meeting the <50ms threshold requirement.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "2.1 Standards Compliance",
+    "source_policy_id": "POL-457"
+  },
+  {
+    "id": "cap-doc-457",
+    "name": "The OCS guarantees a peak throughput of 1",
+    "description": "The OCS guarantees a peak throughput of 1.5M transactions per second (TPS) in production, with 2M TPS load-tested as contractual assurance.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "2.1 Standards Compliance",
+    "source_policy_id": "POL-458"
+  },
+  {
+    "id": "cap-doc-458",
+    "name": "The OCS scales to support up to 300M subscribers, with 280M live at Stellar Mobi",
+    "description": "The OCS scales to support up to 300M subscribers, with 280M live at Stellar Mobile and horizontal scaling tested to 300M without re-architecture.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "2.1 Standards Compliance",
+    "source_policy_id": "POL-459"
+  },
+  {
+    "id": "cap-doc-459",
+    "name": "The OCS enables real-time prepaid balance deduction, reservation, and reauthoriz",
+    "description": "The OCS enables real-time prepaid balance deduction, reservation, and reauthorization with <38ms P99 latency.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "2.1 Standards Compliance",
+    "source_policy_id": "POL-460"
+  },
+  {
+    "id": "cap-doc-462",
+    "name": "OCS Availability must maintain 99",
+    "description": "OCS Availability must maintain 99.999% uptime (Five-Nines) as a contractual commitment.",
+    "category": "operational",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "OCS Availability: 99.999% (Five-Nines)",
+    "source_policy_id": "POL-463"
+  },
+  {
+    "id": "cap-doc-463",
+    "name": "The primary data store for OCS balance management must use Apache Cassandra (dis",
+    "description": "The primary data store for OCS balance management must use Apache Cassandra (distributed NoSQL) with sub-millisecond read/write P99 performance.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "2.2 Data Layer Architecture",
+    "source_policy_id": "POL-464"
+  },
+  {
+    "id": "cap-doc-464",
+    "name": "Session state management must use Redis Cluster for real-time session reservatio",
+    "description": "Session state management must use Redis Cluster for real-time session reservation and balance lock management.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "2.2 Data Layer Architecture",
+    "source_policy_id": "POL-465"
+  },
+  {
+    "id": "cap-doc-465",
+    "name": "CDR mediation must follow the architecture: Apache Kafka → custom mediation engi",
+    "description": "CDR mediation must follow the architecture: Apache Kafka → custom mediation engine → PostgreSQL for billing input.",
+    "category": "capability",
+    "tags": [
+      "billing"
+    ],
+    "evidence": "2.2 Data Layer Architecture",
+    "source_policy_id": "POL-466"
+  },
+  {
+    "id": "cap-doc-466",
+    "name": "OCS and Billing must not use separate data stores to avoid OCS billing back-pres",
+    "description": "OCS and Billing must not use separate data stores to avoid OCS billing back-pressure during peak charging periods.",
+    "category": "operational",
+    "tags": [
+      "billing",
+      "charging"
+    ],
+    "evidence": "2.2 Data Layer Architecture",
+    "source_policy_id": "POL-467"
+  },
+  {
+    "id": "cap-doc-467",
+    "name": "CRM must support unified customer segments: consumer prepaid, postpaid, SME, and",
+    "description": "CRM must support unified customer segments: consumer prepaid, postpaid, SME, and enterprise within a single CRM system.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "3.1 CRM — Customer Management",
+    "source_policy_id": "POL-468"
+  },
+  {
+    "id": "cap-doc-468",
+    "name": "CRM must provide a 360-degree view of omnichannel interaction history (call cent",
+    "description": "CRM must provide a 360-degree view of omnichannel interaction history (call center, web, app, retail POS) with a unified timeline.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "3.1 CRM — Customer Management",
+    "source_policy_id": "POL-469"
+  },
+  {
+    "id": "cap-doc-469",
+    "name": "CRM screen load time must achieve <1",
+    "description": "CRM screen load time must achieve <1.4 seconds P99 in production (RFP target: <2 seconds).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "3.1 CRM — Customer Management",
+    "source_policy_id": "POL-470"
+  },
+  {
+    "id": "cap-doc-470",
+    "name": "CRM must include AI agent assist with real-time sentiment analysis, suggested re",
+    "description": "CRM must include AI agent assist with real-time sentiment analysis, suggested responses, and automated case routing via the TeleSphere AI engine.",
+    "category": "capability",
+    "tags": [
+      "ai"
+    ],
+    "evidence": "3.1 CRM — Customer Management",
+    "source_policy_id": "POL-471"
+  },
+  {
+    "id": "cap-doc-471",
+    "name": "CRM must implement ML-based churn prediction with 30-day propensity scores and n",
+    "description": "CRM must implement ML-based churn prediction with 30-day propensity scores and next-best-action recommendations.",
+    "category": "capability",
+    "tags": [
+      "ml"
+    ],
+    "evidence": "3.1 CRM — Customer Management",
+    "source_policy_id": "POL-472"
+  },
+  {
+    "id": "cap-doc-472",
+    "name": "Legacy migration uses a Salesforce-compatible data model",
+    "description": "Legacy migration uses a Salesforce-compatible data model.",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Legacy Migration",
+    "source_policy_id": "POL-473"
+  },
+  {
+    "id": "cap-doc-473",
+    "name": "Legacy migration includes a Siebel v8",
+    "description": "Legacy migration includes a Siebel v8.x bidirectional sync adapter.",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Legacy Migration",
+    "source_policy_id": "POL-474"
+  },
+  {
+    "id": "cap-doc-474",
+    "name": "Legacy migration provides history migration tooling",
+    "description": "Legacy migration provides history migration tooling.",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "Legacy Migration",
+    "source_policy_id": "POL-475"
+  },
+  {
+    "id": "cap-doc-477",
+    "name": "The Order Management System (OMS) architecture uses microservices",
+    "description": "The Order Management System (OMS) architecture uses microservices.",
+    "category": "capability",
+    "tags": [
+      "microservices"
+    ],
+    "evidence": "Architecture",
+    "source_policy_id": "POL-478"
+  },
+  {
+    "id": "cap-doc-478",
+    "name": "The OMS workflow engine is BPMN-based (Camunda v7)",
+    "description": "The OMS workflow engine is BPMN-based (Camunda v7).",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Architecture",
+    "source_policy_id": "POL-479"
+  },
+  {
+    "id": "cap-doc-479",
+    "name": "The OMS uses event-driven order orchestration",
+    "description": "The OMS uses event-driven order orchestration.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Architecture",
+    "source_policy_id": "POL-480"
+  },
+  {
+    "id": "cap-doc-480",
+    "name": "The OMS provides 45+ pre-built workflows for order types including SIM swap, pla",
+    "description": "The OMS provides 45+ pre-built workflows for order types including SIM swap, plan change, number porting, enterprise provisioning, and 5G slice ordering.",
+    "category": "capability",
+    "tags": [
+      "5g"
+    ],
+    "evidence": "Order Types",
+    "source_policy_id": "POL-481"
+  },
+  {
+    "id": "cap-doc-481",
+    "name": "No-touch automation must achieve 94",
+    "description": "No-touch automation must achieve 94.7% order completion (AsiaNet Wireless Q1 2025).",
+    "category": "operational",
+    "tags": [
+      "automation"
+    ],
+    "evidence": "No-Touch Automation",
+    "source_policy_id": "POL-482"
+  },
+  {
+    "id": "cap-doc-482",
+    "name": "No-touch automation must exceed 90% order completion (RFP target)",
+    "description": "No-touch automation must exceed 90% order completion (RFP target).",
+    "category": "operational",
+    "tags": [
+      "automation"
+    ],
+    "evidence": "No-Touch Automation",
+    "source_policy_id": "POL-483"
+  },
+  {
+    "id": "cap-doc-483",
+    "name": "SIM swap/plan change fulfillment must have an average of <2 hours (compliant wit",
+    "description": "SIM swap/plan change fulfillment must have an average of <2 hours (compliant with 50% headroom).",
+    "category": "operational",
+    "tags": [],
+    "evidence": "SIM Swap / Plan Change SLA",
+    "source_policy_id": "POL-484"
+  },
+  {
+    "id": "cap-doc-484",
+    "name": "SIM swap/plan change fulfillment must meet an RFP target of <4 hours",
+    "description": "SIM swap/plan change fulfillment must meet an RFP target of <4 hours.",
+    "category": "operational",
+    "tags": [],
+    "evidence": "SIM Swap / Plan Change SLA",
+    "source_policy_id": "POL-485"
+  },
+  {
+    "id": "cap-doc-485",
+    "name": "New connection fulfillment must be completed in <4 hours, including SIM provisio",
+    "description": "New connection fulfillment must be completed in <4 hours, including SIM provisioning and network activation.",
+    "category": "operational",
+    "tags": [
+      "network"
+    ],
+    "evidence": "New Connection SLA",
+    "source_policy_id": "POL-486"
+  },
+  {
+    "id": "cap-doc-486",
+    "name": "Enterprise order fulfillment (complex CPQ + contract billing) must be completed",
+    "description": "Enterprise order fulfillment (complex CPQ + contract billing) must be completed in <8 hours.",
+    "category": "operational",
+    "tags": [
+      "billing"
+    ],
+    "evidence": "Enterprise Order SLA",
+    "source_policy_id": "POL-487"
+  },
+  {
+    "id": "cap-doc-488",
+    "name": "The system provides real-time stream processing using Apache Flink with sub-30-m",
+    "description": "The system provides real-time stream processing using Apache Flink with sub-30-minute leakage detection.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "Capability",
+    "source_policy_id": "POL-489"
+  },
+  {
+    "id": "cap-doc-489",
+    "name": "OCS events, mediation records, billing invoices, and network CDRs are reconciled",
+    "description": "OCS events, mediation records, billing invoices, and network CDRs are reconciled in real-time.",
+    "category": "capability",
+    "tags": [
+      "billing",
+      "network"
+    ],
+    "evidence": "Capability",
+    "source_policy_id": "POL-490"
+  },
+  {
+    "id": "cap-doc-490",
+    "name": "Fraud detection uses a hybrid rule-based and ML model ensemble with LSTM-based a",
+    "description": "Fraud detection uses a hybrid rule-based and ML model ensemble with LSTM-based anomaly detection.",
+    "category": "capability",
+    "tags": [
+      "fraud",
+      "ml"
+    ],
+    "evidence": "Fraud Detection",
+    "source_policy_id": "POL-491"
+  },
+  {
+    "id": "cap-doc-492",
+    "name": "ML model retraining occurs daily with a false positive rate <0",
+    "description": "ML model retraining occurs daily with a false positive rate <0.5% in production.",
+    "category": "capability",
+    "tags": [
+      "ai",
+      "ml",
+      "trai"
+    ],
+    "evidence": "ML Model Retraining",
+    "source_policy_id": "POL-493"
+  },
+  {
+    "id": "cap-doc-493",
+    "name": "A pre-built migration toolkit is provided for SUBEX RAG migration with RA histor",
+    "description": "A pre-built migration toolkit is provided for SUBEX RAG migration with RA history preservation.",
+    "category": "capability",
+    "tags": [
+      "migration"
+    ],
+    "evidence": "SUBEX RAG Migration",
+    "source_policy_id": "POL-494"
+  },
+  {
+    "id": "cap-doc-495",
+    "name": "Network Inventory Management supports Ericsson, Nokia, Huawei, and ZTE with pre-",
+    "description": "Network Inventory Management supports Ericsson, Nokia, Huawei, and ZTE with pre-built adapters.",
+    "category": "capability",
+    "tags": [
+      "network"
+    ],
+    "evidence": "4.1 Network Inventory Management (NIM)",
+    "source_policy_id": "POL-496"
+  },
+  {
+    "id": "cap-doc-496",
+    "name": "Discovery protocols include SNMP v2c/v3, NETCONF/YANG, TR-069, SSH, and REST API",
+    "description": "Discovery protocols include SNMP v2c/v3, NETCONF/YANG, TR-069, SSH, and REST APIs, all natively supported.",
+    "category": "capability",
+    "tags": [
+      "api"
+    ],
+    "evidence": "4.1 Network Inventory Management (NIM)",
+    "source_policy_id": "POL-497"
+  },
+  {
+    "id": "cap-doc-497",
+    "name": "Topology views for physical, logical, and service layers with live operational s",
+    "description": "Topology views for physical, logical, and service layers with live operational status are provided.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "4.1 Network Inventory Management (NIM)",
+    "source_policy_id": "POL-498"
+  },
+  {
+    "id": "cap-doc-498",
+    "name": "Shadow inventory elimination is automated, decommissioning Excel-based systems w",
+    "description": "Shadow inventory elimination is automated, decommissioning Excel-based systems within 90 days of go-live.",
+    "category": "capability",
+    "tags": [],
+    "evidence": "4.1 Network Inventory Management (NIM)",
+    "source_policy_id": "POL-499"
+  },
+  {
+    "id": "cap-doc-499",
+    "name": "TMF637 Product Inventory Management API is natively exposed for real-time invent",
+    "description": "TMF637 Product Inventory Management API is natively exposed for real-time inventory queries.",
+    "category": "capability",
+    "tags": [
+      "api",
+      "tmf"
+    ],
+    "evidence": "4.1 Network Inventory Management (NIM)",
+    "source_policy_id": "POL-500"
+  },
+  {
+    "id": "cap-doc-502",
+    "name": "Daily automated ML model retraining is required to maintain a false positive rat",
+    "description": "Daily automated ML model retraining is required to maintain a false positive rate <0.5%.",
+    "category": "operational",
+    "tags": [
+      "ai",
+      "ml",
+      "trai"
+    ],
+    "evidence": "ML Model Retraining",
+    "source_policy_id": "POL-503"
   }
 ]
