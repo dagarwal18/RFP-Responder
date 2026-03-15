@@ -31,6 +31,7 @@ from rfp_automation.agents import (
     TechnicalValidationAgent,
     CommercialAgent,
     LegalAgent,
+    HumanValidationAgent,
     FinalReadinessAgent,
     SubmissionAgent,
 )
@@ -57,6 +58,7 @@ _c3 = NarrativeAssemblyAgent()
 _d1 = TechnicalValidationAgent()
 _e1 = CommercialAgent()
 _e2 = LegalAgent()
+_h1 = HumanValidationAgent()
 _f1 = FinalReadinessAgent()
 _f2 = SubmissionAgent()
 
@@ -235,6 +237,7 @@ def build_graph() -> StateGraph:
     graph.add_node("c3_narrative_assembly", _with_checkpoint("c3_narrative_assembly", _c3.process))
     graph.add_node("d1_technical_validation", _with_checkpoint("d1_technical_validation", _d1.process))
     graph.add_node("commercial_legal_parallel", _with_checkpoint("commercial_legal_parallel", commercial_legal_parallel))
+    graph.add_node("h1_human_validation_prepare", _with_checkpoint("h1_human_validation_prepare", _h1.process))
     graph.add_node("f1_final_readiness", _with_checkpoint("f1_final_readiness", _f1.process))
     graph.add_node("f2_submission", _with_checkpoint("f2_submission", _f2.process))
 
@@ -299,10 +302,13 @@ def build_graph() -> StateGraph:
         "commercial_legal_parallel",
         route_after_commercial_legal,
         {
-            "f1_final_readiness": "f1_final_readiness",
+            "h1_human_validation_prepare": "h1_human_validation_prepare",
             "end_legal_block": "end_legal_block",
         },
     )
+
+    # H1 -> END (resume via API once a human decision is recorded)
+    graph.add_edge("h1_human_validation_prepare", END)
 
     # F1 → conditional (APPROVE / REJECT)
     graph.add_conditional_edges(

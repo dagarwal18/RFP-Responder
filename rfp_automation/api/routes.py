@@ -25,6 +25,9 @@ from pydantic import BaseModel
 
 from rfp_automation.config import get_settings
 from rfp_automation.api.websocket import PipelineProgress
+from rfp_automation.models.enums import HumanValidationDecision, PipelineStatus
+from rfp_automation.models.schemas import ReviewComment, ReviewPackage
+from rfp_automation.services.review_service import ReviewService
 
 import hashlib
 from copy import deepcopy
@@ -74,6 +77,105 @@ class ApprovalResponse(BaseModel):
     message: str
 
 
+class ReviewCommentsRequest(BaseModel):
+    comments: list[ReviewComment] = []
+
+
+class ReviewPackageResponse(BaseModel):
+    rfp_id: str
+    status: str
+    review_package: ReviewPackage
+
+
+class ReviewDecisionRequest(BaseModel):
+    decision: HumanValidationDecision
+    reviewer: str = ""
+    summary: str = ""
+    rerun_from: str = "auto"
+    comments: list[ReviewComment] = []
+
+
+class ReviewDecisionResponse(BaseModel):
+    rfp_id: str
+    decision: str
+    status: str
+    rerun_from: str = ""
+    message: str
+
+
+def _build_pipeline_log(audit: list[dict[str, Any]]) -> list[dict[str, str]]:
+    return [
+        {
+            "agent": a.get("agent", ""),
+            "status": a.get("action", ""),
+            "timestamp": (
+                a["timestamp"].isoformat()
+                if hasattr(a.get("timestamp"), "isoformat")
+                else str(a.get("timestamp", ""))
+            ),
+        }
+        for a in audit
+    ] if audit else []
+
+
+def _get_run_or_404(rfp_id: str) -> dict[str, Any]:
+    run = _runs.get(rfp_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
+    return run
+
+
+def _ensure_result_dict(run: dict[str, Any]) -> dict[str, Any]:
+    result = run.get("result")
+    if not isinstance(result, dict):
+        result = {}
+        run["result"] = result
+    return result
+
+
+def _get_review_package(run: dict[str, Any]) -> ReviewPackage:
+    result = run.get("result")
+    package_data = result.get("review_package") if isinstance(result, dict) else None
+    return ReviewService.normalize_package(package_data)
+
+
+def _store_review_package(run: dict[str, Any], review_package: ReviewPackage) -> None:
+    package = ReviewService.normalize_package(review_package)
+    result = _ensure_result_dict(run)
+    result["review_package"] = package.model_dump(mode="json")
+    run["result"] = result
+
+
+def _inject_review_package(
+    checkpoint_state: dict[str, Any],
+    review_package: ReviewPackage,
+) -> dict[str, Any]:
+    updated = deepcopy(checkpoint_state)
+    updated["review_package"] = review_package.model_dump(mode="json")
+    return updated
+
+
+def _start_rerun_job(rfp_id: str, start_from: str, checkpoint_state: dict[str, Any]) -> None:
+    started_at = datetime.now(timezone.utc).isoformat()
+    existing = _runs.get(rfp_id, {})
+    _runs[rfp_id] = {
+        "rfp_id": rfp_id,
+        "filename": existing.get("filename", "(rerun)"),
+        "status": "RUNNING",
+        "current_agent": start_from,
+        "started_at": started_at,
+        "pipeline_log": [],
+        "result": deepcopy(existing.get("result")),
+    }
+
+    thread = threading.Thread(
+        target=_rerun_pipeline_thread,
+        args=(rfp_id, start_from, checkpoint_state),
+        daemon=True,
+    )
+    thread.start()
+
+
 # ── Health ───────────────────────────────────────────────
 
 @health_router.get("/health")
@@ -107,15 +209,7 @@ def _run_pipeline_thread(rfp_id: str, local_path: str, file_hash: str) -> None:
             real_rfp_id = meta.get("rfp_id", "")
 
         audit = result.get("audit_trail", [])
-        pipeline_log = [
-            {"agent": a.get("agent", ""), "status": a.get("action", ""),
-             "timestamp": (
-                 a["timestamp"].isoformat()
-                 if hasattr(a.get("timestamp"), "isoformat")
-                 else str(a.get("timestamp", ""))
-             )}
-            for a in audit
-        ] if audit else []
+        pipeline_log = _build_pipeline_log(audit)
 
         _runs[rfp_id].update({
             "status": status,
@@ -125,8 +219,15 @@ def _run_pipeline_thread(rfp_id: str, local_path: str, file_hash: str) -> None:
             "real_rfp_id": real_rfp_id,
         })
         
-        # Cache successful runs based on the file hash
-        if status not in ("FAILED", "ESCALATED"):
+        # Cache stable runs only. Human-validation states should remain unique
+        # to preserve reviewer comments and decisions per run.
+        cache_exclusions = {
+            "FAILED",
+            "ESCALATED",
+            PipelineStatus.AWAITING_HUMAN_VALIDATION.value,
+            PipelineStatus.REJECTED.value,
+        }
+        if status not in cache_exclusions:
             _document_cache[file_hash] = rfp_id
             logger.info(f"Cached document hash {file_hash[:8]}... to run {rfp_id}")
 
@@ -195,7 +296,13 @@ async def upload_rfp(file: UploadFile = File(...)):
     cached_run_id = _document_cache.get(file_hash)
     if cached_run_id and cached_run_id in _runs:
         cached_run = _runs[cached_run_id]
-        if cached_run["status"] not in ("FAILED", "ESCALATED", "UNKNOWN"):
+        if cached_run["status"] not in (
+            "FAILED",
+            "ESCALATED",
+            "UNKNOWN",
+            PipelineStatus.AWAITING_HUMAN_VALIDATION.value,
+            PipelineStatus.REJECTED.value,
+        ):
             logger.info(f"Cache hit! Reusing results from {cached_run_id} for new upload {rfp_id}")
             
             # Deep clone the cached result to our new ID
@@ -248,9 +355,7 @@ async def upload_rfp(file: UploadFile = File(...)):
 
 @rfp_router.get("/{rfp_id}/status", response_model=StatusResponse)
 async def get_rfp_status(rfp_id: str):
-    run = _runs.get(rfp_id)
-    if not run:
-        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
+    run = _get_run_or_404(rfp_id)
 
     # Build agent_outputs from the stored pipeline result
     agent_outputs: dict[str, Any] = {}
@@ -300,6 +405,22 @@ async def get_rfp_status(rfp_id: str):
         legal = result_data.get("legal_result")
         if isinstance(legal, dict) and legal.get("decision"):
             agent_outputs["E2_LEGAL"] = legal
+        # H1 Human Validation
+        review = result_data.get("review_package")
+        if isinstance(review, dict) and review.get("review_id"):
+            agent_outputs["H1_HUMAN_VALIDATION"] = review
+        # F1 Final Readiness
+        approval = result_data.get("approval_package")
+        if isinstance(approval, dict) and (
+            approval.get("decision_brief") or approval.get("approval_decision")
+        ):
+            agent_outputs["F1_FINAL_READINESS"] = approval
+        # F2 Submission
+        submission = result_data.get("submission_record")
+        if isinstance(submission, dict) and (
+            submission.get("output_file_path") or submission.get("submitted_at")
+        ):
+            agent_outputs["F2_SUBMISSION"] = submission
 
     # ── LLM call stats per agent ─────────────────────────
     from rfp_automation.services.llm_service import LLMCallTracker
@@ -319,23 +440,147 @@ async def get_rfp_status(rfp_id: str):
 
 
 # ── Human Approval Gate ─────────────────────────────────
+def _append_review_log(run: dict[str, Any], decision: str, reviewer: str = "") -> None:
+    run.setdefault("pipeline_log", []).append(
+        {
+            "agent": "H1_HUMAN_VALIDATION",
+            "status": decision,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "reviewer": reviewer,
+        }
+    )
+
+
+def _handle_review_decision(rfp_id: str, body: ReviewDecisionRequest) -> ReviewDecisionResponse:
+    run = _get_run_or_404(rfp_id)
+    review_package = _get_review_package(run)
+    if not review_package.review_id:
+        raise HTTPException(status_code=400, detail="No human validation package is available for this run")
+
+    if body.comments:
+        review_package.comments = body.comments
+    review_package = ReviewService.normalize_package(review_package)
+
+    if (
+        body.decision == HumanValidationDecision.REQUEST_CHANGES
+        and review_package.open_comment_count == 0
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="At least one open comment is required when requesting changes",
+        )
+
+    review_package.decision.decision = body.decision
+    review_package.decision.reviewer = body.reviewer.strip()
+    review_package.decision.summary = body.summary.strip()
+    review_package.decision.submitted_at = datetime.now(timezone.utc)
+
+    if body.decision == HumanValidationDecision.REJECT:
+        review_package.status = "REJECTED"
+        review_package.decision.rerun_from = ""
+        _store_review_package(run, review_package)
+        run["status"] = PipelineStatus.REJECTED.value
+        run["current_agent"] = "H1_HUMAN_VALIDATION"
+        _append_review_log(run, body.decision.value, body.reviewer)
+        PipelineProgress.get().on_pipeline_end(rfp_id, PipelineStatus.REJECTED.value)
+        return ReviewDecisionResponse(
+            rfp_id=rfp_id,
+            decision=body.decision.value,
+            status=PipelineStatus.REJECTED.value,
+            message=f"Run {rfp_id} was rejected during human validation.",
+        )
+
+    start_from = (
+        "f1_final_readiness"
+        if body.decision == HumanValidationDecision.APPROVE
+        else ReviewService.compute_rerun_target(review_package, body.rerun_from)
+    )
+    review_package.status = (
+        "APPROVED"
+        if body.decision == HumanValidationDecision.APPROVE
+        else "CHANGES_REQUESTED"
+    )
+    review_package.decision.rerun_from = start_from
+    _store_review_package(run, review_package)
+
+    from rfp_automation.persistence.checkpoint import load_checkpoint_up_to
+
+    checkpoint = load_checkpoint_up_to(rfp_id, start_from)
+    if checkpoint is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No checkpoint found to resume from '{start_from}'",
+        )
+
+    checkpoint = _inject_review_package(checkpoint, review_package)
+    _append_review_log(run, body.decision.value, body.reviewer)
+    _start_rerun_job(rfp_id, start_from, checkpoint)
+
+    action_text = "submission" if body.decision == HumanValidationDecision.APPROVE else "revision"
+    return ReviewDecisionResponse(
+        rfp_id=rfp_id,
+        decision=body.decision.value,
+        status="RUNNING",
+        rerun_from=start_from,
+        message=f"Human validation sent the run to {action_text} from {start_from}.",
+    )
+
+
+@rfp_router.get("/{rfp_id}/review", response_model=ReviewPackageResponse)
+async def get_review_package(rfp_id: str):
+    run = _get_run_or_404(rfp_id)
+    review_package = _get_review_package(run)
+    if not review_package.review_id:
+        raise HTTPException(status_code=404, detail=f"Run {rfp_id} has no human validation package yet")
+
+    return ReviewPackageResponse(
+        rfp_id=rfp_id,
+        status=run["status"],
+        review_package=review_package,
+    )
+
+
+@rfp_router.put("/{rfp_id}/review/comments", response_model=ReviewPackageResponse)
+async def save_review_comments(rfp_id: str, body: ReviewCommentsRequest):
+    run = _get_run_or_404(rfp_id)
+    review_package = _get_review_package(run)
+    if not review_package.review_id:
+        raise HTTPException(status_code=404, detail=f"Run {rfp_id} has no human validation package yet")
+
+    review_package.comments = body.comments
+    review_package.status = "PENDING"
+    review_package.decision = review_package.decision.__class__()
+    _store_review_package(run, review_package)
+
+    return ReviewPackageResponse(
+        rfp_id=rfp_id,
+        status=run["status"],
+        review_package=_get_review_package(run),
+    )
+
+
+@rfp_router.post("/{rfp_id}/review/decision", response_model=ReviewDecisionResponse)
+async def submit_review_decision(rfp_id: str, body: ReviewDecisionRequest):
+    return _handle_review_decision(rfp_id, body)
+
 
 @rfp_router.post("/{rfp_id}/approve", response_model=ApprovalResponse)
 async def approve_rfp(rfp_id: str, body: ApprovalRequest):
-    run = _runs.get(rfp_id)
-    if not run:
-        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
-
     if body.decision not in ("APPROVE", "REJECT"):
         raise HTTPException(status_code=400, detail="Decision must be APPROVE or REJECT")
 
-    logger.info(f"[{rfp_id}] Human gate: {body.decision} by {body.reviewer}")
-    run["status"] = "SUBMITTED" if body.decision == "APPROVE" else "REJECTED"
-
+    result = _handle_review_decision(
+        rfp_id,
+        ReviewDecisionRequest(
+            decision=HumanValidationDecision(body.decision),
+            reviewer=body.reviewer,
+            summary=body.comments,
+        ),
+    )
     return ApprovalResponse(
-        rfp_id=rfp_id,
-        decision=body.decision,
-        message=f"RFP {rfp_id} {body.decision.lower()}d",
+        rfp_id=result.rfp_id,
+        decision=result.decision,
+        message=result.message,
     )
 
 
@@ -433,15 +678,7 @@ def _rerun_pipeline_thread(rfp_id: str, start_from: str, checkpoint_state: dict)
         status = str(result.get("status", "UNKNOWN"))
 
         audit = result.get("audit_trail", [])
-        pipeline_log = [
-            {"agent": a.get("agent", ""), "status": a.get("action", ""),
-             "timestamp": (
-                 a["timestamp"].isoformat()
-                 if hasattr(a.get("timestamp"), "isoformat")
-                 else str(a.get("timestamp", ""))
-             )}
-            for a in audit
-        ] if audit else []
+        pipeline_log = _build_pipeline_log(audit)
 
         _runs[rfp_id].update({
             "status": status,
@@ -505,24 +742,13 @@ async def rerun_from_agent(rfp_id: str, start_from: str):
                    f"The previous agents must have completed at least once.",
         )
 
-    started_at = datetime.now(timezone.utc).isoformat()
+    existing_run = _runs.get(rfp_id)
+    if existing_run:
+        existing_review = _get_review_package(existing_run)
+        if existing_review.review_id:
+            checkpoint = _inject_review_package(checkpoint, existing_review)
 
-    _runs[rfp_id] = {
-        "rfp_id": rfp_id,
-        "filename": _runs.get(rfp_id, {}).get("filename", "(rerun)"),
-        "status": "RUNNING",
-        "current_agent": start_from,
-        "started_at": started_at,
-        "pipeline_log": [],
-        "result": None,
-    }
-
-    thread = threading.Thread(
-        target=_rerun_pipeline_thread,
-        args=(rfp_id, start_from, checkpoint),
-        daemon=True,
-    )
-    thread.start()
+    _start_rerun_job(rfp_id, start_from, checkpoint)
 
     return {
         "rfp_id": rfp_id,

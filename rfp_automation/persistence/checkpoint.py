@@ -36,6 +36,7 @@ AGENT_ORDER: list[str] = [
     "c3_narrative_assembly",
     "d1_technical_validation",
     "commercial_legal_parallel",
+    "h1_human_validation_prepare",
     "f1_final_readiness",
     "f2_submission",
 ]

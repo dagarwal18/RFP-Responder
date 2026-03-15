@@ -35,6 +35,7 @@ from rfp_automation.models.state import RFPGraphState
 from rfp_automation.models.schemas import ArchitecturePlan, ResponseSection
 from rfp_automation.mcp import MCPService
 from rfp_automation.services.llm_service import llm_text_call
+from rfp_automation.services.review_service import ReviewService
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +106,7 @@ class ArchitecturePlanningAgent(BaseAgent):
             else "No company capabilities available."
         )
         logger.debug(f"[C1] Fetched {len(capabilities)} capability entries")
+        review_feedback = ReviewService.build_global_feedback(state.review_package)
 
         # ── 6. PASS 1 — Initial architecture with full prompt ─
         prompt = self._build_prompt(
@@ -112,6 +114,7 @@ class ArchitecturePlanningAgent(BaseAgent):
             requirements=requirements_compact,
             capabilities=capabilities_json,
             submission_instructions=submission_instructions,
+            review_feedback=review_feedback,
         )
         logger.info(
             f"[C1] Pass 1: Calling LLM with {len(requirements_data)} requirements, "
@@ -322,6 +325,7 @@ class ArchitecturePlanningAgent(BaseAgent):
         requirements: str,
         capabilities: str,
         submission_instructions: str,
+        review_feedback: str = "",
     ) -> str:
         """Load the prompt template and inject data with TPM-aware truncation.
 
@@ -357,13 +361,20 @@ class ArchitecturePlanningAgent(BaseAgent):
                 f"({data_budget_chars} chars, ~{data_budget_tokens} tokens)"
             )
 
-        return (
+        prompt = (
             template
             .replace("{rfp_sections}", rfp_sections[:budget_sections])
             .replace("{requirements}", requirements[:budget_reqs])
             .replace("{capabilities}", capabilities[:budget_caps])
             .replace("{submission_instructions}", submission_instructions[:budget_sub])
         )
+        if review_feedback:
+            prompt += (
+                "\n\n## Human Validation Feedback\n\n"
+                + review_feedback[:1500]
+                + "\n\nRevise the proposal structure to address this feedback."
+            )
+        return prompt
 
     def _parse_response(
         self, raw_response: str

@@ -116,6 +116,10 @@
       .main {
         grid-template-columns: 1fr;
       }
+
+      .review-sections-layout {
+        grid-template-columns: 1fr !important;
+      }
     }
 
     /* ── Cards ──────────────────────────────────────── */
@@ -1145,6 +1149,78 @@
       </div>
     </div>
 
+    <div class="card" id="reviewWorkspaceCard" style="grid-column:1 / -1; margin-top:20px; display:none">
+      <div class="card-header">
+        <h2>👀 Human Validation</h2>
+        <span class="badge" id="reviewWorkspaceBadge">Pending</span>
+      </div>
+      <div class="card-body">
+        <div id="reviewWorkspaceSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px"></div>
+
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:16px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Reviewer</label>
+            <input id="reviewReviewer" placeholder="Your name"
+              style="padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:inherit" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Decision Summary</label>
+            <textarea id="reviewSummaryInput" rows="3" placeholder="Summarize the requested changes or approval notes"
+              style="padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:inherit;resize:vertical"></textarea>
+          </div>
+        </div>
+
+        <div class="review-sections-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="reviewSectionsLayout">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <strong>Source RFP Sections</strong>
+              <span style="font-size:12px;color:var(--text-muted)">Section and paragraph comments</span>
+            </div>
+            <div id="reviewSourceSections"></div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <strong>Response Draft Sections</strong>
+              <span style="font-size:12px;color:var(--text-muted)">Comment on generated content</span>
+            </div>
+            <div id="reviewResponseSections"></div>
+          </div>
+        </div>
+
+        <div style="padding:16px;border:1px solid var(--border);border-radius:12px;background:rgba(99,102,241,0.06);margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+            <strong>Add Comment</strong>
+            <span id="reviewSelectedAnchor" style="font-size:12px;color:var(--text-muted)">Select a section or paragraph to comment on.</span>
+          </div>
+          <textarea id="reviewCommentInput" rows="3" placeholder="Describe what needs to change in this section or paragraph"
+            style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:inherit;resize:vertical"></textarea>
+          <div class="form-row" style="margin-top:10px">
+            <select id="reviewSeverity">
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+              <option value="low">Low</option>
+            </select>
+            <button type="button" class="btn btn-outline" id="reviewAddCommentBtn" onclick="addReviewComment()">Add Comment</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <strong>Comments</strong>
+            <span id="reviewCommentCount" style="font-size:12px;color:var(--text-muted)">0 comments</span>
+          </div>
+          <div id="reviewCommentsList"></div>
+        </div>
+
+        <div class="form-row" style="justify-content:flex-end;flex-wrap:wrap">
+          <button type="button" class="btn btn-outline" id="reviewRejectBtn" onclick="submitReviewDecision('REJECT')">Reject</button>
+          <button type="button" class="btn btn-outline" id="reviewChangesBtn" onclick="submitReviewDecision('REQUEST_CHANGES')">Request Changes</button>
+          <button type="button" class="btn btn-primary" id="reviewApproveBtn" onclick="submitReviewDecision('APPROVE')">Approve & Continue</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══════════════════════════════════════════════════ -->
     <!--  COMPANY POLICIES PANEL                             -->
     <!-- ═══════════════════════════════════════════════════ -->
@@ -1324,6 +1400,7 @@
       { key: 'D1_TECHNICAL_VALIDATION', label: 'D1 — Technical Validation', status: 'TECHNICAL_VALIDATION' },
       { key: 'E1_COMMERCIAL', label: 'E1 — Commercial Review', status: 'COMMERCIAL_LEGAL_REVIEW' },
       { key: 'E2_LEGAL', label: 'E2 — Legal Review', status: 'COMMERCIAL_LEGAL_REVIEW' },
+      { key: 'H1_HUMAN_VALIDATION', label: 'H1 — Human Validation', status: 'AWAITING_HUMAN_VALIDATION' },
       { key: 'F1_FINAL_READINESS', label: 'F1 — Final Readiness', status: 'FINAL_READINESS' },
       { key: 'F2_SUBMISSION', label: 'F2 — Submission', status: 'SUBMITTED' },
     ];
@@ -1368,6 +1445,318 @@
         throw e;
       }
     }
+
+    function escapeHtml(value = '') {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function reviewComments() {
+      return reviewWorkspace.package?.comments || [];
+    }
+
+    function findReviewSection(domain, sectionId) {
+      const sections = domain === 'source'
+        ? (reviewWorkspace.package?.source_sections || [])
+        : (reviewWorkspace.package?.response_sections || []);
+      return sections.find(section => section.section_id === sectionId) || null;
+    }
+
+    function buildReviewAnchor(domain, sectionId, paragraphId = '') {
+      const section = findReviewSection(domain, sectionId);
+      if (!section) return null;
+      const paragraph = paragraphId
+        ? (section.paragraphs || []).find(item => item.paragraph_id === paragraphId)
+        : null;
+      const excerpt = paragraph
+        ? paragraph.text || ''
+        : (section.full_text || (section.paragraphs || []).map(item => item.text).join('\n\n') || '');
+      return {
+        anchor_level: paragraph ? 'paragraph' : 'section',
+        domain,
+        section_id: section.section_id,
+        section_title: section.title || '',
+        paragraph_id: paragraph ? paragraph.paragraph_id : '',
+        excerpt: excerpt.slice(0, 400),
+      };
+    }
+
+    function formatReviewAnchor(anchor) {
+      if (!anchor) return 'Select a section or paragraph to comment on.';
+      const bits = [anchor.domain === 'source' ? 'Source' : 'Response', anchor.section_title || anchor.section_id || 'Section'];
+      if (anchor.paragraph_id) bits.push(anchor.paragraph_id);
+      return bits.join(' • ');
+    }
+
+    function commentCountForSection(domain, sectionId) {
+      return reviewComments().filter(comment =>
+        comment.anchor?.domain === domain && comment.anchor?.section_id === sectionId
+      ).length;
+    }
+
+    function renderReviewSectionList(sections, domain) {
+      if (!sections.length) {
+        return `<div style="padding:16px;border:1px dashed var(--border);border-radius:10px;color:var(--text-muted);font-size:13px">No ${domain} sections available.</div>`;
+      }
+
+      return sections.map(section => {
+        const comments = commentCountForSection(domain, section.section_id);
+        const paragraphs = section.paragraphs || [];
+        const commentBadge = comments
+          ? `<span style="font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,0.15);color:var(--accent-light)">${comments} comment${comments === 1 ? '' : 's'}</span>`
+          : '';
+
+        return `<details style="margin-bottom:10px;border:1px solid var(--border);border-radius:12px;background:var(--bg-secondary)">
+          <summary style="cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <span>
+              <strong>${escapeHtml(section.title || section.section_id)}</strong>
+              <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px">${escapeHtml(section.section_id || '')}${section.source_section_title ? ` • Source: ${escapeHtml(section.source_section_title)}` : ''}</span>
+            </span>
+            <span style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              ${commentBadge}
+              <button type="button" class="btn btn-outline btn-sm" onclick="selectReviewAnchor('${domain}', '${section.section_id}')">Comment Section</button>
+            </span>
+          </summary>
+          <div style="padding:0 14px 14px;display:flex;flex-direction:column;gap:10px">
+            ${paragraphs.map(paragraph => {
+              const anchorSelected = reviewWorkspace.selectedAnchor
+                && reviewWorkspace.selectedAnchor.section_id === section.section_id
+                && reviewWorkspace.selectedAnchor.paragraph_id === paragraph.paragraph_id
+                && reviewWorkspace.selectedAnchor.domain === domain;
+              return `<div style="padding:12px;border-radius:10px;border:1px solid ${anchorSelected ? 'rgba(99,102,241,0.55)' : 'var(--border)'};background:${anchorSelected ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.02)'}">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+                  <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">${escapeHtml(paragraph.paragraph_id || 'Paragraph')}</span>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="selectReviewAnchor('${domain}', '${section.section_id}', '${paragraph.paragraph_id}')">Comment Paragraph</button>
+                </div>
+                <div style="font-size:13px;line-height:1.65;color:var(--text-secondary);white-space:pre-wrap">${escapeHtml(paragraph.text || '')}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </details>`;
+      }).join('');
+    }
+
+    function renderReviewComments() {
+      const comments = reviewComments();
+      if (!comments.length) {
+        return '<div style="padding:16px;border:1px dashed var(--border);border-radius:10px;color:var(--text-muted);font-size:13px">No comments added yet.</div>';
+      }
+
+      return comments.map(comment => {
+        const anchorLabel = formatReviewAnchor(comment.anchor || {});
+        const severity = (comment.severity || 'medium').toLowerCase();
+        const severityColors = {
+          low: 'rgba(59,130,246,0.15);color:#3b82f6',
+          medium: 'rgba(245,158,11,0.15);color:#f59e0b',
+          high: 'rgba(249,115,22,0.15);color:#f97316',
+          critical: 'rgba(239,68,68,0.15);color:#ef4444',
+        };
+        return `<div style="padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--bg-secondary);margin-bottom:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+            <div>
+              <div style="font-weight:600">${escapeHtml(anchorLabel)}</div>
+              <div style="font-size:11px;color:var(--text-muted)">${escapeHtml(comment.author || 'Reviewer')}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;text-transform:uppercase;${severityColors[severity] || severityColors.medium}">${escapeHtml(severity)}</span>
+              <button type="button" class="btn btn-outline btn-sm" onclick="removeReviewComment('${comment.comment_id}')">Remove</button>
+            </div>
+          </div>
+          <div style="font-size:13px;line-height:1.6;color:var(--text-secondary);white-space:pre-wrap">${escapeHtml(comment.comment || '')}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderReviewWorkspace() {
+      const card = document.getElementById('reviewWorkspaceCard');
+      const pkg = reviewWorkspace.package;
+      if (!pkg || !reviewWorkspace.rfpId) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = 'block';
+      document.getElementById('reviewWorkspaceBadge').textContent = reviewWorkspace.status || pkg.status || 'PENDING';
+      document.getElementById('reviewSelectedAnchor').textContent = formatReviewAnchor(reviewWorkspace.selectedAnchor);
+      document.getElementById('reviewCommentCount').textContent = `${reviewComments().length} comment${reviewComments().length === 1 ? '' : 's'}`;
+
+      const summaries = [
+        { label: 'Source Sections', value: (pkg.source_sections || []).length },
+        { label: 'Response Sections', value: (pkg.response_sections || []).length },
+        { label: 'Open Comments', value: pkg.open_comment_count || 0 },
+        { label: 'Validation', value: pkg.validation_summary || 'No validation summary' },
+        { label: 'Commercial', value: pkg.commercial_summary || 'No commercial summary' },
+        { label: 'Legal', value: pkg.legal_summary || 'No legal summary' },
+      ];
+      document.getElementById('reviewWorkspaceSummary').innerHTML = summaries.map(item => `
+        <div style="padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary)">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">${escapeHtml(item.label)}</div>
+          <div style="font-size:${typeof item.value === 'number' ? '24px' : '13px'};font-weight:${typeof item.value === 'number' ? '700' : '500'};line-height:1.5;color:${typeof item.value === 'number' ? 'var(--accent-light)' : 'var(--text-secondary)'}">${escapeHtml(item.value)}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('reviewSourceSections').innerHTML = renderReviewSectionList(pkg.source_sections || [], 'source');
+      document.getElementById('reviewResponseSections').innerHTML = renderReviewSectionList(pkg.response_sections || [], 'response');
+      document.getElementById('reviewCommentsList').innerHTML = renderReviewComments();
+
+      const reviewerInput = document.getElementById('reviewReviewer');
+      const summaryInput = document.getElementById('reviewSummaryInput');
+      if (reviewerInput !== document.activeElement) {
+        reviewerInput.value = pkg.decision?.reviewer || '';
+      }
+      if (summaryInput !== document.activeElement) {
+        summaryInput.value = pkg.decision?.summary || '';
+      }
+
+      const canAct = reviewWorkspace.status === 'AWAITING_HUMAN_VALIDATION';
+      ['reviewApproveBtn', 'reviewChangesBtn', 'reviewRejectBtn'].forEach(id => {
+        document.getElementById(id).disabled = !canAct;
+      });
+      document.getElementById('reviewCommentInput').disabled = !canAct;
+      document.getElementById('reviewSeverity').disabled = !canAct;
+      document.getElementById('reviewAddCommentBtn').disabled = !canAct;
+    }
+
+    function clearReviewWorkspace() {
+      reviewWorkspace = {
+        rfpId: null,
+        package: null,
+        selectedAnchor: null,
+        status: '',
+      };
+      document.getElementById('reviewWorkspaceCard').style.display = 'none';
+      document.getElementById('reviewCommentInput').value = '';
+      document.getElementById('reviewReviewer').value = '';
+      document.getElementById('reviewSummaryInput').value = '';
+    }
+
+    async function loadReviewWorkspace(rfpId, statusValue = '') {
+      if (!rfpId) {
+        clearReviewWorkspace();
+        return;
+      }
+
+      try {
+        const data = await apiFetch(`/api/rfp/${rfpId}/review`);
+        reviewWorkspace.rfpId = rfpId;
+        reviewWorkspace.package = data.review_package || null;
+        reviewWorkspace.status = statusValue || data.status || '';
+        if (!reviewWorkspace.package) {
+          clearReviewWorkspace();
+          return;
+        }
+        renderReviewWorkspace();
+      } catch {
+        clearReviewWorkspace();
+      }
+    }
+
+    async function persistReviewComments() {
+      if (!reviewWorkspace.rfpId || !reviewWorkspace.package) return;
+      const response = await apiFetch(`/api/rfp/${reviewWorkspace.rfpId}/review/comments`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comments: reviewComments() }),
+      });
+      reviewWorkspace.package = response.review_package || reviewWorkspace.package;
+      reviewWorkspace.status = response.status || reviewWorkspace.status;
+    }
+
+    window.selectReviewAnchor = function (domain, sectionId, paragraphId = '') {
+      reviewWorkspace.selectedAnchor = buildReviewAnchor(domain, sectionId, paragraphId);
+      renderReviewWorkspace();
+    };
+
+    window.addReviewComment = async function () {
+      const text = document.getElementById('reviewCommentInput').value.trim();
+      if (!reviewWorkspace.selectedAnchor) {
+        addLog('rfpLog', 'Select a section or paragraph before adding a comment.', 'error');
+        return;
+      }
+      if (!text) {
+        addLog('rfpLog', 'Enter a comment before saving.', 'error');
+        return;
+      }
+
+      reviewWorkspace.package.comments = [
+        ...reviewComments(),
+        {
+          comment_id: `REV-CMT-${Date.now()}`,
+          anchor: reviewWorkspace.selectedAnchor,
+          comment: text,
+          severity: document.getElementById('reviewSeverity').value,
+          rerun_hint: 'auto',
+          status: 'open',
+          author: document.getElementById('reviewReviewer').value.trim() || 'Human Reviewer',
+          created_at: new Date().toISOString(),
+        },
+      ];
+
+      try {
+        await persistReviewComments();
+        document.getElementById('reviewCommentInput').value = '';
+        reviewWorkspace.selectedAnchor = null;
+        renderReviewWorkspace();
+        addLog('rfpLog', 'Saved human validation comment.', 'success');
+      } catch (e) {
+        addLog('rfpLog', `Failed to save review comment: ${e.message}`, 'error');
+      }
+    };
+
+    window.removeReviewComment = async function (commentId) {
+      reviewWorkspace.package.comments = reviewComments().filter(comment => comment.comment_id !== commentId);
+      try {
+        await persistReviewComments();
+        renderReviewWorkspace();
+      } catch (e) {
+        addLog('rfpLog', `Failed to update comments: ${e.message}`, 'error');
+      }
+    };
+
+    window.submitReviewDecision = async function (decision) {
+      if (!reviewWorkspace.rfpId || !reviewWorkspace.package) return;
+      if (decision === 'REQUEST_CHANGES' && reviewComments().length === 0) {
+        addLog('rfpLog', 'Add at least one comment before requesting changes.', 'error');
+        return;
+      }
+
+      const reviewer = document.getElementById('reviewReviewer').value.trim();
+      const summary = document.getElementById('reviewSummaryInput').value.trim();
+      const buttonIds = ['reviewApproveBtn', 'reviewChangesBtn', 'reviewRejectBtn'];
+      buttonIds.forEach(id => { document.getElementById(id).disabled = true; });
+
+      try {
+        const response = await apiFetch(`/api/rfp/${reviewWorkspace.rfpId}/review/decision`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            decision,
+            reviewer,
+            summary,
+            comments: reviewComments(),
+          }),
+        });
+
+        addLog('rfpLog', response.message, 'success');
+        document.getElementById('rfpBadge').textContent = response.status;
+        await loadRuns();
+
+        if (response.status === 'REJECTED') {
+          await viewRun(reviewWorkspace.rfpId);
+          return;
+        }
+
+        clearReviewWorkspace();
+        connectPipelineWS(reviewWorkspace.rfpId);
+      } catch (e) {
+        addLog('rfpLog', `Failed to submit review decision: ${e.message}`, 'error');
+        buttonIds.forEach(id => { document.getElementById(id).disabled = false; });
+      }
+    };
 
     // ── Health check ───────────────────────────────
     async function checkHealth() {
@@ -1635,6 +2024,12 @@
     const rfpFileInfo = document.getElementById('rfpFileInfo');
     let activeWS = null;
     let activeRfpId = null;
+    let reviewWorkspace = {
+      rfpId: null,
+      package: null,
+      selectedAnchor: null,
+      status: '',
+    };
 
     function showRFPFile(file) {
       document.getElementById('rfpFileName').textContent = file.name;
@@ -1737,6 +2132,9 @@
               loadAgentLogs(activeRfpId).catch(err =>
                 console.warn('Failed to load agent logs:', err)
               );
+              loadReviewWorkspace(activeRfpId, endStatus).catch(err =>
+                console.warn('Failed to load review workspace:', err)
+              );
             }
             break;
         }
@@ -1767,6 +2165,7 @@
             rfpUploadBtn.innerHTML = 'Run Pipeline';
             rfpUploadBtn.disabled = false;
             loadRuns();
+            loadReviewWorkspace(rfpId, status.status);
           }
         } catch {
           clearInterval(interval);
@@ -1805,6 +2204,7 @@
       // Reset stepper for a new run
       resetStepperState();
       renderStepper();
+      clearReviewWorkspace();
 
       const form = new FormData();
       form.append('file', file);
@@ -1881,6 +2281,7 @@
 
         // Load agent output logs
         loadAgentLogs(rfpId);
+        loadReviewWorkspace(rfpId, status.status);
 
         // Load checkpoints for this run
         loadCheckpoints(rfpId);
@@ -1914,6 +2315,7 @@
       c3_narrative_assembly: 'C3 Narrative',
       d1_technical_validation: 'D1 Tech Valid.',
       commercial_legal_parallel: 'E1+E2 Com/Legal',
+      h1_human_validation_prepare: 'H1 Human Validation',
       f1_final_readiness: 'F1 Readiness',
       f2_submission: 'F2 Submission',
     };
@@ -1985,6 +2387,7 @@
       resetStepperState();
       renderStepper();
       document.getElementById('rfpBadge').textContent = 'Running';
+      clearReviewWorkspace();
 
       try {
         const data = await apiFetch(`/api/rfp/${checkpointRfpId}/rerun?start_from=${agent}`, {
@@ -2727,7 +3130,7 @@
 
         // Other agents — raw JSON
         for (const [key, val] of Object.entries(outputs)) {
-          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING', 'C3_NARRATIVE_ASSEMBLY', 'D1_TECHNICAL_VALIDATION', 'E1_COMMERCIAL', 'E2_LEGAL'].includes(key)) continue;
+          if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING', 'C3_NARRATIVE_ASSEMBLY', 'D1_TECHNICAL_VALIDATION', 'E1_COMMERCIAL', 'E2_LEGAL', 'H1_HUMAN_VALIDATION'].includes(key)) continue;
           html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
             <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
         }

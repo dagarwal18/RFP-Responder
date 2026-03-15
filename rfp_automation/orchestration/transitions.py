@@ -86,7 +86,7 @@ def route_after_commercial_legal(state: dict[str, Any]) -> str:
 
     if decision == "BLOCK":
         return "end_legal_block"
-    return "f1_final_readiness"
+    return "h1_human_validation_prepare"
 
 
 # ── After F1 Human Approval ──────────────────────────────

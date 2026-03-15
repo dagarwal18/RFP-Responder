@@ -19,6 +19,7 @@ from .enums import (
     ValidationDecision,
     LegalDecision,
     ApprovalDecision,
+    HumanValidationDecision,
     CommercialLegalGateDecision,
 )
 
@@ -279,6 +280,70 @@ class CommercialLegalGateResult(BaseModel):
 
 
 # ── F1 Final Readiness ───────────────────────────────────
+
+
+class ReviewParagraph(BaseModel):
+    paragraph_id: str
+    text: str = ""
+    page_start: int = 0
+    page_end: int = 0
+
+
+class ReviewSection(BaseModel):
+    section_id: str
+    title: str
+    domain: str = "source"  # "source" | "response"
+    page_start: int = 0
+    page_end: int = 0
+    full_text: str = ""
+    section_type: str = ""
+    source_section_title: str = ""
+    requirement_ids: list[str] = []
+    paragraphs: list[ReviewParagraph] = []
+
+
+class ReviewAnchor(BaseModel):
+    anchor_level: str = "section"  # "section" | "paragraph"
+    domain: str = "response"       # "source" | "response"
+    section_id: str = ""
+    section_title: str = ""
+    paragraph_id: str = ""
+    excerpt: str = ""
+
+
+class ReviewComment(BaseModel):
+    comment_id: str
+    anchor: ReviewAnchor = Field(default_factory=ReviewAnchor)
+    comment: str = ""
+    severity: str = "medium"       # "low" | "medium" | "high" | "critical"
+    rerun_hint: str = "auto"
+    status: str = "open"
+    author: str = ""
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class HumanValidationDecisionRecord(BaseModel):
+    decision: Optional[HumanValidationDecision] = None
+    reviewer: str = ""
+    summary: str = ""
+    rerun_from: str = ""
+    submitted_at: Optional[datetime] = None
+
+
+class ReviewPackage(BaseModel):
+    review_id: str = ""
+    status: str = "PENDING"
+    source_sections: list[ReviewSection] = []
+    response_sections: list[ReviewSection] = []
+    comments: list[ReviewComment] = []
+    decision: HumanValidationDecisionRecord = Field(
+        default_factory=HumanValidationDecisionRecord
+    )
+    validation_summary: str = ""
+    commercial_summary: str = ""
+    legal_summary: str = ""
+    total_comments: int = 0
+    open_comment_count: int = 0
 
 
 class ApprovalPackage(BaseModel):

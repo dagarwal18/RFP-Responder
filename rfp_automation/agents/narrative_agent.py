@@ -384,6 +384,8 @@ class NarrativeAssemblyAgent(BaseAgent):
             company_name = kb_profile.get("company_name", "")
         except Exception:
             pass  # KB unavailable
+        if not company_name:
+            company_name = getattr(get_settings(), "company_name", "") or ""
 
         if company_name:
             replacements.extend([
@@ -504,6 +506,8 @@ class NarrativeAssemblyAgent(BaseAgent):
             company_name = kb_profile.get("company_name", "")
         except Exception:
             pass  # KB unavailable
+        if not company_name:
+            company_name = getattr(get_settings(), "company_name", "") or ""
         prepared_by = company_name if company_name else "[Vendor Name]"
         title_line += f"\n\nPrepared by: {prepared_by}"
 

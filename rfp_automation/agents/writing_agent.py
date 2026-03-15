@@ -36,6 +36,7 @@ from rfp_automation.models.schemas import (
 )
 from rfp_automation.mcp import MCPService
 from rfp_automation.services.llm_service import llm_text_call, llm_large_text_call
+from rfp_automation.services.review_service import ReviewService
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +121,7 @@ class RequirementWritingAgent(BaseAgent):
         if state.technical_validation and state.technical_validation.feedback_for_revision:
             revision_feedback = state.technical_validation.feedback_for_revision
             logger.info(f"[C2] D1 revision feedback present ({len(revision_feedback)} chars) — will inject into prompts")
+        human_review_feedback = ReviewService.build_global_feedback(state.review_package)
 
         # ── 7. Prepare RFP metadata for prompt injection ──
         rfp_meta = state.rfp_metadata
@@ -133,7 +135,7 @@ class RequirementWritingAgent(BaseAgent):
         except Exception:
             pass  # KB unavailable — fall back to config
         if not company_name:
-            company_name = get_settings().company_name or ""
+            company_name = getattr(get_settings(), "company_name", "") or ""
 
         rfp_metadata_block = (
             f"Proposing Company: {company_name or 'Not configured'}\n"
@@ -216,7 +218,7 @@ class RequirementWritingAgent(BaseAgent):
             )
 
             # ── 7d. Filter revision feedback for this section ─
-            section_feedback = ""
+            feedback_parts: list[str] = []
             if revision_feedback and req_ids:
                 feedback_lines = []
                 import re
@@ -235,11 +237,26 @@ class RequirementWritingAgent(BaseAgent):
                         feedback_lines.append(f"- {clean_part}")
                 
                 if feedback_lines:
-                    section_feedback = "The Technical Validation Agent flagged these issues in your previous draft that MUST BE FIXED:\n" + "\n".join(feedback_lines)
+                    feedback_parts.append(
+                        "The Technical Validation Agent flagged these issues in your previous draft that MUST BE FIXED:\n"
+                        + "\n".join(feedback_lines)
+                    )
             elif revision_feedback and not req_ids:
                 # If section has no mapped reqs but there is feedback (e.g. executive summary realism),
                 # maybe pass general points. But for now, safer to just omit.
                 pass
+
+            review_section_feedback = ReviewService.build_section_feedback(
+                state.review_package,
+                section_id=section_id,
+                source_section_title=self._get_attr(section, "source_rfp_section", ""),
+            )
+            if review_section_feedback:
+                feedback_parts.append(review_section_feedback)
+            elif human_review_feedback and section_type == "boilerplate":
+                feedback_parts.append(human_review_feedback)
+
+            section_feedback = "\n\n".join(part.strip() for part in feedback_parts if part.strip())
 
             # ── 7e. Build prompt ────────────────────────
             prompt = self._build_prompt(

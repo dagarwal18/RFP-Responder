@@ -10,6 +10,7 @@ from .narrative_agent import NarrativeAssemblyAgent
 from .technical_validation_agent import TechnicalValidationAgent
 from .commercial_agent import CommercialAgent
 from .legal_agent import LegalAgent
+from .human_validation_agent import HumanValidationAgent
 from .final_readiness_agent import FinalReadinessAgent
 from .submission_agent import SubmissionAgent
 
@@ -26,6 +27,7 @@ __all__ = [
     "TechnicalValidationAgent",
     "CommercialAgent",
     "LegalAgent",
+    "HumanValidationAgent",
     "FinalReadinessAgent",
     "SubmissionAgent",
 ]
