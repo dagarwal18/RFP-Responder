@@ -295,7 +295,7 @@ The most complex agent. Performs a **full-document sweep** using a two-layer arc
 
 **State writes:** `requirements` (list[Requirement]), `status → VALIDATING_REQUIREMENTS`
 
----
+--- 
 
 #### B2 — Requirements Validation Agent ✅
 
