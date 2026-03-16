@@ -14,6 +14,10 @@
   <!-- ── Header ────────────────────────────────── -->
   <header class="header">
     <h1>⚡ RFP Responder</h1>
+    <nav class="view-toggle" id="viewToggle">
+      <button type="button" class="view-toggle-btn active" id="viewPipelineBtn" onclick="switchView('pipeline')">Pipeline</button>
+      <button type="button" class="view-toggle-btn" id="viewReviewBtn" onclick="switchView('review')" disabled>Review</button>
+    </nav>
     <div class="api-status">
       <span class="status-dot" id="apiDot"></span>
       <span id="apiLabel">Connecting…</span>
@@ -156,103 +160,7 @@
       </div>
     </div>
 
-    <div class="card review-card" id="reviewWorkspaceCard" style="grid-column:1 / -1; margin-top:20px; display:none">
-      <div class="card-header review-card-header">
-        <div class="review-card-title">
-          <h2>👀 Human Validation</h2>
-          <p>Review the source RFP beside the generated draft, then leave section or paragraph comments before approving or routing changes back.</p>
-        </div>
-        <span class="badge review-status-badge" id="reviewWorkspaceBadge">Pending</span>
-      </div>
-      <div class="card-body review-card-body">
-        <div id="reviewWorkspaceSummary" class="review-summary-grid"></div>
-
-        <div class="review-main-grid">
-          <section class="review-column">
-            <div class="review-column-header">
-              <div>
-                <span class="review-column-eyebrow">Source context</span>
-                <h3>RFP Sections</h3>
-              </div>
-              <span class="review-column-count" id="reviewSourceCount">0</span>
-            </div>
-            <div id="reviewSourceSections" class="review-column-body"></div>
-          </section>
-
-          <section class="review-column">
-            <div class="review-column-header">
-              <div>
-                <span class="review-column-eyebrow">Generated draft</span>
-                <h3>Response Sections</h3>
-              </div>
-              <span class="review-column-count" id="reviewResponseCount">0</span>
-            </div>
-            <div id="reviewResponseSections" class="review-column-body"></div>
-          </section>
-
-          <aside class="review-rail">
-            <div class="review-rail-block">
-              <div class="review-rail-header">
-                <strong>Reviewer Context</strong>
-              </div>
-              <div class="review-field">
-                <label class="review-label" for="reviewReviewer">Reviewer</label>
-                <input id="reviewReviewer" class="review-input" placeholder="Your name" />
-              </div>
-              <div class="review-field">
-                <label class="review-label" for="reviewSummaryInput">Decision Summary</label>
-                <textarea id="reviewSummaryInput" class="review-textarea" rows="3" placeholder="Summarize approval notes or the requested changes"></textarea>
-              </div>
-            </div>
-
-            <div class="review-rail-block">
-              <div class="review-rail-header">
-                <strong>Add Comment</strong>
-              </div>
-              <div class="review-anchor-pill">
-                <strong>Selected</strong>
-                <span id="reviewSelectedAnchor">Select a section or paragraph to comment on.</span>
-              </div>
-              <div class="review-field">
-                <label class="review-label" for="reviewCommentInput">Requested Change</label>
-                <textarea id="reviewCommentInput" class="review-textarea" rows="4" placeholder="Describe what needs to change in this section or paragraph"></textarea>
-              </div>
-              <div class="review-controls-row">
-                <div class="review-field" style="margin-bottom:0">
-                  <label class="review-label" for="reviewSeverity">Severity</label>
-                  <select id="reviewSeverity" class="review-select">
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
-                    <option value="low">Low</option>
-                  </select>
-                </div>
-                <button type="button" class="btn btn-primary" id="reviewAddCommentBtn" onclick="addReviewComment()">Add Comment</button>
-              </div>
-            </div>
-
-            <div class="review-rail-block">
-              <div class="review-rail-header">
-                <strong>Comments</strong>
-                <span id="reviewCommentCount" class="review-count-label">0 comments</span>
-              </div>
-              <div id="reviewCommentsList" class="review-comments-list"></div>
-            </div>
-
-            <div class="review-rail-block">
-              <div class="review-rail-header">
-                <strong>Decision</strong>
-              </div>
-              <div class="review-actions">
-                <button type="button" class="btn btn-outline" id="reviewRejectBtn" onclick="submitReviewDecision('REJECT')">Reject</button>
-                <button type="button" class="btn btn-outline" id="reviewChangesBtn" onclick="submitReviewDecision('REQUEST_CHANGES')">Request Changes</button>
-                <button type="button" class="btn btn-primary" id="reviewApproveBtn" onclick="submitReviewDecision('APPROVE')">Approve & Continue</button>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </div>
+    <!-- Review workspace removed from pipeline page; now in #reviewPage -->
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!--  COMPANY POLICIES PANEL                             -->
@@ -414,6 +322,96 @@
     </div>
 
   </main>
+
+  <!-- ═══════════ REVIEW PAGE (toggled via SPA) ═══════════ -->
+  <div id="reviewPage" style="display:none;position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 32px 64px">
+    <div class="card review-card" id="reviewWorkspaceCard" style="display:none">
+      <div class="card-header review-card-header">
+        <div class="review-card-title">
+          <h2>👀 Human Validation</h2>
+          <p>Review the generated response sections, leave paragraph or section comments, then approve or request changes.</p>
+        </div>
+        <span class="badge review-status-badge" id="reviewWorkspaceBadge">Pending</span>
+      </div>
+      <div class="card-body review-card-body">
+        <div id="reviewWorkspaceSummary" class="review-summary-grid"></div>
+
+        <div class="review-main-grid" style="grid-template-columns: minmax(0, 1fr) 360px">
+          <section class="review-column">
+            <div class="review-column-header">
+              <div>
+                <span class="review-column-eyebrow">Generated draft</span>
+                <h3>Response Sections</h3>
+              </div>
+              <span class="review-column-count" id="reviewResponseCount">0</span>
+            </div>
+            <div id="reviewResponseSections" class="review-column-body" style="max-height:none"></div>
+          </section>
+
+          <aside class="review-rail">
+            <div class="review-rail-block">
+              <div class="review-rail-header">
+                <strong>Reviewer Context</strong>
+              </div>
+              <div class="review-field">
+                <label class="review-label" for="reviewReviewer">Reviewer</label>
+                <input id="reviewReviewer" class="review-input" placeholder="Your name" />
+              </div>
+              <div class="review-field">
+                <label class="review-label" for="reviewSummaryInput">Decision Summary</label>
+                <textarea id="reviewSummaryInput" class="review-textarea" rows="3" placeholder="Summarize approval notes or the requested changes"></textarea>
+              </div>
+            </div>
+
+            <div class="review-rail-block">
+              <div class="review-rail-header">
+                <strong>Add Comment</strong>
+              </div>
+              <div class="review-anchor-pill">
+                <strong>Selected</strong>
+                <span id="reviewSelectedAnchor">Select a section or paragraph to comment on.</span>
+              </div>
+              <div class="review-field">
+                <label class="review-label" for="reviewCommentInput">Requested Change</label>
+                <textarea id="reviewCommentInput" class="review-textarea" rows="4" placeholder="Describe what needs to change in this section or paragraph"></textarea>
+              </div>
+              <div class="review-controls-row">
+                <div class="review-field" style="margin-bottom:0">
+                  <label class="review-label" for="reviewSeverity">Severity</label>
+                  <select id="reviewSeverity" class="review-select">
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+                <button type="button" class="btn btn-primary" id="reviewAddCommentBtn" onclick="addReviewComment()">Add Comment</button>
+              </div>
+            </div>
+
+            <div class="review-rail-block">
+              <div class="review-rail-header">
+                <strong>Comments</strong>
+                <span id="reviewCommentCount" class="review-count-label">0 comments</span>
+              </div>
+              <div id="reviewCommentsList" class="review-comments-list"></div>
+            </div>
+
+            <div class="review-rail-block">
+              <div class="review-rail-header">
+                <strong>Decision</strong>
+              </div>
+              <div class="review-actions">
+                <button type="button" class="btn btn-outline" id="reviewRejectBtn" onclick="submitReviewDecision('REJECT')">Reject</button>
+                <button type="button" class="btn btn-outline" id="reviewChangesBtn" onclick="submitReviewDecision('REQUEST_CHANGES')">Request Changes</button>
+                <button type="button" class="btn btn-primary" id="reviewApproveBtn" onclick="submitReviewDecision('APPROVE')">Approve & Continue</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="js/app.js"></script>
   <script src="js/kb.js"></script>

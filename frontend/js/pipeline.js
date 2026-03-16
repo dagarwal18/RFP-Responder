@@ -1,11 +1,34 @@
 // ── Stepper state ──────────────────────────────
-// Maps stage key → 'pending' | 'active' | 'complete' | 'failed'
 let stepperState = {};
 function resetStepperState() {
   stepperState = {};
   STAGES.forEach(s => stepperState[s.key] = 'pending');
 }
 resetStepperState();
+
+// ── SPA View Toggle ────────────────────────────
+window.switchView = function(view) {
+  const mainEl = document.querySelector('main.main');
+  const reviewEl = document.getElementById('reviewPage');
+  const pipelineBtn = document.getElementById('viewPipelineBtn');
+  const reviewBtn = document.getElementById('viewReviewBtn');
+  if (view === 'review') {
+    mainEl.style.display = 'none';
+    reviewEl.style.display = 'block';
+    pipelineBtn.classList.remove('active');
+    reviewBtn.classList.add('active');
+  } else {
+    mainEl.style.display = '';
+    reviewEl.style.display = 'none';
+    pipelineBtn.classList.add('active');
+    reviewBtn.classList.remove('active');
+  }
+};
+
+function enableReviewToggle(enabled) {
+  const btn = document.getElementById('viewReviewBtn');
+  btn.disabled = !enabled;
+}
 
 function reviewComments() {
   return reviewWorkspace.package?.comments || [];
@@ -252,12 +275,10 @@ function renderReviewWorkspace() {
 
   document.getElementById('reviewSelectedAnchor').textContent = formatReviewAnchor(reviewWorkspace.selectedAnchor);
   document.getElementById('reviewCommentCount').textContent = `${reviewComments().length} comment${reviewComments().length === 1 ? '' : 's'}`;
-  document.getElementById('reviewSourceCount').textContent = (pkg.source_sections || []).length;
   document.getElementById('reviewResponseCount').textContent = (pkg.response_sections || []).length;
 
   const summaries = [
     { label: 'Review Status', value: humanizeStatusLabel(activeStatus) },
-    { label: 'Source Sections', value: (pkg.source_sections || []).length },
     { label: 'Response Sections', value: (pkg.response_sections || []).length },
     { label: 'Open Comments', value: pkg.open_comment_count || 0 },
     { label: 'Validation', value: pkg.validation_summary || 'No validation summary' },
@@ -273,7 +294,6 @@ function renderReviewWorkspace() {
     </div>
   `).join('');
 
-  document.getElementById('reviewSourceSections').innerHTML = renderReviewSectionList(pkg.source_sections || [], 'source');
   document.getElementById('reviewResponseSections').innerHTML = renderReviewSectionList(pkg.response_sections || [], 'response');
   document.getElementById('reviewCommentsList').innerHTML = renderReviewComments();
 
@@ -328,6 +348,12 @@ async function loadReviewWorkspace(rfpId, statusValue = '') {
       return;
     }
     renderReviewWorkspace();
+
+    // Only enable the Review toggle if the review is actionable
+    const reviewStatus = (reviewWorkspace.package?.status || '').toUpperCase();
+    const pipelineStatus = (reviewWorkspace.status || '').toUpperCase();
+    const isActionable = reviewStatus === 'PENDING' || pipelineStatus.includes('AWAITING_HUMAN_VALIDATION');
+    enableReviewToggle(isActionable);
   } catch {
     clearReviewWorkspace();
   }
@@ -411,6 +437,8 @@ window.submitReviewDecision = async function (decision) {
     }
 
     clearReviewWorkspace();
+    enableReviewToggle(false);
+    switchView('pipeline');
     connectPipelineWS(currentRfpId);
   } catch (e) {
     addLog('rfpLog', `Failed to submit review decision: ${e.message}`, 'error');
@@ -597,6 +625,16 @@ function connectPipelineWS(rfpId) {
         stepperState[data.agent] = 'complete';
         addLog('rfpLog', `✓ ${data.agent} → ${data.status || 'done'}`, 'success');
         renderStepper();
+
+        // If a node ends with AWAITING_HUMAN_VALIDATION, enable the Review toggle
+        if (data.status && data.status.includes('AWAITING_HUMAN_VALIDATION')) {
+          enableReviewToggle(true);
+          if (activeRfpId) {
+            loadReviewWorkspace(activeRfpId, data.status).then(() => {
+              switchView('review');
+            }).catch(err => console.warn('Failed to auto-load review workspace:', err));
+          }
+        }
         break;
 
       case 'error':
@@ -624,6 +662,27 @@ function connectPipelineWS(rfpId) {
           loadReviewWorkspace(activeRfpId, endStatus).catch(err =>
             console.warn('Failed to load review workspace:', err)
           );
+        }
+
+        // Auto-toggle to review page if awaiting human validation
+        if (endStatus === 'AWAITING_HUMAN_VALIDATION') {
+          enableReviewToggle(true);
+          switchView('review');
+        } else {
+          // Pipeline completed (SUBMITTED, etc.) — disable review toggle
+          enableReviewToggle(false);
+          switchView('pipeline');
+        }
+
+        // Show proposal link when submitted
+        if (endStatus === 'SUBMITTED' && activeRfpId) {
+          apiFetch(`/api/rfp/${activeRfpId}/status`).then(statusData => {
+            const submissionRecord = statusData?.result?.submission_record || statusData?.agent_outputs?.F2_SUBMISSION;
+            const outputPath = submissionRecord?.output_file_path;
+            if (outputPath) {
+              addLog('rfpLog', `📄 Proposal written to: ${outputPath}`, 'success');
+            }
+          }).catch(() => {});
         }
         break;
     }

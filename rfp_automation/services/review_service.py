@@ -286,6 +286,47 @@ class ReviewService:
                 )
             )
 
+        # ── Append E1 (Commercial) and E2 (Legal) as reviewable sections ──
+        commercial_text = getattr(state.commercial_result, "commercial_narrative", "") or ""
+        if commercial_text.strip():
+            comm_paragraphs = [
+                ReviewParagraph(
+                    paragraph_id=f"COMMERCIAL:P{i}",
+                    text=p,
+                )
+                for i, p in enumerate(ReviewService._split_paragraphs(commercial_text), 1)
+            ]
+            sections.append(
+                ReviewSection(
+                    section_id="COMMERCIAL",
+                    title="Commercial Summary",
+                    domain="response",
+                    full_text=commercial_text,
+                    section_type="commercial",
+                    paragraphs=comm_paragraphs,
+                )
+            )
+
+        legal_text = getattr(state.legal_result, "risk_register_summary", "") or ""
+        if legal_text.strip():
+            legal_paragraphs = [
+                ReviewParagraph(
+                    paragraph_id=f"LEGAL:P{i}",
+                    text=p,
+                )
+                for i, p in enumerate(ReviewService._split_paragraphs(legal_text), 1)
+            ]
+            sections.append(
+                ReviewSection(
+                    section_id="LEGAL",
+                    title="Legal Risk Assessment",
+                    domain="response",
+                    full_text=legal_text,
+                    section_type="legal",
+                    paragraphs=legal_paragraphs,
+                )
+            )
+
         return sections
 
     @staticmethod
