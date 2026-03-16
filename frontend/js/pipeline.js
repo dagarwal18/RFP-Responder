@@ -1,0 +1,1703 @@
+// ── Stepper state ──────────────────────────────
+// Maps stage key → 'pending' | 'active' | 'complete' | 'failed'
+let stepperState = {};
+function resetStepperState() {
+  stepperState = {};
+  STAGES.forEach(s => stepperState[s.key] = 'pending');
+}
+resetStepperState();
+
+function reviewComments() {
+  return reviewWorkspace.package?.comments || [];
+}
+
+function findReviewSection(domain, sectionId) {
+  const sections = domain === 'source'
+    ? (reviewWorkspace.package?.source_sections || [])
+    : (reviewWorkspace.package?.response_sections || []);
+  return sections.find(section => section.section_id === sectionId) || null;
+}
+
+function buildReviewAnchor(domain, sectionId, paragraphId = '') {
+  const section = findReviewSection(domain, sectionId);
+  if (!section) return null;
+  const paragraph = paragraphId
+    ? (section.paragraphs || []).find(item => item.paragraph_id === paragraphId)
+    : null;
+  const excerpt = paragraph
+    ? paragraph.text || ''
+    : (section.full_text || (section.paragraphs || []).map(item => item.text).join('\n\n') || '');
+  return {
+    anchor_level: paragraph ? 'paragraph' : 'section',
+    domain,
+    section_id: section.section_id,
+    section_title: section.title || '',
+    paragraph_id: paragraph ? paragraph.paragraph_id : '',
+    excerpt: excerpt.slice(0, 400),
+  };
+}
+
+function commentCountForSection(domain, sectionId) {
+  return reviewComments().filter(comment =>
+    comment.anchor?.domain === domain && comment.anchor?.section_id === sectionId
+  ).length;
+}
+
+window.addReviewComment = async function () {
+  const text = document.getElementById('reviewCommentInput').value.trim();
+  if (!reviewWorkspace.selectedAnchor) {
+    addLog('rfpLog', 'Select a section or paragraph before adding a comment.', 'error');
+    return;
+  }
+  if (!text) {
+    addLog('rfpLog', 'Enter a comment before saving.', 'error');
+    return;
+  }
+
+  reviewWorkspace.package.comments = [
+    ...reviewComments(),
+    {
+      comment_id: `REV-CMT-${Date.now()}`,
+      anchor: reviewWorkspace.selectedAnchor,
+      comment: text,
+      severity: document.getElementById('reviewSeverity').value,
+      rerun_hint: 'auto',
+      status: 'open',
+      author: document.getElementById('reviewReviewer').value.trim() || 'Human Reviewer',
+      created_at: new Date().toISOString(),
+    },
+  ];
+
+  try {
+    await persistReviewComments();
+    document.getElementById('reviewCommentInput').value = '';
+    reviewWorkspace.selectedAnchor = null;
+    renderReviewWorkspace();
+    addLog('rfpLog', 'Saved human validation comment.', 'success');
+  } catch (e) {
+    addLog('rfpLog', `Failed to save review comment: ${e.message}`, 'error');
+  }
+};
+
+function normalizeReviewStatus(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  return raw.split('.').pop().toUpperCase();
+}
+
+function humanizeStatusLabel(value = '') {
+  const normalized = normalizeReviewStatus(value) || 'PENDING';
+  return normalized.replace(/_/g, ' ');
+}
+
+function reviewStatusClass(value = '') {
+  const normalized = normalizeReviewStatus(value);
+  if (normalized === 'AWAITING_HUMAN_VALIDATION') return 'review-status-awaiting';
+  if (normalized === 'RUNNING') return 'review-status-running';
+  if (normalized === 'REJECTED') return 'review-status-rejected';
+  if (normalized === 'SUBMITTED' || normalized === 'COMPLETED') return 'review-status-done';
+  return '';
+}
+
+function reviewCanAct() {
+  const runStatus = normalizeReviewStatus(reviewWorkspace.status);
+  const packageStatus = normalizeReviewStatus(reviewWorkspace.package?.status);
+  return runStatus === 'AWAITING_HUMAN_VALIDATION'
+    || (!runStatus && packageStatus === 'PENDING');
+}
+
+function formatReviewAnchor(anchor) {
+  if (!anchor) return 'Select a section or paragraph to comment on.';
+  const bits = [
+    anchor.domain === 'source' ? 'Source' : 'Response',
+    anchor.section_title || anchor.section_id || 'Section',
+  ];
+  if (anchor.paragraph_id) bits.push(anchor.paragraph_id);
+  return bits.join(' / ');
+}
+
+function commentCountForParagraph(domain, sectionId, paragraphId) {
+  return reviewComments().filter(comment =>
+    comment.anchor?.domain === domain
+    && comment.anchor?.section_id === sectionId
+    && comment.anchor?.paragraph_id === paragraphId
+  ).length;
+}
+
+function renderReviewSectionList(sections, domain) {
+  if (!sections.length) {
+    return `<div class="review-empty">No ${escapeHtml(domain)} sections available.</div>`;
+  }
+
+  return sections.map(section => {
+    const comments = commentCountForSection(domain, section.section_id);
+    const paragraphs = section.paragraphs || [];
+    const previewText = truncateText(
+      section.full_text || paragraphs.map(item => item.text || '').join('\n\n') || 'No preview available.',
+      320,
+    );
+    const sectionSelected = reviewWorkspace.selectedAnchor
+      && reviewWorkspace.selectedAnchor.domain === domain
+      && reviewWorkspace.selectedAnchor.section_id === section.section_id
+      && !reviewWorkspace.selectedAnchor.paragraph_id;
+    const metaParts = [section.section_id || ''];
+    if (section.source_section_title) metaParts.push(`Source: ${section.source_section_title}`);
+    if (section.section_type) metaParts.push(section.section_type);
+    if (section.requirement_ids?.length) metaParts.push(`${section.requirement_ids.length} requirement${section.requirement_ids.length === 1 ? '' : 's'}`);
+    const sectionButtonLabel = sectionSelected ? 'Section Selected' : 'Comment Section';
+
+    return `<details class="review-section"${sectionSelected || comments ? ' open' : ''}>
+      <summary>
+        <div class="review-section-title-row">
+          <div class="review-section-title">
+            <strong>${escapeHtml(section.title || section.section_id)}</strong>
+            <span class="review-section-meta">${escapeHtml(metaParts.filter(Boolean).join(' / '))}</span>
+          </div>
+          <span class="review-section-badges">
+            ${comments ? `<span class="review-count-badge">${comments} comment${comments === 1 ? '' : 's'}</span>` : ''}
+          </span>
+        </div>
+      </summary>
+      <div class="review-section-shell">
+        <div class="review-preview">${escapeHtml(previewText)}</div>
+        <div class="review-section-actions">
+          <button
+            type="button"
+            class="btn btn-sm review-select-btn ${sectionSelected ? 'is-selected' : ''}"
+            onclick='selectReviewAnchor(event, ${jsStringLiteral(domain)}, ${jsStringLiteral(section.section_id)})'
+          >${sectionButtonLabel}</button>
+          <span class="review-inline-note">${paragraphs.length} paragraph${paragraphs.length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="review-paragraph-list">
+          ${paragraphs.map(paragraph => {
+        const anchorSelected = reviewWorkspace.selectedAnchor
+          && reviewWorkspace.selectedAnchor.section_id === section.section_id
+          && reviewWorkspace.selectedAnchor.paragraph_id === paragraph.paragraph_id
+          && reviewWorkspace.selectedAnchor.domain === domain;
+        const paragraphComments = commentCountForParagraph(domain, section.section_id, paragraph.paragraph_id);
+        const paragraphButtonLabel = anchorSelected ? 'Paragraph Selected' : 'Comment Paragraph';
+        return `<div class="review-paragraph ${anchorSelected ? 'is-selected' : ''}">
+              <div class="review-paragraph-header">
+                <span class="review-paragraph-label">${escapeHtml(paragraph.paragraph_id || 'Paragraph')}</span>
+                <div class="review-paragraph-actions">
+                  ${paragraphComments ? `<span class="review-count-badge">${paragraphComments}</span>` : ''}
+                  <button
+                    type="button"
+                    class="btn btn-sm review-select-btn ${anchorSelected ? 'is-selected' : ''}"
+                    onclick='selectReviewAnchor(event, ${jsStringLiteral(domain)}, ${jsStringLiteral(section.section_id)}, ${jsStringLiteral(paragraph.paragraph_id)})'
+                  >${paragraphButtonLabel}</button>
+                </div>
+              </div>
+              <div class="review-paragraph-text">${escapeHtml(paragraph.text || '')}</div>
+            </div>`;
+      }).join('')}
+        </div>
+      </div>
+    </details>`;
+  }).join('');
+}
+
+function renderReviewComments() {
+  const comments = reviewComments();
+  if (!comments.length) {
+    return '<div class="review-empty">No comments added yet.</div>';
+  }
+
+  return comments.map(comment => {
+    const anchorLabel = formatReviewAnchor(comment.anchor || {});
+    const severity = (comment.severity || 'medium').toLowerCase();
+    const severityStyles = {
+      low: { bg: 'rgba(59,130,246,0.15)', fg: '#60a5fa' },
+      medium: { bg: 'rgba(245,158,11,0.15)', fg: '#fbbf24' },
+      high: { bg: 'rgba(249,115,22,0.15)', fg: '#fb923c' },
+      critical: { bg: 'rgba(239,68,68,0.15)', fg: '#f87171' },
+    };
+    const severityStyle = severityStyles[severity] || severityStyles.medium;
+    return `<div class="review-comment-card">
+      <div class="review-comment-meta">
+        <div>
+          <div class="review-comment-title">${escapeHtml(anchorLabel)}</div>
+          <div class="review-comment-author">${escapeHtml(comment.author || 'Reviewer')}</div>
+        </div>
+        <span class="review-severity-badge" style="background:${severityStyle.bg};color:${severityStyle.fg}">
+          ${escapeHtml(severity)}
+        </span>
+      </div>
+      <div class="review-comment-body">${escapeHtml(comment.comment || '')}</div>
+      <div class="review-comment-footer">
+        <button
+          type="button"
+          class="btn btn-outline btn-sm"
+          onclick='removeReviewComment(${jsStringLiteral(comment.comment_id)})'
+        >Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderReviewWorkspace() {
+  const card = document.getElementById('reviewWorkspaceCard');
+  const pkg = reviewWorkspace.package;
+  if (!pkg || !reviewWorkspace.rfpId) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+
+  const activeStatus = normalizeReviewStatus(reviewWorkspace.status || pkg.status || 'PENDING') || 'PENDING';
+  const badge = document.getElementById('reviewWorkspaceBadge');
+  badge.textContent = humanizeStatusLabel(activeStatus);
+  badge.className = `badge review-status-badge ${reviewStatusClass(activeStatus)}`.trim();
+
+  document.getElementById('reviewSelectedAnchor').textContent = formatReviewAnchor(reviewWorkspace.selectedAnchor);
+  document.getElementById('reviewCommentCount').textContent = `${reviewComments().length} comment${reviewComments().length === 1 ? '' : 's'}`;
+  document.getElementById('reviewSourceCount').textContent = (pkg.source_sections || []).length;
+  document.getElementById('reviewResponseCount').textContent = (pkg.response_sections || []).length;
+
+  const summaries = [
+    { label: 'Review Status', value: humanizeStatusLabel(activeStatus) },
+    { label: 'Source Sections', value: (pkg.source_sections || []).length },
+    { label: 'Response Sections', value: (pkg.response_sections || []).length },
+    { label: 'Open Comments', value: pkg.open_comment_count || 0 },
+    { label: 'Validation', value: pkg.validation_summary || 'No validation summary' },
+    { label: 'Commercial', value: pkg.commercial_summary || 'No commercial summary' },
+    { label: 'Legal', value: pkg.legal_summary || 'No legal summary' },
+  ];
+  document.getElementById('reviewWorkspaceSummary').innerHTML = summaries.map(item => `
+    <div class="review-summary-card">
+      <div class="label">${escapeHtml(item.label)}</div>
+      ${typeof item.value === 'number'
+        ? `<div class="value-number">${escapeHtml(item.value)}</div>`
+        : `<div class="value-text">${escapeHtml(item.value)}</div>`}
+    </div>
+  `).join('');
+
+  document.getElementById('reviewSourceSections').innerHTML = renderReviewSectionList(pkg.source_sections || [], 'source');
+  document.getElementById('reviewResponseSections').innerHTML = renderReviewSectionList(pkg.response_sections || [], 'response');
+  document.getElementById('reviewCommentsList').innerHTML = renderReviewComments();
+
+  const reviewerInput = document.getElementById('reviewReviewer');
+  const summaryInput = document.getElementById('reviewSummaryInput');
+  if (reviewerInput !== document.activeElement) {
+    reviewerInput.value = pkg.decision?.reviewer || '';
+  }
+  if (summaryInput !== document.activeElement) {
+    summaryInput.value = pkg.decision?.summary || '';
+  }
+
+  const canAct = reviewCanAct();
+  ['reviewApproveBtn', 'reviewChangesBtn', 'reviewRejectBtn'].forEach(id => {
+    document.getElementById(id).disabled = !canAct;
+  });
+  ['reviewReviewer', 'reviewSummaryInput', 'reviewCommentInput', 'reviewSeverity', 'reviewAddCommentBtn'].forEach(id => {
+    document.getElementById(id).disabled = !canAct;
+  });
+}
+
+function clearReviewWorkspace() {
+  reviewWorkspace = {
+    rfpId: null,
+    package: null,
+    selectedAnchor: null,
+    status: '',
+  };
+  document.getElementById('reviewWorkspaceCard').style.display = 'none';
+  document.getElementById('reviewCommentInput').value = '';
+  document.getElementById('reviewReviewer').value = '';
+  document.getElementById('reviewSummaryInput').value = '';
+}
+
+async function loadReviewWorkspace(rfpId, statusValue = '') {
+  if (!rfpId) {
+    clearReviewWorkspace();
+    return;
+  }
+
+  try {
+    const data = await apiFetch(`/api/rfp/${rfpId}/review`);
+    const switchingRun = reviewWorkspace.rfpId !== rfpId;
+    reviewWorkspace.rfpId = rfpId;
+    reviewWorkspace.package = data.review_package || null;
+    reviewWorkspace.status = statusValue || data.status || '';
+    if (switchingRun) {
+      reviewWorkspace.selectedAnchor = null;
+    }
+    if (!reviewWorkspace.package) {
+      clearReviewWorkspace();
+      return;
+    }
+    renderReviewWorkspace();
+  } catch {
+    clearReviewWorkspace();
+  }
+}
+
+async function persistReviewComments() {
+  if (!reviewWorkspace.rfpId || !reviewWorkspace.package) return;
+  const response = await apiFetch(`/api/rfp/${reviewWorkspace.rfpId}/review/comments`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ comments: reviewComments() }),
+  });
+  reviewWorkspace.package = response.review_package || reviewWorkspace.package;
+  reviewWorkspace.status = response.status || reviewWorkspace.status;
+}
+
+window.selectReviewAnchor = function (eventOrDomain, domainOrSectionId, sectionIdOrParagraphId = '', maybeParagraphId = '') {
+  let event = null;
+  let domain = eventOrDomain;
+  let sectionId = domainOrSectionId;
+  let paragraphId = sectionIdOrParagraphId;
+
+  if (eventOrDomain && typeof eventOrDomain.preventDefault === 'function') {
+    event = eventOrDomain;
+    domain = domainOrSectionId;
+    sectionId = sectionIdOrParagraphId;
+    paragraphId = maybeParagraphId || '';
+  }
+
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  reviewWorkspace.selectedAnchor = buildReviewAnchor(domain, sectionId, paragraphId || '');
+  renderReviewWorkspace();
+};
+
+window.removeReviewComment = async function (commentId) {
+  reviewWorkspace.package.comments = reviewComments().filter(comment => comment.comment_id !== commentId);
+  try {
+    await persistReviewComments();
+    renderReviewWorkspace();
+  } catch (e) {
+    addLog('rfpLog', `Failed to update comments: ${e.message}`, 'error');
+  }
+};
+
+window.submitReviewDecision = async function (decision) {
+  if (!reviewWorkspace.rfpId || !reviewWorkspace.package) return;
+  if (decision === 'REQUEST_CHANGES' && reviewComments().length === 0) {
+    addLog('rfpLog', 'Add at least one comment before requesting changes.', 'error');
+    return;
+  }
+
+  const currentRfpId = reviewWorkspace.rfpId;
+  const reviewer = document.getElementById('reviewReviewer').value.trim();
+  const summary = document.getElementById('reviewSummaryInput').value.trim();
+  const buttonIds = ['reviewApproveBtn', 'reviewChangesBtn', 'reviewRejectBtn'];
+  buttonIds.forEach(id => { document.getElementById(id).disabled = true; });
+
+  try {
+    const response = await apiFetch(`/api/rfp/${currentRfpId}/review/decision`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        decision,
+        reviewer,
+        summary,
+        comments: reviewComments(),
+      }),
+    });
+
+    addLog('rfpLog', response.message, 'success');
+    document.getElementById('rfpBadge').textContent = response.status;
+    await loadRuns();
+
+    if (response.status === 'REJECTED') {
+      await viewRun(currentRfpId);
+      return;
+    }
+
+    clearReviewWorkspace();
+    connectPipelineWS(currentRfpId);
+  } catch (e) {
+    addLog('rfpLog', `Failed to submit review decision: ${e.message}`, 'error');
+    buttonIds.forEach(id => { document.getElementById(id).disabled = false; });
+  }
+};
+
+// ── Health check ───────────────────────────────
+// ══════════════════════════════════════════════
+//  KNOWLEDGE BASE
+// ══════════════════════════════════════════════
+
+document.getElementById('kbSeedBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('kbSeedBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Seeding…';
+  addLog('kbLog', 'Seeding knowledge base from JSON files…', 'info');
+  pausePolling();
+
+  try {
+    const data = await apiFetch('/api/knowledge/seed', { method: 'POST' });
+    addLog('kbLog', `✓ ${data.message}`, 'success');
+    loadKBStats();
+  } catch (e) {
+    addLog('kbLog', `✗ Seed failed: ${e.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🌱 Seed from JSON';
+    resumePolling();
+  }
+});
+
+// Clear Index
+window.clearIndex = async function () {
+  const btn = document.getElementById('kbClearIndexBtn');
+  if (!confirm('Clear the entire knowledge base index? This will delete all vectors and cannot be undone.')) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Clearing…';
+  addLog('kbLog', 'Clearing knowledge base index…', 'info');
+  pausePolling();
+
+  try {
+    const data = await apiFetch('/api/knowledge/index', { method: 'DELETE' });
+    addLog('kbLog', `✓ ${data.message}`, 'success');
+    loadKBStats();
+    loadKBFiles();
+  } catch (e) {
+    addLog('kbLog', `✗ Clear failed: ${e.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🗑 Clear Index';
+    resumePolling();
+  }
+};
+
+// Stats
+document.getElementById('kbQueryBtn').addEventListener('click', async () => {
+  const q = document.getElementById('kbQueryInput').value.trim();
+  if (!q) return;
+  const docType = document.getElementById('kbQueryType').value;
+  const box = document.getElementById('kbQueryResults');
+  box.innerHTML = '<div style="padding:8px;color:var(--text-muted)"><span class="spinner"></span> Querying…</div>';
+
+  try {
+    const payload = { query: q, top_k: 5 };
+    if (docType) payload.doc_type = docType;
+
+    const data = await apiFetch('/api/knowledge/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!data.results.length) {
+      box.innerHTML = '<div style="padding:8px;color:var(--text-muted)">No results.</div>';
+      return;
+    }
+    box.innerHTML = data.results.map(r => `
+      <div class="query-result-item">
+        <span class="score">[${(r.score || 0).toFixed(3)}]</span>
+        ${r.id || ''}
+        <div class="text">${(r.text || '').substring(0, 200)}…</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    box.innerHTML = `<div style="padding:8px;color:var(--error)">Query failed: ${e.message}</div>`;
+  }
+});
+
+// ── Uploaded KB files list ───────────────────────
+document.getElementById('kbRefreshFilesBtn').addEventListener('click', loadKBFiles);
+
+// ══════════════════════════════════════════════
+//  RFP PIPELINE
+// ══════════════════════════════════════════════
+
+const rfpFile = document.getElementById('rfpFile');
+const rfpUploadBtn = document.getElementById('rfpUploadBtn');
+const rfpDropzone = document.getElementById('rfpDropzone');
+const rfpFileInfo = document.getElementById('rfpFileInfo');
+let activeWS = null;
+let activeRfpId = null;
+let reviewWorkspace = {
+  rfpId: null,
+  package: null,
+  selectedAnchor: null,
+  status: '',
+};
+
+function showRFPFile(file) {
+  document.getElementById('rfpFileName').textContent = file.name;
+  document.getElementById('rfpFileSize').textContent = `(${formatSize(file.size)})`;
+  rfpFileInfo.style.display = 'flex';
+}
+
+function hideRFPFile() {
+  rfpFileInfo.style.display = 'none';
+}
+
+rfpFile.addEventListener('change', () => {
+  rfpUploadBtn.disabled = !rfpFile.files.length;
+  if (rfpFile.files.length) {
+    showRFPFile(rfpFile.files[0]);
+    rfpDropzone.querySelector('.label').innerHTML =
+      `<strong>${rfpFile.files[0].name}</strong> selected`;
+  } else {
+    hideRFPFile();
+  }
+});
+
+rfpDropzone.addEventListener('dragover', e => { e.preventDefault(); rfpDropzone.classList.add('drag-over'); });
+rfpDropzone.addEventListener('dragleave', () => rfpDropzone.classList.remove('drag-over'));
+rfpDropzone.addEventListener('drop', e => {
+  e.preventDefault(); rfpDropzone.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) {
+    rfpFile.files = e.dataTransfer.files;
+    rfpFile.dispatchEvent(new Event('change'));
+  }
+});
+
+// Build pipeline stepper from stepperState
+function renderStepper() {
+  const box = document.getElementById('pipelineStepper');
+  box.innerHTML = STAGES.map(s => {
+    const state = stepperState[s.key] || 'pending';
+    let cls = '';
+    if (state === 'active') cls = 'active';
+    if (state === 'complete') cls = 'complete';
+    if (state === 'failed') cls = 'failed';
+    return `<div class="step ${cls}"><div><div class="step-label">${s.label}</div></div></div>`;
+  }).join('');
+}
+renderStepper(); // initial empty
+
+// ── WebSocket connection for real-time progress ─────
+function connectPipelineWS(rfpId) {
+  // Close any existing connection
+  if (activeWS) {
+    try { activeWS.close(); } catch { }
+  }
+  activeRfpId = rfpId;
+
+  const url = `${WS_BASE}/api/rfp/ws/${rfpId}`;
+  addLog('rfpLog', `Connecting to live progress…`, 'info');
+  const ws = new WebSocket(url);
+  activeWS = ws;
+
+  ws.onopen = () => {
+    addLog('rfpLog', `🔗 Live progress connected`, 'info');
+  };
+
+  ws.onmessage = (evt) => {
+    let data;
+    try { data = JSON.parse(evt.data); } catch { return; }
+
+    switch (data.event) {
+      case 'node_start':
+        stepperState[data.agent] = 'active';
+        addLog('rfpLog', `▶ Starting ${data.agent}`, 'info');
+        renderStepper();
+        break;
+
+      case 'node_end':
+        stepperState[data.agent] = 'complete';
+        addLog('rfpLog', `✓ ${data.agent} → ${data.status || 'done'}`, 'success');
+        renderStepper();
+        break;
+
+      case 'error':
+        stepperState[data.agent] = 'failed';
+        addLog('rfpLog', `✗ ${data.agent}: ${data.message}`, 'error');
+        renderStepper();
+        break;
+
+      case 'pipeline_end':
+        const endStatus = data.status || 'UNKNOWN';
+        document.getElementById('rfpBadge').textContent = endStatus;
+        addLog('rfpLog', `══ Pipeline finished: ${endStatus}`,
+          endStatus === 'FAILED' ? 'error' : 'success');
+
+        // Re-enable upload button
+        rfpUploadBtn.innerHTML = 'Run Pipeline';
+        rfpUploadBtn.disabled = false;
+
+        // Refresh runs list and agent logs
+        loadRuns();
+        if (activeRfpId) {
+          loadAgentLogs(activeRfpId).catch(err =>
+            console.warn('Failed to load agent logs:', err)
+          );
+          loadReviewWorkspace(activeRfpId, endStatus).catch(err =>
+            console.warn('Failed to load review workspace:', err)
+          );
+        }
+        break;
+    }
+  };
+
+  ws.onclose = () => {
+    addLog('rfpLog', `WebSocket closed`, '');
+    if (activeWS === ws) activeWS = null;
+  };
+
+  ws.onerror = () => {
+    addLog('rfpLog', `WebSocket error — falling back to polling`, 'error');
+    if (activeWS === ws) activeWS = null;
+    // Fallback: poll status until done
+    startPolling(rfpId);
+  };
+}
+
+// ── Polling fallback ────────────────────────────
+function startPolling(rfpId) {
+  const interval = setInterval(async () => {
+    try {
+      const status = await apiFetch(`/api/rfp/${rfpId}/status`);
+      if (status.status !== 'RUNNING') {
+        clearInterval(interval);
+        document.getElementById('rfpBadge').textContent = status.status;
+        updateStepperFromStatus(status);
+        rfpUploadBtn.innerHTML = 'Run Pipeline';
+        rfpUploadBtn.disabled = false;
+        loadRuns();
+        loadReviewWorkspace(rfpId, status.status);
+      }
+    } catch {
+      clearInterval(interval);
+    }
+  }, 2000);
+}
+
+// ── Update stepper from a status response (for polling/viewRun) ──
+function updateStepperFromStatus(status) {
+  resetStepperState();
+  const currentAgent = status.current_agent || '';
+  const failed = status.status === 'FAILED';
+  let hitCurrent = false;
+
+  for (const s of STAGES) {
+    if (s.key === currentAgent) {
+      stepperState[s.key] = failed ? 'failed' : 'active';
+      hitCurrent = true;
+    } else if (!hitCurrent && currentAgent) {
+      stepperState[s.key] = 'complete';
+    }
+  }
+  renderStepper();
+}
+
+// Upload & run pipeline (returns immediately, progress via WS)
+rfpUploadBtn.addEventListener('click', async () => {
+  const file = rfpFile.files[0];
+  if (!file) return;
+
+  rfpUploadBtn.disabled = true;
+  rfpUploadBtn.innerHTML = '<span class="spinner"></span> Starting…';
+  document.getElementById('rfpBadge').textContent = 'Running';
+  addLog('rfpLog', `Uploading ${file.name}…`, 'info');
+
+  // Reset stepper for a new run
+  resetStepperState();
+  renderStepper();
+  clearReviewWorkspace();
+
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const data = await apiFetch('/api/rfp/upload', { method: 'POST', body: form });
+
+    // Handle cache hit instantly
+    if (data.status === 'COMPLETED' || data.status === 'SUBMITTED' || data.status === 'REJECTED') {
+      addLog('rfpLog', `✓ Cache hit! Instantly loaded ${data.rfp_id}`, 'success');
+      document.getElementById('rfpBadge').textContent = data.status;
+
+      rfpUploadBtn.innerHTML = 'Run Pipeline';
+      rfpUploadBtn.disabled = false;
+      rfpFile.value = '';
+      rfpDropzone.querySelector('.label').innerHTML = 'Drop an RFP document or <strong>click to browse</strong>';
+
+      loadRuns();
+      viewRun(data.rfp_id);
+      return;
+    }
+
+    // Normal flow (new run)
+    addLog('rfpLog', `Pipeline started → ${data.rfp_id}`, 'info');
+    document.getElementById('rfpBadge').textContent = 'Running';
+
+    // Keep filename visible during pipeline execution
+    rfpUploadBtn.innerHTML = '<span class="spinner"></span> Running…';
+
+    // Connect WebSocket for live progress
+    connectPipelineWS(data.rfp_id);
+
+    // Clear file input but keep filename info visible
+    rfpFile.value = '';
+    rfpDropzone.querySelector('.label').innerHTML =
+      'Drop an RFP document or <strong>click to browse</strong>';
+
+  } catch (e) {
+    addLog('rfpLog', `✗ Upload failed: ${e.message}`, 'error');
+    document.getElementById('rfpBadge').textContent = 'Failed';
+    rfpUploadBtn.innerHTML = 'Run Pipeline';
+    rfpUploadBtn.disabled = false;
+  }
+});
+
+// Load runs list
+async function loadRuns() {
+  try {
+    const data = await apiFetch('/api/rfp/list');
+    const box = document.getElementById('runsList');
+    if (!data.length) {
+      box.innerHTML = '<div style="padding:8px;color:var(--text-muted);font-size:13px">No pipeline runs yet.</div>';
+      return;
+    }
+    box.innerHTML = data.map(r => `
+      <div class="run-item" onclick="viewRun('${r.rfp_id}')">
+        <div>
+          <div class="run-id">${r.rfp_id}</div>
+          <div class="run-file">${r.filename || '—'}</div>
+        </div>
+        <div class="run-status ${r.status}">${r.status}</div>
+      </div>
+    `).join('');
+  } catch { }
+}
+
+async function viewRun(rfpId) {
+  try {
+    const status = await apiFetch(`/api/rfp/${rfpId}/status`);
+    document.getElementById('rfpBadge').textContent = status.status;
+    addLog('rfpLog', `Viewing run ${rfpId}: ${status.status}`, 'info');
+
+    updateStepperFromStatus(status);
+
+    // Load agent output logs
+    loadAgentLogs(rfpId);
+    loadReviewWorkspace(rfpId, status.status);
+
+    // Load checkpoints for this run
+    loadCheckpoints(rfpId);
+
+    // If it's still running, connect the WebSocket
+    if (status.status === 'RUNNING') {
+      connectPipelineWS(rfpId);
+    }
+  } catch (e) {
+    addLog('rfpLog', `Failed to load run: ${e.message}`, 'error');
+  }
+}
+
+document.getElementById('rfpRefreshBtn').addEventListener('click', loadRuns);
+
+// ══════════════════════════════════════════════
+//  CHECKPOINTS & RE-RUN
+// ══════════════════════════════════════════════
+
+let checkpointRfpId = null;
+
+// Agent display names
+const AGENT_LABELS = {
+  a1_intake: 'A1 Intake',
+  a2_structuring: 'A2 Structuring',
+  a3_go_no_go: 'A3 Go/No-Go',
+  b1_requirements_extraction: 'B1 Extraction',
+  b2_requirements_validation: 'B2 Validation',
+  c1_architecture_planning: 'C1 Architecture',
+  c2_requirement_writing: 'C2 Writing',
+  c3_narrative_assembly: 'C3 Narrative',
+  d1_technical_validation: 'D1 Tech Valid.',
+  commercial_legal_parallel: 'E1+E2 Com/Legal',
+  h1_human_validation_prepare: 'H1 Human Validation',
+  f1_final_readiness: 'F1 Readiness',
+  f2_submission: 'F2 Submission',
+};
+
+async function loadCheckpoints(rfpId) {
+  checkpointRfpId = rfpId;
+  const panel = document.getElementById('checkpointPanel');
+  const agentsDiv = document.getElementById('checkpointAgents');
+  const select = document.getElementById('rerunFromSelect');
+
+  try {
+    const data = await apiFetch(`/api/rfp/${rfpId}/checkpoints`);
+    const cachedSet = new Set(data.checkpoints.map(c => c.agent));
+
+    if (data.checkpoints.length === 0) {
+      panel.style.display = 'none';
+      return;
+    }
+
+    panel.style.display = 'block';
+
+    // Render cached/missing chips
+    const allAgents = Object.keys(AGENT_LABELS);
+    agentsDiv.innerHTML = allAgents.map(a => {
+      const isCached = cachedSet.has(a);
+      const label = AGENT_LABELS[a] || a;
+      return `<span class="checkpoint-chip ${isCached ? 'cached' : 'missing'}">
+        ${isCached ? '✓' : '○'} ${label}
+      </span>`;
+    }).join('');
+
+    // Populate rerun dropdown: user picks last agent to KEEP,
+    // next agent after it will re-execute
+    const allAgentKeys = Object.keys(AGENT_LABELS);
+    select.innerHTML = '<option value="" disabled selected>Keep cache through… → re-run next</option>';
+    for (const cp of data.checkpoints) {
+      const cachedAgent = cp.agent;
+      const cachedIdx = allAgentKeys.indexOf(cachedAgent);
+      if (cachedIdx < 0 || cachedIdx >= allAgentKeys.length - 1) continue;
+      const nextAgent = allAgentKeys[cachedIdx + 1];
+      const cachedLabel = AGENT_LABELS[cachedAgent] || cachedAgent;
+      const nextLabel = AGENT_LABELS[nextAgent] || nextAgent;
+      const opt = document.createElement('option');
+      opt.value = nextAgent; // API gets the agent to RE-EXECUTE
+      opt.textContent = `Keep ${cachedLabel} → re-run ${nextLabel}`;
+      select.appendChild(opt);
+    }
+
+  } catch (e) {
+    panel.style.display = 'none';
+    console.warn('Failed to load checkpoints:', e);
+  }
+}
+
+async function rerunFromAgent() {
+  const select = document.getElementById('rerunFromSelect');
+  const agent = select.value;
+  if (!agent || !checkpointRfpId) {
+    addLog('rfpLog', '⚠ Select an agent to re-run from', 'error');
+    return;
+  }
+
+  const label = AGENT_LABELS[agent] || agent;
+  addLog('rfpLog', `🔄 Re-running from ${label}…`, 'info');
+  document.getElementById('rerunBtn').disabled = true;
+  document.getElementById('rerunBtn').textContent = '⏳ Starting…';
+
+  // Reset stepper
+  resetStepperState();
+  renderStepper();
+  document.getElementById('rfpBadge').textContent = 'Running';
+  clearReviewWorkspace();
+
+  try {
+    const data = await apiFetch(`/api/rfp/${checkpointRfpId}/rerun?start_from=${agent}`, {
+      method: 'POST',
+    });
+    addLog('rfpLog', `✓ Re-run started from ${label}: ${data.rfp_id}`, 'success');
+
+    // Connect WebSocket for live progress
+    connectPipelineWS(data.rfp_id);
+  } catch (e) {
+    addLog('rfpLog', `✗ Re-run failed: ${e.message}`, 'error');
+    document.getElementById('rfpBadge').textContent = 'Failed';
+  } finally {
+    document.getElementById('rerunBtn').disabled = false;
+    document.getElementById('rerunBtn').textContent = '🔄 Re-Run';
+  }
+}
+
+async function clearCheckpoints() {
+  if (!checkpointRfpId) return;
+  if (!confirm(`Delete all cached checkpoints for ${checkpointRfpId}? Next run will execute all agents from scratch.`)) {
+    return;
+  }
+
+  try {
+    const data = await apiFetch(`/api/rfp/${checkpointRfpId}/checkpoints`, {
+      method: 'DELETE',
+    });
+    addLog('rfpLog', `🗑 ${data.message}`, 'info');
+    document.getElementById('checkpointPanel').style.display = 'none';
+  } catch (e) {
+    addLog('rfpLog', `✗ Failed to clear checkpoints: ${e.message}`, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════
+//  COMPANY POLICIES
+// ══════════════════════════════════════════════
+
+async function loadPolicies() {
+  const category = document.getElementById('policyCategoryFilter').value;
+  const qs = category ? `?category=${category}` : '';
+  try {
+    const data = await apiFetch(`/api/knowledge/policies${qs}`);
+    const tbody = document.getElementById('policiesTableBody');
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--text-muted)">No policies extracted yet. Upload a company document to extract policies.</td></tr>';
+      return;
+    }
+    const sevColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#22c55e' };
+    tbody.innerHTML = data.map(p => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:8px 6px;max-width:300px;overflow:hidden;text-overflow:ellipsis" title="${(p.policy_text || '').replace(/"/g, '&quot;')}">${p.policy_text || ''}</td>
+        <td style="padding:8px 6px"><span class="type-badge">${p.category || ''}</span></td>
+        <td style="padding:8px 6px"><span style="color:${sevColors[p.severity] || '#888'};font-weight:600;font-size:12px">${(p.severity || '').toUpperCase()}</span></td>
+        <td style="padding:8px 6px;font-size:12px;color:var(--text-muted)" title="${p.source_filename || ''}">${(p.source_filename || 'manual').substring(0, 20)}</td>
+        <td style="padding:8px 6px">
+          <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;margin-right:4px" onclick="editPolicy('${p.policy_id}')">✏️</button>
+          <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;color:#ef4444" onclick="deletePolicy('${p.policy_id}')">🗑</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    document.getElementById('policiesTableBody').innerHTML = `<tr><td colspan="5" style="padding:16px;text-align:center;color:#ef4444">Failed to load policies: ${e.message}</td></tr>`;
+  }
+}
+
+function openPolicyModal(title = 'Add Policy', policy = null) {
+  document.getElementById('policyModalTitle').textContent = title;
+  document.getElementById('policyEditId').value = policy ? policy.policy_id : '';
+  document.getElementById('policyTextInput').value = policy ? policy.policy_text : '';
+  document.getElementById('policyCatInput').value = policy ? policy.category : 'capability';
+  document.getElementById('policySevInput').value = policy ? policy.severity : 'medium';
+  document.getElementById('policySectionInput').value = policy ? (policy.source_section || '') : '';
+  const modal = document.getElementById('policyModal');
+  modal.style.display = 'flex';
+}
+window.closePolicyModal = function () {
+  document.getElementById('policyModal').style.display = 'none';
+};
+
+document.getElementById('addPolicyBtn').addEventListener('click', () => openPolicyModal());
+
+window.savePolicy = async function () {
+  const editId = document.getElementById('policyEditId').value;
+  const body = {
+    policy_text: document.getElementById('policyTextInput').value.trim(),
+    category: document.getElementById('policyCatInput').value,
+    severity: document.getElementById('policySevInput').value,
+    source_section: document.getElementById('policySectionInput').value.trim(),
+  };
+  if (!body.policy_text) return alert('Policy text is required');
+  try {
+    if (editId) {
+      await apiFetch(`/api/knowledge/policies/${editId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    } else {
+      await apiFetch('/api/knowledge/policies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    }
+    closePolicyModal();
+    loadPolicies();
+  } catch (e) {
+    alert('Failed to save: ' + e.message);
+  }
+};
+
+window.editPolicy = async function (policyId) {
+  try {
+    const policies = await apiFetch('/api/knowledge/policies');
+    const pol = policies.find(p => p.policy_id === policyId);
+    if (pol) openPolicyModal('Edit Policy', pol);
+  } catch (e) {
+    alert('Failed to load policy: ' + e.message);
+  }
+};
+
+window.deletePolicy = async function (policyId) {
+  if (!confirm(`Delete policy ${policyId}?`)) return;
+  try {
+    await apiFetch(`/api/knowledge/policies/${policyId}`, { method: 'DELETE' });
+    loadPolicies();
+  } catch (e) {
+    alert('Failed to delete: ' + e.message);
+  }
+};
+
+document.getElementById('policyCategoryFilter').addEventListener('change', loadPolicies);
+
+document.getElementById('deleteAllPoliciesBtn').addEventListener('click', async () => {
+  if (!confirm('Delete ALL policies? This cannot be undone.')) return;
+  try {
+    const res = await apiFetch('/api/knowledge/policies', { method: 'DELETE' });
+    alert(res.message || 'All policies deleted');
+    loadPolicies();
+  } catch (e) {
+    alert('Failed to delete policies: ' + e.message);
+  }
+});
+
+
+
+// ══════════════════════════════════════════════
+//  AGENT OUTPUT LOGS
+// ══════════════════════════════════════════════
+
+async function loadAgentLogs(rfpId) {
+  const container = document.getElementById('agentLogsContainer');
+  container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted)">Loading agent outputs…</div>';
+  document.getElementById('agentLogsHint').textContent = `Run: ${rfpId}`;
+  try {
+    const status = await apiFetch(`/api/rfp/${rfpId}/status`);
+    const outputs = status.agent_outputs || {};
+    if (!Object.keys(outputs).length) {
+      container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted)">No agent outputs available for this run.</div>';
+      return;
+    }
+    let html = '';
+    // A1 Intake
+    if (outputs.A1_INTAKE) {
+      const a1 = outputs.A1_INTAKE;
+      html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">📥 A1 Intake</summary>
+        <div style="padding:8px 16px;font-size:13px">
+          <div><strong>RFP ID:</strong> ${a1.rfp_id || '—'}</div>
+          <div><strong>Title:</strong> ${a1.title || '—'}</div>
+          <div><strong>Pages:</strong> ${a1.page_count ?? '—'} | <strong>Words:</strong> ${a1.word_count ?? '—'}</div>
+        </div></details>`;
+    }
+    // A2 Structuring
+    if (outputs.A2_STRUCTURING) {
+      const a2 = outputs.A2_STRUCTURING;
+      const sections = a2.sections || [];
+      html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">📑 A2 Structuring (${sections.length} sections, confidence: ${(a2.overall_confidence || 0).toFixed(2)})</summary>
+        <div style="padding:8px 16px;font-size:13px">
+          ${sections.map(s => `<div style="padding:4px 0"><span class="type-badge">${s.category}</span> <strong>${s.title}</strong> — ${s.content_summary || ''}</div>`).join('')}
+        </div></details>`;
+    }
+    // A3 Go/No-Go
+    if (outputs.A3_GO_NO_GO) {
+      const a3 = outputs.A3_GO_NO_GO;
+      const mappings = a3.requirement_mappings || [];
+      const statusColors = { ALIGNS: '#22c55e', VIOLATES: '#ef4444', RISK: '#f97316', NO_MATCH: '#888' };
+      html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">📊 A3 Go/No-Go — <span style="color:${a3.decision === 'GO' ? '#22c55e' : '#ef4444'}">${a3.decision || '—'}</span></summary>
+        <div style="padding:8px 16px;font-size:13px">
+          <div style="display:flex;gap:16px;margin-bottom:12px">
+            <div><strong>Strategic Fit:</strong> ${a3.strategic_fit_score ?? '—'}/10</div>
+            <div><strong>Technical:</strong> ${a3.technical_feasibility_score ?? '—'}/10</div>
+            <div><strong>Risk:</strong> ${a3.regulatory_risk_score ?? '—'}/10</div>
+          </div>
+          <div style="margin-bottom:8px"><strong>Justification:</strong> ${a3.justification || '—'}</div>
+          ${a3.red_flags && a3.red_flags.length ? `<div style="margin-bottom:8px;color:#f97316"><strong>Red Flags:</strong> ${a3.red_flags.join(', ')}</div>` : ''}
+          <div style="margin-bottom:4px"><strong>Requirements:</strong> ${a3.total_requirements || 0} total | ✅ ${a3.aligned_count || 0} aligned | ❌ ${a3.violated_count || 0} violated | ⚠️ ${a3.risk_count || 0} risk | ❓ ${a3.no_match_count || 0} unmatched</div>
+          ${mappings.length ? `<table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:12px">
+            <thead><tr style="border-bottom:1px solid var(--border);text-align:left">
+              <th style="padding:6px">Requirement</th><th style="padding:6px">Status</th><th style="padding:6px">Matched Policy</th><th style="padding:6px">Reasoning</th>
+            </tr></thead>
+            <tbody>${mappings.map(m => `<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:6px;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${(m.requirement_text || '').replace(/"/g, '&quot;')}">${m.requirement_text || ''}</td>
+              <td style="padding:6px"><span style="color:${statusColors[m.mapping_status] || '#888'};font-weight:600">${m.mapping_status}</span></td>
+              <td style="padding:6px;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${m.matched_policy || '—'}</td>
+              <td style="padding:6px;font-size:11px;color:var(--text-muted)">${m.reasoning || ''}</td>
+            </tr>`).join('')}</tbody>
+          </table>` : ''}
+        </div></details>`;
+    }
+    // B1 Requirements Extraction
+    if (outputs.B1_REQUIREMENTS_EXTRACTION) {
+      const b1 = outputs.B1_REQUIREMENTS_EXTRACTION;
+      const funcCount = b1.filter(r => r.classification === 'FUNCTIONAL').length;
+      const nonFuncCount = b1.filter(r => r.classification === 'NON_FUNCTIONAL').length;
+      html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔍 B1 Requirements Extraction (${b1.length} total)</summary>
+        <div style="padding:8px 16px;font-size:13px">
+          <div style="margin-bottom:8px"><strong>Classification:</strong> ${funcCount} Functional | ${nonFuncCount} Non-Functional</div>
+          <div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
+                <th style="padding:6px">ID</th><th style="padding:6px">Type</th><th style="padding:6px">Class</th><th style="padding:6px">Requirement</th>
+              </tr></thead>
+              <tbody>${b1.map(r => `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;font-weight:600;color:var(--accent-light)">${r.requirement_id}</td>
+                <td style="padding:6px">${r.type}</td>
+                <td style="padding:6px"><span class="type-badge">${r.classification}</span></td>
+                <td style="padding:6px;max-width:300px">${r.text}</td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>
+        </div></details>`;
+    }
+    // B2 Requirements Validation
+    if (outputs.B2_REQUIREMENTS_VALIDATION) {
+      const b2 = outputs.B2_REQUIREMENTS_VALIDATION;
+      const conf = b2.confidence_score || 0;
+      const confColor = conf >= 0.8 ? '#10b981' : conf >= 0.6 ? '#f59e0b' : '#ef4444';
+      const issues = b2.issues || [];
+      const valReqs = b2.validated_requirements || [];
+
+      // Severity badge colors
+      const sevStyles = {
+        warning: 'background:rgba(245,158,11,0.15);color:#f59e0b',
+        info: 'background:rgba(59,130,246,0.15);color:#3b82f6',
+        error: 'background:rgba(239,68,68,0.15);color:#ef4444',
+      };
+
+      // Build issues HTML
+      let issuesHtml = '';
+      if (issues.length) {
+        issuesHtml = `<div style="margin-bottom:12px">
+          <strong style="margin-bottom:6px;display:block">Identified Issues:</strong>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${issues.map(i => {
+          const sev = sevStyles[i.severity] || sevStyles.warning;
+          const reqIds = (i.requirement_ids || []);
+          const desc = i.description || 'No description provided';
+          const reqBadges = reqIds.length
+            ? reqIds.map(r => `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(99,102,241,0.15);color:var(--accent-light);margin-right:3px">${r}</span>`).join('')
+            : '<span style="font-size:11px;color:var(--text-muted)">General</span>';
+          return `<div style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                  <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;${sev}">${i.issue_type}</span>
+                  <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;${sev}">${i.severity || 'warning'}</span>
+                  <span>${reqBadges}</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-secondary)">${desc}</div>
+              </div>`;
+        }).join('')}
+          </div>
+        </div>`;
+      } else {
+        issuesHtml = '<div style="margin-bottom:12px;padding:8px 12px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:6px;color:#10b981;font-weight:500">✅ No issues identified. Requirements are solid.</div>';
+      }
+
+      // Build validated requirements table
+      let valReqsHtml = '';
+      if (valReqs.length) {
+        valReqsHtml = `<div style="margin-top:12px">
+          <strong style="margin-bottom:6px;display:block">Validated Requirements (${valReqs.length}):</strong>
+          <div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
+                <th style="padding:6px">ID</th><th style="padding:6px">Type</th><th style="padding:6px">Class</th><th style="padding:6px">Requirement</th>
+              </tr></thead>
+              <tbody>${valReqs.map(r => `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;font-weight:600;color:var(--accent-light);white-space:nowrap">${r.requirement_id}</td>
+                <td style="padding:6px;white-space:nowrap"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${r.type === 'MANDATORY' ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)'};color:${r.type === 'MANDATORY' ? '#ef4444' : '#3b82f6'}">${r.type}</span></td>
+                <td style="padding:6px"><span class="type-badge">${r.classification}</span></td>
+                <td style="padding:6px;max-width:350px">${r.text}</td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>
+        </div>`;
+      }
+
+      html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🛡️ B2 Requirements Validation &mdash; <span style="color:${confColor}">${(conf * 100).toFixed(0)}% Confidence</span></summary>
+        <div style="padding:8px 16px;font-size:13px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${confColor}">${(conf * 100).toFixed(0)}%</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Confidence</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${b2.total_requirements || 0}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Total</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${b2.duplicate_count ? '#f59e0b' : '#10b981'}">${b2.duplicate_count || 0}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Duplicates</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${b2.contradiction_count ? '#ef4444' : '#10b981'}">${b2.contradiction_count || 0}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Contradictions</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${b2.ambiguity_count ? '#f59e0b' : '#10b981'}">${b2.ambiguity_count || 0}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Ambiguities</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${b2.mandatory_count || 0}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Mandatory</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${b2.optional_count || 0}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Optional</div>
+            </div>
+          </div>
+          ${issuesHtml}
+          ${valReqsHtml}
+        </div></details>`;
+    }
+    // C1 Architecture Planning
+    if (outputs.C1_ARCHITECTURE_PLANNING) {
+      const c1 = outputs.C1_ARCHITECTURE_PLANNING;
+      const sections = c1.sections || [];
+      const gaps = c1.coverage_gaps || [];
+      const instructions = c1.rfp_response_instructions || '';
+      const gapBadge = gaps.length ? `<span style="color:#ef4444;margin-left:8px">⚠ ${gaps.length} gap${gaps.length > 1 ? 's' : ''}</span>` : '<span style="color:#10b981;margin-left:8px">✅ Full coverage</span>';
+      const typeColors = {
+        requirement_driven: { bg: 'rgba(99,102,241,0.15)', fg: '#818cf8', label: 'Requirement' },
+        knowledge_driven: { bg: 'rgba(16,185,129,0.15)', fg: '#10b981', label: 'Knowledge' },
+        commercial: { bg: 'rgba(59,130,246,0.15)', fg: '#3b82f6', label: 'Commercial' },
+        legal: { bg: 'rgba(245,158,11,0.15)', fg: '#f59e0b', label: 'Legal' },
+        boilerplate: { bg: 'rgba(156,163,175,0.15)', fg: '#9ca3af', label: 'Boilerplate' },
+      };
+      html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🏗️ C1 Architecture Planning (${sections.length} sections)${gapBadge}</summary>
+        <div style="padding:8px 16px;font-size:13px">
+          <div style="margin-bottom:12px"><strong>Total Sections:</strong> ${c1.total_sections || sections.length}</div>
+          ${instructions ? `<div style="margin-bottom:12px;padding:10px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:6px">
+            <strong style="color:var(--accent-light)">📋 RFP Response Instructions:</strong> <span style="color:var(--text-secondary)">${instructions}</span>
+          </div>` : ''}
+          ${sections.length ? `<div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px">
+              <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
+                <th style="padding:6px">Section</th><th style="padding:6px">Title</th><th style="padding:6px">Type</th><th style="padding:6px">Priority</th><th style="padding:6px;min-width:200px">Description</th><th style="padding:6px;min-width:150px">Content Guidance</th><th style="padding:6px">Requirements</th><th style="padding:6px">Capabilities</th><th style="padding:6px">Source RFP Section</th>
+              </tr></thead>
+              <tbody>${sections.map(s => {
+        const tc = typeColors[s.section_type] || typeColors.requirement_driven;
+        return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;font-weight:600;color:var(--accent-light);white-space:nowrap">${s.section_id}</td>
+                <td style="padding:6px;font-weight:500;min-width:140px">${s.title}</td>
+                <td style="padding:6px"><span style="background:${tc.bg};color:${tc.fg};padding:2px 8px;border-radius:10px;font-weight:600;font-size:11px;white-space:nowrap">${tc.label}</span></td>
+                <td style="padding:6px;text-align:center;font-weight:600">${s.priority}</td>
+                <td style="padding:6px;color:var(--text-secondary);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(s.description || '').replace(/"/g, '&quot;')}">${s.description || '\u2014'}</td>
+                <td style="padding:6px;font-size:11px;color:var(--text-muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic" title="${(s.content_guidance || '').replace(/"/g, '&quot;')}">${s.content_guidance || '\u2014'}</td>
+                <td style="padding:6px"><div style="display:flex;flex-wrap:wrap;gap:3px;max-height:60px;overflow-y:auto;max-width:180px">${(s.requirement_ids || []).length ? (s.requirement_ids || []).map(r => `<span style="font-size:10px;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,0.15);color:var(--accent-light);white-space:nowrap">${r}</span>`).join('') : '\u2014'}</div></td>
+                <td style="padding:6px;font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(s.mapped_capabilities || []).join(', ')}">${(s.mapped_capabilities || []).join(', ') || '\u2014'}</td>
+                <td style="padding:6px;font-size:11px;color:var(--text-muted);white-space:nowrap">${s.source_rfp_section || '\u2014'}</td>
+              </tr>`;
+      }).join('')}</tbody>
+            </table>
+          </div>` : ''}
+          ${gaps.length ? `<div style="margin-top:12px;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px">
+            <strong style="color:#ef4444">⚠ Coverage Gaps:</strong> <span style="color:var(--text-secondary)">${gaps.join(', ')}</span>
+          </div>` : ''}
+        </div></details>`;
+    }
+    // C2 Requirement Writing
+    if (outputs.C2_REQUIREMENT_WRITING) {
+      const c2 = outputs.C2_REQUIREMENT_WRITING;
+      const secResps = c2.section_responses || [];
+      const covMatrix = c2.coverage_matrix || [];
+      const totalWords = secResps.reduce((sum, s) => sum + (s.word_count || 0), 0);
+      const totalReqsCovered = new Set(secResps.flatMap(s => s.requirements_addressed || [])).size;
+
+      // Coverage quality colors
+      const covColors = {
+        full: { bg: 'rgba(16,185,129,0.15)', fg: '#10b981' },
+        partial: { bg: 'rgba(245,158,11,0.15)', fg: '#f59e0b' },
+        missing: { bg: 'rgba(239,68,68,0.15)', fg: '#ef4444' },
+      };
+
+      // Build sections HTML
+      let sectionsHtml = '';
+      if (secResps.length) {
+        sectionsHtml = `<div style="margin-top:12px">
+          <strong style="margin-bottom:6px;display:block">Section Responses (${secResps.length}):</strong>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${secResps.map(s => {
+          const preview = (s.content || '').substring(0, 250);
+          const reqs = s.requirements_addressed || [];
+          return `<details style="border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary)">
+                <summary style="cursor:pointer;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <span>
+                    <span style="font-weight:600;color:var(--accent-light);margin-right:6px">${s.section_id}</span>
+                    <span style="font-weight:500">${s.title}</span>
+                  </span>
+                  <span style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                    <span style="font-size:11px;color:var(--text-muted)">${s.word_count || 0} words</span>
+                    ${reqs.length ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(99,102,241,0.15);color:var(--accent-light)">${reqs.length} reqs</span>` : ''}
+                  </span>
+                </summary>
+                <div style="padding:0 14px 14px;font-size:12px">
+                  ${reqs.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${reqs.map(r => `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(99,102,241,0.15);color:var(--accent-light)">${r}</span>`).join('')}</div>` : ''}
+                  <div style="color:var(--text-secondary);line-height:1.6;white-space:pre-wrap">${preview}${(s.content || '').length > 250 ? '…' : ''}</div>
+                </div>
+              </details>`;
+        }).join('')}
+          </div>
+        </div>`;
+      }
+
+      // Build coverage matrix HTML
+      let covHtml = '';
+      if (covMatrix.length) {
+        const fullCount = covMatrix.filter(c => c.coverage_quality === 'full').length;
+        const partialCount = covMatrix.filter(c => c.coverage_quality === 'partial').length;
+        const missingCount = covMatrix.filter(c => c.coverage_quality === 'missing').length;
+        covHtml = `<div style="margin-top:14px">
+          <strong style="margin-bottom:6px;display:block">Coverage Matrix (${covMatrix.length} entries):</strong>
+          <div style="display:flex;gap:10px;margin-bottom:8px">
+            <span style="font-size:12px;padding:3px 10px;border-radius:10px;background:rgba(16,185,129,0.15);color:#10b981;font-weight:600">✓ Full: ${fullCount}</span>
+            <span style="font-size:12px;padding:3px 10px;border-radius:10px;background:rgba(245,158,11,0.15);color:#f59e0b;font-weight:600">◐ Partial: ${partialCount}</span>
+            <span style="font-size:12px;padding:3px 10px;border-radius:10px;background:rgba(239,68,68,0.15);color:#ef4444;font-weight:600">✗ Missing: ${missingCount}</span>
+          </div>
+          <div style="max-height:250px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead style="position:sticky;top:0;background:var(--bg-secondary)"><tr style="border-bottom:1px solid var(--border);text-align:left">
+                <th style="padding:6px">Requirement</th><th style="padding:6px">Section</th><th style="padding:6px">Coverage</th>
+              </tr></thead>
+              <tbody>${covMatrix.map(c => {
+          const cc = covColors[c.coverage_quality] || covColors.full;
+          return `<tr style="border-bottom:1px solid var(--border)">
+                  <td style="padding:6px;font-weight:600;color:var(--accent-light)">${c.requirement_id}</td>
+                  <td style="padding:6px">${c.addressed_in_section}</td>
+                  <td style="padding:6px"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${cc.bg};color:${cc.fg};text-transform:uppercase">${c.coverage_quality}</span></td>
+                </tr>`;
+        }).join('')}</tbody>
+            </table>
+          </div>
+        </div>`;
+      }
+
+      html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">✍️ C2 Requirement Writing (${secResps.length} sections, ${totalWords.toLocaleString()} words)</summary>
+        <div style="padding:8px 16px;font-size:13px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${secResps.length}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Sections</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${totalWords.toLocaleString()}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Total Words</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--accent-light)">${totalReqsCovered}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Reqs Covered</div>
+            </div>
+          </div>
+          ${sectionsHtml}
+          ${covHtml}
+        </div></details>`;
+    }
+    // C3 Narrative Assembly
+    if (outputs.C3_NARRATIVE_ASSEMBLY) {
+      const c3 = outputs.C3_NARRATIVE_ASSEMBLY;
+      const wordCount = c3.word_count || 0;
+      const sectionsIncluded = c3.sections_included || 0;
+      const hasPlaceholders = c3.has_placeholders;
+      const execSummary = c3.executive_summary || '';
+      const coverageAppendix = c3.coverage_appendix || '';
+
+      // Extract coverage summary line from appendix
+      let coverageLine = '';
+      if (coverageAppendix) {
+        const match = coverageAppendix.match(/\*\*Coverage Summary:\*\*\s*(.+)/);
+        if (match) coverageLine = match[1].trim();
+      }
+
+      // Truncate exec summary for preview
+      const execPreview = execSummary.length > 500 ? execSummary.substring(0, 500) + '…' : execSummary;
+
+      html += `<details style="margin-bottom:12px" open><summary style="cursor:pointer;font-weight:600;padding:8px 0">📄 C3 — Narrative Assembly</summary>
+        <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border)">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${wordCount.toLocaleString()}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Total Words</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:var(--accent-light)">${sectionsIncluded}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Sections</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid ${hasPlaceholders ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)'};text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${hasPlaceholders ? '#f59e0b' : '#10b981'}">${hasPlaceholders ? '⚠' : '✓'}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Placeholders</div>
+            </div>
+          </div>
+          ${coverageLine ? `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:8px;font-size:13px">
+            <strong style="color:var(--accent-light)">📊 Coverage:</strong> <span style="color:var(--text-secondary)">${coverageLine}</span>
+          </div>` : ''}
+          ${execPreview ? `<div style="margin-bottom:12px">
+            <strong style="display:block;margin-bottom:6px">Executive Summary:</strong>
+            <div style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:12px;line-height:1.6;color:var(--text-secondary);max-height:200px;overflow-y:auto">${execPreview}</div>
+          </div>` : ''}
+          ${(c3.section_order || []).length ? `<details style="margin-top:8px">
+            <summary style="cursor:pointer;font-weight:500;font-size:13px;padding:4px 0">Section Order (${c3.section_order.length})</summary>
+            <div style="padding:8px;font-size:11px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+              ${c3.section_order.map((s, i) => `<span style="padding:2px 8px;border-radius:10px;background:rgba(99,102,241,0.1);color:var(--accent-light);font-size:10px">${i + 1}. ${s}</span>`).join('')}
+            </div>
+          </details>` : ''}
+        </div></details>`;
+    }
+    // D1 Technical Validation
+    if (outputs.D1_TECHNICAL_VALIDATION) {
+      const d1 = outputs.D1_TECHNICAL_VALIDATION;
+      const decision = (d1.decision || 'PASS').toUpperCase();
+      const isPass = decision === 'PASS';
+      const checks = d1.checks || [];
+      const critFail = d1.critical_failures || 0;
+      const warns = d1.warnings || 0;
+      const feedback = d1.feedback_for_revision || '';
+      const retryCount = d1.retry_count || 0;
+
+      const decBg = isPass ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+      const decFg = isPass ? '#10b981' : '#ef4444';
+      const decIcon = isPass ? '✓' : '✗';
+
+      // Check if any check was auto-passed (not evaluated by LLM)
+      const hasAutoPass = checks.some(c => (c.description || '').toLowerCase().includes('auto-pass'));
+
+      let checksHtml = '';
+      if (checks.length) {
+        checksHtml = `<div style="margin-top:12px">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="border-bottom:1px solid var(--border);text-align:left">
+              <th style="padding:6px">Check</th><th style="padding:6px">Status</th><th style="padding:6px;min-width:200px">Description</th><th style="padding:6px">Issues</th>
+            </tr></thead>
+            <tbody>${checks.map(c => {
+          const cPass = c.passed;
+          const issues = c.issues || [];
+          const desc = c.description || '';
+          const isAuto = desc.toLowerCase().includes('auto-pass');
+          return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;font-weight:600;text-transform:capitalize">${c.check_name}</td>
+                <td style="padding:6px"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${cPass ? (isAuto ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)') : 'rgba(239,68,68,0.15)'};color:${cPass ? (isAuto ? '#f59e0b' : '#10b981') : '#ef4444'};text-transform:uppercase">${cPass ? (isAuto ? 'AUTO-PASS' : 'PASS') : 'FAIL'}</span></td>
+                <td style="padding:6px;font-size:11px;color:var(--text-secondary);font-style:${isAuto ? 'italic' : 'normal'}">${desc || '—'}</td>
+                <td style="padding:6px;font-size:11px;color:var(--text-secondary)">${issues.length ? issues.map(i => `<div style="margin-bottom:2px">• ${i}</div>`).join('') : '—'}</td>
+              </tr>`;
+        }).join('')}</tbody>
+          </table>
+        </div>`;
+      }
+
+      html += `<details style="margin-bottom:12px" open><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔍 D1 — Technical Validation</summary>
+        <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border)">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="padding:8px 16px;border-radius:10px;background:${decBg};border:1px solid ${decFg}33;text-align:center;min-width:100px">
+              <div style="font-size:22px;font-weight:700;color:${decFg}">${decIcon} ${decision}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Decision</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${critFail ? '#ef4444' : '#10b981'}">${critFail}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Critical</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${warns ? '#f59e0b' : '#10b981'}">${warns}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Warnings</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${retryCount ? 'var(--accent-light)' : '#10b981'}">${retryCount}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Retries</div>
+            </div>
+          </div>
+          ${hasAutoPass ? `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px;font-size:12px;color:#f59e0b">
+            ⚠ Some checks were auto-passed because the LLM response could not be parsed. These results may not reflect actual validation quality.
+          </div>` : ''}
+          ${checksHtml}
+          ${feedback ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px">
+            <strong style="color:#ef4444;display:block;margin-bottom:4px">Feedback for Revision:</strong>
+            <div style="color:var(--text-secondary);font-size:12px;line-height:1.6;white-space:pre-wrap">${feedback}</div>
+          </div>` : ''}
+        </div></details>`;
+    }
+    // E1 Commercial
+    if (outputs.E1_COMMERCIAL) {
+      const e1 = outputs.E1_COMMERCIAL;
+      const decision = (e1.decision || 'APPROVED').toUpperCase();
+      const items = e1.line_items || [];
+      const cur = e1.currency || 'USD';
+      const total = (e1.total_price || 0).toLocaleString();
+      const flags = e1.validation_flags || [];
+      const conf = e1.confidence || 0;
+
+      const decBg = decision === 'APPROVED' ? 'rgba(16,185,129,0.15)' : (decision === 'FLAGGED' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)');
+      const decFg = decision === 'APPROVED' ? '#10b981' : (decision === 'FLAGGED' ? '#f59e0b' : '#ef4444');
+      const decIcon = decision === 'APPROVED' ? '✓' : (decision === 'FLAGGED' ? '⚠' : '✗');
+
+      html += `<details style="margin-bottom:12px" open><summary style="cursor:pointer;font-weight:600;padding:8px 0">💰 E1 — Commercial Review</summary>
+        <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border)">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="padding:8px 16px;border-radius:10px;background:${decBg};border:1px solid ${decFg}33;text-align:center;min-width:100px">
+              <div style="font-size:22px;font-weight:700;color:${decFg}">${decIcon} ${decision}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Decision</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center;min-width:140px">
+              <div style="font-size:20px;font-weight:700;color:var(--accent-light)">${cur} ${total}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Total Price</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${(conf * 100).toFixed(0)}%</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Confidence</div>
+            </div>
+          </div>
+
+          ${flags.length ? `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px">
+            <strong style="color:#f59e0b;font-size:12px;display:block;margin-bottom:4px">Validation Flags:</strong>
+            ${flags.map(f => `<div style="font-size:11px;color:var(--text-secondary)">• ${f}</div>`).join('')}
+          </div>` : ''}
+
+          ${items.length ? `<div style="margin-top:12px">
+            <strong style="margin-bottom:8px;display:block;font-size:12px">Pricing Line Items:</strong>
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead><tr style="border-bottom:1px solid var(--border);text-align:left">
+                <th style="padding:6px">Category</th><th style="padding:6px">Label</th><th style="padding:6px;text-align:right">Total</th>
+              </tr></thead>
+              <tbody>${items.map(it => `
+                <tr style="border-bottom:1px solid var(--border)">
+                  <td style="padding:6px"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:rgba(59,130,246,0.15);color:#3b82f6">${it.category || '—'}</span></td>
+                  <td style="padding:6px;color:var(--text-secondary)">${it.label || '—'}</td>
+                  <td style="padding:6px;text-align:right;font-weight:600">${cur} ${(it.total || 0).toLocaleString()}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>` : ''}
+
+          ${(e1.assumptions && e1.assumptions.length) || (e1.exclusions && e1.exclusions.length) ? `<div style="display:flex;gap:16px;margin-top:16px">
+            ${e1.assumptions && e1.assumptions.length ? `<div style="flex:1">
+              <strong style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Assumptions</strong>
+              <ul style="margin:4px 0 0;padding-left:16px;font-size:11px;color:var(--text-secondary)">
+                ${e1.assumptions.map(a => `<li>${a}</li>`).join('')}
+              </ul>
+            </div>` : ''}
+            ${e1.exclusions && e1.exclusions.length ? `<div style="flex:1">
+              <strong style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Exclusions</strong>
+              <ul style="margin:4px 0 0;padding-left:16px;font-size:11px;color:var(--text-secondary)">
+                ${e1.exclusions.map(e => `<li>${e}</li>`).join('')}
+              </ul>
+            </div>` : ''}
+          </div>` : ''}
+        </div></details>`;
+    }
+
+    // E2 Legal
+    if (outputs.E2_LEGAL) {
+      const e2 = outputs.E2_LEGAL;
+      const decision = (e2.decision || 'APPROVED').toUpperCase();
+      const checks = e2.compliance_checks || [];
+      const blocks = e2.block_reasons || [];
+      const register = e2.risk_register_summary || '';
+      const conf = e2.confidence || 0;
+
+      const decBg = decision === 'APPROVED' ? 'rgba(16,185,129,0.15)' : (decision === 'CONDITIONAL' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)');
+      const decFg = decision === 'APPROVED' ? '#10b981' : (decision === 'CONDITIONAL' ? '#f59e0b' : '#ef4444');
+      const decIcon = decision === 'APPROVED' ? '✓' : (decision === 'CONDITIONAL' ? '⚠' : '✗');
+
+      const certColors = {
+        LOW: { bg: 'rgba(34,197,94,0.1)', fg: '#22c55e' },
+        MEDIUM: { bg: 'rgba(245,158,11,0.1)', fg: '#f59e0b' },
+        HIGH: { bg: 'rgba(249,115,22,0.1)', fg: '#f97316' },
+        CRITICAL: { bg: 'rgba(239,68,68,0.1)', fg: '#ef4444' }
+      };
+
+      html += `<details style="margin-bottom:12px" open><summary style="cursor:pointer;font-weight:600;padding:8px 0">⚖️ E2 — Legal & Compliance</summary>
+        <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border)">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="padding:8px 16px;border-radius:10px;background:${decBg};border:1px solid ${decFg}33;text-align:center;min-width:100px">
+              <div style="font-size:22px;font-weight:700;color:${decFg}">${decIcon} ${decision}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Decision</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${checks.length}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Cert Checks</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700;color:${blocks.length ? '#ef4444' : '#10b981'}">${blocks.length}</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Blockers</div>
+            </div>
+            <div style="padding:8px 16px;border-radius:10px;background:var(--bg-secondary);border:1px solid var(--border);text-align:center">
+              <div style="font-size:20px;font-weight:700">${(conf * 100).toFixed(0)}%</div>
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Confidence</div>
+            </div>
+          </div>
+
+          ${blocks.length ? `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:6px">
+            <strong style="color:#ef4444;font-size:12px;display:block;margin-bottom:4px">Blocking Reasons (Veto):</strong>
+            ${blocks.map(b => `<div style="font-size:11px;color:var(--text-secondary)">• ${b}</div>`).join('')}
+          </div>` : ''}
+
+          ${register ? `<div style="margin-bottom:12px">
+            <strong style="font-size:12px;display:block;margin-bottom:4px">Risk Register Summary:</strong>
+            <div style="padding:10px;background:var(--surface-2);border-radius:6px;font-size:11px;line-height:1.6;color:var(--text-secondary);white-space:pre-wrap">${register}</div>
+          </div>` : ''}
+
+          ${checks.length ? `<div style="margin-top:12px">
+            <strong style="margin-bottom:8px;display:block;font-size:12px">Compliance Matrix:</strong>
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead><tr style="border-bottom:1px solid var(--border);text-align:left">
+                <th style="padding:6px">Certification</th><th style="padding:6px">Status</th><th style="padding:6px">Gap Severity</th>
+              </tr></thead>
+              <tbody>${checks.map(c => {
+                const sev = (c.gap_severity || 'low').toUpperCase();
+                const sevStyle = certColors[sev] || certColors.LOW;
+                const isHeld = !!c.held;
+                return `
+                <tr style="border-bottom:1px solid var(--border)">
+                  <td style="padding:6px;font-weight:600">${c.certification || '—'}</td>
+                  <td style="padding:6px"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${isHeld ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};color:${isHeld ? '#10b981' : '#ef4444'}">${isHeld ? 'HELD' : 'MISSING'}</span></td>
+                  <td style="padding:6px">${isHeld ? '—' : `<span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${sevStyle.bg};color:${sevStyle.fg}">${sev}</span>`}</td>
+                </tr>`;
+              }).join('')}
+              </tbody>
+            </table>
+          </div>` : ''}
+        </div></details>`;
+    }
+
+    // Other agents — raw JSON
+    for (const [key, val] of Object.entries(outputs)) {
+      if (['A1_INTAKE', 'A2_STRUCTURING', 'A3_GO_NO_GO', 'B1_REQUIREMENTS_EXTRACTION', 'B2_REQUIREMENTS_VALIDATION', 'C1_ARCHITECTURE_PLANNING', 'C2_REQUIREMENT_WRITING', 'C3_NARRATIVE_ASSEMBLY', 'D1_TECHNICAL_VALIDATION', 'E1_COMMERCIAL', 'E2_LEGAL', 'H1_HUMAN_VALIDATION'].includes(key)) continue;
+      html += `<details style="margin-bottom:12px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">🔧 ${key}</summary>
+        <pre style="padding:12px;background:var(--surface-2);border-radius:8px;font-size:11px;overflow-x:auto;max-height:300px">${JSON.stringify(val, null, 2)}</pre></details>`;
+    }
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = `<div style="padding:16px;text-align:center;color:#ef4444">Failed to load agent outputs: ${e.message}</div>`;
+  }
+}
+
+
+
+// ── Init ───────────────────────────────────────
+// ── Company Profile ─────────────────────────────
+const CP_DEFAULTS = {
+  company_name: 'Vodafone Business',
+  company_description: 'Global telecommunications and technology company providing unified communications, cloud, IoT, and security solutions to enterprises across 65+ countries.',
+  headquarters: 'London, UK',
+  website: 'https://www.vodafone.com/business',
+};
+
+async function loadCompanyProfile() {
+  try {
+    const res = await fetch(`${API}/api/knowledge/company-profile`);
+    const data = await res.json();
+    const p = data.profile || {};
+    // Use saved values, or fall back to defaults if empty
+    document.getElementById('cpName').value = p.company_name || CP_DEFAULTS.company_name;
+    document.getElementById('cpDescription').value = p.company_description || CP_DEFAULTS.company_description;
+    document.getElementById('cpHeadquarters').value = p.headquarters || CP_DEFAULTS.headquarters;
+    document.getElementById('cpWebsite').value = p.website || CP_DEFAULTS.website;
+    const badge = document.getElementById('companyProfileBadge');
+    badge.textContent = p.company_name ? '✓ Saved' : 'Default';
+    badge.style.background = p.company_name ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)';
+    badge.style.color = p.company_name ? 'var(--success)' : 'var(--warning)';
+  } catch (e) {
+    console.warn('Failed to load company profile:', e);
+    // Fill with defaults anyway
+    document.getElementById('cpName').value = CP_DEFAULTS.company_name;
+    document.getElementById('cpDescription').value = CP_DEFAULTS.company_description;
+    document.getElementById('cpHeadquarters').value = CP_DEFAULTS.headquarters;
+    document.getElementById('cpWebsite').value = CP_DEFAULTS.website;
+  }
+}
+
+async function saveCompanyProfile() {
+  const btn = document.getElementById('cpSaveBtn');
+  const statusEl = document.getElementById('cpStatus');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+  statusEl.style.display = 'none';
+  try {
+    const body = {
+      company_name: document.getElementById('cpName').value.trim(),
+      company_description: document.getElementById('cpDescription').value.trim(),
+      headquarters: document.getElementById('cpHeadquarters').value.trim(),
+      website: document.getElementById('cpWebsite').value.trim(),
+    };
+    const res = await fetch(`${API}/api/knowledge/company-profile`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    statusEl.textContent = '✓ Profile saved successfully';
+    statusEl.style.color = 'var(--success)';
+    statusEl.style.display = 'block';
+    const badge = document.getElementById('companyProfileBadge');
+    badge.textContent = '✓ Saved';
+    badge.style.background = 'rgba(16,185,129,0.15)';
+    badge.style.color = 'var(--success)';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+  } catch (e) {
+    statusEl.textContent = '✗ Failed to save: ' + e.message;
+    statusEl.style.color = 'var(--error)';
+    statusEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Save Profile';
+  }
+}
+
