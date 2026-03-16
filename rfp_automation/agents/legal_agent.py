@@ -99,7 +99,15 @@ class LegalAgent(BaseAgent):
             llm_confidence = float(llm_data.get("confidence", 0.8))
         except Exception as exc:
             logger.warning(f"[E2] LLM analysis failed: {exc}")
-            risk_narrative = "LLM legal analysis unavailable. Rule-based scoring applied."
+            risk_narrative = (
+                "LLM legal analysis unavailable. Manual legal review is required "
+                "before the proposal can proceed."
+            )
+            llm_decision = "BLOCKED"
+            llm_block_reasons = [
+                "Legal analysis output could not be parsed. Manual legal review required."
+            ]
+            llm_confidence = 0.0
 
         # ── Step 6: Compliance Check ─────────────────────
         compliance_checks = self._check_compliance(
@@ -343,7 +351,7 @@ class LegalAgent(BaseAgent):
         )
 
         logger.info(f"[E2] Calling LLM for legal analysis ({len(prompt)} chars)")
-        raw = llm_large_text_call(prompt)
+        raw = llm_large_text_call(prompt, deterministic=True)
         logger.debug(f"[E2] LLM legal response ({len(raw)} chars)")
 
         return self._parse_llm_response(raw)
@@ -364,8 +372,11 @@ class LegalAgent(BaseAgent):
                 except json.JSONDecodeError:
                     pass
 
-        logger.warning("[E2] Failed to parse LLM response as JSON")
-        return {}
+        logger.warning(
+            "[E2] Failed to parse LLM response as JSON | preview=%r",
+            cleaned[:300],
+        )
+        raise ValueError("Failed to parse legal LLM response as JSON")
 
     def _build_clause_risks(
         self,

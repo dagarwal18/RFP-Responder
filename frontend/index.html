@@ -122,6 +122,564 @@
       }
     }
 
+    .review-card {
+      position: relative;
+      overflow: visible;
+    }
+
+    .review-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.1), transparent 34%);
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .review-card-header,
+    .review-card-body {
+      position: relative;
+      z-index: 1;
+    }
+
+    .review-card-header {
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .review-card-title {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .review-card-title p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      max-width: 720px;
+    }
+
+    .review-status-badge {
+      padding: 8px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .review-status-awaiting {
+      background: rgba(59, 130, 246, 0.14);
+      color: #93c5fd;
+      border-color: rgba(147, 197, 253, 0.25);
+    }
+
+    .review-status-running {
+      background: rgba(99, 102, 241, 0.16);
+      color: #c7d2fe;
+      border-color: rgba(129, 140, 248, 0.3);
+    }
+
+    .review-status-rejected {
+      background: rgba(239, 68, 68, 0.14);
+      color: #fca5a5;
+      border-color: rgba(252, 165, 165, 0.25);
+    }
+
+    .review-status-done {
+      background: rgba(16, 185, 129, 0.14);
+      color: #86efac;
+      border-color: rgba(134, 239, 172, 0.25);
+    }
+
+    .review-card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .review-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .review-summary-card {
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.64));
+      min-height: 118px;
+    }
+
+    .review-summary-card .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .review-summary-card .value-number {
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+      color: #f8fafc;
+      margin-bottom: 10px;
+    }
+
+    .review-summary-card .value-text {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .review-main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 360px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .review-column,
+    .review-rail {
+      min-width: 0;
+    }
+
+    .review-column {
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(15, 23, 42, 0.68));
+      overflow: hidden;
+    }
+
+    .review-column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .review-column-eyebrow {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .review-column-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .review-column-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.14);
+      color: var(--accent-light);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .review-column-body {
+      max-height: 900px;
+      overflow-y: auto;
+      padding: 14px;
+    }
+
+    .review-empty {
+      padding: 20px;
+      border: 1px dashed rgba(148, 163, 184, 0.2);
+      border-radius: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .review-section {
+      margin-bottom: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.72);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .review-section[open] {
+      border-color: rgba(129, 140, 248, 0.28);
+      box-shadow: 0 16px 28px rgba(2, 6, 23, 0.26);
+    }
+
+    .review-section summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px 18px 12px;
+    }
+
+    .review-section summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .review-section-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .review-section-title {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .review-section-title strong {
+      font-size: 14px;
+      line-height: 1.4;
+      color: #f8fafc;
+    }
+
+    .review-section-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .review-section-badges {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .review-count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--accent-light);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .review-section-shell {
+      padding: 0 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .review-preview {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+    }
+
+    .review-section-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .review-inline-note {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .review-select-btn {
+      border-color: rgba(99, 102, 241, 0.22);
+      background: rgba(99, 102, 241, 0.08);
+      color: #e0e7ff;
+    }
+
+    .review-select-btn:hover {
+      background: rgba(99, 102, 241, 0.16);
+      border-color: rgba(129, 140, 248, 0.44);
+    }
+
+    .review-select-btn.is-selected {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.95), rgba(37, 99, 235, 0.95));
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+    }
+
+    .review-paragraph-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .review-paragraph {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(255, 255, 255, 0.02);
+      transition: var(--transition);
+    }
+
+    .review-paragraph.is-selected {
+      border-color: rgba(96, 165, 250, 0.4);
+      background: rgba(59, 130, 246, 0.09);
+      box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.12);
+    }
+
+    .review-paragraph-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .review-paragraph-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .review-paragraph-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .review-paragraph-text {
+      font-size: 13px;
+      line-height: 1.72;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+    }
+
+    .review-rail {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: sticky;
+      top: 84px;
+    }
+
+    .review-rail-block {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.72));
+      box-shadow: 0 20px 30px rgba(2, 6, 23, 0.16);
+    }
+
+    .review-rail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .review-rail-header strong {
+      font-size: 15px;
+    }
+
+    .review-count-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .review-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .review-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .review-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .review-input,
+    .review-textarea,
+    .review-select {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 12px;
+      background: rgba(2, 6, 23, 0.42);
+      color: var(--text-primary);
+      padding: 12px 14px;
+      font: inherit;
+      transition: var(--transition);
+    }
+
+    .review-input:focus,
+    .review-textarea:focus,
+    .review-select:focus {
+      border-color: rgba(96, 165, 250, 0.5);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+    }
+
+    .review-textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .review-anchor-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px dashed rgba(148, 163, 184, 0.22);
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .review-anchor-pill strong {
+      color: #f8fafc;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .review-controls-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .review-comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .review-comment-card {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .review-comment-meta {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .review-comment-title {
+      font-weight: 600;
+      line-height: 1.45;
+      color: #f8fafc;
+      margin-bottom: 4px;
+    }
+
+    .review-comment-author {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .review-severity-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 70px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .review-comment-body {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      margin-bottom: 10px;
+    }
+
+    .review-comment-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .review-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .review-actions .btn {
+      justify-content: center;
+      width: 100%;
+      min-height: 42px;
+    }
+
+    @media (max-width: 1220px) {
+      .review-main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .review-rail {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .review-card-header {
+        flex-direction: column;
+      }
+
+      .review-controls-row {
+        grid-template-columns: 1fr;
+      }
+
+      .review-column-body {
+        max-height: none;
+      }
+    }
+
     /* ── Cards ──────────────────────────────────────── */
     .card {
       background: var(--bg-card);
@@ -1149,74 +1707,100 @@
       </div>
     </div>
 
-    <div class="card" id="reviewWorkspaceCard" style="grid-column:1 / -1; margin-top:20px; display:none">
-      <div class="card-header">
-        <h2>👀 Human Validation</h2>
-        <span class="badge" id="reviewWorkspaceBadge">Pending</span>
+    <div class="card review-card" id="reviewWorkspaceCard" style="grid-column:1 / -1; margin-top:20px; display:none">
+      <div class="card-header review-card-header">
+        <div class="review-card-title">
+          <h2>👀 Human Validation</h2>
+          <p>Review the source RFP beside the generated draft, then leave section or paragraph comments before approving or routing changes back.</p>
+        </div>
+        <span class="badge review-status-badge" id="reviewWorkspaceBadge">Pending</span>
       </div>
-      <div class="card-body">
-        <div id="reviewWorkspaceSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px"></div>
+      <div class="card-body review-card-body">
+        <div id="reviewWorkspaceSummary" class="review-summary-grid"></div>
 
-        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:16px">
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <label style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Reviewer</label>
-            <input id="reviewReviewer" placeholder="Your name"
-              style="padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:inherit" />
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <label style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Decision Summary</label>
-            <textarea id="reviewSummaryInput" rows="3" placeholder="Summarize the requested changes or approval notes"
-              style="padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:inherit;resize:vertical"></textarea>
-          </div>
-        </div>
-
-        <div class="review-sections-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="reviewSectionsLayout">
-          <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-              <strong>Source RFP Sections</strong>
-              <span style="font-size:12px;color:var(--text-muted)">Section and paragraph comments</span>
+        <div class="review-main-grid">
+          <section class="review-column">
+            <div class="review-column-header">
+              <div>
+                <span class="review-column-eyebrow">Source context</span>
+                <h3>RFP Sections</h3>
+              </div>
+              <span class="review-column-count" id="reviewSourceCount">0</span>
             </div>
-            <div id="reviewSourceSections"></div>
-          </div>
-          <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-              <strong>Response Draft Sections</strong>
-              <span style="font-size:12px;color:var(--text-muted)">Comment on generated content</span>
+            <div id="reviewSourceSections" class="review-column-body"></div>
+          </section>
+
+          <section class="review-column">
+            <div class="review-column-header">
+              <div>
+                <span class="review-column-eyebrow">Generated draft</span>
+                <h3>Response Sections</h3>
+              </div>
+              <span class="review-column-count" id="reviewResponseCount">0</span>
             </div>
-            <div id="reviewResponseSections"></div>
-          </div>
-        </div>
+            <div id="reviewResponseSections" class="review-column-body"></div>
+          </section>
 
-        <div style="padding:16px;border:1px solid var(--border);border-radius:12px;background:rgba(99,102,241,0.06);margin-bottom:16px">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
-            <strong>Add Comment</strong>
-            <span id="reviewSelectedAnchor" style="font-size:12px;color:var(--text-muted)">Select a section or paragraph to comment on.</span>
-          </div>
-          <textarea id="reviewCommentInput" rows="3" placeholder="Describe what needs to change in this section or paragraph"
-            style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:inherit;resize:vertical"></textarea>
-          <div class="form-row" style="margin-top:10px">
-            <select id="reviewSeverity">
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-              <option value="low">Low</option>
-            </select>
-            <button type="button" class="btn btn-outline" id="reviewAddCommentBtn" onclick="addReviewComment()">Add Comment</button>
-          </div>
-        </div>
+          <aside class="review-rail">
+            <div class="review-rail-block">
+              <div class="review-rail-header">
+                <strong>Reviewer Context</strong>
+              </div>
+              <div class="review-field">
+                <label class="review-label" for="reviewReviewer">Reviewer</label>
+                <input id="reviewReviewer" class="review-input" placeholder="Your name" />
+              </div>
+              <div class="review-field">
+                <label class="review-label" for="reviewSummaryInput">Decision Summary</label>
+                <textarea id="reviewSummaryInput" class="review-textarea" rows="3" placeholder="Summarize approval notes or the requested changes"></textarea>
+              </div>
+            </div>
 
-        <div style="margin-bottom:16px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <strong>Comments</strong>
-            <span id="reviewCommentCount" style="font-size:12px;color:var(--text-muted)">0 comments</span>
-          </div>
-          <div id="reviewCommentsList"></div>
-        </div>
+            <div class="review-rail-block">
+              <div class="review-rail-header">
+                <strong>Add Comment</strong>
+              </div>
+              <div class="review-anchor-pill">
+                <strong>Selected</strong>
+                <span id="reviewSelectedAnchor">Select a section or paragraph to comment on.</span>
+              </div>
+              <div class="review-field">
+                <label class="review-label" for="reviewCommentInput">Requested Change</label>
+                <textarea id="reviewCommentInput" class="review-textarea" rows="4" placeholder="Describe what needs to change in this section or paragraph"></textarea>
+              </div>
+              <div class="review-controls-row">
+                <div class="review-field" style="margin-bottom:0">
+                  <label class="review-label" for="reviewSeverity">Severity</label>
+                  <select id="reviewSeverity" class="review-select">
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+                <button type="button" class="btn btn-primary" id="reviewAddCommentBtn" onclick="addReviewComment()">Add Comment</button>
+              </div>
+            </div>
 
-        <div class="form-row" style="justify-content:flex-end;flex-wrap:wrap">
-          <button type="button" class="btn btn-outline" id="reviewRejectBtn" onclick="submitReviewDecision('REJECT')">Reject</button>
-          <button type="button" class="btn btn-outline" id="reviewChangesBtn" onclick="submitReviewDecision('REQUEST_CHANGES')">Request Changes</button>
-          <button type="button" class="btn btn-primary" id="reviewApproveBtn" onclick="submitReviewDecision('APPROVE')">Approve & Continue</button>
+            <div class="review-rail-block">
+              <div class="review-rail-header">
+                <strong>Comments</strong>
+                <span id="reviewCommentCount" class="review-count-label">0 comments</span>
+              </div>
+              <div id="reviewCommentsList" class="review-comments-list"></div>
+            </div>
+
+            <div class="review-rail-block">
+              <div class="review-rail-header">
+                <strong>Decision</strong>
+              </div>
+              <div class="review-actions">
+                <button type="button" class="btn btn-outline" id="reviewRejectBtn" onclick="submitReviewDecision('REJECT')">Reject</button>
+                <button type="button" class="btn btn-outline" id="reviewChangesBtn" onclick="submitReviewDecision('REQUEST_CHANGES')">Request Changes</button>
+                <button type="button" class="btn btn-primary" id="reviewApproveBtn" onclick="submitReviewDecision('APPROVE')">Approve & Continue</button>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
@@ -1453,6 +2037,43 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    }
+
+    function jsStringLiteral(value = '') {
+      return JSON.stringify(String(value ?? ''));
+    }
+
+    function truncateText(value = '', maxLength = 260) {
+      const text = String(value || '').trim();
+      if (text.length <= maxLength) return text;
+      return `${text.slice(0, maxLength).trimEnd()}...`;
+    }
+
+    function normalizeReviewStatus(value = '') {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      return raw.split('.').pop().toUpperCase();
+    }
+
+    function humanizeStatusLabel(value = '') {
+      const normalized = normalizeReviewStatus(value) || 'PENDING';
+      return normalized.replace(/_/g, ' ');
+    }
+
+    function reviewStatusClass(value = '') {
+      const normalized = normalizeReviewStatus(value);
+      if (normalized === 'AWAITING_HUMAN_VALIDATION') return 'review-status-awaiting';
+      if (normalized === 'RUNNING') return 'review-status-running';
+      if (normalized === 'REJECTED') return 'review-status-rejected';
+      if (normalized === 'SUBMITTED' || normalized === 'COMPLETED') return 'review-status-done';
+      return '';
+    }
+
+    function reviewCanAct() {
+      const runStatus = normalizeReviewStatus(reviewWorkspace.status);
+      const packageStatus = normalizeReviewStatus(reviewWorkspace.package?.status);
+      return runStatus === 'AWAITING_HUMAN_VALIDATION'
+        || (!runStatus && packageStatus === 'PENDING');
     }
 
     function reviewComments() {
@@ -1752,6 +2373,355 @@
 
         clearReviewWorkspace();
         connectPipelineWS(reviewWorkspace.rfpId);
+      } catch (e) {
+        addLog('rfpLog', `Failed to submit review decision: ${e.message}`, 'error');
+        buttonIds.forEach(id => { document.getElementById(id).disabled = false; });
+      }
+    };
+
+    function normalizeReviewStatus(value = '') {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      return raw.split('.').pop().toUpperCase();
+    }
+
+    function humanizeStatusLabel(value = '') {
+      const normalized = normalizeReviewStatus(value) || 'PENDING';
+      return normalized.replace(/_/g, ' ');
+    }
+
+    function reviewStatusClass(value = '') {
+      const normalized = normalizeReviewStatus(value);
+      if (normalized === 'AWAITING_HUMAN_VALIDATION') return 'review-status-awaiting';
+      if (normalized === 'RUNNING') return 'review-status-running';
+      if (normalized === 'REJECTED') return 'review-status-rejected';
+      if (normalized === 'SUBMITTED' || normalized === 'COMPLETED') return 'review-status-done';
+      return '';
+    }
+
+    function reviewCanAct() {
+      const runStatus = normalizeReviewStatus(reviewWorkspace.status);
+      const packageStatus = normalizeReviewStatus(reviewWorkspace.package?.status);
+      return runStatus === 'AWAITING_HUMAN_VALIDATION'
+        || (!runStatus && packageStatus === 'PENDING');
+    }
+
+    function jsStringLiteral(value = '') {
+      return JSON.stringify(String(value ?? ''));
+    }
+
+    function truncateText(value = '', maxLength = 260) {
+      const text = String(value || '').trim();
+      if (text.length <= maxLength) return text;
+      return `${text.slice(0, maxLength).trimEnd()}...`;
+    }
+
+    function formatReviewAnchor(anchor) {
+      if (!anchor) return 'Select a section or paragraph to comment on.';
+      const bits = [
+        anchor.domain === 'source' ? 'Source' : 'Response',
+        anchor.section_title || anchor.section_id || 'Section',
+      ];
+      if (anchor.paragraph_id) bits.push(anchor.paragraph_id);
+      return bits.join(' / ');
+    }
+
+    function commentCountForParagraph(domain, sectionId, paragraphId) {
+      return reviewComments().filter(comment =>
+        comment.anchor?.domain === domain
+        && comment.anchor?.section_id === sectionId
+        && comment.anchor?.paragraph_id === paragraphId
+      ).length;
+    }
+
+    function renderReviewSectionList(sections, domain) {
+      if (!sections.length) {
+        return `<div class="review-empty">No ${escapeHtml(domain)} sections available.</div>`;
+      }
+
+      return sections.map(section => {
+        const comments = commentCountForSection(domain, section.section_id);
+        const paragraphs = section.paragraphs || [];
+        const previewText = truncateText(
+          section.full_text || paragraphs.map(item => item.text || '').join('\n\n') || 'No preview available.',
+          320,
+        );
+        const sectionSelected = reviewWorkspace.selectedAnchor
+          && reviewWorkspace.selectedAnchor.domain === domain
+          && reviewWorkspace.selectedAnchor.section_id === section.section_id
+          && !reviewWorkspace.selectedAnchor.paragraph_id;
+        const metaParts = [section.section_id || ''];
+        if (section.source_section_title) metaParts.push(`Source: ${section.source_section_title}`);
+        if (section.section_type) metaParts.push(section.section_type);
+        if (section.requirement_ids?.length) metaParts.push(`${section.requirement_ids.length} requirement${section.requirement_ids.length === 1 ? '' : 's'}`);
+        const sectionButtonLabel = sectionSelected ? 'Section Selected' : 'Comment Section';
+
+        return `<details class="review-section"${sectionSelected || comments ? ' open' : ''}>
+          <summary>
+            <div class="review-section-title-row">
+              <div class="review-section-title">
+                <strong>${escapeHtml(section.title || section.section_id)}</strong>
+                <span class="review-section-meta">${escapeHtml(metaParts.filter(Boolean).join(' / '))}</span>
+              </div>
+              <span class="review-section-badges">
+                ${comments ? `<span class="review-count-badge">${comments} comment${comments === 1 ? '' : 's'}</span>` : ''}
+              </span>
+            </div>
+          </summary>
+          <div class="review-section-shell">
+            <div class="review-preview">${escapeHtml(previewText)}</div>
+            <div class="review-section-actions">
+              <button
+                type="button"
+                class="btn btn-sm review-select-btn ${sectionSelected ? 'is-selected' : ''}"
+                onclick='selectReviewAnchor(event, ${jsStringLiteral(domain)}, ${jsStringLiteral(section.section_id)})'
+              >${sectionButtonLabel}</button>
+              <span class="review-inline-note">${paragraphs.length} paragraph${paragraphs.length === 1 ? '' : 's'}</span>
+            </div>
+            <div class="review-paragraph-list">
+              ${paragraphs.map(paragraph => {
+            const anchorSelected = reviewWorkspace.selectedAnchor
+              && reviewWorkspace.selectedAnchor.section_id === section.section_id
+              && reviewWorkspace.selectedAnchor.paragraph_id === paragraph.paragraph_id
+              && reviewWorkspace.selectedAnchor.domain === domain;
+            const paragraphComments = commentCountForParagraph(domain, section.section_id, paragraph.paragraph_id);
+            const paragraphButtonLabel = anchorSelected ? 'Paragraph Selected' : 'Comment Paragraph';
+            return `<div class="review-paragraph ${anchorSelected ? 'is-selected' : ''}">
+                  <div class="review-paragraph-header">
+                    <span class="review-paragraph-label">${escapeHtml(paragraph.paragraph_id || 'Paragraph')}</span>
+                    <div class="review-paragraph-actions">
+                      ${paragraphComments ? `<span class="review-count-badge">${paragraphComments}</span>` : ''}
+                      <button
+                        type="button"
+                        class="btn btn-sm review-select-btn ${anchorSelected ? 'is-selected' : ''}"
+                        onclick='selectReviewAnchor(event, ${jsStringLiteral(domain)}, ${jsStringLiteral(section.section_id)}, ${jsStringLiteral(paragraph.paragraph_id)})'
+                      >${paragraphButtonLabel}</button>
+                    </div>
+                  </div>
+                  <div class="review-paragraph-text">${escapeHtml(paragraph.text || '')}</div>
+                </div>`;
+          }).join('')}
+            </div>
+          </div>
+        </details>`;
+      }).join('');
+    }
+
+    function renderReviewComments() {
+      const comments = reviewComments();
+      if (!comments.length) {
+        return '<div class="review-empty">No comments added yet.</div>';
+      }
+
+      return comments.map(comment => {
+        const anchorLabel = formatReviewAnchor(comment.anchor || {});
+        const severity = (comment.severity || 'medium').toLowerCase();
+        const severityStyles = {
+          low: { bg: 'rgba(59,130,246,0.15)', fg: '#60a5fa' },
+          medium: { bg: 'rgba(245,158,11,0.15)', fg: '#fbbf24' },
+          high: { bg: 'rgba(249,115,22,0.15)', fg: '#fb923c' },
+          critical: { bg: 'rgba(239,68,68,0.15)', fg: '#f87171' },
+        };
+        const severityStyle = severityStyles[severity] || severityStyles.medium;
+        return `<div class="review-comment-card">
+          <div class="review-comment-meta">
+            <div>
+              <div class="review-comment-title">${escapeHtml(anchorLabel)}</div>
+              <div class="review-comment-author">${escapeHtml(comment.author || 'Reviewer')}</div>
+            </div>
+            <span class="review-severity-badge" style="background:${severityStyle.bg};color:${severityStyle.fg}">
+              ${escapeHtml(severity)}
+            </span>
+          </div>
+          <div class="review-comment-body">${escapeHtml(comment.comment || '')}</div>
+          <div class="review-comment-footer">
+            <button
+              type="button"
+              class="btn btn-outline btn-sm"
+              onclick='removeReviewComment(${jsStringLiteral(comment.comment_id)})'
+            >Remove</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderReviewWorkspace() {
+      const card = document.getElementById('reviewWorkspaceCard');
+      const pkg = reviewWorkspace.package;
+      if (!pkg || !reviewWorkspace.rfpId) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = 'block';
+
+      const activeStatus = normalizeReviewStatus(reviewWorkspace.status || pkg.status || 'PENDING') || 'PENDING';
+      const badge = document.getElementById('reviewWorkspaceBadge');
+      badge.textContent = humanizeStatusLabel(activeStatus);
+      badge.className = `badge review-status-badge ${reviewStatusClass(activeStatus)}`.trim();
+
+      document.getElementById('reviewSelectedAnchor').textContent = formatReviewAnchor(reviewWorkspace.selectedAnchor);
+      document.getElementById('reviewCommentCount').textContent = `${reviewComments().length} comment${reviewComments().length === 1 ? '' : 's'}`;
+      document.getElementById('reviewSourceCount').textContent = (pkg.source_sections || []).length;
+      document.getElementById('reviewResponseCount').textContent = (pkg.response_sections || []).length;
+
+      const summaries = [
+        { label: 'Review Status', value: humanizeStatusLabel(activeStatus) },
+        { label: 'Source Sections', value: (pkg.source_sections || []).length },
+        { label: 'Response Sections', value: (pkg.response_sections || []).length },
+        { label: 'Open Comments', value: pkg.open_comment_count || 0 },
+        { label: 'Validation', value: pkg.validation_summary || 'No validation summary' },
+        { label: 'Commercial', value: pkg.commercial_summary || 'No commercial summary' },
+        { label: 'Legal', value: pkg.legal_summary || 'No legal summary' },
+      ];
+      document.getElementById('reviewWorkspaceSummary').innerHTML = summaries.map(item => `
+        <div class="review-summary-card">
+          <div class="label">${escapeHtml(item.label)}</div>
+          ${typeof item.value === 'number'
+            ? `<div class="value-number">${escapeHtml(item.value)}</div>`
+            : `<div class="value-text">${escapeHtml(item.value)}</div>`}
+        </div>
+      `).join('');
+
+      document.getElementById('reviewSourceSections').innerHTML = renderReviewSectionList(pkg.source_sections || [], 'source');
+      document.getElementById('reviewResponseSections').innerHTML = renderReviewSectionList(pkg.response_sections || [], 'response');
+      document.getElementById('reviewCommentsList').innerHTML = renderReviewComments();
+
+      const reviewerInput = document.getElementById('reviewReviewer');
+      const summaryInput = document.getElementById('reviewSummaryInput');
+      if (reviewerInput !== document.activeElement) {
+        reviewerInput.value = pkg.decision?.reviewer || '';
+      }
+      if (summaryInput !== document.activeElement) {
+        summaryInput.value = pkg.decision?.summary || '';
+      }
+
+      const canAct = reviewCanAct();
+      ['reviewApproveBtn', 'reviewChangesBtn', 'reviewRejectBtn'].forEach(id => {
+        document.getElementById(id).disabled = !canAct;
+      });
+      ['reviewReviewer', 'reviewSummaryInput', 'reviewCommentInput', 'reviewSeverity', 'reviewAddCommentBtn'].forEach(id => {
+        document.getElementById(id).disabled = !canAct;
+      });
+    }
+
+    function clearReviewWorkspace() {
+      reviewWorkspace = {
+        rfpId: null,
+        package: null,
+        selectedAnchor: null,
+        status: '',
+      };
+      document.getElementById('reviewWorkspaceCard').style.display = 'none';
+      document.getElementById('reviewCommentInput').value = '';
+      document.getElementById('reviewReviewer').value = '';
+      document.getElementById('reviewSummaryInput').value = '';
+    }
+
+    async function loadReviewWorkspace(rfpId, statusValue = '') {
+      if (!rfpId) {
+        clearReviewWorkspace();
+        return;
+      }
+
+      try {
+        const data = await apiFetch(`/api/rfp/${rfpId}/review`);
+        const switchingRun = reviewWorkspace.rfpId !== rfpId;
+        reviewWorkspace.rfpId = rfpId;
+        reviewWorkspace.package = data.review_package || null;
+        reviewWorkspace.status = statusValue || data.status || '';
+        if (switchingRun) {
+          reviewWorkspace.selectedAnchor = null;
+        }
+        if (!reviewWorkspace.package) {
+          clearReviewWorkspace();
+          return;
+        }
+        renderReviewWorkspace();
+      } catch {
+        clearReviewWorkspace();
+      }
+    }
+
+    async function persistReviewComments() {
+      if (!reviewWorkspace.rfpId || !reviewWorkspace.package) return;
+      const response = await apiFetch(`/api/rfp/${reviewWorkspace.rfpId}/review/comments`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comments: reviewComments() }),
+      });
+      reviewWorkspace.package = response.review_package || reviewWorkspace.package;
+      reviewWorkspace.status = response.status || reviewWorkspace.status;
+    }
+
+    window.selectReviewAnchor = function (eventOrDomain, domainOrSectionId, sectionIdOrParagraphId = '', maybeParagraphId = '') {
+      let event = null;
+      let domain = eventOrDomain;
+      let sectionId = domainOrSectionId;
+      let paragraphId = sectionIdOrParagraphId;
+
+      if (eventOrDomain && typeof eventOrDomain.preventDefault === 'function') {
+        event = eventOrDomain;
+        domain = domainOrSectionId;
+        sectionId = sectionIdOrParagraphId;
+        paragraphId = maybeParagraphId || '';
+      }
+
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      reviewWorkspace.selectedAnchor = buildReviewAnchor(domain, sectionId, paragraphId || '');
+      renderReviewWorkspace();
+    };
+
+    window.removeReviewComment = async function (commentId) {
+      reviewWorkspace.package.comments = reviewComments().filter(comment => comment.comment_id !== commentId);
+      try {
+        await persistReviewComments();
+        renderReviewWorkspace();
+      } catch (e) {
+        addLog('rfpLog', `Failed to update comments: ${e.message}`, 'error');
+      }
+    };
+
+    window.submitReviewDecision = async function (decision) {
+      if (!reviewWorkspace.rfpId || !reviewWorkspace.package) return;
+      if (decision === 'REQUEST_CHANGES' && reviewComments().length === 0) {
+        addLog('rfpLog', 'Add at least one comment before requesting changes.', 'error');
+        return;
+      }
+
+      const currentRfpId = reviewWorkspace.rfpId;
+      const reviewer = document.getElementById('reviewReviewer').value.trim();
+      const summary = document.getElementById('reviewSummaryInput').value.trim();
+      const buttonIds = ['reviewApproveBtn', 'reviewChangesBtn', 'reviewRejectBtn'];
+      buttonIds.forEach(id => { document.getElementById(id).disabled = true; });
+
+      try {
+        const response = await apiFetch(`/api/rfp/${currentRfpId}/review/decision`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            decision,
+            reviewer,
+            summary,
+            comments: reviewComments(),
+          }),
+        });
+
+        addLog('rfpLog', response.message, 'success');
+        document.getElementById('rfpBadge').textContent = response.status;
+        await loadRuns();
+
+        if (response.status === 'REJECTED') {
+          await viewRun(currentRfpId);
+          return;
+        }
+
+        clearReviewWorkspace();
+        connectPipelineWS(currentRfpId);
       } catch (e) {
         addLog('rfpLog', `Failed to submit review decision: ${e.message}`, 'error');
         buttonIds.forEach(id => { document.getElementById(id).disabled = false; });

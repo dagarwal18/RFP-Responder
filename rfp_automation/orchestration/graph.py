@@ -218,7 +218,7 @@ def commercial_legal_parallel(state: dict[str, Any]) -> dict[str, Any]:
 
 # ── Build the graph ──────────────────────────────────────
 
-def build_graph() -> StateGraph:
+def build_graph(entry_point: str = "a1_intake") -> StateGraph:
     """
     Construct and compile the 12-stage LangGraph state machine.
     Returns a compiled graph ready to invoke.
@@ -249,7 +249,7 @@ def build_graph() -> StateGraph:
     graph.add_node("escalate_validation", escalate_validation)
 
     # ── Set entry point ──────────────────────────────────
-    graph.set_entry_point("a1_intake")
+    graph.set_entry_point(entry_point)
 
     # ── Add edges ────────────────────────────────────────
 
@@ -393,7 +393,7 @@ def run_pipeline_from(
             f"Unknown agent '{start_from}'. Valid: {AGENT_ORDER}"
         )
 
-    compiled = build_graph()
+    compiled = build_graph(entry_point=start_from)
 
     # Mark which agent to start from (agents before this will be skipped)
     checkpoint_state["_rerun_start_from"] = start_from

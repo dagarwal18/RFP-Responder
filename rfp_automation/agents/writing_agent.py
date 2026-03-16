@@ -473,11 +473,11 @@ class RequirementWritingAgent(BaseAgent):
             return "", [], 0
 
         # Strip <think>...</think> tags that Qwen models emit
-        text = re.sub(r"<think>[\s\S]*?</think>", "", text).strip()
+        text = re.sub(r"<think>[\s\S]*?</think>", "", text, flags=re.DOTALL).strip()
 
         # Strip markdown code fences
         fence_match = re.search(
-            r"```(?:json)?\s*\n?(.*?)\n?\s*```",
+            r"```(?:json)?\s*(.*?)\s*```",
             text,
             re.DOTALL,
         )
@@ -486,7 +486,7 @@ class RequirementWritingAgent(BaseAgent):
 
         # Try JSON parse
         try:
-            data = json.loads(text)
+            data = json.loads(text, strict=False)
         except json.JSONDecodeError:
             # Try extracting JSON object from mixed content
             obj_start = text.find("{")
@@ -496,7 +496,7 @@ class RequirementWritingAgent(BaseAgent):
                     candidate = text[obj_start : obj_end + 1]
                     # Fix trailing commas
                     candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
-                    data = json.loads(candidate)
+                    data = json.loads(candidate, strict=False)
                 except json.JSONDecodeError:
                     # Attempt JSON repair for truncated output
                     data = self._attempt_json_repair(
@@ -504,6 +504,9 @@ class RequirementWritingAgent(BaseAgent):
                     )
             else:
                 data = None
+
+        if not data:
+            data = self._fallback_regex_parse(text, section_id)
 
         if isinstance(data, dict):
             content = data.get("content", "")
@@ -562,12 +565,52 @@ class RequirementWritingAgent(BaseAgent):
         open_braces = repaired.count("{") - repaired.count("}")
         repaired += "}" * max(open_braces, 0)
         try:
-            data = json.loads(repaired)
+            data = json.loads(repaired, strict=False)
             logger.info(f"{tag} Repair succeeded")
             return data
         except json.JSONDecodeError:
             logger.debug(f"{tag} Repair failed")
             return None
+
+    def _fallback_regex_parse(self, text: str, section_id: str) -> dict | None:
+        """Fallback to regex extraction when JSON parsing fails (e.g. unescaped newlines)."""
+        tag = f"[C2] Regex fallback ({section_id})"
+        content = ""
+        reqs = []
+        word_count = 0
+
+        # Extract content (allow unescaped newlines inside the quotes)
+        content_match = re.search(
+            r'"content"\s*:\s*"(.*?)"\s*(?:,\s*"requirements_addressed"|,\s*"word_count"|})',
+            text, re.DOTALL
+        )
+        if content_match:
+            content = content_match.group(1)
+            # Unescape quotes
+            content = content.replace('\\"', '"').replace('\\n', '\n')
+
+        # Extract requirements
+        req_match = re.search(
+            r'"requirements_addressed"\s*:\s*\[(.*?)\]',
+            text, re.DOTALL
+        )
+        if req_match:
+            req_str = req_match.group(1)
+            reqs = re.findall(r'"([^"]+)"', req_str)
+
+        # Extract word count
+        wc_match = re.search(r'"word_count"\s*:\s*(\d+)', text)
+        if wc_match:
+            word_count = int(wc_match.group(1))
+
+        if content or reqs:
+            logger.info(f"{tag} Extracted {len(content)} chars and {len(reqs)} reqs via regex")
+            return {
+                "content": content,
+                "requirements_addressed": reqs,
+                "word_count": word_count
+            }
+        return None
 
     def _build_coverage_matrix(
         self,

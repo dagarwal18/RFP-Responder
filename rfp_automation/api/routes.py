@@ -120,9 +120,40 @@ def _build_pipeline_log(audit: list[dict[str, Any]]) -> list[dict[str, str]]:
 
 def _get_run_or_404(rfp_id: str) -> dict[str, Any]:
     run = _runs.get(rfp_id)
-    if not run:
-        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
-    return run
+    if run:
+        return run
+
+    # Fallback: Check if checkpoints exist on disk and reconstruct the run object
+    from rfp_automation.persistence.checkpoint import list_checkpoints, get_checkpoint
+    
+    checkpoints = list_checkpoints(rfp_id)
+    if checkpoints:
+        latest = checkpoints[-1]
+        state = get_checkpoint(rfp_id, latest["agent"])
+        if state:
+            status = state.get("status", "CHECKPOINTED")
+            # Unpack enum if it's stored as enum
+            if hasattr(status, "value"):
+                status = status.value
+            
+            # Try to grab the filename from metadata if present
+            meta = state.get("rfp_metadata", {})
+            filename = meta.get("source_file_path", "").split("/")[-1].split("\\")[-1] or "(checkpointed)"
+            
+            recovered_run = {
+                "rfp_id": rfp_id,
+                "filename": filename,
+                "status": status,
+                "current_agent": state.get("current_agent", latest["agent"]),
+                "started_at": checkpoints[0].get("saved_at", datetime.now(timezone.utc).isoformat()),
+                "pipeline_log": [],
+                "result": state,  # Expose state as result to render agent outputs
+            }
+            # Cache it in memory for subsequent calls
+            _runs[rfp_id] = recovered_run
+            return recovered_run
+
+    raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
 
 
 def _ensure_result_dict(run: dict[str, Any]) -> dict[str, Any]:

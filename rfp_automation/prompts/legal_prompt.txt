@@ -16,7 +16,9 @@ You are a legal analyst reviewing an RFP's contract clauses and compliance requi
 {rule_scores}
 
 ## Your Task
-Perform a comprehensive legal review and produce the following as a JSON object:
+Perform a comprehensive legal review and produce the following as a JSON object.
+Return JSON only.
+Do not include markdown, code fences, commentary, or any text before or after the JSON.
 
 ### 1. clause_risks
 For each contract clause identified, provide:

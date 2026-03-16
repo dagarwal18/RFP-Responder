@@ -18,6 +18,7 @@ from rfp_automation.models.schemas import (
 from rfp_automation.agents.commercial_agent import CommercialAgent
 from rfp_automation.agents.legal_agent import LegalAgent
 from rfp_automation.mcp.rules.rules_config import RulesConfigStore
+from rfp_automation.orchestration import graph as graph_module
 
 
 @pytest.fixture
@@ -208,3 +209,63 @@ def test_determine_decision(empty_state):
     )
     assert dec.value == "CONDITIONAL"
     assert any("PCI DSS" in r for r in reas)
+
+
+def test_legal_parse_failure_blocks(empty_state, monkeypatch):
+    """Malformed E2 LLM output should fail closed instead of silently approving."""
+    agent = LegalAgent()
+
+    mcp = MagicMock()
+    mcp.legal_rules.evaluate_clauses.return_value = {
+        "blocked": False,
+        "block_reasons": [],
+        "aggregate_risk": "low",
+        "clause_scores": [],
+    }
+    mcp.policy_rules._config_store = RulesConfigStore()
+    mcp.legal_rules._config_store = RulesConfigStore()
+    mcp.query_knowledge.return_value = []
+    mcp.query_rfp.return_value = []
+
+    monkeypatch.setattr("rfp_automation.agents.legal_agent.MCPService", lambda: mcp)
+    monkeypatch.setattr(
+        agent,
+        "_run_llm_analysis",
+        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("bad json")),
+    )
+    monkeypatch.setattr(agent, "_extract_required_certs", lambda *args, **kwargs: [])
+    mcp.get_certifications_from_policies.return_value = {}
+
+    state = empty_state
+    result = agent._real_process(state)
+
+    assert result.legal_result.decision.value == "BLOCKED"
+    assert any("Manual legal review required" in reason for reason in result.legal_result.block_reasons)
+
+
+def test_run_pipeline_from_uses_requested_entry(monkeypatch):
+    """Reruns should start from the requested node, not replay the H1 end edge."""
+    seen: dict[str, str] = {}
+
+    class FakeCompiledGraph:
+        def stream(self, state):
+            yield {
+                "f1_final_readiness": {
+                    **state,
+                    "status": "SUBMITTING",
+                }
+            }
+
+    def fake_build_graph(entry_point="a1_intake"):
+        seen["entry_point"] = entry_point
+        return FakeCompiledGraph()
+
+    monkeypatch.setattr(graph_module, "build_graph", fake_build_graph)
+
+    result = graph_module.run_pipeline_from(
+        "f1_final_readiness",
+        {"status": "AWAITING_HUMAN_VALIDATION"},
+    )
+
+    assert seen["entry_point"] == "f1_final_readiness"
+    assert result["status"] == "SUBMITTING"
