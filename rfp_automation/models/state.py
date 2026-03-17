@@ -99,7 +99,7 @@ class RFPGraphState(BaseModel):
     # F1 Final Readiness (owner: F1)
     approval_package: ApprovalPackage = Field(default_factory=ApprovalPackage)
 
-    # F2 Submission (owner: F2)
+    # F1 Submission (owner: F1)
     submission_record: SubmissionRecord = Field(default_factory=SubmissionRecord)
 
     # Audit trail (append-only)

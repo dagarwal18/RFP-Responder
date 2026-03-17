@@ -12,7 +12,6 @@ from .commercial_agent import CommercialAgent
 from .legal_agent import LegalAgent
 from .human_validation_agent import HumanValidationAgent
 from .final_readiness_agent import FinalReadinessAgent
-from .submission_agent import SubmissionAgent
 
 __all__ = [
     "BaseAgent",
@@ -29,5 +28,4 @@ __all__ = [
     "LegalAgent",
     "HumanValidationAgent",
     "FinalReadinessAgent",
-    "SubmissionAgent",
 ]

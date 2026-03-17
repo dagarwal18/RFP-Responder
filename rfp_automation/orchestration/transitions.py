@@ -92,17 +92,3 @@ def route_after_commercial_legal(state: dict[str, Any]) -> str:
     return "h1_human_validation_prepare"
 
 
-# ── After F1 Human Approval ──────────────────────────────
-
-def route_after_approval(state: dict[str, Any]) -> str:
-    """
-    APPROVE → F2 Submission.
-    REJECT  → end.
-    REQUEST_CHANGES → (could loop, for now end).
-    """
-    package = state.get("approval_package", {})
-    decision = package.get("approval_decision", None)
-
-    if decision == "APPROVE":
-        return "f2_submission"
-    return "end_rejected"

@@ -33,14 +33,12 @@ from rfp_automation.agents import (
     LegalAgent,
     HumanValidationAgent,
     FinalReadinessAgent,
-    SubmissionAgent,
 )
 from rfp_automation.orchestration.transitions import (
     route_after_structuring,
     route_after_go_no_go,
     route_after_validation,
     route_after_commercial_legal,
-    route_after_approval,
 )
 
 logger = logging.getLogger(__name__)
@@ -60,7 +58,6 @@ _e1 = CommercialAgent()
 _e2 = LegalAgent()
 _h1 = HumanValidationAgent()
 _f1 = FinalReadinessAgent()
-_f2 = SubmissionAgent()
 
 
 def _with_checkpoint(node_name: str, fn: Callable) -> Callable:
@@ -239,12 +236,12 @@ def build_graph(entry_point: str = "a1_intake") -> StateGraph:
     graph.add_node("commercial_legal_parallel", _with_checkpoint("commercial_legal_parallel", commercial_legal_parallel))
     graph.add_node("h1_human_validation_prepare", _with_checkpoint("h1_human_validation_prepare", _h1.process))
     graph.add_node("f1_final_readiness", _with_checkpoint("f1_final_readiness", _f1.process))
-    graph.add_node("f2_submission", _with_checkpoint("f2_submission", _f2.process))
+
 
     # Terminal nodes
     graph.add_node("end_no_go", end_no_go)
     graph.add_node("end_legal_block", end_legal_block)
-    graph.add_node("end_rejected", end_rejected)
+
     graph.add_node("escalate_structuring", escalate_structuring)
     graph.add_node("escalate_validation", escalate_validation)
 
@@ -310,21 +307,14 @@ def build_graph(entry_point: str = "a1_intake") -> StateGraph:
     # H1 -> END (resume via API once a human decision is recorded)
     graph.add_edge("h1_human_validation_prepare", END)
 
-    # F1 → conditional (APPROVE / REJECT)
-    graph.add_conditional_edges(
-        "f1_final_readiness",
-        route_after_approval,
-        {
-            "f2_submission": "f2_submission",
-            "end_rejected": "end_rejected",
-        },
-    )
+    # F1 → END (F1 handles approval/rejection internally)
+    graph.add_edge("f1_final_readiness", END)
 
     # Terminal edges → END
-    graph.add_edge("f2_submission", END)
+
     graph.add_edge("end_no_go", END)
     graph.add_edge("end_legal_block", END)
-    graph.add_edge("end_rejected", END)
+
     graph.add_edge("escalate_structuring", END)
     graph.add_edge("escalate_validation", END)
 

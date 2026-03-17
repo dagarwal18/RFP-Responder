@@ -54,36 +54,47 @@ class EmbeddingModel:
         all_embeddings = []
         # Process in batches to prevent payload size issues
         batch_size = 32
+        max_retries = 3
+        
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
-            try:
-                t0 = time.perf_counter()
-                
-                # BAAI/bge-m3 via HuggingFace uses the sentence_similarity or feature-extraction endpoint
-                # The prompt structure requires a source_sentence and target sentences, but for generic
-                # chunk embeddings, feature-extraction works best, or passing the batch directly.
-                
-                # HuggingFace `feature-extraction` API wrapper
-                result = self._client.feature_extraction(
-                    text=batch,
-                    model=self.settings.embedding_model,
-                )
-                
-                # Convert numpy arrays to standard lists
-                emb_batch = result.tolist()
-                
-                # Inference API might return 3D arrays [batch][seq][dim] or 2D [batch][dim]
-                # BGE-M3 often returns [batch, dim] 
-                if len(emb_batch) > 0 and isinstance(emb_batch[0], list) and isinstance(emb_batch[0][0], list):
-                    # Has sequence dimension (pooled output usually at index 0 or requires mean pooling)
-                    # We'll take the first token (CLS) for simplicity if it's 3D
-                    emb_batch = [seq[0] for seq in emb_batch]
+            
+            for attempt in range(max_retries):
+                try:
+                    t0 = time.perf_counter()
                     
-                all_embeddings.extend(emb_batch)
-                logger.info(f"[Embedding] Batch size {len(batch)} embedded in {time.perf_counter() - t0:.2f}s")
-            except Exception as e:
-                logger.error(f"[Embedding] Failed to embed batch: {e}")
-                raise
+                    # BAAI/bge-m3 via HuggingFace uses the sentence_similarity or feature-extraction endpoint
+                    # The prompt structure requires a source_sentence and target sentences, but for generic
+                    # chunk embeddings, feature-extraction works best, or passing the batch directly.
+                    
+                    # HuggingFace `feature-extraction` API wrapper
+                    result = self._client.feature_extraction(
+                        text=batch,
+                        model=self.settings.embedding_model,
+                    )
+                    
+                    # Convert numpy arrays to standard lists
+                    emb_batch = result.tolist()
+                    
+                    # Inference API might return 3D arrays [batch][seq][dim] or 2D [batch][dim]
+                    # BGE-M3 often returns [batch, dim] 
+                    if len(emb_batch) > 0 and isinstance(emb_batch[0], list) and isinstance(emb_batch[0][0], list):
+                        # Has sequence dimension (pooled output usually at index 0 or requires mean pooling)
+                        # We'll take the first token (CLS) for simplicity if it's 3D
+                        emb_batch = [seq[0] for seq in emb_batch]
+                        
+                    all_embeddings.extend(emb_batch)
+                    logger.info(f"[Embedding] Batch size {len(batch)} embedded in {time.perf_counter() - t0:.2f}s")
+                    break  # Success, exit retry loop
+                    
+                except Exception as e:
+                    if attempt < max_retries - 1:
+                        delay = 2 ** attempt * 2  # 2s, 4s, 8s
+                        logger.warning(f"[Embedding] Batch failed: {e}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(delay)
+                    else:
+                        logger.error(f"[Embedding] Failed to embed batch after {max_retries} attempts: {e}")
+                        raise
 
         return all_embeddings
 

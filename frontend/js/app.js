@@ -16,8 +16,7 @@ const STAGES = [
   { key: 'E1_COMMERCIAL', label: 'E1 — Commercial Review', status: 'COMMERCIAL_LEGAL_REVIEW' },
   { key: 'E2_LEGAL', label: 'E2 — Legal Review', status: 'COMMERCIAL_LEGAL_REVIEW' },
   { key: 'H1_HUMAN_VALIDATION', label: 'H1 — Human Validation', status: 'AWAITING_HUMAN_VALIDATION' },
-  { key: 'F1_FINAL_READINESS', label: 'F1 — Final Readiness', status: 'FINAL_READINESS' },
-  { key: 'F2_SUBMISSION', label: 'F2 — Submission', status: 'SUBMITTED' },
+  { key: 'F1_FINAL_READINESS', label: 'F1 — Finalize & Submit', status: 'SUBMITTED' },
 ];
 
 // ── Helper: format file size ───────────────────

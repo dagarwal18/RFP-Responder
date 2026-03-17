@@ -38,7 +38,6 @@ AGENT_ORDER: list[str] = [
     "commercial_legal_parallel",
     "h1_human_validation_prepare",
     "f1_final_readiness",
-    "f2_submission",
 ]
 
 

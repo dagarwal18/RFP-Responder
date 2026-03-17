@@ -440,18 +440,20 @@ async def get_rfp_status(rfp_id: str):
         review = result_data.get("review_package")
         if isinstance(review, dict) and review.get("review_id"):
             agent_outputs["H1_HUMAN_VALIDATION"] = review
-        # F1 Final Readiness
+        # F1 Final Readiness (includes submission record)
         approval = result_data.get("approval_package")
         if isinstance(approval, dict) and (
             approval.get("decision_brief") or approval.get("approval_decision")
         ):
             agent_outputs["F1_FINAL_READINESS"] = approval
-        # F2 Submission
         submission = result_data.get("submission_record")
         if isinstance(submission, dict) and (
             submission.get("output_file_path") or submission.get("submitted_at")
         ):
-            agent_outputs["F2_SUBMISSION"] = submission
+            agent_outputs["F1_FINAL_READINESS"] = {
+                **(agent_outputs.get("F1_FINAL_READINESS") or {}),
+                "submission_record": submission,
+            }
 
     # ── LLM call stats per agent ─────────────────────────
     from rfp_automation.services.llm_service import LLMCallTracker

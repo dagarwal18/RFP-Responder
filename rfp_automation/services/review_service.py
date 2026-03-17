@@ -29,7 +29,6 @@ _RERUN_PRIORITY = [
     "c3_narrative_assembly",
     "d1_technical_validation",
     "commercial_legal_parallel",
-    "f1_final_readiness",
 ]
 
 _AUTO_RERUN_BY_DOMAIN = {

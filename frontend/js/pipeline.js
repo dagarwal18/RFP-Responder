@@ -801,7 +801,7 @@ function connectPipelineWS(rfpId) {
         // Show proposal link when submitted
         if (endStatus === 'SUBMITTED' && activeRfpId) {
           apiFetch(`/api/rfp/${activeRfpId}/status`).then(statusData => {
-            const submissionRecord = statusData?.result?.submission_record || statusData?.agent_outputs?.F2_SUBMISSION;
+            const submissionRecord = statusData?.result?.submission_record || statusData?.agent_outputs?.F1_FINAL_READINESS?.submission_record;
             const outputPath = submissionRecord?.output_file_path;
             if (outputPath) {
               addLog('rfpLog', `📄 Proposal written to: ${outputPath}`, 'success');
@@ -989,7 +989,7 @@ const AGENT_LABELS = {
   commercial_legal_parallel: 'E1+E2 Com/Legal',
   h1_human_validation_prepare: 'H1 Human Validation',
   f1_final_readiness: 'F1 Readiness',
-  f2_submission: 'F2 Submission',
+
 };
 
 async function loadCheckpoints(rfpId) {
