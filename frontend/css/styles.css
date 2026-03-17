@@ -1581,3 +1581,619 @@
     .btn-clear-cp:hover {
       background: rgba(239, 68, 68, 0.1);
     }
+
+    /* ══════════════════════════════════════════════════════════
+       DOCUMENT-CENTRIC REVIEW UI (Antigravity-inspired)
+       ══════════════════════════════════════════════════════════ */
+
+    /* ── Sticky review header ──────────────────────── */
+    .doc-review-header {
+      position: sticky;
+      top: 64px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 32px;
+      background: rgba(9, 9, 11, 0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .doc-review-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .doc-review-header-left h2 {
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .doc-review-header-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .doc-reviewer-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .doc-reviewer-field label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .doc-input-sm {
+      font-family: inherit;
+      font-size: 13px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(24, 24, 27, 0.7);
+      color: var(--text-primary);
+      outline: none;
+      width: 160px;
+      transition: var(--transition);
+    }
+
+    .doc-input-sm:focus {
+      border-color: rgba(161, 161, 170, 0.5);
+      box-shadow: 0 0 0 3px rgba(161, 161, 170, 0.1);
+    }
+
+    .doc-comment-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ── Summary strip ─────────────────────────────── */
+    .doc-summary-strip {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 20px 32px 0;
+    }
+
+    .doc-summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .doc-summary-cards .review-summary-card {
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      background: rgba(24, 24, 27, 0.6);
+      min-height: auto;
+    }
+
+    .doc-summary-cards .review-summary-card .label {
+      font-size: 10px;
+      margin-bottom: 6px;
+    }
+
+    .doc-summary-cards .review-summary-card .value-number {
+      font-size: 22px;
+      margin-bottom: 0;
+    }
+
+    .doc-summary-cards .review-summary-card .value-text {
+      font-size: 12px;
+      -webkit-line-clamp: 2;
+    }
+
+    /* ── Document reader container ──────────────────── */
+    .doc-reader-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 32px 120px;
+    }
+
+    .doc-reader {
+      color: var(--text-primary);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    /* ── Section divider ───────────────────────────── */
+    .doc-section-block {
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+      padding-bottom: 8px;
+    }
+
+    .doc-section-block:last-child {
+      border-bottom: none;
+    }
+
+    .doc-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding: 12px 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .doc-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(148, 163, 184, 0.12);
+    }
+
+    /* ── Paragraph block (hoverable) ───────────────── */
+    .doc-paragraph {
+      position: relative;
+      padding: 4px 16px 4px 20px;
+      border-radius: 6px;
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+      cursor: default;
+      border-left: 3px solid transparent;
+    }
+
+    .doc-paragraph:hover {
+      background: rgba(250, 250, 250, 0.025);
+    }
+
+    .doc-paragraph.has-comments {
+      border-left-color: rgba(251, 191, 36, 0.6);
+      background: rgba(251, 191, 36, 0.04);
+    }
+
+    .doc-paragraph.has-comments:hover {
+      background: rgba(251, 191, 36, 0.07);
+    }
+
+    /* ── Hover feedback button ─────────────────────── */
+    .doc-hover-btn {
+      position: absolute;
+      left: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(24, 24, 27, 0.95);
+      color: var(--text-muted);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease, background 0.15s ease, transform 0.15s ease;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .doc-paragraph:hover .doc-hover-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .doc-hover-btn:hover {
+      background: rgba(250, 250, 250, 0.12);
+      color: var(--text-primary);
+      border-color: rgba(161, 161, 170, 0.4);
+      transform: translateY(-50%) scale(1.08);
+    }
+
+    /* Comment count badge on hovered paragraphs */
+    .doc-comment-indicator {
+      position: absolute;
+      right: -32px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: rgba(251, 191, 36, 0.9);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .doc-paragraph.has-comments .doc-comment-indicator {
+      opacity: 1;
+    }
+
+    /* ── Markdown typography ────────────────────────── */
+    .doc-reader h1 {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #f8fafc;
+      margin: 32px 0 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .doc-reader h2 {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #f1f5f9;
+      margin: 28px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .doc-reader h3 {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: #e2e8f0;
+      margin: 24px 0 10px;
+    }
+
+    .doc-reader h4, .doc-reader h5, .doc-reader h6 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin: 20px 0 8px;
+    }
+
+    .doc-reader p {
+      margin: 0 0 12px;
+      color: var(--text-secondary);
+    }
+
+    .doc-reader strong {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    .doc-reader em {
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    .doc-reader ul, .doc-reader ol {
+      margin: 8px 0 16px 24px;
+      color: var(--text-secondary);
+    }
+
+    .doc-reader li {
+      margin-bottom: 6px;
+      line-height: 1.7;
+    }
+
+    .doc-reader li::marker {
+      color: var(--text-muted);
+    }
+
+    .doc-reader blockquote {
+      margin: 16px 0;
+      padding: 12px 20px;
+      border-left: 3px solid rgba(161, 161, 170, 0.3);
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 0 8px 8px 0;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .doc-reader code {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #e2e8f0;
+    }
+
+    .doc-reader pre {
+      margin: 16px 0;
+      padding: 16px 20px;
+      background: rgba(2, 6, 23, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+
+    .doc-reader pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .doc-reader table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    .doc-reader thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      border-bottom: 2px solid rgba(148, 163, 184, 0.15);
+      background: rgba(24, 24, 27, 0.5);
+    }
+
+    .doc-reader tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    .doc-reader tbody tr:hover {
+      background: rgba(250, 250, 250, 0.02);
+    }
+
+    .doc-reader hr {
+      border: none;
+      height: 1px;
+      background: rgba(148, 163, 184, 0.12);
+      margin: 32px 0;
+    }
+
+    .doc-reader a {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+
+    .doc-reader a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Comment popover ───────────────────────────── */
+    .doc-comment-popover {
+      position: fixed;
+      z-index: 200;
+      width: 360px;
+      background: rgba(24, 24, 27, 0.97);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.04);
+      padding: 18px;
+      animation: popoverIn 0.2s ease-out;
+    }
+
+    @keyframes popoverIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .doc-popover-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .doc-popover-header strong {
+      font-size: 14px;
+      color: #f8fafc;
+    }
+
+    .doc-popover-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      transition: color 0.15s ease;
+    }
+
+    .doc-popover-close:hover {
+      color: var(--text-primary);
+    }
+
+    .doc-popover-anchor {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      margin-bottom: 10px;
+      border: 1px dashed rgba(148, 163, 184, 0.15);
+    }
+
+    .doc-popover-textarea {
+      width: 100%;
+      font: inherit;
+      font-size: 13px;
+      padding: 10px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 10px;
+      background: rgba(2, 6, 23, 0.5);
+      color: var(--text-primary);
+      resize: vertical;
+      min-height: 72px;
+      outline: none;
+      transition: var(--transition);
+      margin-bottom: 10px;
+    }
+
+    .doc-popover-textarea:focus {
+      border-color: rgba(161, 161, 170, 0.5);
+      box-shadow: 0 0 0 3px rgba(161, 161, 170, 0.1);
+    }
+
+    .doc-popover-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .doc-popover-select {
+      font: inherit;
+      font-size: 12px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    /* ── Comments drawer ───────────────────────────── */
+    .doc-comments-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 400px;
+      height: 100vh;
+      z-index: 180;
+      background: rgba(9, 9, 11, 0.97);
+      backdrop-filter: blur(24px);
+      border-left: 1px solid var(--border);
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      animation: drawerSlideIn 0.25s ease-out;
+    }
+
+    @keyframes drawerSlideIn {
+      from { transform: translateX(100%); }
+      to   { transform: translateX(0); }
+    }
+
+    .doc-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .doc-drawer-header strong {
+      font-size: 15px;
+    }
+
+    .doc-drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── Floating action bar ────────────────────────── */
+    .doc-fab-bar {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 160;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      background: rgba(24, 24, 27, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+
+    .doc-fab-btn {
+      font: inherit;
+      font-size: 14px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+
+    .doc-fab-btn:hover {
+      background: rgba(250, 250, 250, 0.06);
+      color: var(--text-primary);
+    }
+
+    .doc-fab-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+    }
+
+    .doc-fab-action {
+      font-size: 13px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .doc-fab-action:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Empty state in reader ─────────────────────── */
+    .doc-reader-empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* ── Responsive tweaks ─────────────────────────── */
+    @media (max-width: 960px) {
+      .doc-reader-container {
+        padding: 20px 16px 120px;
+      }
+
+      .doc-summary-strip {
+        padding: 16px 16px 0;
+      }
+
+      .doc-review-header {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+      }
+
+      .doc-comment-popover {
+        width: 300px;
+      }
+
+      .doc-comments-drawer {
+        width: 320px;
+      }
+
+      .doc-hover-btn {
+        left: -34px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .doc-fab-bar {
+        left: 8px;
+        right: 8px;
+        transform: none;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .doc-comments-drawer {
+        width: 100%;
+      }
+    }

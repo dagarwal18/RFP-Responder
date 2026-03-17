@@ -95,6 +95,9 @@ window.addReviewComment = async function () {
     await persistReviewComments();
     document.getElementById('reviewCommentInput').value = '';
     reviewWorkspace.selectedAnchor = null;
+    // Close popover after save
+    const popover = document.getElementById('docCommentPopover');
+    if (popover) popover.style.display = 'none';
     renderReviewWorkspace();
     addLog('rfpLog', 'Saved human validation comment.', 'success');
   } catch (e) {
@@ -149,81 +152,60 @@ function commentCountForParagraph(domain, sectionId, paragraphId) {
 
 function renderReviewSectionList(sections, domain) {
   if (!sections.length) {
-    return `<div class="review-empty">No ${escapeHtml(domain)} sections available.</div>`;
+    return `<div class="doc-reader-empty">No ${escapeHtml(domain)} sections available.</div>`;
   }
 
   return sections.map(section => {
-    const comments = commentCountForSection(domain, section.section_id);
     const paragraphs = section.paragraphs || [];
-    const previewText = truncateText(
-      section.full_text || paragraphs.map(item => item.text || '').join('\n\n') || 'No preview available.',
-      320,
-    );
-    const sectionSelected = reviewWorkspace.selectedAnchor
-      && reviewWorkspace.selectedAnchor.domain === domain
-      && reviewWorkspace.selectedAnchor.section_id === section.section_id
-      && !reviewWorkspace.selectedAnchor.paragraph_id;
-    const metaParts = [section.section_id || ''];
-    if (section.source_section_title) metaParts.push(`Source: ${section.source_section_title}`);
-    if (section.section_type) metaParts.push(section.section_type);
-    if (section.requirement_ids?.length) metaParts.push(`${section.requirement_ids.length} requirement${section.requirement_ids.length === 1 ? '' : 's'}`);
-    const sectionButtonLabel = sectionSelected ? 'Section Selected' : 'Comment Section';
 
-    return `<details class="review-section"${sectionSelected || comments ? ' open' : ''}>
-      <summary>
-        <div class="review-section-title-row">
-          <div class="review-section-title">
-            <strong>${escapeHtml(section.title || section.section_id)}</strong>
-            <span class="review-section-meta">${escapeHtml(metaParts.filter(Boolean).join(' / '))}</span>
-          </div>
-          <span class="review-section-badges">
-            ${comments ? `<span class="review-count-badge">${comments} comment${comments === 1 ? '' : 's'}</span>` : ''}
-          </span>
-        </div>
-      </summary>
-      <div class="review-section-shell">
-        <div class="review-preview">${escapeHtml(previewText)}</div>
-        <div class="review-section-actions">
-          <button
-            type="button"
-            class="btn btn-sm review-select-btn ${sectionSelected ? 'is-selected' : ''}"
-            onclick='selectReviewAnchor(event, ${jsStringLiteral(domain)}, ${jsStringLiteral(section.section_id)})'
-          >${sectionButtonLabel}</button>
-          <span class="review-inline-note">${paragraphs.length} paragraph${paragraphs.length === 1 ? '' : 's'}</span>
-        </div>
-        <div class="review-paragraph-list">
-          ${paragraphs.map(paragraph => {
-        const anchorSelected = reviewWorkspace.selectedAnchor
-          && reviewWorkspace.selectedAnchor.section_id === section.section_id
-          && reviewWorkspace.selectedAnchor.paragraph_id === paragraph.paragraph_id
-          && reviewWorkspace.selectedAnchor.domain === domain;
-        const paragraphComments = commentCountForParagraph(domain, section.section_id, paragraph.paragraph_id);
-        const paragraphButtonLabel = anchorSelected ? 'Paragraph Selected' : 'Comment Paragraph';
-        return `<div class="review-paragraph ${anchorSelected ? 'is-selected' : ''}">
-              <div class="review-paragraph-header">
-                <span class="review-paragraph-label">${escapeHtml(paragraph.paragraph_id || 'Paragraph')}</span>
-                <div class="review-paragraph-actions">
-                  ${paragraphComments ? `<span class="review-count-badge">${paragraphComments}</span>` : ''}
-                  <button
-                    type="button"
-                    class="btn btn-sm review-select-btn ${anchorSelected ? 'is-selected' : ''}"
-                    onclick='selectReviewAnchor(event, ${jsStringLiteral(domain)}, ${jsStringLiteral(section.section_id)}, ${jsStringLiteral(paragraph.paragraph_id)})'
-                  >${paragraphButtonLabel}</button>
-                </div>
-              </div>
-              <div class="review-paragraph-text">${escapeHtml(paragraph.text || '')}</div>
-            </div>`;
-      }).join('')}
-        </div>
-      </div>
-    </details>`;
+    // Build merged text if no individual paragraphs
+    const sectionFullText = section.full_text || paragraphs.map(p => p.text || '').join('\n\n') || '';
+
+    // Section heading
+    let html = `<div class="doc-section-block" data-section-id="${escapeHtml(section.section_id)}" data-domain="${escapeHtml(domain)}">`;
+    html += `<div class="doc-section-title">${escapeHtml(section.title || section.section_id)}</div>`;
+
+    if (paragraphs.length > 0) {
+      paragraphs.forEach(paragraph => {
+        const pComments = commentCountForParagraph(domain, section.section_id, paragraph.paragraph_id);
+        const hasComments = pComments > 0;
+        const rawMd = paragraph.text || '';
+        const renderedHtml = typeof marked !== 'undefined' ? marked.parse(rawMd) : escapeHtml(rawMd);
+
+        html += `<div class="doc-paragraph ${hasComments ? 'has-comments' : ''}"
+                      data-domain="${escapeHtml(domain)}"
+                      data-section-id="${escapeHtml(section.section_id)}"
+                      data-paragraph-id="${escapeHtml(paragraph.paragraph_id)}">
+          <button type="button" class="doc-hover-btn" title="Add feedback">+</button>
+          ${renderedHtml}
+          ${hasComments ? `<span class="doc-comment-indicator" title="View comments">💬 ${pComments}</span>` : ''}
+        </div>`;
+      });
+    } else if (sectionFullText) {
+      // Single block for the whole section
+      const sComments = commentCountForSection(domain, section.section_id);
+      const hasComments = sComments > 0;
+      const renderedHtml = typeof marked !== 'undefined' ? marked.parse(sectionFullText) : escapeHtml(sectionFullText);
+
+      html += `<div class="doc-paragraph ${hasComments ? 'has-comments' : ''}"
+                    data-domain="${escapeHtml(domain)}"
+                    data-section-id="${escapeHtml(section.section_id)}"
+                    data-paragraph-id="">
+        <button type="button" class="doc-hover-btn" title="Add feedback">+</button>
+        ${renderedHtml}
+        ${hasComments ? `<span class="doc-comment-indicator" title="View comments">💬 ${sComments}</span>` : ''}
+      </div>`;
+    }
+
+    html += `</div>`;
+    return html;
   }).join('');
 }
 
 function renderReviewComments() {
   const comments = reviewComments();
   if (!comments.length) {
-    return '<div class="review-empty">No comments added yet.</div>';
+    return '<div class="doc-reader-empty" style="padding:32px 16px">No comments yet.</div>';
   }
 
   return comments.map(comment => {
@@ -274,8 +256,13 @@ function renderReviewWorkspace() {
   badge.className = `badge review-status-badge ${reviewStatusClass(activeStatus)}`.trim();
 
   document.getElementById('reviewSelectedAnchor').textContent = formatReviewAnchor(reviewWorkspace.selectedAnchor);
-  document.getElementById('reviewCommentCount').textContent = `${reviewComments().length} comment${reviewComments().length === 1 ? '' : 's'}`;
+  const commentTotal = reviewComments().length;
+  document.getElementById('reviewCommentCount').textContent = `${commentTotal} comment${commentTotal === 1 ? '' : 's'}`;
   document.getElementById('reviewResponseCount').textContent = (pkg.response_sections || []).length;
+
+  // Update FAB comment count
+  const fabCount = document.getElementById('docFabCommentCount');
+  if (fabCount) fabCount.textContent = commentTotal;
 
   const summaries = [
     { label: 'Review Status', value: humanizeStatusLabel(activeStatus) },
@@ -294,9 +281,13 @@ function renderReviewWorkspace() {
     </div>
   `).join('');
 
+  // Render the document reader
   document.getElementById('reviewResponseSections').innerHTML = renderReviewSectionList(pkg.response_sections || [], 'response');
+
+  // Render drawer comments
   document.getElementById('reviewCommentsList').innerHTML = renderReviewComments();
 
+  // Reviewer input
   const reviewerInput = document.getElementById('reviewReviewer');
   const summaryInput = document.getElementById('reviewSummaryInput');
   if (reviewerInput !== document.activeElement) {
@@ -310,12 +301,17 @@ function renderReviewWorkspace() {
   ['reviewApproveBtn', 'reviewChangesBtn', 'reviewRejectBtn'].forEach(id => {
     document.getElementById(id).disabled = !canAct;
   });
-  ['reviewReviewer', 'reviewSummaryInput', 'reviewCommentInput', 'reviewSeverity', 'reviewAddCommentBtn'].forEach(id => {
-    document.getElementById(id).disabled = !canAct;
+  ['reviewReviewer', 'reviewCommentInput', 'reviewSeverity', 'reviewAddCommentBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !canAct;
   });
+
+  // Attach hover event delegation for the document reader
+  attachDocReaderEvents();
 }
 
 function clearReviewWorkspace() {
+  _docReaderEventsAttached = false;
   reviewWorkspace = {
     rfpId: null,
     package: null,
@@ -327,6 +323,116 @@ function clearReviewWorkspace() {
   document.getElementById('reviewReviewer').value = '';
   document.getElementById('reviewSummaryInput').value = '';
 }
+
+// ── Document reader event delegation ──────────────────
+let _docReaderEventsAttached = false;
+
+function attachDocReaderEvents() {
+  if (_docReaderEventsAttached) return;
+  _docReaderEventsAttached = true;
+
+  const reader = document.getElementById('reviewResponseSections');
+  if (!reader) return;
+
+  // Delegate clicks on hover buttons and comment indicators
+  reader.addEventListener('click', (e) => {
+    const hoverBtn = e.target.closest('.doc-hover-btn');
+    if (hoverBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const paragraph = hoverBtn.closest('.doc-paragraph');
+      if (paragraph) openCommentPopover(paragraph, hoverBtn);
+      return;
+    }
+
+    const indicator = e.target.closest('.doc-comment-indicator');
+    if (indicator) {
+      e.preventDefault();
+      toggleCommentsDrawer(true);
+      return;
+    }
+  });
+
+  // Close popover on click outside
+  document.addEventListener('click', (e) => {
+    const popover = document.getElementById('docCommentPopover');
+    if (popover && popover.style.display !== 'none') {
+      if (!popover.contains(e.target) && !e.target.closest('.doc-hover-btn')) {
+        popover.style.display = 'none';
+      }
+    }
+  });
+
+  // Wire up close buttons
+  const popoverClose = document.getElementById('docPopoverCloseBtn');
+  if (popoverClose) {
+    popoverClose.addEventListener('click', () => {
+      document.getElementById('docCommentPopover').style.display = 'none';
+    });
+  }
+  const drawerClose = document.getElementById('docDrawerCloseBtn');
+  if (drawerClose) {
+    drawerClose.addEventListener('click', () => {
+      toggleCommentsDrawer(false);
+    });
+  }
+}
+
+function openCommentPopover(paragraphEl, triggerBtn) {
+  const domain = paragraphEl.dataset.domain || 'response';
+  const sectionId = paragraphEl.dataset.sectionId || '';
+  const paragraphId = paragraphEl.dataset.paragraphId || '';
+
+  // Set anchor in review workspace
+  reviewWorkspace.selectedAnchor = buildReviewAnchor(domain, sectionId, paragraphId);
+
+  // Update popover anchor label
+  const label = formatReviewAnchor(reviewWorkspace.selectedAnchor);
+  document.getElementById('docPopoverAnchorLabel').textContent = label;
+  document.getElementById('reviewSelectedAnchor').textContent = label;
+
+  // Clear previous input
+  document.getElementById('reviewCommentInput').value = '';
+
+  // Position popover near the trigger button
+  const popover = document.getElementById('docCommentPopover');
+  const rect = triggerBtn.getBoundingClientRect();
+  const popoverWidth = 360;
+
+  let left = rect.left - popoverWidth - 12;
+  if (left < 16) left = rect.right + 12;
+  if (left + popoverWidth > window.innerWidth - 16) {
+    left = window.innerWidth - popoverWidth - 16;
+  }
+
+  let top = rect.top - 20;
+  if (top < 80) top = 80;
+  if (top + 280 > window.innerHeight) {
+    top = window.innerHeight - 300;
+  }
+
+  popover.style.left = left + 'px';
+  popover.style.top = top + 'px';
+  popover.style.display = 'block';
+
+  // Focus textarea
+  setTimeout(() => {
+    document.getElementById('reviewCommentInput').focus();
+  }, 100);
+}
+
+window.toggleCommentsDrawer = function(forceOpen) {
+  const drawer = document.getElementById('docCommentsDrawer');
+  if (!drawer) return;
+
+  if (forceOpen === true) {
+    drawer.style.display = 'flex';
+  } else if (forceOpen === false) {
+    drawer.style.display = 'none';
+  } else {
+    drawer.style.display = drawer.style.display === 'none' ? 'flex' : 'none';
+  }
+};
 
 async function loadReviewWorkspace(rfpId, statusValue = '') {
   if (!rfpId) {

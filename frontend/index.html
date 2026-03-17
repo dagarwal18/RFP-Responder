@@ -7,6 +7,7 @@
   <title>RFP Responder — Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
@@ -324,92 +325,82 @@
   </main>
 
   <!-- ═══════════ REVIEW PAGE (toggled via SPA) ═══════════ -->
-  <div id="reviewPage" style="display:none;position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 32px 64px">
-    <div class="card review-card" id="reviewWorkspaceCard" style="display:none">
-      <div class="card-header review-card-header">
-        <div class="review-card-title">
-          <h2>👀 Human Validation</h2>
-          <p>Review the generated response sections, leave paragraph or section comments, then approve or request changes.</p>
+  <div id="reviewPage" style="display:none;position:relative;z-index:1;">
+    <div id="reviewWorkspaceCard" style="display:none">
+
+      <!-- ── Sticky review header ── -->
+      <div class="doc-review-header">
+        <div class="doc-review-header-left">
+          <h2>📄 Proposal Review</h2>
+          <span class="badge review-status-badge" id="reviewWorkspaceBadge">Pending</span>
         </div>
-        <span class="badge review-status-badge" id="reviewWorkspaceBadge">Pending</span>
-      </div>
-      <div class="card-body review-card-body">
-        <div id="reviewWorkspaceSummary" class="review-summary-grid"></div>
-
-        <div class="review-main-grid" style="grid-template-columns: minmax(0, 1fr) 360px">
-          <section class="review-column">
-            <div class="review-column-header">
-              <div>
-                <span class="review-column-eyebrow">Generated draft</span>
-                <h3>Response Sections</h3>
-              </div>
-              <span class="review-column-count" id="reviewResponseCount">0</span>
-            </div>
-            <div id="reviewResponseSections" class="review-column-body" style="max-height:none"></div>
-          </section>
-
-          <aside class="review-rail">
-            <div class="review-rail-block">
-              <div class="review-rail-header">
-                <strong>Reviewer Context</strong>
-              </div>
-              <div class="review-field">
-                <label class="review-label" for="reviewReviewer">Reviewer</label>
-                <input id="reviewReviewer" class="review-input" placeholder="Your name" />
-              </div>
-              <div class="review-field">
-                <label class="review-label" for="reviewSummaryInput">Decision Summary</label>
-                <textarea id="reviewSummaryInput" class="review-textarea" rows="3" placeholder="Summarize approval notes or the requested changes"></textarea>
-              </div>
-            </div>
-
-            <div class="review-rail-block">
-              <div class="review-rail-header">
-                <strong>Add Comment</strong>
-              </div>
-              <div class="review-anchor-pill">
-                <strong>Selected</strong>
-                <span id="reviewSelectedAnchor">Select a section or paragraph to comment on.</span>
-              </div>
-              <div class="review-field">
-                <label class="review-label" for="reviewCommentInput">Requested Change</label>
-                <textarea id="reviewCommentInput" class="review-textarea" rows="4" placeholder="Describe what needs to change in this section or paragraph"></textarea>
-              </div>
-              <div class="review-controls-row">
-                <div class="review-field" style="margin-bottom:0">
-                  <label class="review-label" for="reviewSeverity">Severity</label>
-                  <select id="reviewSeverity" class="review-select">
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
-                    <option value="low">Low</option>
-                  </select>
-                </div>
-                <button type="button" class="btn btn-primary" id="reviewAddCommentBtn" onclick="addReviewComment()">Add Comment</button>
-              </div>
-            </div>
-
-            <div class="review-rail-block">
-              <div class="review-rail-header">
-                <strong>Comments</strong>
-                <span id="reviewCommentCount" class="review-count-label">0 comments</span>
-              </div>
-              <div id="reviewCommentsList" class="review-comments-list"></div>
-            </div>
-
-            <div class="review-rail-block">
-              <div class="review-rail-header">
-                <strong>Decision</strong>
-              </div>
-              <div class="review-actions">
-                <button type="button" class="btn btn-outline" id="reviewRejectBtn" onclick="submitReviewDecision('REJECT')">Reject</button>
-                <button type="button" class="btn btn-outline" id="reviewChangesBtn" onclick="submitReviewDecision('REQUEST_CHANGES')">Request Changes</button>
-                <button type="button" class="btn btn-primary" id="reviewApproveBtn" onclick="submitReviewDecision('APPROVE')">Approve & Continue</button>
-              </div>
-            </div>
-          </aside>
+        <div class="doc-review-header-right">
+          <div class="doc-reviewer-field">
+            <label for="reviewReviewer">Reviewer</label>
+            <input id="reviewReviewer" class="doc-input-sm" placeholder="Your name" />
+          </div>
+          <span id="reviewCommentCount" class="doc-comment-count">0 comments</span>
         </div>
       </div>
+
+      <!-- ── Summary cards strip ── -->
+      <div class="doc-summary-strip">
+        <div id="reviewWorkspaceSummary" class="doc-summary-cards"></div>
+      </div>
+
+      <!-- ── Document reader ── -->
+      <div class="doc-reader-container">
+        <div class="doc-reader" id="reviewResponseSections">
+          <!-- Rendered markdown blocks injected by JS -->
+        </div>
+      </div>
+
+      <!-- Hidden elements used by JS state management -->
+      <span id="reviewResponseCount" style="display:none">0</span>
+      <span id="reviewSelectedAnchor" style="display:none">Select a section or paragraph to comment on.</span>
+
+      <!-- ── Comment popover (shown on hover-click) ── -->
+      <div class="doc-comment-popover" id="docCommentPopover" style="display:none;">
+        <div class="doc-popover-header">
+          <strong>Add Feedback</strong>
+          <button type="button" class="doc-popover-close" id="docPopoverCloseBtn">&times;</button>
+        </div>
+        <div class="doc-popover-anchor" id="docPopoverAnchorLabel">Section / Paragraph</div>
+        <textarea id="reviewCommentInput" class="doc-popover-textarea" rows="3" placeholder="Describe what needs to change…"></textarea>
+        <div class="doc-popover-footer">
+          <select id="reviewSeverity" class="doc-popover-select">
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+            <option value="low">Low</option>
+          </select>
+          <button type="button" class="btn btn-primary btn-sm" id="reviewAddCommentBtn" onclick="addReviewComment()">Save</button>
+        </div>
+      </div>
+
+      <!-- ── Existing comments drawer (slides from right) ── -->
+      <div class="doc-comments-drawer" id="docCommentsDrawer" style="display:none;">
+        <div class="doc-drawer-header">
+          <strong>Comments</strong>
+          <button type="button" class="doc-popover-close" id="docDrawerCloseBtn">&times;</button>
+        </div>
+        <div id="reviewCommentsList" class="doc-drawer-body"></div>
+      </div>
+
+      <!-- ── Decision summary (hidden, used by submitReviewDecision) ── -->
+      <textarea id="reviewSummaryInput" style="display:none;"></textarea>
+
+      <!-- ── Floating action bar ── -->
+      <div class="doc-fab-bar" id="docFabBar">
+        <button type="button" class="doc-fab-btn doc-fab-comments" id="docShowCommentsBtn" onclick="toggleCommentsDrawer()">
+          💬 <span id="docFabCommentCount">0</span>
+        </button>
+        <div class="doc-fab-divider"></div>
+        <button type="button" class="btn btn-outline doc-fab-action" id="reviewRejectBtn" onclick="submitReviewDecision('REJECT')">Reject</button>
+        <button type="button" class="btn btn-outline doc-fab-action" id="reviewChangesBtn" onclick="submitReviewDecision('REQUEST_CHANGES')">Request Changes</button>
+        <button type="button" class="btn btn-primary doc-fab-action" id="reviewApproveBtn" onclick="submitReviewDecision('APPROVE')">Approve & Finalize</button>
+      </div>
+
     </div>
   </div>
 
