@@ -1709,8 +1709,10 @@
     /* ── Section divider ───────────────────────────── */
     .doc-section-block {
       margin-bottom: 8px;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
-      padding-bottom: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(24, 24, 27, 0.5);
     }
 
     .doc-section-block:last-child {
@@ -1718,15 +1720,41 @@
     }
 
     .doc-section-title {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      padding: 12px 0 8px;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease, color 0.2s ease;
+      border-bottom: 1px solid transparent;
+    }
+
+    .doc-section-title:hover {
+      background: rgba(250, 250, 250, 0.03);
+      color: var(--text-primary);
+    }
+
+    .doc-section-chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .doc-section-block.is-collapsed .doc-section-chevron {
+      transform: rotate(-90deg);
     }
 
     .doc-section-title::after {
@@ -1736,10 +1764,36 @@
       background: rgba(148, 163, 184, 0.12);
     }
 
+    .doc-section-title .doc-section-para-count {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: rgba(161, 161, 170, 0.1);
+      padding: 2px 8px;
+      border-radius: 999px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .doc-section-paragraphs {
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+      opacity: 1;
+    }
+
+    .doc-section-block.is-collapsed .doc-section-paragraphs {
+      max-height: 0 !important;
+      opacity: 0;
+    }
+
+    .doc-section-block:not(.is-collapsed) .doc-section-title {
+      border-bottom-color: rgba(148, 163, 184, 0.08);
+    }
+
     /* ── Paragraph block (hoverable) ───────────────── */
     .doc-paragraph {
       position: relative;
-      padding: 4px 16px 4px 20px;
+      padding: 4px 16px 4px 48px;
       border-radius: 6px;
       transition: background 0.2s ease, box-shadow 0.2s ease;
       cursor: default;
@@ -1762,9 +1816,8 @@
     /* ── Hover feedback button ─────────────────────── */
     .doc-hover-btn {
       position: absolute;
-      left: -40px;
-      top: 50%;
-      transform: translateY(-50%);
+      left: 10px;
+      top: 8px;
       width: 28px;
       height: 28px;
       border-radius: 8px;
@@ -1777,13 +1830,14 @@
       justify-content: center;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.2s ease, background 0.15s ease, transform 0.15s ease;
+      transition: opacity 0.25s ease, background 0.15s ease, transform 0.15s ease;
       pointer-events: none;
       z-index: 10;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    .doc-paragraph:hover .doc-hover-btn {
+    .doc-paragraph:hover .doc-hover-btn,
+    .doc-hover-btn:hover {
       opacity: 1;
       pointer-events: auto;
     }
@@ -1792,7 +1846,7 @@
       background: rgba(250, 250, 250, 0.12);
       color: var(--text-primary);
       border-color: rgba(161, 161, 170, 0.4);
-      transform: translateY(-50%) scale(1.08);
+      transform: scale(1.08);
     }
 
     /* Comment count badge on hovered paragraphs */
@@ -2180,7 +2234,7 @@
       }
 
       .doc-hover-btn {
-        left: -34px;
+        left: 8px;
       }
     }
 

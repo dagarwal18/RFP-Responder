@@ -157,13 +157,25 @@ function renderReviewSectionList(sections, domain) {
 
   return sections.map(section => {
     const paragraphs = section.paragraphs || [];
-
-    // Build merged text if no individual paragraphs
     const sectionFullText = section.full_text || paragraphs.map(p => p.text || '').join('\n\n') || '';
+    const paraCount = paragraphs.length || (sectionFullText ? 1 : 0);
+    const sectionComments = commentCountForSection(domain, section.section_id);
 
-    // Section heading
-    let html = `<div class="doc-section-block" data-section-id="${escapeHtml(section.section_id)}" data-domain="${escapeHtml(domain)}">`;
-    html += `<div class="doc-section-title">${escapeHtml(section.title || section.section_id)}</div>`;
+    // Section block — starts collapsed
+    let html = `<div class="doc-section-block is-collapsed" data-section-id="${escapeHtml(section.section_id)}" data-domain="${escapeHtml(domain)}">`;
+
+    // Clickable header with chevron
+    html += `<div class="doc-section-title" onclick="toggleSection(this)">`;
+    html += `<span class="doc-section-chevron">▼</span>`;
+    html += `${escapeHtml(section.title || section.section_id)}`;
+    if (sectionComments > 0) {
+      html += `<span style="font-size:11px;color:rgba(251,191,36,0.9);margin-left:6px">💬 ${sectionComments}</span>`;
+    }
+    html += `<span class="doc-section-para-count">${paraCount} para${paraCount !== 1 ? 's' : ''}</span>`;
+    html += `</div>`;
+
+    // Paragraphs wrapper
+    html += `<div class="doc-section-paragraphs" style="padding: 0 18px 12px;">`;
 
     if (paragraphs.length > 0) {
       paragraphs.forEach(paragraph => {
@@ -182,7 +194,6 @@ function renderReviewSectionList(sections, domain) {
         </div>`;
       });
     } else if (sectionFullText) {
-      // Single block for the whole section
       const sComments = commentCountForSection(domain, section.section_id);
       const hasComments = sComments > 0;
       const renderedHtml = typeof marked !== 'undefined' ? marked.parse(sectionFullText) : escapeHtml(sectionFullText);
@@ -197,10 +208,17 @@ function renderReviewSectionList(sections, domain) {
       </div>`;
     }
 
-    html += `</div>`;
+    html += `</div>`; // close .doc-section-paragraphs
+    html += `</div>`; // close .doc-section-block
     return html;
   }).join('');
 }
+
+window.toggleSection = function(titleEl) {
+  const block = titleEl.closest('.doc-section-block');
+  if (!block) return;
+  block.classList.toggle('is-collapsed');
+};
 
 function renderReviewComments() {
   const comments = reviewComments();
