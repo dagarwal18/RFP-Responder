@@ -54,7 +54,7 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
    - Leave `mapped_capabilities` empty (these will be handled by their dedicated agents)
    - Provide a clear description of what the section should contain
 
-6. Assign a priority (1 = highest importance) to each section based on BUSINESS IMPACT and RFP evaluation weighting, NOT document order. Technical solutions, compliance, and SLA sections should have the highest priority (1-3). Knowledge-driven sections (company profile, references) should have medium priority (4-6). Commercial/legal sections should have mid-high priority (3-5). Boilerplate (cover letter, TOC, forms) should have the LOWEST priority (8-12). Do NOT assign sequential priorities matching the section order.
+6. Assign a priority (1 = first section in the document) to each section based on the DOCUMENT ORDER that a reader should follow. This must reflect the logical reading order of a professional proposal: Cover Letter (1), Executive Summary (2), Table of Contents (3), then Technical Solution sections, then Company Profile, then Commercial, then Legal, then Appendices (last). Priority numbers MUST be sequential (1, 2, 3, ...) and MUST match the order you want the sections to appear in the final assembled document.
 
 7. Provide a `description` for EVERY section explaining what it must contain.
 
@@ -90,7 +90,7 @@ Example:
       "content_guidance": "Must confirm proposal validity for 120 days",
       "requirement_ids": [],
       "mapped_capabilities": [],
-      "priority": 10,
+      "priority": 1,
       "source_rfp_section": "Submission Instructions"
     }},
     {{
@@ -101,7 +101,7 @@ Example:
       "content_guidance": "RFP requires minimum 5 years of experience in the domain",
       "requirement_ids": [],
       "mapped_capabilities": ["10+ years telecom experience", "Cisco Gold Partner", "ISO 27001 certified"],
-      "priority": 4,
+      "priority": 2,
       "source_rfp_section": "Vendor Qualification"
     }},
     {{
@@ -112,7 +112,7 @@ Example:
       "content_guidance": "Must include architecture diagram and compliance matrix",
       "requirement_ids": ["REQ-0001", "REQ-0003", "REQ-0007"],
       "mapped_capabilities": ["Cloud PBX platform", "Active-active redundancy", "India DC hosting"],
-      "priority": 1,
+      "priority": 3,
       "source_rfp_section": "Technical Requirements"
     }}
   ]
