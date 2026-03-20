@@ -155,6 +155,9 @@ class ArchitecturePlanningAgent(BaseAgent):
             requirements_data, sections
         )
 
+        # ── 8b2. Enforce correct types for commercial/legal sections ──
+        sections = self._enforce_section_types(sections)
+
         # ── 8c. PASS 2 — Per-section capability enrichment ──
         #    Now that we know the structure, query KB for capabilities
         #    targeted to each section's specific requirements.
@@ -853,6 +856,41 @@ class ArchitecturePlanningAgent(BaseAgent):
                 final.append(section)
 
         return final
+
+    def _enforce_section_types(
+        self, sections: list[ResponseSection]
+    ) -> list[ResponseSection]:
+        """Ensure commercial/legal sections have correct section_type
+        regardless of what the LLM returned.
+        
+        Only overrides when the section title clearly indicates it is
+        a commercial or legal section (not merely mentioning compliance
+        in a security context, for example).
+        """
+        _COMMERCIAL_KEYWORDS = {"commercial", "pricing", "cost proposal", "financial proposal", "price schedule"}
+        _LEGAL_KEYWORDS = {
+            "legal", "contract", "contractual",
+            "terms and conditions", "terms & conditions",
+            "legal & compliance", "legal and compliance",
+        }
+
+        for section in sections:
+            title_lower = section.title.lower()
+            if any(kw in title_lower for kw in _COMMERCIAL_KEYWORDS):
+                if section.section_type != "commercial":
+                    logger.info(
+                        f"[C1] Overriding section_type for '{section.title}': "
+                        f"{section.section_type} → commercial"
+                    )
+                    section.section_type = "commercial"
+            elif any(kw in title_lower for kw in _LEGAL_KEYWORDS):
+                if section.section_type != "legal":
+                    logger.info(
+                        f"[C1] Overriding section_type for '{section.title}': "
+                        f"{section.section_type} → legal"
+                    )
+                    section.section_type = "legal"
+        return sections
 
     def _enrich_sections_with_capabilities(
         self,

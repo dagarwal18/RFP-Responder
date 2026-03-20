@@ -106,6 +106,30 @@ def seed_legal_templates_to_mongo(store: KnowledgeStore) -> None:
     logger.info(f"Seeded {len(templates)} legal templates into MongoDB")
 
 
+def seed_company_profile_to_mongo(store: KnowledgeStore) -> None:
+    """Seed company profile into MongoDB company_config.
+    
+    Only seeds if no profile exists yet — does NOT overwrite an existing
+    profile set via the UI or API.
+    """
+    existing = store.query_company_profile()
+    if existing and existing.get("company_name"):
+        logger.info(
+            f"Company profile already exists in MongoDB: "
+            f"{existing.get('company_name')} — skipping seed"
+        )
+        return
+
+    try:
+        profile = _load_json("company_profile.json")
+    except FileNotFoundError:
+        logger.info("No company_profile.json seed file — skipping")
+        return
+
+    store.upsert_company_profile(profile)
+    logger.info(f"Seeded company profile: {profile.get('company_name', 'unknown')}")
+
+
 def seed_all() -> dict[str, int | str]:
     """Run all seed operations. Returns a summary dict."""
     store = KnowledgeStore()
@@ -128,6 +152,9 @@ def seed_all() -> dict[str, int | str]:
 
     seed_legal_templates_to_mongo(store)
     results["legal_templates"] = "seeded"
+
+    seed_company_profile_to_mongo(store)
+    results["company_profile"] = "seeded"
 
     logger.info(f"Seed results: {results}")
     return results

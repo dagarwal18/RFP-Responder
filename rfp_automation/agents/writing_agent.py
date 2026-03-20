@@ -131,9 +131,12 @@ class RequirementWritingAgent(BaseAgent):
         try:
             kb_profile = mcp.knowledge_store.query_company_profile()
             company_name = kb_profile.get("company_name", "")
-            logger.debug(f"[C2] KB profile returned: {kb_profile}")
+            if company_name:
+                logger.info(f"[C2] Company profile loaded from MongoDB: {company_name}")
+            else:
+                logger.warning("[C2] Company profile exists in MongoDB but has no company_name")
         except Exception as e:
-            logger.warning(f"[C2] KB company profile fetch failed: {e}")
+            logger.warning(f"[C2] KB company profile fetch failed: {e}", exc_info=True)
         if not company_name:
             company_name = get_settings().company_name or ""
 

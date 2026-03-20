@@ -382,11 +382,20 @@ class NarrativeAssemblyAgent(BaseAgent):
             from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
             kb_profile = KnowledgeStore().query_company_profile()
             company_name = kb_profile.get("company_name", "")
-            logger.debug(f"[D2] KB profile returned: {kb_profile}")
+            if company_name:
+                logger.info(f"[C3] Company profile loaded from MongoDB: {company_name}")
+            else:
+                logger.warning("[C3] Company profile exists in MongoDB but has no company_name")
         except Exception as e:
-            logger.warning(f"[D2] KB company profile fetch failed: {e}")
+            logger.warning(f"[C3] KB company profile fetch failed: {e}", exc_info=True)
         if not company_name:
             company_name = get_settings().company_name or ""
+        if not company_name:
+            logger.warning(
+                "[C3] Company name not found in MongoDB KB profile or config. "
+                "Placeholders like [Proposing Company] will not be resolved. "
+                "Set company_name in .env or upload a company profile via the UI."
+            )
 
         if company_name:
             replacements.extend([
@@ -421,6 +430,20 @@ class NarrativeAssemblyAgent(BaseAgent):
 
         for pattern, value in replacements:
             text = pattern.sub(value, text)
+
+        # ── Strip leaked KB block references ──
+        text = re.sub(r"\[KB-[A-F0-9_]+(?:_block_\d+)?\]", "", text)
+
+        # ── Catch-all: strip remaining generic LLM placeholders ──
+        # Matches [number], [amount], [benchmark], [case study 1], etc.
+        # Excludes [EVIDENCE NEEDED: ...] and [METRIC NEEDED: ...] which are intentional
+        # Excludes [PIPELINE_STUB: ...] which is an internal marker
+        _generic_placeholder_re = re.compile(
+            r"\[(?!EVIDENCE NEEDED|METRIC NEEDED|PIPELINE_STUB)[a-z][a-z0-9 ]*\]",
+            re.IGNORECASE,
+        )
+        text = _generic_placeholder_re.sub("", text)
+
         return text
 
     def _generate_executive_summary(
@@ -529,9 +552,10 @@ class NarrativeAssemblyAgent(BaseAgent):
             from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
             kb_profile = KnowledgeStore().query_company_profile()
             company_name = kb_profile.get("company_name", "")
-            logger.debug(f"[D2] KB profile for title page: {kb_profile}")
+            if company_name:
+                logger.info(f"[C3] Title page company from MongoDB: {company_name}")
         except Exception as e:
-            logger.warning(f"[D2] KB company profile fetch failed for title page: {e}")
+            logger.warning(f"[C3] KB company profile fetch failed for title page: {e}", exc_info=True)
         if not company_name:
             company_name = get_settings().company_name or ""
         prepared_by = company_name if company_name else "[Vendor Name]"

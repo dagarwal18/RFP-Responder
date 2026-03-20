@@ -36,7 +36,7 @@ _ORGANIZATION_RE = re.compile(
     re.IGNORECASE,
 )
 _CLIENT_NAME_RE = re.compile(
-    r"(?:Prepared\s+for|Client\s+Name|Client|Proposal\s+for|Submitted\s+to|To)[\s:]+(.+)",
+    r"(?:Prepared\s+for|Client\s+Name|Client|Proposal\s+for|Submitted\s+to)[\s:]+(.{3,60}?)(?:\s*[-\u2013\u2014\n]|$)",
     re.IGNORECASE,
 )
 _RFP_FOR_RE = re.compile(
@@ -569,6 +569,15 @@ def _is_rejected_name(name: str) -> bool:
     
     # Reject if it looks like a sentence fragment description rather than a name
     if len(name.split()) > 6 or "." in name or ";" in name:
+        return True
+
+    # Reject if it contains common verb/action words (sign of a sentence, not a name)
+    _SENTENCE_WORDS = {"support", "provide", "ensure", "implement", "deploy",
+                       "manage", "enable", "deliver", "maintain", "transform",
+                       "develop", "integrate", "optimize", "rollout", "build",
+                       "upgrade", "migrate", "configure", "design", "operate"}
+    name_words = set(name.strip().lower().split())
+    if name_words & _SENTENCE_WORDS:
         return True
 
     normalized = name.strip().lower().rstrip(".,;:")
