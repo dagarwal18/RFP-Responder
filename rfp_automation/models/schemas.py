@@ -267,6 +267,7 @@ class LegalResult(BaseModel):
     compliance_status: dict[str, bool] = {}  # cert_name -> held? (backward compat)
     block_reasons: list[str] = []
     risk_register_summary: str = ""     # LLM-generated narrative
+    legal_narrative: str = ""           # Substantive legal section for the proposal
     confidence: float = 0.0             # 0.0–1.0
 
 

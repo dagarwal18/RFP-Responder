@@ -1,16 +1,24 @@
 """
-E1 — Commercial Agent
-Responsibility: Generate pricing breakdown using deterministic Python math
-                from pricing_rules.json, then call LLM for narrative prose.
-                Runs in parallel with E2 Legal.
+E1 — Commercial Agent  (Redesigned — KB-Driven)
+
+Responsibility: Generate a realistic commercial proposal section by analysing
+               the RFP requirements and the company's Knowledge Base (Product
+               Pricing Catalog, rate cards, terms & conditions, etc.).
+               Runs in parallel with E2 Legal.
 
 Processing Flow:
-  1. Scope Analysis — count requirements by category, estimate complexity
-  2. MCP Query — load pricing rules configuration
-  3. Deterministic Pricing — pure-Python formula (no LLM for math)
-  4. LLM Narrative — generate commercial prose via llm_large_text_call
+  1. Scope Analysis — count requirements by category
+  2. RFP Context — extract pricing/commercial guidelines from the RFP
+  3. KB Pricing Data — query knowledge base for product catalogs & rate cards
+  4. LLM Pricing Analysis — LLM derives pricing from KB data + RFP scope
   5. Validation — commercial_rules.py checks margins/caps/discounts
-  6. Write CommercialResult to state
+  6. Flag missing data — anything not in KB is explicitly flagged
+  7. Write CommercialResult to state
+
+Key Principle:
+  - ALL pricing figures MUST come from the KB or the RFP.
+  - If the KB lacks pricing data, the agent MUST flag it explicitly.
+  - The agent MUST NEVER fabricate, assume, or use hardcoded pricing values.
 """
 
 from __future__ import annotations
@@ -47,98 +55,136 @@ class CommercialAgent(BaseAgent):
 
         # ── Step 1: Scope Analysis ───────────────────────
         req_counts, total_reqs = self._analyse_scope(state)
-        complexity_multiplier = self._compute_complexity(state)
         logger.info(
             f"[E1] Scope: {total_reqs} requirements across "
-            f"{len(req_counts)} categories, complexity={complexity_multiplier:.2f}"
+            f"{len(req_counts)} categories"
         )
 
-        # ── Step 2: Load Pricing Config ──────────────────
-        pricing_config = mcp.commercial_rules.load_pricing_config()
-        currency = pricing_config.get("currency", "USD")
-
-        # Also try MCP knowledge for enrichment
-        pricing_kb = mcp.query_knowledge("pricing rules payment terms", top_k=3)
-        logger.debug(
-            f"[E1] Pricing config loaded. KB enrichment: {len(pricing_kb)} results"
+        # ── Step 2: Extract RFP Commercial Context ───────
+        rfp_commercial_context = self._extract_rfp_commercial_context(
+            mcp, rfp_id, state,
         )
-
-        # ── Step 3: Deterministic Pricing ────────────────
-        line_items, subtotal = self._compute_pricing(
-            req_counts, complexity_multiplier, pricing_config,
-        )
-        risk_margin_pct = pricing_config.get("risk_margin_percent", 0.10)
-        risk_amount = subtotal * risk_margin_pct
-        total_price = subtotal + risk_amount
-
         logger.info(
-            f"[E1] Pricing: subtotal=${subtotal:,.2f}, "
-            f"risk_margin={risk_margin_pct:.0%} (${risk_amount:,.2f}), "
-            f"total=${total_price:,.2f} {currency}"
+            f"[E1] RFP commercial context: {len(rfp_commercial_context)} chars"
         )
 
-        # ── Step 4: LLM Narrative ────────────────────────
-        commercial_narrative = ""
-        payment_schedule: list[dict] = []
-        assumptions: list[str] = []
-        exclusions: list[str] = []
+        # ── Step 3: Query KB for Pricing Data ────────────
+        kb_pricing_data = self._query_kb_pricing(mcp)
+        logger.info(
+            f"[E1] KB pricing data: {len(kb_pricing_data)} chars"
+        )
 
+        # ── Step 4: Build Requirement Details ────────────
+        requirements_detail = self._build_requirements_detail(state)
+
+        # ── Step 5: LLM Pricing + Narrative ──────────────
         try:
-            narrative_data = self._generate_narrative(
-                state, line_items, total_price, currency,
-                req_counts, risk_margin_pct,
+            llm_result = self._llm_commercial_analysis(
+                state=state,
+                req_counts=req_counts,
+                total_reqs=total_reqs,
+                rfp_commercial_context=rfp_commercial_context,
+                kb_pricing_data=kb_pricing_data,
+                requirements_detail=requirements_detail,
             )
-            commercial_narrative = narrative_data.get("commercial_narrative", "")
-            payment_schedule = narrative_data.get("payment_schedule", [])
-            assumptions = narrative_data.get("assumptions", [])
-            exclusions = narrative_data.get("exclusions", [])
-
-            # Prepend executive summary to the narrative
-            exec_summary = narrative_data.get("executive_summary", "")
-            if exec_summary and commercial_narrative:
-                commercial_narrative = (
-                    f"## Executive Pricing Summary\n\n{exec_summary}\n\n"
-                    f"## Commercial Terms\n\n{commercial_narrative}"
-                )
         except Exception as exc:
-            logger.warning(f"[E1] LLM narrative generation failed: {exc}")
-            commercial_narrative = (
-                f"Total proposed investment: ${total_price:,.2f} {currency}. "
-                "Detailed commercial terms to be provided upon request."
-            )
+            logger.error(f"[E1] LLM commercial analysis failed: {exc}")
+            llm_result = {
+                "line_items": [],
+                "total_price": 0.0,
+                "currency": "USD",
+                "executive_summary": "",
+                "commercial_narrative": (
+                    "Commercial analysis could not be completed. "
+                    "Manual pricing review required."
+                ),
+                "payment_schedule": [],
+                "assumptions": [],
+                "exclusions": [],
+                "missing_data_flags": [
+                    "LLM analysis failed — full manual review required"
+                ],
+            }
 
-        # ── Step 5: Validation ───────────────────────────
+        # ── Step 6: Parse LLM result ─────────────────────
+        line_items = self._parse_line_items(llm_result.get("line_items", []))
+        total_price = float(llm_result.get("total_price", 0.0))
+        currency = llm_result.get("currency", "USD")
+        commercial_narrative = llm_result.get("commercial_narrative", "")
+        exec_summary = llm_result.get("executive_summary", "")
+        payment_schedule = llm_result.get("payment_schedule", [])
+        assumptions = llm_result.get("assumptions", [])
+        exclusions = llm_result.get("exclusions", [])
+        missing_data_flags = llm_result.get("missing_data_flags", [])
+
+        # Normalize list→string for narrative fields
+        for key in ("executive_summary", "commercial_narrative"):
+            val = llm_result.get(key, "")
+            if isinstance(val, list):
+                llm_result[key] = "\n\n".join(str(p) for p in val)
+                if key == "commercial_narrative":
+                    commercial_narrative = llm_result[key]
+                elif key == "executive_summary":
+                    exec_summary = llm_result[key]
+
+        # Prepend executive summary + missing data flags
+        narrative_parts = []
+        if exec_summary:
+            narrative_parts.append(
+                f"## Executive Pricing Summary\n\n{exec_summary}"
+            )
+        if missing_data_flags:
+            flags_text = "\n".join(f"- ⚠ {flag}" for flag in missing_data_flags)
+            narrative_parts.append(
+                f"## Data Gaps — Requires Manual Review\n\n"
+                f"The following pricing information was not available in the "
+                f"knowledge base and requires manual input:\n\n{flags_text}"
+            )
+        if commercial_narrative:
+            narrative_parts.append(
+                f"## Commercial Terms\n\n{commercial_narrative}"
+            )
+        full_narrative = "\n\n".join(narrative_parts)
+
+        # ── Step 7: Validation ───────────────────────────
         violations = mcp.commercial_rules.validate_pricing(
             total_price=total_price,
-            total_cost=0.0,  # cost not tracked yet
+            total_cost=0.0,
             discount_percent=0.0,
         )
         validation_flags = [v["detail"] for v in violations]
-        high_severity = any(v.get("severity") == "high" for v in violations)
+        validation_flags.extend(missing_data_flags)
 
-        decision = "FLAGGED" if high_severity else "APPROVED"
-        confidence = 0.85 if not violations else 0.60
+        high_severity = any(v.get("severity") == "high" for v in violations)
+        has_missing_data = bool(missing_data_flags)
+        decision = (
+            "FLAGGED" if high_severity or has_missing_data else "APPROVED"
+        )
+        confidence = 0.85 if not violations and not has_missing_data else 0.50
 
         if validation_flags:
             logger.warning(f"[E1] Validation flags: {validation_flags}")
-        logger.info(f"[E1] Decision: {decision} (confidence={confidence:.2f})")
+        logger.info(
+            f"[E1] Decision: {decision} (confidence={confidence:.2f}), "
+            f"total={total_price:,.2f} {currency}, "
+            f"missing_data_flags={len(missing_data_flags)}"
+        )
 
-        # ── Step 6: Write to State ───────────────────────
+        # ── Step 8: Write to State ───────────────────────
         state.commercial_result = CommercialResult(
             decision=decision,
             total_price=total_price,
             currency=currency,
             line_items=line_items,
-            risk_margin_pct=risk_margin_pct * 100,  # store as percentage
+            risk_margin_pct=0.0,
             payment_schedule=payment_schedule,
             assumptions=assumptions,
             exclusions=exclusions,
-            commercial_narrative=commercial_narrative,
+            commercial_narrative=full_narrative,
             validation_flags=validation_flags,
             confidence=confidence,
         )
         state.status = PipelineStatus.COMMERCIAL_LEGAL_REVIEW
-
         return state
 
     # ── Helpers ──────────────────────────────────────────
@@ -146,105 +192,128 @@ class CommercialAgent(BaseAgent):
     def _analyse_scope(
         self, state: RFPGraphState,
     ) -> tuple[dict[str, int], int]:
-        """Count requirements by category. Uses validated requirements
-        if available, otherwise raw requirements."""
+        """Count requirements by category."""
         reqs = (
             state.requirements_validation.validated_requirements
             or state.requirements
         )
         counter: Counter[str] = Counter()
         for req in reqs:
-            cat = req.category.value if hasattr(req.category, "value") else str(req.category)
+            cat = (
+                req.category.value
+                if hasattr(req.category, "value")
+                else str(req.category)
+            )
             counter[cat] += 1
         return dict(counter), sum(counter.values())
 
-    def _compute_complexity(self, state: RFPGraphState) -> float:
-        """Derive complexity multiplier from coverage matrix.
-        Sections with partial coverage get a 1.2× uplift."""
-        matrix = state.writing_result.coverage_matrix
-        if not matrix:
-            return 1.0
-
-        total = len(matrix)
-        partial = sum(
-            1 for entry in matrix if entry.coverage_quality == "partial"
-        )
-        missing = sum(
-            1 for entry in matrix if entry.coverage_quality == "missing"
-        )
-        if total == 0:
-            return 1.0
-
-        # Weighted: partial=1.2, missing=1.5, full=1.0
-        score = ((total - partial - missing) * 1.0 + partial * 1.2 + missing * 1.5) / total
-        return round(score, 2)
-
-    def _compute_pricing(
+    def _extract_rfp_commercial_context(
         self,
-        req_counts: dict[str, int],
-        complexity_multiplier: float,
-        config: dict[str, Any],
-    ) -> tuple[list[PricingLineItem], float]:
-        """Deterministic pricing formula. Returns (line_items, subtotal)."""
-        base_fee = config.get("base_cost", 50_000.0)
-        per_req_rate = config.get("per_requirement_cost", 2_000.0)
-        complexity_tiers = config.get("complexity_tiers", {})
+        mcp: MCPService,
+        rfp_id: str,
+        state: RFPGraphState,
+    ) -> str:
+        """Extract pricing/commercial guidelines and requirements from the RFP."""
+        queries = [
+            "pricing guidelines budget commercial terms",
+            "payment schedule milestones financial",
+            "cost breakdown pricing structure",
+            "subscriber count users scale scope",
+            "project timeline duration implementation phases",
+        ]
+        all_texts: list[str] = []
+        seen: set[str] = set()
 
-        line_items: list[PricingLineItem] = []
+        for query in queries:
+            try:
+                results = mcp.query_rfp(query, rfp_id, top_k=5)
+                for r in results:
+                    text = r.get("text", "").strip()
+                    if text and text not in seen:
+                        seen.add(text)
+                        all_texts.append(text)
+            except Exception as exc:
+                logger.warning(
+                    f"[E1] RFP query failed for '{query}': {exc}"
+                )
 
-        # Base fee line item
-        line_items.append(PricingLineItem(
-            label="Base Implementation Fee",
-            quantity=1,
-            unit="fixed",
-            unit_rate=base_fee,
-            total=base_fee,
-            category="base",
-        ))
+        # Also include any commercial-category requirements
+        reqs = (
+            state.requirements_validation.validated_requirements
+            or state.requirements
+        )
+        for req in reqs:
+            cat = (
+                req.category.value
+                if hasattr(req.category, "value")
+                else str(req.category)
+            )
+            if cat.upper() in ("COMMERCIAL", "FINANCIAL", "PRICING"):
+                text = req.text.strip()
+                if text and text not in seen:
+                    seen.add(text)
+                    all_texts.append(f"[COMMERCIAL REQ] {text}")
 
-        # Per-category line items
-        category_tier_map = {
-            "TECHNICAL": "high",
-            "SECURITY": "high",
-            "COMPLIANCE": "medium",
-            "FUNCTIONAL": "medium",
-            "COMMERCIAL": "low",
-            "OPERATIONAL": "medium",
-        }
+        return "\n\n".join(all_texts) if all_texts else "No commercial context found in the RFP."
 
-        for category, count in req_counts.items():
-            tier = category_tier_map.get(category.upper(), "medium")
-            tier_multiplier = complexity_tiers.get(tier, 1.0)
-            line_total = count * per_req_rate * tier_multiplier * complexity_multiplier
+    def _query_kb_pricing(self, mcp: MCPService) -> str:
+        """Query the knowledge base for product pricing catalog,
+        rate cards, and commercial terms."""
+        queries = [
+            "product pricing catalog rates modules",
+            "per subscriber pricing tiers rate card",
+            "implementation cost estimates professional services",
+            "managed services AMS pricing operations",
+            "licensing fees software subscription costs",
+            "payment terms commercial conditions",
+        ]
 
-            line_items.append(PricingLineItem(
-                label=f"{category.title()} Requirements",
-                quantity=float(count),
-                unit="requirements",
-                unit_rate=round(per_req_rate * tier_multiplier * complexity_multiplier, 2),
-                total=round(line_total, 2),
-                category=category,
-            ))
+        all_texts: list[str] = []
+        seen: set[str] = set()
 
-        subtotal = sum(item.total for item in line_items)
-        return line_items, round(subtotal, 2)
+        for query in queries:
+            try:
+                results = mcp.query_knowledge(query, top_k=5)
+                for r in results:
+                    text = r.get("text", "").strip()
+                    if text and text not in seen:
+                        seen.add(text)
+                        all_texts.append(text)
+            except Exception as exc:
+                logger.warning(
+                    f"[E1] KB pricing query failed for '{query}': {exc}"
+                )
 
-    def _generate_narrative(
+        return "\n\n".join(all_texts) if all_texts else "NO PRICING DATA FOUND IN KNOWLEDGE BASE."
+
+    def _build_requirements_detail(self, state: RFPGraphState) -> str:
+        """Build a compact requirement summary for the LLM prompt."""
+        reqs = (
+            state.requirements_validation.validated_requirements
+            or state.requirements
+        )
+        lines = []
+        for req in reqs[:50]:  # cap at 50 to stay within token budget
+            cat = (
+                req.category.value
+                if hasattr(req.category, "value")
+                else str(req.category)
+            )
+            text = req.text[:200]
+            lines.append(f"- [{cat}] {text}")
+        return "\n".join(lines) if lines else "No requirements available."
+
+    def _llm_commercial_analysis(
         self,
         state: RFPGraphState,
-        line_items: list[PricingLineItem],
-        total_price: float,
-        currency: str,
         req_counts: dict[str, int],
-        risk_margin_pct: float,
+        total_reqs: int,
+        rfp_commercial_context: str,
+        kb_pricing_data: str,
+        requirements_detail: str,
     ) -> dict[str, Any]:
-        """Call LLM to generate commercial narrative prose."""
-        # Build line items text
-        line_items_text = "\n".join(
-            f"  - {item.label}: {item.quantity:.0f} {item.unit} × "
-            f"${item.unit_rate:,.2f} = ${item.total:,.2f}"
-            for item in line_items
-        )
+        """Send context to LLM and get structured commercial analysis."""
+        template = _PROMPT_PATH.read_text(encoding="utf-8")
 
         # Build requirement breakdown
         breakdown = "\n".join(
@@ -252,49 +321,91 @@ class CommercialAgent(BaseAgent):
             for cat, count in req_counts.items()
         )
 
-        # Load prompt template
-        template = _PROMPT_PATH.read_text(encoding="utf-8")
         prompt = (
             template
             .replace("{client_name}", state.rfp_metadata.client_name or "the Client")
             .replace("{rfp_title}", state.rfp_metadata.rfp_title or "RFP Response")
-            .replace("{proposal_word_count}", str(state.assembled_proposal.word_count))
-            .replace("{currency}", currency)
+            .replace("{total_requirements}", str(total_reqs))
             .replace("{requirement_breakdown}", breakdown)
-            .replace("{total_price}", f"${total_price:,.2f}")
-            .replace("{line_items_text}", line_items_text)
-            .replace("{risk_margin_pct}", f"{risk_margin_pct * 100:.1f}")
+            .replace("{requirements_detail}", self._truncate_at_word(requirements_detail, 4000))
+            .replace("{rfp_commercial_context}", self._truncate_at_word(rfp_commercial_context, 4000))
+            .replace("{kb_pricing_data}", self._truncate_at_word(kb_pricing_data, 5000))
         )
 
-        logger.info(f"[E1] Calling LLM for commercial narrative ({len(prompt)} chars)")
+        logger.info(
+            f"[E1] Calling LLM for commercial analysis ({len(prompt)} chars)"
+        )
         raw = llm_large_text_call(prompt)
-        logger.debug(f"[E1] LLM narrative response ({len(raw)} chars)")
+        logger.debug(f"[E1] LLM response ({len(raw)} chars)")
 
-        return self._parse_narrative_response(raw)
+        return self._parse_llm_response(raw)
 
-    def _parse_narrative_response(self, raw: str) -> dict[str, Any]:
-        """Parse the LLM JSON response for narrative data."""
+    def _parse_llm_response(self, raw: str) -> dict[str, Any]:
+        """Parse the LLM JSON response."""
         cleaned = raw.strip()
         cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
         cleaned = re.sub(r"\s*```$", "", cleaned)
 
+        data: dict[str, Any] | None = None
         try:
-            return json.loads(cleaned)
+            data = json.loads(cleaned)
         except json.JSONDecodeError:
-            # Try to find JSON block
             match = re.search(r"\{.*\}", cleaned, re.DOTALL)
             if match:
                 try:
-                    return json.loads(match.group())
+                    data = json.loads(match.group())
                 except json.JSONDecodeError:
                     pass
 
-        logger.warning("[E1] Failed to parse LLM narrative response as JSON")
-        # Return the raw text as the narrative
-        return {
-            "commercial_narrative": raw,
-            "executive_summary": "",
-            "payment_schedule": [],
-            "assumptions": [],
-            "exclusions": [],
-        }
+        if data is None:
+            logger.warning("[E1] Failed to parse LLM response as JSON")
+            data = {
+                "commercial_narrative": raw,
+                "executive_summary": "",
+                "line_items": [],
+                "total_price": 0.0,
+                "currency": "USD",
+                "payment_schedule": [],
+                "assumptions": [],
+                "exclusions": [],
+                "missing_data_flags": [
+                    "LLM response could not be parsed — manual review required"
+                ],
+            }
+
+        # Normalize list values to strings
+        for key in ("executive_summary", "commercial_narrative"):
+            val = data.get(key, "")
+            if isinstance(val, list):
+                data[key] = "\n\n".join(str(p) for p in val)
+
+        return data
+
+    def _parse_line_items(
+        self, raw_items: list[dict[str, Any]],
+    ) -> list[PricingLineItem]:
+        """Convert raw LLM line items to PricingLineItem objects."""
+        items = []
+        for i, item in enumerate(raw_items):
+            try:
+                items.append(PricingLineItem(
+                    label=str(item.get("label", f"Item {i+1}")),
+                    quantity=float(item.get("quantity", 1)),
+                    unit=str(item.get("unit", "fixed")),
+                    unit_rate=float(item.get("unit_rate", 0)),
+                    total=float(item.get("total", 0)),
+                    category=str(item.get("category", "general")),
+                ))
+            except (ValueError, TypeError) as exc:
+                logger.warning(f"[E1] Skipping invalid line item {i}: {exc}")
+        return items
+
+    @staticmethod
+    def _truncate_at_word(text: str, max_chars: int) -> str:
+        """Truncate text at a word boundary, never mid-word."""
+        if len(text) <= max_chars:
+            return text
+        cut = text.rfind(" ", 0, max_chars)
+        if cut <= 0:
+            cut = max_chars
+        return text[:cut]

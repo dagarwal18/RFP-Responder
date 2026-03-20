@@ -63,6 +63,12 @@ class LegalAgent(BaseAgent):
         templates = self._load_legal_templates(mcp)
         logger.info(f"[E2] Loaded {len(templates)} legal template(s)")
 
+        # ── Step 2b: Query KB for Company Legal Terms ─────
+        company_legal_terms = self._query_kb_legal_terms(mcp)
+        logger.info(
+            f"[E2] KB legal terms: {len(company_legal_terms)} chars"
+        )
+
         # ── Step 3: Load Certifications ──────────────────
         held_certs = mcp.get_certifications_from_policies()
         required_certs = self._extract_required_certs(state, mcp, rfp_id)
@@ -90,13 +96,14 @@ class LegalAgent(BaseAgent):
         try:
             llm_data = self._run_llm_analysis(
                 clause_texts, templates, required_certs,
-                held_certs, rule_result,
+                held_certs, rule_result, company_legal_terms,
             )
             llm_clause_risks = llm_data.get("clause_risks", [])
             risk_narrative = llm_data.get("risk_register_summary", "")
             llm_decision = llm_data.get("decision", "APPROVED").upper()
             llm_block_reasons = llm_data.get("block_reasons", [])
             llm_confidence = float(llm_data.get("confidence", 0.8))
+            legal_narrative = llm_data.get("legal_narrative", "")
         except Exception as exc:
             logger.warning(f"[E2] LLM analysis failed: {exc}")
             risk_narrative = (
@@ -108,6 +115,7 @@ class LegalAgent(BaseAgent):
                 "Legal analysis output could not be parsed. Manual legal review required."
             ]
             llm_confidence = 0.0
+            legal_narrative = ""
 
         # ── Step 6: Compliance Check ─────────────────────
         compliance_checks = self._check_compliance(
@@ -308,6 +316,41 @@ class LegalAgent(BaseAgent):
 
         return checks
 
+    def _query_kb_legal_terms(self, mcp: MCPService) -> str:
+        """Query knowledge base for company standard terms & conditions,
+        legal policies, and contractual frameworks."""
+        queries = [
+            "standard terms and conditions master services agreement",
+            "liability indemnification insurance coverage limits",
+            "data protection privacy GDPR compliance policy",
+            "intellectual property licensing terms IP",
+            "SLA penalties payment terms warranty",
+            "confidentiality non-disclosure agreement NDA",
+            "dispute resolution governing law jurisdiction",
+        ]
+
+        all_texts: list[str] = []
+        seen: set[str] = set()
+
+        for query in queries:
+            try:
+                results = mcp.query_knowledge(query, top_k=5)
+                for r in results:
+                    text = r.get("text", "").strip()
+                    if text and text not in seen:
+                        seen.add(text)
+                        all_texts.append(text)
+            except Exception as exc:
+                logger.warning(
+                    f"[E2] KB legal query failed for '{query}': {exc}"
+                )
+
+        return (
+            "\n\n".join(all_texts)
+            if all_texts
+            else "NO COMPANY LEGAL TERMS FOUND IN KNOWLEDGE BASE."
+        )
+
     def _run_llm_analysis(
         self,
         clauses: list[str],
@@ -315,8 +358,9 @@ class LegalAgent(BaseAgent):
         required_certs: list[str],
         held_certs: dict[str, bool],
         rule_result: dict[str, Any],
+        company_legal_terms: str = "",
     ) -> dict[str, Any]:
-        """Call LLM for clause analysis and risk narrative."""
+        """Call LLM for clause analysis, risk narrative, and legal content."""
         # Format inputs
         clauses_text = "\n\n".join(
             f"Clause {i+1}:\n{clause}" for i, clause in enumerate(clauses)
@@ -344,6 +388,7 @@ class LegalAgent(BaseAgent):
         prompt = (
             template
             .replace("{clauses}", clauses_text[:8000])
+            .replace("{company_legal_terms}", company_legal_terms[:6000])
             .replace("{legal_templates}", templates_text)
             .replace("{required_certifications}", required_text)
             .replace("{held_certifications}", held_text)

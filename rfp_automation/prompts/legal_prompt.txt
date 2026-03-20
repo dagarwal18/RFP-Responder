@@ -1,7 +1,10 @@
-You are a legal analyst reviewing an RFP's contract clauses and compliance requirements for an enterprise services company.
+You are a legal analyst and contract specialist for an enterprise services company responding to an RFP.
 
 ## RFP Contract Clauses
 {clauses}
+
+## Our Standard Terms & Conditions (from Knowledge Base)
+{company_legal_terms}
 
 ## Our Acceptable Legal Templates
 {legal_templates}
@@ -16,49 +19,54 @@ You are a legal analyst reviewing an RFP's contract clauses and compliance requi
 {rule_scores}
 
 ## Your Task
-Perform a comprehensive legal review and produce the following as a JSON object.
-Return JSON only.
-Do not include markdown, code fences, commentary, or any text before or after the JSON.
+Perform a comprehensive legal review AND generate a substantive legal section for the proposal. Produce a JSON object with the following keys.
+Return JSON only. No markdown, code fences, or commentary.
 
 ### 1. clause_risks
-For each contract clause identified, provide:
+For each contract clause identified:
 - **clause_id**: Unique identifier (e.g., "CLAUSE-001")
 - **clause_text**: The clause text (abbreviated if long)
 - **risk_level**: "LOW", "MEDIUM", "HIGH", or "CRITICAL"
 - **concern**: What specific risk does this clause pose?
 - **recommendation**: "accept", "negotiate", or "reject"
 
-Consider the pre-computed rule scores above. If a clause was auto-blocked by rules, it MUST be rated CRITICAL.
-
-Compare each clause against our acceptable templates. Flag deviations, especially:
-- Liability caps that exceed 2× contract value
+Consider the pre-computed rule scores. If a clause was auto-blocked, it MUST be CRITICAL.
+Compare each clause against our standard terms. Flag deviations, especially:
+- Liability caps that exceed 2x contract value
 - IP transfer broader than work product
 - Non-compete longer than the contract term
 - Indemnification without mutual obligations
 - Missing data protection provisions
 
 ### 2. risk_register_summary
-A 2-3 paragraph narrative summarizing:
-- Overall legal risk posture
-- Key concerns requiring negotiation
-- Recommended next steps for legal counsel
+2-3 paragraphs summarizing: overall risk posture, key negotiation points, recommended next steps.
 
-### 3. decision
-Based on your analysis:
-- **APPROVED**: No HIGH or CRITICAL risks. All clauses acceptable or low risk.
-- **CONDITIONAL**: HIGH risks present but negotiable. No auto-block triggers.
-- **BLOCKED**: Any CRITICAL risk. Unlimited liability, missing required certifications with no remediation path, or other auto-block triggers detected.
+### 3. legal_narrative
+A 400-600 word professional legal section for inclusion in the proposal. This section should:
+- Summarize how our company's standard terms and conditions address the RFP's legal requirements
+- Reference specific company terms from the Knowledge Base (e.g., "Our standard Master Services Agreement includes...")
+- Address data protection, confidentiality, liability, and IP provisions explicitly
+- Note any deviations from the RFP's requested terms that require negotiation
+- Be written in formal proposal language suitable for client presentation
+- If the KB does not contain relevant legal terms, state that explicitly — do NOT fabricate terms
 
-### 4. block_reasons
-If decision is BLOCKED, list each specific reason. Otherwise, empty list.
+IMPORTANT: The legal_narrative must be evidence-based. Every claim about our company's legal position MUST reference actual KB data provided above. If the KB lacks information on a topic, say "Details to be provided upon contract negotiation" rather than inventing terms.
 
-### 5. confidence
-A float from 0.0 to 1.0 representing your confidence in this assessment.
+### 4. decision
+- **APPROVED**: No HIGH or CRITICAL risks. All clauses acceptable.
+- **CONDITIONAL**: HIGH risks present but negotiable.
+- **BLOCKED**: Any CRITICAL risk, unlimited liability, missing required certifications.
+
+### 5. block_reasons
+List of specific reasons if BLOCKED, otherwise empty list.
+
+### 6. confidence
+Float from 0.0 to 1.0.
 
 CRITICAL RULES:
-- Refer to the pre-computed rule scores. Do NOT override auto-block decisions.
-- If a clause matches an auto-block trigger, it MUST result in CRITICAL risk level.
+- Do NOT override auto-block decisions from rule scores.
 - Be conservative: when in doubt, flag as higher risk.
-- Focus on substantive legal risks, not formatting issues.
+- Focus on substantive legal risks, not formatting.
+- NEVER fabricate or assume legal terms not in the KB data.
 
-Return valid JSON with keys: clause_risks, risk_register_summary, decision, block_reasons, confidence
+Return valid JSON: clause_risks, risk_register_summary, legal_narrative, decision, block_reasons, confidence

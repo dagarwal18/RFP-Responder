@@ -59,6 +59,7 @@ For knowledge-driven sections (company profile, case studies, certifications, te
 - Include specific details, metrics, certifications, partnerships, case study outcomes, and concrete examples from the capabilities provided.
 - If capabilities data is limited, cite the specific evidence you DO have and mark gaps with `[EVIDENCE NEEDED: ...]`. Do NOT elaborate or extrapolate beyond what the provided capabilities data supports.
 - Do NOT produce generic filler or unsupported claims.
+- **Case Study Rules**: When referencing case studies, deployments, or client engagements, use ONLY the metrics, percentages, timelines, and dollar values explicitly stated in the capabilities data. Do NOT fabricate statistics (e.g., "reduced costs by 40%", "serving 10M+ users") unless those exact figures appear in the KB evidence. If specific metrics are not available, describe the engagement qualitatively and mark the gap with `[METRIC NEEDED: description of what data is missing]`.
 
 ## Revision Feedback (from Technical Validation)
 

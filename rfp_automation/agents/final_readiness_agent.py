@@ -154,7 +154,8 @@ class FinalReadinessAgent(BaseAgent):
             if "commercial" in title or "pricing" in title:
                 return f"\n{(commercial.commercial_narrative or '').strip()}\n{pricing_table}\n"
             elif "legal" in title or "contract" in title:
-                return f"\n{(legal.risk_register_summary or '').strip()}\n{legal_table}\n"
+                legal_content = (legal.legal_narrative or legal.risk_register_summary or '').strip()
+                return f"\n{legal_content}\n{legal_table}\n"
             return match.group(0)
 
         full_narr = re.sub(r">\s*\*\*Note:\*\*\s*\[PIPELINE_STUB:\s*(.*?)\]", _stub_replacer, full_narr)
@@ -167,11 +168,7 @@ class FinalReadinessAgent(BaseAgent):
             f"- Client: {meta.client_name or 'N/A'}",
             f"- Submitted At: {submitted_at}",
             "",
-            "## Executive Summary",
-            "",
-            state.assembled_proposal.executive_summary or "No executive summary available.",
-            "",
-            "## Full Narrative",
+            "## Proposal",
             "",
             full_narr,
             "",
@@ -183,6 +180,7 @@ class FinalReadinessAgent(BaseAgent):
             "## Legal Summary",
             "",
             approval.risk_summary
+            or legal.legal_narrative
             or legal.risk_register_summary
             or "No legal summary available.",
             "",
@@ -205,14 +203,7 @@ class FinalReadinessAgent(BaseAgent):
                     location += f" / {comment.anchor.paragraph_id}"
                 sections.append(f"- [{comment.anchor.domain}] {location}: {comment.comment}")
 
-        if state.assembled_proposal.coverage_appendix:
-            sections.extend(
-                [
-                    "",
-                    "## Coverage Appendix",
-                    "",
-                    state.assembled_proposal.coverage_appendix,
-                ]
-            )
+        # Coverage appendix is already part of full_narrative from C3.
+        # Not duplicated here.
 
         return "\n".join(sections).strip() + "\n"

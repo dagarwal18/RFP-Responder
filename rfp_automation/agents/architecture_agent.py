@@ -43,7 +43,7 @@ _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "architectur
 
 # Maximum requirements per section before splitting — keeps C2's token budget
 # manageable and ensures each section gets adequate LLM attention.
-_MAX_REQS_PER_SECTION = 20
+_MAX_REQS_PER_SECTION = 10
 
 
 class ArchitecturePlanningAgent(BaseAgent):
@@ -372,18 +372,28 @@ class ArchitecturePlanningAgent(BaseAgent):
 
         prompt = (
             template
-            .replace("{rfp_sections}", rfp_sections[:budget_sections])
-            .replace("{requirements}", requirements[:budget_reqs])
-            .replace("{capabilities}", capabilities[:budget_caps])
-            .replace("{submission_instructions}", submission_instructions[:budget_sub])
+            .replace("{rfp_sections}", self._truncate_at_word(rfp_sections, budget_sections))
+            .replace("{requirements}", self._truncate_at_word(requirements, budget_reqs))
+            .replace("{capabilities}", self._truncate_at_word(capabilities, budget_caps))
+            .replace("{submission_instructions}", self._truncate_at_word(submission_instructions, budget_sub))
         )
         if review_feedback:
             prompt += (
                 "\n\n## Human Validation Feedback\n\n"
-                + review_feedback[:1500]
+                + self._truncate_at_word(review_feedback, 1500)
                 + "\n\nRevise the proposal structure to address this feedback."
             )
         return prompt
+
+    @staticmethod
+    def _truncate_at_word(text: str, max_chars: int) -> str:
+        """Truncate text at a word boundary, never mid-word."""
+        if len(text) <= max_chars:
+            return text
+        cut = text.rfind(" ", 0, max_chars)
+        if cut <= 0:
+            cut = max_chars
+        return text[:cut]
 
     def _parse_response(
         self, raw_response: str

@@ -393,7 +393,23 @@ class NarrativeAssemblyAgent(BaseAgent):
                 (re.compile(r"\[Vendor\s+Name\]", re.IGNORECASE), company_name),
                 (re.compile(r"\[Your\s+Company\s+Name\]", re.IGNORECASE), company_name),
                 (re.compile(r"\[Company\s+Name\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Proposing\s+Company\s+Name\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Your\s+Name\]", re.IGNORECASE), f"Authorized Representative, {company_name}"),
+                (re.compile(r"\[Your\s+Title\]", re.IGNORECASE), "Authorized Signatory"),
+                (re.compile(r"\[Contact\s+Information\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Your\s+Company\]", re.IGNORECASE), company_name),
             ])
+
+        # Remove remaining [Insert ...] / [TBD] / [TODO] patterns
+        # that can't be resolved — strip them entirely rather than
+        # leaving raw placeholders in the final proposal.
+        cleanup_patterns = [
+            (re.compile(r"\[Insert\s+[^\]]*\]", re.IGNORECASE), ""),
+            (re.compile(r"\[TBD\]", re.IGNORECASE), ""),
+            (re.compile(r"\[TODO\]", re.IGNORECASE), ""),
+        ]
+        for pattern, value in cleanup_patterns:
+            text = pattern.sub(value, text)
 
         for pattern, value in replacements:
             text = pattern.sub(value, text)
