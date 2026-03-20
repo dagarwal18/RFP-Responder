@@ -185,3 +185,31 @@ def find_rfp_by_file_hash(file_hash: str) -> str | None:
             except (json.JSONDecodeError, OSError):
                 continue
     return None
+
+
+def load_latest_checkpoint(rfp_id: str) -> dict[str, Any] | None:
+    """
+    Load the most recent checkpoint for an RFP.
+
+    Walks AGENT_ORDER in reverse and returns the first (= latest pipeline
+    stage) checkpoint file that exists.  Returns None when no checkpoints
+    are found.
+    """
+    for agent_name in reversed(AGENT_ORDER):
+        data = load_checkpoint(rfp_id, agent_name)
+        if data is not None:
+            return data
+    return None
+
+
+def discover_all_rfps() -> list[str]:
+    """
+    Return every rfp_id that has at least one checkpoint directory on disk.
+    """
+    if not _CHECKPOINT_ROOT.exists():
+        return []
+    return [
+        d.name
+        for d in sorted(_CHECKPOINT_ROOT.iterdir())
+        if d.is_dir()
+    ]

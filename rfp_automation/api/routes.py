@@ -46,6 +46,78 @@ _runs: dict[str, dict[str, Any]] = {}
 _document_cache: dict[str, str] = {}
 
 
+def hydrate_runs_from_checkpoints() -> int:
+    """
+    Scan storage/checkpoints/ and pre-populate ``_runs`` and
+    ``_document_cache`` from persisted checkpoint files.
+
+    Called once during application startup so that all past runs are
+    immediately available without waiting for a lazy fallback.
+
+    Returns the number of runs recovered.
+    """
+    from rfp_automation.persistence.checkpoint import (
+        discover_all_rfps,
+        list_checkpoints,
+        load_latest_checkpoint,
+        load_checkpoint,
+    )
+
+    rfp_ids = discover_all_rfps()
+    recovered = 0
+
+    for rfp_id in rfp_ids:
+        if rfp_id in _runs:
+            continue  # already in memory — don't overwrite live state
+
+        state = load_latest_checkpoint(rfp_id)
+        if state is None:
+            continue
+
+        checkpoints = list_checkpoints(rfp_id)
+        status = state.get("status", "CHECKPOINTED")
+        if hasattr(status, "value"):
+            status = status.value
+
+        # If the pipeline was mid-run when the server died, mark it
+        # as interrupted rather than pretending it's still running.
+        if status == "RUNNING":
+            status = "INTERRUPTED"
+
+        meta = state.get("rfp_metadata", {})
+        filename = (
+            meta.get("source_file_path", "").split("/")[-1].split("\\")[-1]
+            or "(checkpointed)"
+        )
+
+        _runs[rfp_id] = {
+            "rfp_id": rfp_id,
+            "filename": filename,
+            "status": status,
+            "current_agent": state.get("current_agent", checkpoints[-1]["agent"]),
+            "started_at": checkpoints[0].get("saved_at", ""),
+            "pipeline_log": [],
+            "result": state,
+        }
+        recovered += 1
+
+        # Rebuild _document_cache from the a1_intake checkpoint
+        intake = load_checkpoint(rfp_id, "a1_intake")
+        if isinstance(intake, dict):
+            # file_hash may be at top level or inside rfp_metadata
+            file_hash = intake.get("file_hash", "")
+            if not file_hash:
+                intake_meta = intake.get("rfp_metadata", {})
+                if isinstance(intake_meta, dict):
+                    file_hash = intake_meta.get("file_hash", "")
+            if file_hash:
+                _document_cache[file_hash] = rfp_id
+
+    if recovered:
+        logger.info(f"♻️  Hydrated {recovered} run(s) from disk checkpoints")
+    return recovered
+
+
 # ── Response schemas ─────────────────────────────────────
 class UploadResponse(BaseModel):
     rfp_id: str
@@ -124,12 +196,12 @@ def _get_run_or_404(rfp_id: str) -> dict[str, Any]:
         return run
 
     # Fallback: Check if checkpoints exist on disk and reconstruct the run object
-    from rfp_automation.persistence.checkpoint import list_checkpoints, get_checkpoint
-    
+    from rfp_automation.persistence.checkpoint import list_checkpoints, load_checkpoint
+
     checkpoints = list_checkpoints(rfp_id)
     if checkpoints:
         latest = checkpoints[-1]
-        state = get_checkpoint(rfp_id, latest["agent"])
+        state = load_checkpoint(rfp_id, latest["agent"])
         if state:
             status = state.get("status", "CHECKPOINTED")
             # Unpack enum if it's stored as enum
@@ -621,14 +693,12 @@ async def approve_rfp(rfp_id: str, body: ApprovalRequest):
 
 @rfp_router.get("/list")
 async def list_rfps():
-    # Also check for runs persisted as checkpoints on disk
-    from rfp_automation.persistence.checkpoint import (
-        list_checkpoints as _list_cp,
-    )
-    import os
-
-    # Merge in-memory runs
-    runs_list = [
+    """
+    Return every known run.  After startup hydration, ``_runs`` already
+    contains both in-flight and checkpoint-recovered runs, so a simple
+    iteration is sufficient.
+    """
+    return [
         {
             "rfp_id": r["rfp_id"],
             "filename": r.get("filename", ""),
@@ -637,22 +707,6 @@ async def list_rfps():
         }
         for r in _runs.values()
     ]
-
-    # Also discover checkpoint-only runs (survived reload)
-    cp_root = Path("./storage/checkpoints")
-    if cp_root.exists():
-        for rfp_dir in cp_root.iterdir():
-            if rfp_dir.is_dir() and rfp_dir.name not in _runs:
-                checkpoints = _list_cp(rfp_dir.name)
-                if checkpoints:
-                    runs_list.append({
-                        "rfp_id": rfp_dir.name,
-                        "filename": "(checkpointed)",
-                        "status": "CHECKPOINTED",
-                        "started_at": checkpoints[0].get("saved_at", ""),
-                    })
-
-    return runs_list
 
 
 # ── Checkpoints ──────────────────────────────────────────
@@ -797,9 +851,7 @@ async def get_requirements(rfp_id: str):
     """
     Return extracted requirements (B1) and validation result (B2) for a run.
     """
-    run = _runs.get(rfp_id)
-    if not run:
-        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
+    run = _get_run_or_404(rfp_id)
 
     result_data = run.get("result")
     if not isinstance(result_data, dict):
@@ -827,9 +879,7 @@ async def get_requirements(rfp_id: str):
 @rfp_router.get("/{rfp_id}/debug")
 async def debug_rfp(rfp_id: str):
     """Return the raw pipeline result dict for debugging."""
-    run = _runs.get(rfp_id)
-    if not run:
-        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
+    run = _get_run_or_404(rfp_id)
     result = run.get("result") or {}
     return {
         "rfp_id": rfp_id,
@@ -849,9 +899,7 @@ async def get_requirement_mappings(rfp_id: str):
     Return the requirement-mapping table for a given RFP run.
     Provides scores, summary counts, and individual mappings.
     """
-    run = _runs.get(rfp_id)
-    if not run:
-        raise HTTPException(status_code=404, detail=f"RFP {rfp_id} not found")
+    run = _get_run_or_404(rfp_id)
 
     result_data = run.get("result")
     if not isinstance(result_data, dict):
