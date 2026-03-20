@@ -78,6 +78,11 @@ def create_app() -> FastAPI:
         # Give the PipelineProgress singleton the server's event loop
         # so background pipeline threads can push WebSocket messages.
         PipelineProgress.get().set_loop(asyncio.get_running_loop())
+
+        # Restore past runs from disk checkpoints so they survive restarts.
+        from rfp_automation.api.routes import hydrate_runs_from_checkpoints
+        hydrate_runs_from_checkpoints()
+
         logger.info(f"Starting {settings.app_name} API")
         logger.info(f"Dashboard: http://localhost:8000/")
 
