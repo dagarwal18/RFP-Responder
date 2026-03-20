@@ -563,9 +563,14 @@ class ParsingService:
 
 
 def _is_rejected_name(name: str) -> bool:
-    """Check if a candidate client name is actually a section heading."""
+    """Check if a candidate client name is actually a section heading or sentence."""
     if not name:
         return True
+    
+    # Reject if it looks like a sentence fragment description rather than a name
+    if len(name.split()) > 6 or "." in name or ";" in name:
+        return True
+
     normalized = name.strip().lower().rstrip(".,;:")
     # Single word that's a common heading
     if normalized in _REJECTED_CLIENT_NAMES:

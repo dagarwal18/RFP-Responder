@@ -65,6 +65,7 @@ class CommercialRules:
         total_cost: float = 0.0,
         discount_percent: float = 0.0,
         payment_terms: str = "",
+        currency: str = "USD",
     ) -> list[dict[str, Any]]:
         """
         Validate pricing against commercial constraints.
@@ -78,8 +79,8 @@ class CommercialRules:
             violations.append({
                 "rule": "contract_value_exceeded",
                 "detail": (
-                    f"Total price ${total_price:,.2f} exceeds max "
-                    f"${config.max_contract_value:,.2f}"
+                    f"Total price {currency} {total_price:,.2f} exceeds max "
+                    f"{currency} {config.max_contract_value:,.2f}"
                 ),
                 "severity": "high",
             })

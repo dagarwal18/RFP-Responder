@@ -394,19 +394,27 @@ class NarrativeAssemblyAgent(BaseAgent):
                 (re.compile(r"\[Your\s+Company\s+Name\]", re.IGNORECASE), company_name),
                 (re.compile(r"\[Company\s+Name\]", re.IGNORECASE), company_name),
                 (re.compile(r"\[Proposing\s+Company\s+Name\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Proposing\s+Company\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Proposing\s+Company\s+Address\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Proposing\s+Company\s+Contact\s+Person\]", re.IGNORECASE), f"Authorized Representative, {company_name}"),
+                (re.compile(r"\[Proposing\s+Company\s+Contact\s+Information\]", re.IGNORECASE), company_name),
                 (re.compile(r"\[Your\s+Name\]", re.IGNORECASE), f"Authorized Representative, {company_name}"),
                 (re.compile(r"\[Your\s+Title\]", re.IGNORECASE), "Authorized Signatory"),
                 (re.compile(r"\[Contact\s+Information\]", re.IGNORECASE), company_name),
                 (re.compile(r"\[Your\s+Company\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Hiring\s+Manager\]", re.IGNORECASE), f"Evaluation Committee, {client}"),
+                (re.compile(r"\[Name\]", re.IGNORECASE), f"Authorized Representative, {company_name}"),
             ])
 
-        # Remove remaining [Insert ...] / [TBD] / [TODO] patterns
+        # Remove remaining [Insert ...] / [TBD] / [TODO] / [Current ...] patterns
         # that can't be resolved — strip them entirely rather than
         # leaving raw placeholders in the final proposal.
+        submitted_at = self._get_attr(rfp_metadata, "submission_deadline", "")
         cleanup_patterns = [
             (re.compile(r"\[Insert\s+[^\]]*\]", re.IGNORECASE), ""),
             (re.compile(r"\[TBD\]", re.IGNORECASE), ""),
             (re.compile(r"\[TODO\]", re.IGNORECASE), ""),
+            (re.compile(r"\[Current\s+Date\]", re.IGNORECASE), submitted_at or "the date of submission"),
         ]
         for pattern, value in cleanup_patterns:
             text = pattern.sub(value, text)

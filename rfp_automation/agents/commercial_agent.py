@@ -151,6 +151,7 @@ class CommercialAgent(BaseAgent):
             total_price=total_price,
             total_cost=0.0,
             discount_percent=0.0,
+            currency=currency,
         )
         validation_flags = [v["detail"] for v in violations]
         validation_flags.extend(missing_data_flags)
