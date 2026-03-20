@@ -192,20 +192,30 @@ def _sync_upload_process(
 
     # Sync derived KB files (capabilities.json, certifications.json)
     # from the full set of extracted policies, then re-seed Pinecone
-    sync_counts = {"capabilities": 0, "certifications": 0}
+    sync_counts = {"capabilities": 0, "certifications": 0, "pricing": 0, "legal": 0, "proposals": 0}
     try:
         sync_counts = PolicyExtractionService.sync_derived_files()
         logger.info(
-            f"[KB] Synced derived files: {sync_counts['capabilities']} capabilities, "
-            f"{sync_counts['certifications']} certifications"
+            f"[KB] Synced derived files: {sync_counts.get('capabilities', 0)} capabilities, "
+            f"{sync_counts.get('certifications', 0)} certifications, "
+            f"{sync_counts.get('pricing', 0)} pricing entries, "
+            f"{sync_counts.get('legal', 0)} legal templates, "
+            f"{sync_counts.get('proposals', 0)} past proposals"
         )
 
         # Re-seed Pinecone with updated capabilities so C2 uses them
-        from rfp_automation.mcp.knowledge_loader import seed_capabilities, seed_certifications_to_mongo
+        from rfp_automation.mcp.knowledge_loader import (
+            seed_capabilities, seed_certifications_to_mongo,
+            seed_pricing_rules_to_mongo, seed_legal_templates_to_mongo,
+            seed_past_proposals,
+        )
         from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
         store = KnowledgeStore()
         seed_capabilities(store)
         seed_certifications_to_mongo(store)
+        seed_pricing_rules_to_mongo(store)
+        seed_legal_templates_to_mongo(store)
+        seed_past_proposals(store)
         logger.info("[KB] Re-seeded Pinecone and MongoDB with document-derived knowledge")
     except Exception as e:
         logger.warning(f"[KB] Derived file sync/re-seed failed (non-fatal): {e}")

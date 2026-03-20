@@ -1,111 +1,5 @@
 [
   {
-    "id": "cap-doc-000",
-    "name": "All prices in the catalog are in Indian Rupees (INR), exclusive of applicable GS",
-    "description": "All prices in the catalog are in Indian Rupees (INR), exclusive of applicable GST (18% on software and professional services).",
-    "category": "commercial",
-    "tags": [
-      "gst"
-    ],
-    "evidence": "Document Purpose & Scope",
-    "source_policy_id": "POL-001"
-  },
-  {
-    "id": "cap-doc-001",
-    "name": "Implementation CapEx pricing is a one-time, milestone-linked cost of INR 312 Cro",
-    "description": "Implementation CapEx pricing is a one-time, milestone-linked cost of INR 312 Crores in Year 0.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
-    "source_policy_id": "POL-002"
-  },
-  {
-    "id": "cap-doc-002",
-    "name": "Annual Managed Services (AMS) OpEx in Year 1 is INR 68 Crores, commencing from P",
-    "description": "Annual Managed Services (AMS) OpEx in Year 1 is INR 68 Crores, commencing from Phase 3 go-live.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
-    "source_policy_id": "POL-003"
-  },
-  {
-    "id": "cap-doc-003",
-    "name": "AMS OpEx in Year 2 includes a 4% escalation over Year 1, totaling INR 72 Crores",
-    "description": "AMS OpEx in Year 2 includes a 4% escalation over Year 1, totaling INR 72 Crores.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
-    "source_policy_id": "POL-004"
-  },
-  {
-    "id": "cap-doc-004",
-    "name": "AMS OpEx in Year 3 includes a 4% escalation over Year 2, totaling INR 76 Crores",
-    "description": "AMS OpEx in Year 3 includes a 4% escalation over Year 2, totaling INR 76 Crores.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Five-Year Total Cost of Ownership (TCO) Summary",
-    "source_policy_id": "POL-005"
-  },
-  {
-    "id": "cap-doc-006",
-    "name": "The catalog covers Implementation CapEx pricing by workstream, Annual Managed Se",
-    "description": "The catalog covers Implementation CapEx pricing by workstream, Annual Managed Services (AMS) OpEx by service tier, software license structures, optional modules, volume-based pricing tiers, and payment milestone schedules.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Document Purpose & Scope",
-    "source_policy_id": "POL-007"
-  },
-  {
-    "id": "cap-doc-007",
-    "name": "Year 4 operational expenditure (OpEx) is INR 79 Crores with a 4% annual escalati",
-    "description": "Year 4 operational expenditure (OpEx) is INR 79 Crores with a 4% annual escalation rate from Year 3.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Year 4 — OpEx",
-    "source_policy_id": "POL-008"
-  },
-  {
-    "id": "cap-doc-008",
-    "name": "Year 5 operational expenditure (OpEx) is INR 83 Crores with a 4% annual escalati",
-    "description": "Year 5 operational expenditure (OpEx) is INR 83 Crores with a 4% annual escalation rate from Year 4.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Year 5 — OpEx",
-    "source_policy_id": "POL-009"
-  },
-  {
-    "id": "cap-doc-009",
-    "name": "The 5-Year Total Cost of Ownership is INR 690 Crores, excluding optional modules",
-    "description": "The 5-Year Total Cost of Ownership is INR 690 Crores, excluding optional modules and including cloud IaaS pass-through at cost.",
-    "category": "commercial",
-    "tags": [
-      "cloud"
-    ],
-    "evidence": "5-YEAR TOTAL COST OF OWNERSHIP",
-    "source_policy_id": "POL-010"
-  },
-  {
-    "id": "cap-doc-010",
-    "name": "Year 0 implementation capital expenditure (CapEx) is INR 312 Crores, structured",
-    "description": "Year 0 implementation capital expenditure (CapEx) is INR 312 Crores, structured across five delivery workstreams as defined in the RFP scope of work.",
-    "category": "commercial",
-    "tags": [
-      "api",
-      "oss"
-    ],
-    "evidence": "3. Implementation CapEx — Workstream Breakdown",
-    "source_policy_id": "POL-011"
-  },
-  {
-    "id": "cap-doc-011",
-    "name": "Stream A (Platform Design & Architecture) has an indicative cost of INR 22 Crore",
-    "description": "Stream A (Platform Design & Architecture) has an indicative cost of INR 22 Crores and a duration of 8 weeks (Phase 0).",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "3. Implementation CapEx — Workstream Breakdown",
-    "source_policy_id": "POL-012"
-  },
-  {
     "id": "cap-doc-012",
     "name": "Stream B (Software Deployment & Configuration) spans 34 weeks (Phase 1–2B) and i",
     "description": "Stream B (Software Deployment & Configuration) spans 34 weeks (Phase 1–2B) and includes deployment of all BSS/OSS modules, 40+ integrations, and performance/security testing.",
@@ -142,17 +36,6 @@
     ],
     "evidence": "3. Implementation CapEx — Workstream Breakdown",
     "source_policy_id": "POL-015"
-  },
-  {
-    "id": "cap-doc-015",
-    "name": "The cloud IaaS pass-through cost is included in the 5-Year Total Cost of Ownersh",
-    "description": "The cloud IaaS pass-through cost is included in the 5-Year Total Cost of Ownership at actual cost, with no markup applied.",
-    "category": "commercial",
-    "tags": [
-      "cloud"
-    ],
-    "evidence": "5-YEAR TOTAL COST OF OWNERSHIP",
-    "source_policy_id": "POL-016"
   },
   {
     "id": "cap-doc-016",
@@ -220,15 +103,6 @@
     "source_policy_id": "POL-22"
   },
   {
-    "id": "cap-doc-022",
-    "name": "34 Cr is allocated for Post-Go-Live Hypercare and included in Year 0 budget",
-    "description": "34 Cr is allocated for Post-Go-Live Hypercare and included in Year 0 budget",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Concurrent, all phases",
-    "source_policy_id": "POL-23"
-  },
-  {
     "id": "cap-doc-023",
     "name": "Project Management & Governance requires a 150-person programme team including P",
     "description": "Project Management & Governance requires a 150-person programme team including PMO, architecture board, and QA governance",
@@ -236,15 +110,6 @@
     "tags": [],
     "evidence": "Project Management & Governance",
     "source_policy_id": "POL-24"
-  },
-  {
-    "id": "cap-doc-024",
-    "name": "Total Year 0 Implementation CapEx is INR 312 Crores over ~18 months",
-    "description": "Total Year 0 Implementation CapEx is INR 312 Crores over ~18 months",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "TOTAL",
-    "source_policy_id": "POL-25"
   },
   {
     "id": "cap-doc-025",
@@ -302,24 +167,6 @@
     "source_policy_id": "POL-030"
   },
   {
-    "id": "cap-doc-030",
-    "name": "Two platform enhancement releases per year are included as part of the standard",
-    "description": "Two platform enhancement releases per year are included as part of the standard service.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Enhancement Releases",
-    "source_policy_id": "POL-031"
-  },
-  {
-    "id": "cap-doc-031",
-    "name": "Major Enhancements (T&M) beyond the 2 base releases or new module development ar",
-    "description": "Major Enhancements (T&M) beyond the 2 base releases or new module development are quoted separately and billed as time-and-material.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "Major Enhancements (T&M)",
-    "source_policy_id": "POL-032"
-  },
-  {
     "id": "cap-doc-032",
     "name": "24x7x365 availability is required during bill run periods, with business hours s",
     "description": "24x7x365 availability is required during bill run periods, with business hours support otherwise.",
@@ -329,71 +176,6 @@
     ],
     "evidence": "24x7x365 during bill run; business hours otherwise",
     "source_policy_id": "POL-033"
-  },
-  {
-    "id": "cap-doc-033",
-    "name": "The annual fee for Year 1 (FY2027–28) is INR 68 Cr, serving as the base year",
-    "description": "The annual fee for Year 1 (FY2027–28) is INR 68 Cr, serving as the base year.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
-    "source_policy_id": "POL-034"
-  },
-  {
-    "id": "cap-doc-034",
-    "name": "The annual fee for Year 2 (FY2028–29) is INR 72 Cr, with a 4% escalation of INR",
-    "description": "The annual fee for Year 2 (FY2028–29) is INR 72 Cr, with a 4% escalation of INR 2.72 Cr.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
-    "source_policy_id": "POL-035"
-  },
-  {
-    "id": "cap-doc-035",
-    "name": "The annual fee for Year 3 (FY2029–30) is INR 76 Cr, with a 4% escalation of INR",
-    "description": "The annual fee for Year 3 (FY2029–30) is INR 76 Cr, with a 4% escalation of INR 2.88 Cr.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
-    "source_policy_id": "POL-036"
-  },
-  {
-    "id": "cap-doc-036",
-    "name": "The annual fee for Year 4 (FY2030–31) is INR 79 Cr, with a 4% escalation of INR",
-    "description": "The annual fee for Year 4 (FY2030–31) is INR 79 Cr, with a 4% escalation of INR 3.04 Cr.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
-    "source_policy_id": "POL-037"
-  },
-  {
-    "id": "cap-doc-037",
-    "name": "The annual fee for Year 5 (FY2031–32) is INR 83 Cr, with a 4% escalation of INR",
-    "description": "The annual fee for Year 5 (FY2031–32) is INR 83 Cr, with a 4% escalation of INR 3.16 Cr.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
-    "source_policy_id": "POL-038"
-  },
-  {
-    "id": "cap-doc-038",
-    "name": "The total cumulative OpEx over FY2027–32 is INR 378 Crores",
-    "description": "The total cumulative OpEx over FY2027–32 is INR 378 Crores.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "4.2 AMS Annual Pricing Schedule",
-    "source_policy_id": "POL-039"
-  },
-  {
-    "id": "cap-doc-041",
-    "name": "The extended warranty (Years 6–7) has a flat annual maintenance cost of INR 41 C",
-    "description": "The extended warranty (Years 6–7) has a flat annual maintenance cost of INR 41 Cr with no escalation.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "5. Optional Modules & Add-On Pricing",
-    "source_policy_id": "POL-042"
   },
   {
     "id": "cap-doc-042",
@@ -514,18 +296,6 @@
     ],
     "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
     "source_policy_id": "POL-053"
-  },
-  {
-    "id": "cap-doc-053",
-    "name": "NexWave Technologies must ensure contract values for BSS/OSS transformations are",
-    "description": "NexWave Technologies must ensure contract values for BSS/OSS transformations are comparable to Tier-1 scale engagements.",
-    "category": "commercial",
-    "tags": [
-      "bss",
-      "oss"
-    ],
-    "evidence": "CASE STUDY 1: AsiaNet Wireless — Philippines",
-    "source_policy_id": "POL-054"
   },
   {
     "id": "cap-doc-054",
@@ -1125,17 +895,6 @@
     "source_policy_id": "POL-114"
   },
   {
-    "id": "cap-doc-114",
-    "name": "Mohammed Al-Rashidi, VP IT, is available for Vi team site visits",
-    "description": "Mohammed Al-Rashidi, VP IT, is available for Vi team site visits.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "Site Visit Available",
-    "source_policy_id": "POL-115"
-  },
-  {
     "id": "cap-doc-115",
     "name": "NexWave is one of the few vendors globally with live 5G SA slicing in production",
     "description": "NexWave is one of the few vendors globally with live 5G SA slicing in production.",
@@ -1321,15 +1080,6 @@
     "tags": [],
     "evidence": "Document Control",
     "source_policy_id": "POL-134"
-  },
-  {
-    "id": "cap-doc-134",
-    "name": "Document type must be 'pricing'",
-    "description": "Document type must be 'pricing'",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "DOCUMENT TYPE",
-    "source_policy_id": "POL-135"
   },
   {
     "id": "cap-doc-135",
@@ -2187,35 +1937,6 @@
     "source_policy_id": "POL-241"
   },
   {
-    "id": "cap-doc-241",
-    "name": "All prices in Indian Rupees (INR) with a forex protection statement ('all prices",
-    "description": "All prices in Indian Rupees (INR) with a forex protection statement ('all prices in INR; no forex exposure for client') for India proposals.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "5.2 India-Specific Proposal Requirements",
-    "source_policy_id": "POL-242"
-  },
-  {
-    "id": "cap-doc-242",
-    "name": "Payment terms for India proposals: Net 30 days from invoice with milestone-linke",
-    "description": "Payment terms for India proposals: Net 30 days from invoice with milestone-linked structure and bank guarantee for advance payment.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "5.2 India-Specific Proposal Requirements",
-    "source_policy_id": "POL-243"
-  },
-  {
-    "id": "cap-doc-245",
-    "name": "Include at least 3 client references with contact details and note availability",
-    "description": "Include at least 3 client references with contact details and note availability for site visits.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "9. Client References",
-    "source_policy_id": "POL-246"
-  },
-  {
     "id": "cap-doc-246",
     "name": "Use the TeleSphere Migration Factory for data migration with a zero-leakage comm",
     "description": "Use the TeleSphere Migration Factory for data migration with a zero-leakage commitment and parallel run plan.",
@@ -2245,15 +1966,6 @@
     ],
     "evidence": "6. Support & AMS Model",
     "source_policy_id": "POL-249"
-  },
-  {
-    "id": "cap-doc-251",
-    "name": "Structure commercial proposal with milestone payments and TCO summary from docum",
-    "description": "Structure commercial proposal with milestone payments and TCO summary from document NWTECH-PPC-2026-001.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "7. Commercial Proposal",
-    "source_policy_id": "POL-252"
   },
   {
     "id": "cap-doc-261",
@@ -2442,35 +2154,6 @@
     ],
     "evidence": "5.2 Business Continuity & Disaster Recovery",
     "source_policy_id": "POL-312"
-  },
-  {
-    "id": "cap-doc-312",
-    "name": "Professional Indemnity insurance coverage must be INR 100 Crores per claim",
-    "description": "Professional Indemnity insurance coverage must be INR 100 Crores per claim",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "6. Insurance Coverage",
-    "source_policy_id": "POL-313"
-  },
-  {
-    "id": "cap-doc-313",
-    "name": "Professional Indemnity insurance must be provided by New India Assurance Co",
-    "description": "Professional Indemnity insurance must be provided by New India Assurance Co.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6. Insurance Coverage",
-    "source_policy_id": "POL-314"
-  },
-  {
-    "id": "cap-doc-314",
-    "name": "Professional Indemnity insurance policy period must cover FY2026-27 and be renew",
-    "description": "Professional Indemnity insurance policy period must cover FY2026-27 and be renewable annually",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6. Insurance Coverage",
-    "source_policy_id": "POL-315"
   },
   {
     "id": "cap-doc-319",
@@ -2725,15 +2408,6 @@
     "source_policy_id": "POL-343"
   },
   {
-    "id": "cap-doc-343",
-    "name": "The Client shall process invoices within Net 30 days",
-    "description": "The Client shall process invoices within Net 30 days.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "3. Client Obligations",
-    "source_policy_id": "POL-344"
-  },
-  {
     "id": "cap-doc-344",
     "name": "The Client shall designate a named Programme Sponsor and Project Manager with au",
     "description": "The Client shall designate a named Programme Sponsor and Project Manager with authority to approve deliverables.",
@@ -2752,133 +2426,6 @@
     ],
     "evidence": "3. Client Obligations",
     "source_policy_id": "POL-346"
-  },
-  {
-    "id": "cap-doc-361",
-    "name": "Implementation payments are milestone-linked as specified in the Commercial Exhi",
-    "description": "Implementation payments are milestone-linked as specified in the Commercial Exhibit.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6.1 Payment Schedule",
-    "source_policy_id": "POL-362"
-  },
-  {
-    "id": "cap-doc-362",
-    "name": "AMS payments are monthly in arrears from the AMS Commencement Date",
-    "description": "AMS payments are monthly in arrears from the AMS Commencement Date.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6.1 Payment Schedule",
-    "source_policy_id": "POL-363"
-  },
-  {
-    "id": "cap-doc-363",
-    "name": "All amounts are exclusive of applicable GST (currently 18% on software and profe",
-    "description": "All amounts are exclusive of applicable GST (currently 18% on software and professional services).",
-    "category": "commercial",
-    "tags": [
-      "gst"
-    ],
-    "evidence": "6.1 Payment Schedule",
-    "source_policy_id": "POL-364"
-  },
-  {
-    "id": "cap-doc-364",
-    "name": "Invoices shall be raised by the Vendor within 5 business days of milestone achie",
-    "description": "Invoices shall be raised by the Vendor within 5 business days of milestone achievement, accompanied by evidence of completion.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "6.1 Payment Schedule",
-    "source_policy_id": "POL-365"
-  },
-  {
-    "id": "cap-doc-365",
-    "name": "Client shall pay undisputed invoices within Net 30 days of receipt",
-    "description": "Client shall pay undisputed invoices within Net 30 days of receipt.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6.2 Payment Timelines",
-    "source_policy_id": "POL-366"
-  },
-  {
-    "id": "cap-doc-366",
-    "name": "For disputed invoices, the Client shall raise a written dispute within 15 busine",
-    "description": "For disputed invoices, the Client shall raise a written dispute within 15 business days with specific grounds.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "6.2 Payment Timelines",
-    "source_policy_id": "POL-367"
-  },
-  {
-    "id": "cap-doc-367",
-    "name": "Both parties shall resolve disputes within 30 days of the dispute notice",
-    "description": "Both parties shall resolve disputes within 30 days of the dispute notice.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6.2 Payment Timelines",
-    "source_policy_id": "POL-368"
-  },
-  {
-    "id": "cap-doc-368",
-    "name": "Undisputed portions of disputed invoices shall be paid within the original Net 3",
-    "description": "Undisputed portions of disputed invoices shall be paid within the original Net 30 timeline.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "6.2 Payment Timelines",
-    "source_policy_id": "POL-369"
-  },
-  {
-    "id": "cap-doc-369",
-    "name": "Overdue amounts beyond 45 days shall accrue interest at SBI MCLR (1-year) + 2% p",
-    "description": "Overdue amounts beyond 45 days shall accrue interest at SBI MCLR (1-year) + 2% per annum, calculated daily.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "6.2 Payment Timelines",
-    "source_policy_id": "POL-370"
-  },
-  {
-    "id": "cap-doc-370",
-    "name": "Persistent non-payment beyond 90 days (with a 30-day cure notice) shall entitle",
-    "description": "Persistent non-payment beyond 90 days (with a 30-day cure notice) shall entitle the Vendor to suspend non-critical services upon written notice.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6.2 Payment Timelines",
-    "source_policy_id": "POL-371"
-  },
-  {
-    "id": "cap-doc-371",
-    "name": "AMS fees shall escalate annually at the lower of: (a) 4% per year (contractually",
-    "description": "AMS fees shall escalate annually at the lower of: (a) 4% per year (contractually committed), or (b) the Wholesale Price Index (WPI) published by the Ministry of Commerce, Government of India.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6.4 AMS Price Escalation",
-    "source_policy_id": "POL-372"
-  },
-  {
-    "id": "cap-doc-372",
-    "name": "This cap is a contractual commitment and cannot be exceeded",
-    "description": "This cap is a contractual commitment and cannot be exceeded.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6.4 AMS Price Escalation",
-    "source_policy_id": "POL-373"
-  },
-  {
-    "id": "cap-doc-373",
-    "name": "Escalation applies from the second AMS year onward",
-    "description": "Escalation applies from the second AMS year onward.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "6.4 AMS Price Escalation",
-    "source_policy_id": "POL-374"
   },
   {
     "id": "cap-doc-374",
@@ -2926,15 +2473,6 @@
     "tags": [],
     "evidence": "7. Change Control Process",
     "source_policy_id": "POL-379"
-  },
-  {
-    "id": "cap-doc-379",
-    "name": "CRs that reduce scope shall not entitle the Vendor to additional payment, but ma",
-    "description": "CRs that reduce scope shall not entitle the Vendor to additional payment, but may reduce milestone-linked payments proportionally as agreed.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "7. Change Control Process",
-    "source_policy_id": "POL-380"
   },
   {
     "id": "cap-doc-380",
@@ -2993,17 +2531,6 @@
     ],
     "evidence": "8. SLA, Service Credits & Liquidated Damages",
     "source_policy_id": "POL-385"
-  },
-  {
-    "id": "cap-doc-385",
-    "name": "Monthly credit rate for OCS / Charging Engine is 2% of monthly AMS fee per 0",
-    "description": "Monthly credit rate for OCS / Charging Engine is 2% of monthly AMS fee per 0.001% shortfall.",
-    "category": "commercial",
-    "tags": [
-      "charging"
-    ],
-    "evidence": "8. SLA, Service Credits & Liquidated Damages",
-    "source_policy_id": "POL-386"
   },
   {
     "id": "cap-doc-386",
@@ -3099,35 +2626,6 @@
     "source_policy_id": "POL-395"
   },
   {
-    "id": "cap-doc-405",
-    "name": "In case of Client termination for Vendor's cause, the Vendor shall refund all mi",
-    "description": "In case of Client termination for Vendor's cause, the Vendor shall refund all milestone payments for undelivered milestones within 90 days.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "11.1 Termination for Cause",
-    "source_policy_id": "POL-406"
-  },
-  {
-    "id": "cap-doc-407",
-    "name": "Termination for convenience during the implementation phase requires payment of:",
-    "description": "Termination for convenience during the implementation phase requires payment of: (a) all completed milestone payments; (b) reasonable mobilization costs for work-in-progress (not to exceed 20% of remaining implementation CapEx); and (c) committed third-party costs that cannot be cancelled.",
-    "category": "commercial",
-    "tags": [
-      "ai"
-    ],
-    "evidence": "11.2 Termination for Convenience",
-    "source_policy_id": "POL-408"
-  },
-  {
-    "id": "cap-doc-408",
-    "name": "The Vendor shall not be entitled to anticipated profits on unperformed work",
-    "description": "The Vendor shall not be entitled to anticipated profits on unperformed work.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "11.2 Termination for Convenience",
-    "source_policy_id": "POL-409"
-  },
-  {
     "id": "cap-doc-409",
     "name": "On termination or expiry, the Vendor shall provide exit assistance for up to 12",
     "description": "On termination or expiry, the Vendor shall provide exit assistance for up to 12 months, including: knowledge transfer to the Client's designated successor vendor, data extraction in standard formats (CSV/JSON), platform documentation, and API specifications.",
@@ -3137,15 +2635,6 @@
     ],
     "evidence": "11.3 Exit Assistance",
     "source_policy_id": "POL-410"
-  },
-  {
-    "id": "cap-doc-410",
-    "name": "Exit assistance is charged at the T&M rates defined in the Commercial Exhibit",
-    "description": "Exit assistance is charged at the T&M rates defined in the Commercial Exhibit.",
-    "category": "commercial",
-    "tags": [],
-    "evidence": "11.3 Exit Assistance",
-    "source_policy_id": "POL-411"
   },
   {
     "id": "cap-doc-411",

@@ -1,66 +1,762 @@
 [
-    {
-        "id": "legal-001",
-        "clause_type": "limitation_of_liability",
-        "acceptable_template": "Contractor's total aggregate liability under this Agreement shall not exceed the total fees paid under this Agreement during the twelve (12) months preceding the claim.",
-        "risk_threshold": "Unlimited liability or liability exceeding 2x contract value",
-        "auto_block": true,
-        "notes": "Never accept unlimited liability clauses."
-    },
-    {
-        "id": "legal-002",
-        "clause_type": "intellectual_property",
-        "acceptable_template": "All pre-existing intellectual property remains the property of the originating party. Work product created specifically for this engagement shall be owned by the Client upon full payment.",
-        "risk_threshold": "Broad IP transfer that includes pre-existing IP or derivative works",
-        "auto_block": true,
-        "notes": "Protect pre-existing IP and tools."
-    },
-    {
-        "id": "legal-003",
-        "clause_type": "indemnification",
-        "acceptable_template": "Each party shall indemnify the other for claims arising from its own negligence, willful misconduct, or breach of its representations and warranties under this Agreement.",
-        "risk_threshold": "One-sided indemnification with no mutual obligation",
-        "auto_block": false,
-        "notes": "Flag but negotiate. Block only if extremely one-sided."
-    },
-    {
-        "id": "legal-004",
-        "clause_type": "termination",
-        "acceptable_template": "Either party may terminate this Agreement for convenience upon sixty (60) days written notice. Termination for cause requires thirty (30) days written notice and opportunity to cure.",
-        "risk_threshold": "Client-only termination for convenience without notice period",
-        "auto_block": false,
-        "notes": "Ensure mutual termination rights."
-    },
-    {
-        "id": "legal-005",
-        "clause_type": "non_compete",
-        "acceptable_template": "During the term of this Agreement, Contractor shall not provide substantially similar services to a direct named competitor of Client within the same geographic market.",
-        "risk_threshold": "Broad non-compete exceeding 2 years or covering all industries",
-        "auto_block": true,
-        "notes": "Block overly broad non-compete clauses."
-    },
-    {
-        "id": "legal-006",
-        "clause_type": "data_protection",
-        "acceptable_template": "Contractor shall process Client data in accordance with applicable data protection laws including GDPR and CCPA. A Data Processing Agreement shall be executed as an addendum.",
-        "risk_threshold": "No data protection provisions or unrestricted data sharing",
-        "auto_block": false,
-        "notes": "Do not accept contracts without data protection clauses."
-    },
-    {
-        "id": "legal-007",
-        "clause_type": "warranty",
-        "acceptable_template": "Contractor warrants that services will be performed in a professional and workmanlike manner consistent with generally accepted industry standards for a period of ninety (90) days following delivery.",
-        "risk_threshold": "Warranty period exceeding 12 months or covering fitness for particular purpose",
-        "auto_block": false,
-        "notes": "Standard 90-day warranty. Flag anything beyond 12 months."
-    },
-    {
-        "id": "legal-008",
-        "clause_type": "confidentiality",
-        "acceptable_template": "Both parties shall maintain the confidentiality of all confidential information for three (3) years following disclosure. Standard exceptions apply for publicly known information.",
-        "risk_threshold": "Perpetual confidentiality obligation with no standard exceptions",
-        "auto_block": false,
-        "notes": "Perpetual obligations are a yellow flag."
-    }
+  {
+    "id": "leg-doc-000",
+    "clause_type": "general",
+    "acceptable_template": "The catalog is contractually anchored as the baseline pricing structure for Tier-1 telecom BSS/OSS transformation engagements.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-001",
+    "clause_type": "general",
+    "acceptable_template": "The AMS escalation is contractually capped at 4% per year, which is the lower of 4% or the Wholesale Price Index (WPI) published by the Government of India.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-002",
+    "clause_type": "general",
+    "acceptable_template": "The RFP requirement of a 5%/WPI cap is fulfilled by the 4% annual escalation cap.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-003",
+    "clause_type": "general",
+    "acceptable_template": "Peak TPS tested must be 2M TPS, with 1.5M TPS production SLA contractually guaranteed.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-004",
+    "clause_type": "general",
+    "acceptable_template": "NexWave Technologies Pvt. Ltd. is a legally registered entity with Corporate Identification Number (CIN) U72200KA2009PTC123456.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-005",
+    "clause_type": "general",
+    "acceptable_template": "NexWave Technologies Pvt. Ltd. holds Goods and Services Tax Identification Number (GSTIN) 29AAACN1234A1Z5 (Karnataka).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-006",
+    "clause_type": "general",
+    "acceptable_template": "The company must achieve a minimum 3-year telecom revenue exceeding INR 500 Crore to meet Vi RFP qualification criteria.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-007",
+    "clause_type": "general",
+    "acceptable_template": "The company must maintain a net worth sufficient to support a ~INR 312 Crore CapEx engagement as a listed entity with a strong balance sheet.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-008",
+    "clause_type": "general",
+    "acceptable_template": "The company must confirm no insolvency proceedings, winding-up petitions, or disqualification orders through a board resolution.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-009",
+    "clause_type": "general",
+    "acceptable_template": "The company must confirm no conflict of interest with Vi Business Solutions or Vodafone Idea Limited via a conflict of interest declaration.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-010",
+    "clause_type": "general",
+    "acceptable_template": "Karthik Iyer led DPDP Act compliance at 2 Indian operators.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-011",
+    "clause_type": "general",
+    "acceptable_template": "The full legal name 'NexWave Technologies Pvt. Ltd.' must be used in all external documents, with the short form 'NexWave' allowed only after the first mention.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-012",
+    "clause_type": "general",
+    "acceptable_template": "The registered office address for proposals is '12th Floor, Embassy TechSquare, Outer Ring Road, Bengaluru – 560103'.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-013",
+    "clause_type": "general",
+    "acceptable_template": "The Company Identification Number (CIN) 'U72200KA2009PTC123456' must only be used in legal documents.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-014",
+    "clause_type": "general",
+    "acceptable_template": "Maintain WCAG 2.1 AA contrast ratios for all text: minimum 4.5:1 for body, 3:1 for large text.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-015",
+    "clause_type": "general",
+    "acceptable_template": "Include NexWave GSTIN (29AAACN1234A1Z5), PAN (AAACN1234A), and TDS applicability note in the commercial section for India proposals.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-016",
+    "clause_type": "general",
+    "acceptable_template": "Explicitly address TRAI, DOT, DPDP Act 2023, and GST e-invoicing compliance in the compliance matrix for India proposals.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-017",
+    "clause_type": "data_protection",
+    "acceptable_template": "State '100% India data residency' with MeitY empanelment reference in India proposals.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-018",
+    "clause_type": "general",
+    "acceptable_template": "Provide a compliance matrix with point-by-point response to all mandatory and preferred RFP requirements.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-019",
+    "clause_type": "general",
+    "acceptable_template": "Provide a compliance matrix per RFP section in technical solution.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-020",
+    "clause_type": "data_protection",
+    "acceptable_template": "AES-256 encryption at rest must be implemented for all data storage.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-021",
+    "clause_type": "general",
+    "acceptable_template": "TLS 1.3 encryption in transit must be enforced for all inter-service and client-facing APIs.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-022",
+    "clause_type": "general",
+    "acceptable_template": "Multi-Factor Authentication (MFA) must be enforced for all admin portals.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-023",
+    "clause_type": "general",
+    "acceptable_template": "ISO 27001 A.10 controls are applied to ensure encryption at rest compliance.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-024",
+    "clause_type": "general",
+    "acceptable_template": "The GSMA FS.11/FS.19 signaling firewall is deployed at all 5 Tier-1 reference sites.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-025",
+    "clause_type": "general",
+    "acceptable_template": "Immutable audit logs with 36-month retention are implemented using AWS CloudTrail, Splunk SIEM, and S3 Object Lock (WORM).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-026",
+    "clause_type": "general",
+    "acceptable_template": "Bi-annual external penetration testing is conducted by Mandiant and KPMG, with critical findings remediated within 30 days.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-027",
+    "clause_type": "data_protection",
+    "acceptable_template": "All data is stored exclusively in AWS ap-south-1/ap-south-2 regions with no cross-border transfers enforced by ILM policies.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-028",
+    "clause_type": "general",
+    "acceptable_template": "The company complies with the DPDP Act 2023 through a ready DPA template, PII tokenization, and a consent management module.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-029",
+    "clause_type": "data_protection",
+    "acceptable_template": "NexWave acknowledges and accepts obligations as a 'Data Processor' under the Digital Personal Data Protection Act, 2023 for all subscriber personal data processed on behalf of Vi (the 'Data Fiduciary'...",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "NexWave acknowledges and accepts obligations as a 'Data Processor' under the Digital Personal Data Protection Act, 2023 for all subscriber personal data processed on behalf of Vi (the 'Data Fiduciary')."
+  },
+  {
+    "id": "leg-doc-030",
+    "clause_type": "data_protection",
+    "acceptable_template": "Data Processing Agreement (DPA) is pre-drafted and aligned to DPDP Act Sections 8 and 9, ready for execution at contract signing.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-031",
+    "clause_type": "data_protection",
+    "acceptable_template": "All MSISDN, Aadhaar-linked identifiers, and payment data are tokenized at the point of ingestion using AWS Tokenization Service; raw PII is never stored in application databases.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-032",
+    "clause_type": "data_protection",
+    "acceptable_template": "TeleSphere Consent Module maintains granular per-subscriber consent records for marketing communications, data sharing, and profiling with audit trails maintained for 3 years.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-033",
+    "clause_type": "data_protection",
+    "acceptable_template": "Zero subscriber data leaves India territory, confirmed by AWS data residency attestation and network egress monitoring.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-034",
+    "clause_type": "general",
+    "acceptable_template": "Automated ILM policies enforce TRAI-mandated CDR retention (2 years active; 5 years archive) and subscriber deletion workflows compliant with DPDP erasure rights.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-035",
+    "clause_type": "data_protection",
+    "acceptable_template": "NexWave commits to notifying Vi within 72 hours of a confirmed personal data breach, as required by DPDP Act Section 8(6).",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-036",
+    "clause_type": "general",
+    "acceptable_template": "Automated TRAI QoS report generation via TeleSphere Regulatory Reports module is live at BrightPath Mobile (India) with no manual intervention.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-037",
+    "clause_type": "general",
+    "acceptable_template": "TeleSphere supports DOT-mandated Lawful Intercept and Monitoring (LIM) requirements with CALEA-compatible architecture.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-038",
+    "clause_type": "general",
+    "acceptable_template": "TAP/NRTRDE interfaces for international roaming compliance and BARG/TADIG compliance are implemented.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-039",
+    "clause_type": "general",
+    "acceptable_template": "Automated reconciliation ensures TRAI revenue figures match internal billing records within 0.01% tolerance.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-040",
+    "clause_type": "data_protection",
+    "acceptable_template": "Cardholder data environment (CDE) is fully isolated from non-payment systems via network segmentation and dedicated key management.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-041",
+    "clause_type": "data_protection",
+    "acceptable_template": "Payment gateway integrations (NPCI/UPI, Razorpay, Paytm) are pre-certified; no new cardholder data flows are introduced without PCI change control.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-042",
+    "clause_type": "general",
+    "acceptable_template": "Annual on-site audit by QSA (KPMG India), quarterly internal vulnerability scans, and bi-annual external penetration testing are conducted.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-043",
+    "clause_type": "data_protection",
+    "acceptable_template": "All data stored in ap-south-1 (Mumbai) and ap-south-2 (Hyderabad); no cross-border transfers; contractually guaranteed",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-044",
+    "clause_type": "general",
+    "acceptable_template": "FIPS 140-2 Level 3 HSM is used for key management",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-045",
+    "clause_type": "data_protection",
+    "acceptable_template": "Personal data breach must be notified to Vi within 72 hours",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-046",
+    "clause_type": "data_protection",
+    "acceptable_template": "Personal data breach must be notified to the Data Protection Board of India as required by DPDP Act",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-047",
+    "clause_type": "intellectual_property",
+    "acceptable_template": "The Standard Terms & Conditions govern the relationship between NexWave Technologies Pvt. Ltd. ('Vendor') and the Client for the delivery of BSS/OSS platform modernization services.",
+    "risk_threshold": "Deviation from standard intellectual_property",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-048",
+    "clause_type": "general",
+    "acceptable_template": "The Terms are incorporated by reference into the Master Services Agreement ('MSA') and all associated Statements of Work ('SOW').",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-049",
+    "clause_type": "general",
+    "acceptable_template": "In case of conflict between the Terms and an executed MSA, the MSA prevails.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-050",
+    "clause_type": "data_protection",
+    "acceptable_template": "The Master Services Agreement ('MSA') includes these Terms, all SOWs, SLA schedules, pricing exhibits, and data processing agreements.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-051",
+    "clause_type": "data_protection",
+    "acceptable_template": "Subscriber Data includes all personal and non-personal data relating to the Client's subscribers, such as MSISDN records, CDRs, billing history, consent records, and CRM data.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-052",
+    "clause_type": "intellectual_property",
+    "acceptable_template": "The TeleSphere BSS/OSS Suite is and shall remain the exclusive intellectual property of NexWave Technologies Pvt. Ltd.",
+    "risk_threshold": "Deviation from standard intellectual_property",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-053",
+    "clause_type": "general",
+    "acceptable_template": "The Client is granted a non-exclusive, non-transferable, royalty-included license to use the TeleSphere Suite solely for its internal business operations as part of the contracted Services.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-054",
+    "clause_type": "general",
+    "acceptable_template": "The Client may not sublicense, resell, or distribute the TeleSphere Suite.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-055",
+    "clause_type": "general",
+    "acceptable_template": "The Client may not reverse engineer, decompile, or disassemble the TeleSphere Suite.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-056",
+    "clause_type": "general",
+    "acceptable_template": "The Client may not create derivative works based on the TeleSphere Suite.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-057",
+    "clause_type": "data_protection",
+    "acceptable_template": "All Subscriber Data, Client configuration data, business rules, and proprietary processes provided by the Client remain the exclusive property of the Client.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-058",
+    "clause_type": "data_protection",
+    "acceptable_template": "The Vendor shall use Subscriber Data solely for the purpose of performing the contracted Services.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-059",
+    "clause_type": "termination",
+    "acceptable_template": "On termination or expiry of the Agreement, the Vendor shall return or destroy all Subscriber Data within 60 days, as directed by the Client, subject to any retention requirements under applicable law.",
+    "risk_threshold": "Deviation from standard termination",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-060",
+    "clause_type": "general",
+    "acceptable_template": "Custom software, configurations, and integration adapters developed specifically for the Client as part of the agreed SOW ('Bespoke Deliverables') shall be owned jointly by both parties unless otherwi...",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Custom software, configurations, and integration adapters developed specifically for the Client as part of the agreed SOW ('Bespoke Deliverables') shall be owned jointly by both parties unless otherwise specified in the SOW."
+  },
+  {
+    "id": "leg-doc-061",
+    "clause_type": "confidentiality",
+    "acceptable_template": "The Vendor retains the right to use the methodologies and know-how embodied in Bespoke Deliverables in future engagements, provided no Client-confidential information is disclosed.",
+    "risk_threshold": "Deviation from standard confidentiality",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-062",
+    "clause_type": "termination",
+    "acceptable_template": "Both parties shall maintain strict confidentiality of the other's Confidential Information for the duration of the Agreement and for 3 years after termination.",
+    "risk_threshold": "Deviation from standard termination",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-063",
+    "clause_type": "confidentiality",
+    "acceptable_template": "Confidentiality obligations do not apply to information that is in the public domain at the time of disclosure.",
+    "risk_threshold": "Deviation from standard confidentiality",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-064",
+    "clause_type": "confidentiality",
+    "acceptable_template": "Confidentiality obligations do not apply to information independently developed by the receiving party.",
+    "risk_threshold": "Deviation from standard confidentiality",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-065",
+    "clause_type": "confidentiality",
+    "acceptable_template": "Confidentiality obligations do not apply to information required to be disclosed by law or regulatory order.",
+    "risk_threshold": "Deviation from standard confidentiality",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-066",
+    "clause_type": "confidentiality",
+    "acceptable_template": "The Client may share the Vendor's commercial terms with its board and advisors under equivalent confidentiality obligations.",
+    "risk_threshold": "Deviation from standard confidentiality",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-067",
+    "clause_type": "general",
+    "acceptable_template": "Unexcused delays beyond 30 days on critical path milestones trigger liquidated damages (LD) at 0.5% of total implementation CapEx per week of delay.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-068",
+    "clause_type": "general",
+    "acceptable_template": "Liquidated damages for implementation delays are capped at a maximum of 5% of total implementation CapEx.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-069",
+    "clause_type": "general",
+    "acceptable_template": "Liquidated damages are the Client's sole remedy for implementation delays and cannot be combined with service credits.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-070",
+    "clause_type": "data_protection",
+    "acceptable_template": "Liquidated damages do not apply if delays are caused by Client actions (e.g., delayed approvals, access, or data provision) or force majeure events.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-071",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "Neither party shall be liable for indirect, incidental, consequential, or punitive damages, including loss of revenue, profits, data, or business opportunity, even if advised of the possibility of suc...",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Neither party shall be liable for indirect, incidental, consequential, or punitive damages, including loss of revenue, profits, data, or business opportunity, even if advised of the possibility of such damages."
+  },
+  {
+    "id": "leg-doc-072",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "The Vendor's total aggregate liability under the Agreement shall not exceed the greater of: (a) the total fees paid by the Client in the 12 months immediately preceding the event giving rise to the cl...",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "The Vendor's total aggregate liability under the Agreement shall not exceed the greater of: (a) the total fees paid by the Client in the 12 months immediately preceding the event giving rise to the claim, or (b) INR 100 Crores."
+  },
+  {
+    "id": "leg-doc-073",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "Liability limitations do not apply to: (i) death or personal injury caused by negligence; (ii) fraud or fraudulent misrepresentation; (iii) breaches of confidentiality or data protection obligations;...",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Liability limitations do not apply to: (i) death or personal injury caused by negligence; (ii) fraud or fraudulent misrepresentation; (iii) breaches of confidentiality or data protection obligations; or (iv) indemnification obligations under Clause 10."
+  },
+  {
+    "id": "leg-doc-074",
+    "clause_type": "intellectual_property",
+    "acceptable_template": "The Vendor shall indemnify, defend, and hold harmless the Client against third-party claims arising from: (a) infringement of third-party intellectual property rights by the TeleSphere Suite; (b) gros...",
+    "risk_threshold": "Deviation from standard intellectual_property",
+    "auto_block": false,
+    "notes": "The Vendor shall indemnify, defend, and hold harmless the Client against third-party claims arising from: (a) infringement of third-party intellectual property rights by the TeleSphere Suite; (b) gross negligence or willful misconduct of Vendor personnel; (c) data breaches directly caused by Vendor's failure to maintain required security controls."
+  },
+  {
+    "id": "leg-doc-075",
+    "clause_type": "indemnification",
+    "acceptable_template": "The Client shall indemnify the Vendor against claims arising from: (a) Client's misuse of the platform contrary to agreed specifications; (b) Client's failure to comply with applicable telecom regulat...",
+    "risk_threshold": "Deviation from standard indemnification",
+    "auto_block": false,
+    "notes": "The Client shall indemnify the Vendor against claims arising from: (a) Client's misuse of the platform contrary to agreed specifications; (b) Client's failure to comply with applicable telecom regulations; or (c) Client-provided content or data that infringes third-party rights."
+  },
+  {
+    "id": "leg-doc-076",
+    "clause_type": "termination",
+    "acceptable_template": "Either party may terminate the Agreement by written notice if the other party: (a) commits a material breach and fails to remedy it within 60 days of written notice; (b) becomes insolvent, enters liqu...",
+    "risk_threshold": "Deviation from standard termination",
+    "auto_block": false,
+    "notes": "Either party may terminate the Agreement by written notice if the other party: (a) commits a material breach and fails to remedy it within 60 days of written notice; (b) becomes insolvent, enters liquidation, or is subject to a winding-up order; or (c) engages in corrupt practices or violates applicable anti-bribery laws."
+  },
+  {
+    "id": "leg-doc-077",
+    "clause_type": "termination",
+    "acceptable_template": "The Client may terminate the AMS contract for convenience with 6 months' written notice after Year 2 of the AMS term.",
+    "risk_threshold": "Deviation from standard termination",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-078",
+    "clause_type": "general",
+    "acceptable_template": "Dispute resolution steps: (1) Escalation via project representatives within 15 business days; (2) Senior management (CXO level) for 30-day resolution attempt; (3) Mediation via ICADR or DIAC within 45...",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Dispute resolution steps: (1) Escalation via project representatives within 15 business days; (2) Senior management (CXO level) for 30-day resolution attempt; (3) Mediation via ICADR or DIAC within 45 days; (4) Arbitration under the Arbitration and Conciliation Act, 1996, with Mumbai as the seat of arbitration."
+  },
+  {
+    "id": "leg-doc-079",
+    "clause_type": "general",
+    "acceptable_template": "Arbitration shall be conducted in English with 1 (sole arbitrator by mutual agreement) or 3 arbitrators (if parties cannot agree within 30 days).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-080",
+    "clause_type": "general",
+    "acceptable_template": "Arbitration award shall be final and binding.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-081",
+    "clause_type": "general",
+    "acceptable_template": "This Agreement shall be governed by and construed in accordance with the laws of India.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-082",
+    "clause_type": "general",
+    "acceptable_template": "Jurisdiction for interim relief: Courts of competent jurisdiction at Mumbai, Maharashtra.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-083",
+    "clause_type": "general",
+    "acceptable_template": "API-First: TM Forum Open API-compliant REST and AsyncAPI",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-084",
+    "clause_type": "general",
+    "acceptable_template": "Compliance with 3GPP Rel-17 Ro/Gy/Rf + Nchf standards",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-085",
+    "clause_type": "general",
+    "acceptable_template": "TeleSphere CRM must support GST e-invoicing compliance.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-086",
+    "clause_type": "general",
+    "acceptable_template": "Postpaid convergent CDR-based billing must be compliant with CDR-based mediation and convergent bill generation for postpaid and prepaid unified engine.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-087",
+    "clause_type": "general",
+    "acceptable_template": "Enterprise contract billing must be compliant with contract billing, CPQ integration, volume discounts, and SLA-based credits for enterprise accounts.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-088",
+    "clause_type": "data_protection",
+    "acceptable_template": "TM Forum compliance requires a TM Forum SID-aligned data model.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-089",
+    "clause_type": "general",
+    "acceptable_template": "TM Forum compliance requires the TMF632 Party Management API to be natively exposed.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-090",
+    "clause_type": "general",
+    "acceptable_template": "The OMS must natively expose the TMF622 Product Order Management API.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-091",
+    "clause_type": "general",
+    "acceptable_template": "SIM Clone Alert-to-Block must be achieved in <3 minutes in production with 40% headroom compliance.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-092",
+    "clause_type": "general",
+    "acceptable_template": "Automated TRAI regulatory reports for QoS and revenue generation require no manual intervention.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-093",
+    "clause_type": "data_protection",
+    "acceptable_template": "No manual data re-entry is required during SUBEX RAG migration.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-094",
+    "clause_type": "general",
+    "acceptable_template": "TRAI regulatory report generation requires no manual intervention.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  }
 ]

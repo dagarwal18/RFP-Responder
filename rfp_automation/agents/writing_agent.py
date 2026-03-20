@@ -129,13 +129,13 @@ class RequirementWritingAgent(BaseAgent):
         # Resolve company name from KB → config
         company_name = ""
         try:
-            from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
-            kb_profile = KnowledgeStore().query_company_profile()
+            kb_profile = mcp.knowledge_store.query_company_profile()
             company_name = kb_profile.get("company_name", "")
-        except Exception:
-            pass  # KB unavailable — fall back to config
+            logger.debug(f"[C2] KB profile returned: {kb_profile}")
+        except Exception as e:
+            logger.warning(f"[C2] KB company profile fetch failed: {e}")
         if not company_name:
-            company_name = getattr(get_settings(), "company_name", "") or ""
+            company_name = get_settings().company_name or ""
 
         rfp_metadata_block = (
             f"Proposing Company: {company_name or 'Not configured'}\n"

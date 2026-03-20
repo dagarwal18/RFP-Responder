@@ -57,6 +57,15 @@ _SPECIFICATION_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\b(?:selection criteria|pass[/-]fail|minimum score)\b", re.IGNORECASE), "selection"),
 ]
 
+# ── Table-formatted requirement patterns ───────────────────
+# Catch requirement IDs and table structures that lack obligation verbs
+_TABLE_SPEC_PATTERNS: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"\b[A-Z]{2,5}[-_]\d{2,4}\b"), "req_id"),              # OCS-001, BLL-003, CRM-010
+    (re.compile(r"\|\s*(?:mandatory|required|critical|must)\s*\|", re.IGNORECASE), "mandatory_col"),
+    (re.compile(r"\bmodule\s+(?:id|code|ref)\b", re.IGNORECASE), "module_ref"),
+    (re.compile(r"\b(?:acceptance\s+criteria|test\s+criteria)\b", re.IGNORECASE), "acceptance"),
+]
+
 # Sentence-splitting regex inside blocks: split on period/newline boundaries.
 # Newlines are handled structurally first, so we only need to split inline sentence boundaries.
 _SENTENCE_SPLIT_RE = re.compile(
@@ -245,7 +254,7 @@ class ObligationDetector:
 
         for idx, sentence in enumerate(sentences):
             matched_indicators: list[str] = []
-            for pattern, label in _OBLIGATION_PATTERNS + _SPECIFICATION_PATTERNS:
+            for pattern, label in _OBLIGATION_PATTERNS + _SPECIFICATION_PATTERNS + _TABLE_SPEC_PATTERNS:
                 if pattern.search(sentence):
                     matched_indicators.append(label)
 
@@ -275,6 +284,6 @@ class ObligationDetector:
             return 0
 
         count = 0
-        for pattern, _label in _OBLIGATION_PATTERNS + _SPECIFICATION_PATTERNS:
+        for pattern, _label in _OBLIGATION_PATTERNS + _SPECIFICATION_PATTERNS + _TABLE_SPEC_PATTERNS:
             count += len(pattern.findall(text))
         return count

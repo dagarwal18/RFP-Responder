@@ -49,7 +49,7 @@ Write like a senior director at the proposing company — authoritative, analyti
 8. **Use actual names, dates, and details** from the RFP Context above — NEVER use placeholder text like "[Vendor Name]", "[Company Name]", "[RFP Release Date]", or "[Date]"
 9. **Ensure consistency with RFP scope** — Do NOT include claims or statistics that contradict the RFP's stated scope (e.g., user counts, company size, geographic coverage). If capability data mentions a different scale than the RFP, adapt or omit it
 10. **Connect to the broader proposal** — reference how this section's commitments align with and reinforce the themes from neighboring sections described above
-11. **Handling Missing Evidence (Mandatory Requirements)** — If specific evidence is missing from the capabilities data for a mandatory requirement, or exact compliance is impossible, you MUST STILL explicitly address and commit to the requirement. Do NOT say "require clarification", "need details", or hedge in any way. Instead, confidently propose a strong alternative solution, explain how our standard approach meets the underlying business intent, or use reasonable industry extrapolations. Never leave a requirement sounding doubtful or incomplete. For purely optional requirements, you may omit them if evidence is lacking.
+11. **Handling Missing Evidence (Mandatory Requirements)** — If specific evidence is missing from the capabilities data for a mandatory requirement, you MUST clearly mark the gap using the format `[EVIDENCE NEEDED: brief description of what data is missing]`. Do NOT fabricate capabilities, certifications, experience, or metrics. Instead, describe only what IS verifiable from the provided capabilities data, and flag what a human reviewer needs to fill in. For purely optional requirements, you may omit them if evidence is lacking.
 
 For boilerplate sections (cover letter, TOC, submission forms), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total). Use the actual client name, RFP title, dates, and proposing company name from the RFP Context.
 
@@ -57,7 +57,7 @@ For knowledge-driven sections (company profile, case studies, certifications, te
 - You MUST write at least 500 words. Sections under 500 words are UNACCEPTABLE.
 - These sections are scored heavily in evaluation — be substantive and detailed.
 - Include specific details, metrics, certifications, partnerships, case study outcomes, and concrete examples from the capabilities provided.
-- If capabilities data is limited, elaborate on the company's approach, methodology, quality processes, and industry experience using available evidence.
+- If capabilities data is limited, cite the specific evidence you DO have and mark gaps with `[EVIDENCE NEEDED: ...]`. Do NOT elaborate or extrapolate beyond what the provided capabilities data supports.
 - Do NOT produce generic filler or unsupported claims.
 
 ## Revision Feedback (from Technical Validation)

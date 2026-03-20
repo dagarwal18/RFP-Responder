@@ -44,21 +44,17 @@ class CommercialRules:
                 f"[CommercialRules] Loaded pricing config from {_PRICING_RULES_PATH.name}"
             )
         except Exception as exc:
-            logger.warning(
+            logger.error(
                 f"[CommercialRules] Failed to load pricing_rules.json: {exc}. "
-                "Using hardcoded defaults."
+                "Pricing data must be seeded from KB documents before generating proposals. "
+                "Upload company documents via /api/knowledge/upload or seed via /api/knowledge/seed."
             )
             self._pricing_config = {
-                "base_cost": 50_000.0,
-                "per_requirement_cost": 2_000.0,
-                "complexity_tiers": {
-                    "low": 1.0, "medium": 1.25, "high": 1.5, "critical": 2.0,
-                },
-                "risk_margin_percent": 0.10,
-                "currency": "USD",
-                "minimum_margin_percent": 0.15,
-                "maximum_discount_percent": 0.15,
-                "payment_terms": "Net 30",
+                "source": "missing",
+                "entries": [],
+                "currency": "",
+                "payment_terms": "",
+                "error": str(exc),
             }
 
         return self._pricing_config

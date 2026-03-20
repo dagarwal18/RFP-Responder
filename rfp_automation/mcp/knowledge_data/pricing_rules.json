@@ -1,23 +1,273 @@
 {
-    "base_cost": 50000.0,
-    "per_requirement_cost": 2000.0,
-    "complexity_tiers": {
-        "low": 1.0,
-        "medium": 1.25,
-        "high": 1.5,
-        "critical": 2.0
+  "source": "extracted",
+  "currency": "INR",
+  "payment_terms": "for India proposals: Net 30 days from invoice with milestone-linked structure and bank guarantee for",
+  "discount_info": "",
+  "entries": [
+    {
+      "text": "All prices in the catalog are in Indian Rupees (INR), exclusive of applicable GST (18% on software and professional services).",
+      "source_section": "Document Purpose & Scope",
+      "source_policy_id": "POL-001"
     },
-    "risk_margin_percent": 0.10,
-    "currency": "USD",
-    "discount_tiers": {
-        "standard": 0.0,
-        "preferred_client": 0.05,
-        "strategic_partner": 0.10,
-        "multi_year": 0.08
+    {
+      "text": "Implementation CapEx pricing is a one-time, milestone-linked cost of INR 312 Crores in Year 0.",
+      "source_section": "Five-Year Total Cost of Ownership (TCO) Summary",
+      "source_policy_id": "POL-002"
     },
-    "payment_terms": "Net 30",
-    "minimum_contract_value": 25000.0,
-    "maximum_contract_value": 5000000.0,
-    "minimum_margin_percent": 0.15,
-    "maximum_discount_percent": 0.15
+    {
+      "text": "Annual Managed Services (AMS) OpEx in Year 1 is INR 68 Crores, commencing from Phase 3 go-live.",
+      "source_section": "Five-Year Total Cost of Ownership (TCO) Summary",
+      "source_policy_id": "POL-003"
+    },
+    {
+      "text": "AMS OpEx in Year 2 includes a 4% escalation over Year 1, totaling INR 72 Crores.",
+      "source_section": "Five-Year Total Cost of Ownership (TCO) Summary",
+      "source_policy_id": "POL-004"
+    },
+    {
+      "text": "AMS OpEx in Year 3 includes a 4% escalation over Year 2, totaling INR 76 Crores.",
+      "source_section": "Five-Year Total Cost of Ownership (TCO) Summary",
+      "source_policy_id": "POL-005"
+    },
+    {
+      "text": "The catalog covers Implementation CapEx pricing by workstream, Annual Managed Services (AMS) OpEx by service tier, software license structures, optional modules, volume-based pricing tiers, and payment milestone schedules.",
+      "source_section": "Document Purpose & Scope",
+      "source_policy_id": "POL-007"
+    },
+    {
+      "text": "Year 4 operational expenditure (OpEx) is INR 79 Crores with a 4% annual escalation rate from Year 3.",
+      "source_section": "Year 4 — OpEx",
+      "source_policy_id": "POL-008"
+    },
+    {
+      "text": "Year 5 operational expenditure (OpEx) is INR 83 Crores with a 4% annual escalation rate from Year 4.",
+      "source_section": "Year 5 — OpEx",
+      "source_policy_id": "POL-009"
+    },
+    {
+      "text": "The 5-Year Total Cost of Ownership is INR 690 Crores, excluding optional modules and including cloud IaaS pass-through at cost.",
+      "source_section": "5-YEAR TOTAL COST OF OWNERSHIP",
+      "source_policy_id": "POL-010"
+    },
+    {
+      "text": "Year 0 implementation capital expenditure (CapEx) is INR 312 Crores, structured across five delivery workstreams as defined in the RFP scope of work.",
+      "source_section": "3. Implementation CapEx — Workstream Breakdown",
+      "source_policy_id": "POL-011"
+    },
+    {
+      "text": "Stream A (Platform Design & Architecture) has an indicative cost of INR 22 Crores and a duration of 8 weeks (Phase 0).",
+      "source_section": "3. Implementation CapEx — Workstream Breakdown",
+      "source_policy_id": "POL-012"
+    },
+    {
+      "text": "The cloud IaaS pass-through cost is included in the 5-Year Total Cost of Ownership at actual cost, with no markup applied.",
+      "source_section": "5-YEAR TOTAL COST OF OWNERSHIP",
+      "source_policy_id": "POL-016"
+    },
+    {
+      "text": "34 Cr is allocated for Post-Go-Live Hypercare and included in Year 0 budget",
+      "source_section": "Concurrent, all phases",
+      "source_policy_id": "POL-23"
+    },
+    {
+      "text": "Total Year 0 Implementation CapEx is INR 312 Crores over ~18 months",
+      "source_section": "TOTAL",
+      "source_policy_id": "POL-25"
+    },
+    {
+      "text": "Two platform enhancement releases per year are included as part of the standard service.",
+      "source_section": "Enhancement Releases",
+      "source_policy_id": "POL-031"
+    },
+    {
+      "text": "Major Enhancements (T&M) beyond the 2 base releases or new module development are quoted separately and billed as time-and-material.",
+      "source_section": "Major Enhancements (T&M)",
+      "source_policy_id": "POL-032"
+    },
+    {
+      "text": "The annual fee for Year 1 (FY2027–28) is INR 68 Cr, serving as the base year.",
+      "source_section": "4.2 AMS Annual Pricing Schedule",
+      "source_policy_id": "POL-034"
+    },
+    {
+      "text": "The annual fee for Year 2 (FY2028–29) is INR 72 Cr, with a 4% escalation of INR 2.72 Cr.",
+      "source_section": "4.2 AMS Annual Pricing Schedule",
+      "source_policy_id": "POL-035"
+    },
+    {
+      "text": "The annual fee for Year 3 (FY2029–30) is INR 76 Cr, with a 4% escalation of INR 2.88 Cr.",
+      "source_section": "4.2 AMS Annual Pricing Schedule",
+      "source_policy_id": "POL-036"
+    },
+    {
+      "text": "The annual fee for Year 4 (FY2030–31) is INR 79 Cr, with a 4% escalation of INR 3.04 Cr.",
+      "source_section": "4.2 AMS Annual Pricing Schedule",
+      "source_policy_id": "POL-037"
+    },
+    {
+      "text": "The annual fee for Year 5 (FY2031–32) is INR 83 Cr, with a 4% escalation of INR 3.16 Cr.",
+      "source_section": "4.2 AMS Annual Pricing Schedule",
+      "source_policy_id": "POL-038"
+    },
+    {
+      "text": "The total cumulative OpEx over FY2027–32 is INR 378 Crores.",
+      "source_section": "4.2 AMS Annual Pricing Schedule",
+      "source_policy_id": "POL-039"
+    },
+    {
+      "text": "The extended warranty (Years 6–7) has a flat annual maintenance cost of INR 41 Cr with no escalation.",
+      "source_section": "5. Optional Modules & Add-On Pricing",
+      "source_policy_id": "POL-042"
+    },
+    {
+      "text": "NexWave Technologies must ensure contract values for BSS/OSS transformations are comparable to Tier-1 scale engagements.",
+      "source_section": "CASE STUDY 1: AsiaNet Wireless — Philippines",
+      "source_policy_id": "POL-054"
+    },
+    {
+      "text": "Mohammed Al-Rashidi, VP IT, is available for Vi team site visits.",
+      "source_section": "Site Visit Available",
+      "source_policy_id": "POL-115"
+    },
+    {
+      "text": "Document type must be 'pricing'",
+      "source_section": "DOCUMENT TYPE",
+      "source_policy_id": "POL-135"
+    },
+    {
+      "text": "All prices in Indian Rupees (INR) with a forex protection statement ('all prices in INR; no forex exposure for client') for India proposals.",
+      "source_section": "5.2 India-Specific Proposal Requirements",
+      "source_policy_id": "POL-242"
+    },
+    {
+      "text": "Payment terms for India proposals: Net 30 days from invoice with milestone-linked structure and bank guarantee for advance payment.",
+      "source_section": "5.2 India-Specific Proposal Requirements",
+      "source_policy_id": "POL-243"
+    },
+    {
+      "text": "Include at least 3 client references with contact details and note availability for site visits.",
+      "source_section": "9. Client References",
+      "source_policy_id": "POL-246"
+    },
+    {
+      "text": "Structure commercial proposal with milestone payments and TCO summary from document NWTECH-PPC-2026-001.",
+      "source_section": "7. Commercial Proposal",
+      "source_policy_id": "POL-252"
+    },
+    {
+      "text": "Professional Indemnity insurance coverage must be INR 100 Crores per claim",
+      "source_section": "6. Insurance Coverage",
+      "source_policy_id": "POL-313"
+    },
+    {
+      "text": "Professional Indemnity insurance must be provided by New India Assurance Co.",
+      "source_section": "6. Insurance Coverage",
+      "source_policy_id": "POL-314"
+    },
+    {
+      "text": "Professional Indemnity insurance policy period must cover FY2026-27 and be renewable annually",
+      "source_section": "6. Insurance Coverage",
+      "source_policy_id": "POL-315"
+    },
+    {
+      "text": "The Client shall process invoices within Net 30 days.",
+      "source_section": "3. Client Obligations",
+      "source_policy_id": "POL-344"
+    },
+    {
+      "text": "Implementation payments are milestone-linked as specified in the Commercial Exhibit.",
+      "source_section": "6.1 Payment Schedule",
+      "source_policy_id": "POL-362"
+    },
+    {
+      "text": "AMS payments are monthly in arrears from the AMS Commencement Date.",
+      "source_section": "6.1 Payment Schedule",
+      "source_policy_id": "POL-363"
+    },
+    {
+      "text": "All amounts are exclusive of applicable GST (currently 18% on software and professional services).",
+      "source_section": "6.1 Payment Schedule",
+      "source_policy_id": "POL-364"
+    },
+    {
+      "text": "Invoices shall be raised by the Vendor within 5 business days of milestone achievement, accompanied by evidence of completion.",
+      "source_section": "6.1 Payment Schedule",
+      "source_policy_id": "POL-365"
+    },
+    {
+      "text": "Client shall pay undisputed invoices within Net 30 days of receipt.",
+      "source_section": "6.2 Payment Timelines",
+      "source_policy_id": "POL-366"
+    },
+    {
+      "text": "For disputed invoices, the Client shall raise a written dispute within 15 business days with specific grounds.",
+      "source_section": "6.2 Payment Timelines",
+      "source_policy_id": "POL-367"
+    },
+    {
+      "text": "Both parties shall resolve disputes within 30 days of the dispute notice.",
+      "source_section": "6.2 Payment Timelines",
+      "source_policy_id": "POL-368"
+    },
+    {
+      "text": "Undisputed portions of disputed invoices shall be paid within the original Net 30 timeline.",
+      "source_section": "6.2 Payment Timelines",
+      "source_policy_id": "POL-369"
+    },
+    {
+      "text": "Overdue amounts beyond 45 days shall accrue interest at SBI MCLR (1-year) + 2% per annum, calculated daily.",
+      "source_section": "6.2 Payment Timelines",
+      "source_policy_id": "POL-370"
+    },
+    {
+      "text": "Persistent non-payment beyond 90 days (with a 30-day cure notice) shall entitle the Vendor to suspend non-critical services upon written notice.",
+      "source_section": "6.2 Payment Timelines",
+      "source_policy_id": "POL-371"
+    },
+    {
+      "text": "AMS fees shall escalate annually at the lower of: (a) 4% per year (contractually committed), or (b) the Wholesale Price Index (WPI) published by the Ministry of Commerce, Government of India.",
+      "source_section": "6.4 AMS Price Escalation",
+      "source_policy_id": "POL-372"
+    },
+    {
+      "text": "This cap is a contractual commitment and cannot be exceeded.",
+      "source_section": "6.4 AMS Price Escalation",
+      "source_policy_id": "POL-373"
+    },
+    {
+      "text": "Escalation applies from the second AMS year onward.",
+      "source_section": "6.4 AMS Price Escalation",
+      "source_policy_id": "POL-374"
+    },
+    {
+      "text": "CRs that reduce scope shall not entitle the Vendor to additional payment, but may reduce milestone-linked payments proportionally as agreed.",
+      "source_section": "7. Change Control Process",
+      "source_policy_id": "POL-380"
+    },
+    {
+      "text": "Monthly credit rate for OCS / Charging Engine is 2% of monthly AMS fee per 0.001% shortfall.",
+      "source_section": "8. SLA, Service Credits & Liquidated Damages",
+      "source_policy_id": "POL-386"
+    },
+    {
+      "text": "In case of Client termination for Vendor's cause, the Vendor shall refund all milestone payments for undelivered milestones within 90 days.",
+      "source_section": "11.1 Termination for Cause",
+      "source_policy_id": "POL-406"
+    },
+    {
+      "text": "Termination for convenience during the implementation phase requires payment of: (a) all completed milestone payments; (b) reasonable mobilization costs for work-in-progress (not to exceed 20% of remaining implementation CapEx); and (c) committed third-party costs that cannot be cancelled.",
+      "source_section": "11.2 Termination for Convenience",
+      "source_policy_id": "POL-408"
+    },
+    {
+      "text": "The Vendor shall not be entitled to anticipated profits on unperformed work.",
+      "source_section": "11.2 Termination for Convenience",
+      "source_policy_id": "POL-409"
+    },
+    {
+      "text": "Exit assistance is charged at the T&M rates defined in the Commercial Exhibit.",
+      "source_section": "11.3 Exit Assistance",
+      "source_policy_id": "POL-411"
+    }
+  ]
 }

@@ -108,18 +108,19 @@ class ArchitecturePlanningAgent(BaseAgent):
         logger.debug(f"[C1] Fetched {len(capabilities)} capability entries")
         review_feedback = ReviewService.build_global_feedback(state.review_package)
 
-        # ── 6. PASS 1 — Initial architecture with full prompt ─
+        # ── 6. PASS 1 — Structure planning (compact, no capabilities) ─
+        #    Send only req IDs/types and section titles for structural planning.
+        #    Capabilities are fetched per-section in Pass 2 to stay within budget.
         prompt = self._build_prompt(
             rfp_sections=rfp_sections_text,
             requirements=requirements_compact,
-            capabilities=capabilities_json,
+            capabilities="Capabilities will be mapped per-section after structure is planned.",
             submission_instructions=submission_instructions,
             review_feedback=review_feedback,
         )
         logger.info(
-            f"[C1] Pass 1: Calling LLM with {len(requirements_data)} requirements, "
-            f"{len(capabilities)} capabilities, "
-            f"{len(state.structuring_result.sections)} RFP sections"
+            f"[C1] Pass 1 (structure): Calling LLM with {len(requirements_data)} requirements, "
+            f"{len(state.structuring_result.sections)} RFP sections (no capabilities)"
         )
         raw_response = llm_text_call(prompt, deterministic=True)
         logger.debug(f"[C1] Pass 1 LLM response ({len(raw_response)} chars)")
@@ -152,6 +153,14 @@ class ArchitecturePlanningAgent(BaseAgent):
         # ── 8b. Split overloaded sections ────────────────
         sections = self._split_overloaded_sections(
             requirements_data, sections
+        )
+
+        # ── 8c. PASS 2 — Per-section capability enrichment ──
+        #    Now that we know the structure, query KB for capabilities
+        #    targeted to each section's specific requirements.
+        logger.info(f"[C1] Pass 2 (enrich): Fetching capabilities for {len(sections)} sections")
+        sections = self._enrich_sections_with_capabilities(
+            mcp, requirements_data, sections
         )
 
         # ── 9. Final coverage check ─────────────────────
@@ -834,6 +843,87 @@ class ArchitecturePlanningAgent(BaseAgent):
                 final.append(section)
 
         return final
+
+    def _enrich_sections_with_capabilities(
+        self,
+        mcp: MCPService,
+        requirements: list[dict[str, Any]],
+        sections: list[ResponseSection],
+    ) -> list[ResponseSection]:
+        """Pass 2: Enrich each section with relevant capabilities from KB.
+
+        By querying the Knowledge Store per-section using the section's
+        specific requirements and title, we get highly relevant capabilities
+        and keep the total token budget under control.
+        """
+        # Create a lookup for requirement text
+        req_lookup = {r.get("requirement_id"): r for r in requirements}
+
+        for section in sections:
+            queries: set[str] = set()
+
+            # 1. Query by section title and description
+            if section.title:
+                queries.add(f"{section.title} capabilities solutions experience")
+            if section.description:
+                # Use first few words of description
+                desc_prefix = " ".join(section.description.split()[:10])
+                queries.add(desc_prefix)
+
+            # 2. Query by requirement categories and key phrases
+            cats = set()
+            for rid in section.requirement_ids:
+                req = req_lookup.get(rid, {})
+                if req.get("category"):
+                    cats.add(req["category"])
+                # Add requirement text snippet if available
+                text = req.get("text", "")
+                if text:
+                    # Take first 6-8 words
+                    snippet = " ".join(text.split()[:8])
+                    if len(snippet) > 15:
+                        queries.add(snippet)
+
+            for cat in cats:
+                queries.add(f"{cat} capabilities features")
+
+            # Execute queries and collect unique capabilities
+            seen_texts: set[str] = set()
+            section_caps: list[str] = []
+
+            # Limit to top 3-4 queries to avoid excessive DB calls
+            top_queries = list(queries)[:4]
+            for query in top_queries:
+                try:
+                    results = mcp.query_knowledge(query, top_k=3)
+                    for r in results:
+                        text = r.get("text", "")
+                        if text and text not in seen_texts:
+                            seen_texts.add(text)
+                            # Create a clean string representation for the prompt
+                            preview = text[:600]
+                            if len(text) > 600:
+                                preview += "..."
+                            meta = r.get("metadata", {})
+                            source = meta.get("category") or meta.get("id") or "Knowledge Base"
+                            section_caps.append(f"[{source}] {preview}")
+                except Exception as exc:
+                    logger.warning(
+                        f"[C1] Knowledge query failed for section "
+                        f"{section.section_id} query '{query}': {exc}"
+                    )
+
+            # Keep only the most relevant ones (top 5 max per section)
+            # to keep Prompt Token usage safe in C2
+            section.mapped_capabilities = section_caps[:5]
+            if section_caps:
+                logger.debug(
+                    f"[C1] Enriched {section.section_id} with "
+                    f"{len(section.mapped_capabilities)} capabilities"
+                )
+
+        return sections
+
 
     def _gap_fill_pass(
         self,

@@ -382,10 +382,11 @@ class NarrativeAssemblyAgent(BaseAgent):
             from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
             kb_profile = KnowledgeStore().query_company_profile()
             company_name = kb_profile.get("company_name", "")
-        except Exception:
-            pass  # KB unavailable
+            logger.debug(f"[D2] KB profile returned: {kb_profile}")
+        except Exception as e:
+            logger.warning(f"[D2] KB company profile fetch failed: {e}")
         if not company_name:
-            company_name = getattr(get_settings(), "company_name", "") or ""
+            company_name = get_settings().company_name or ""
 
         if company_name:
             replacements.extend([
@@ -504,10 +505,11 @@ class NarrativeAssemblyAgent(BaseAgent):
             from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
             kb_profile = KnowledgeStore().query_company_profile()
             company_name = kb_profile.get("company_name", "")
-        except Exception:
-            pass  # KB unavailable
+            logger.debug(f"[D2] KB profile for title page: {kb_profile}")
+        except Exception as e:
+            logger.warning(f"[D2] KB company profile fetch failed for title page: {e}")
         if not company_name:
-            company_name = getattr(get_settings(), "company_name", "") or ""
+            company_name = get_settings().company_name or ""
         prepared_by = company_name if company_name else "[Vendor Name]"
         title_line += f"\n\nPrepared by: {prepared_by}"
 
@@ -549,10 +551,7 @@ class NarrativeAssemblyAgent(BaseAgent):
                     content = self._strip_content_heading(content, sub_title)
 
                     if self._is_stub_content(content):
-                        parts.append(
-                            "> **Note:** This section will be completed by "
-                            "the dedicated pipeline agent.\n"
-                        )
+                        parts.append(f"\n> **Note:** [PIPELINE_STUB: {child_title}]\n")
                     elif content:
                         parts.append(content)
             else:
@@ -567,10 +566,7 @@ class NarrativeAssemblyAgent(BaseAgent):
                 content = self._strip_content_heading(content, title)
 
                 if self._is_stub_content(content):
-                    parts.append(
-                        "> **Note:** This section will be completed by "
-                        "the dedicated pipeline agent.\n"
-                    )
+                    parts.append(f"\n> **Note:** [PIPELINE_STUB: {title}]\n")
                 elif content:
                     parts.append(content)
 

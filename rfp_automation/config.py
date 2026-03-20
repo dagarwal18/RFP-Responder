@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     log_level: str = "INFO"
+    company_name: str = ""  # Fallback company name; prefer KB profile
 
     # ═══════════════════════════════════════════════════════
     #  MODEL & INFERENCE CONFIG — hardcoded, NOT in .env

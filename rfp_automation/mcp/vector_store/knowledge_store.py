@@ -94,7 +94,7 @@ class KnowledgeStore:
         for i, (text, emb, meta) in enumerate(zip(texts, embeddings, metadatas)):
             vec_id = f"knowledge_{doc_type}_{meta.get('id', i)}"
             vec_metadata = {
-                "text": text[:1000],
+                "text": text,
                 "doc_type": doc_type,
                 **meta,
             }
@@ -218,19 +218,20 @@ class KnowledgeStore:
     # ── Query: pricing rules (MongoDB) ───────────────────
 
     def query_pricing_rules(self) -> dict[str, Any]:
-        """Return pricing formula parameters."""
+        """Return pricing formula parameters from MongoDB.
+
+        Returns empty dict if no rules have been seeded. Pricing data
+        should be extracted from KB documents via the sync pipeline.
+        """
         db = self._get_db()
         doc = db.company_config.find_one({"config_type": "pricing_rules"})
         if doc and "rules" in doc:
             return doc["rules"]
-        # Default if MongoDB is empty
-        return {
-            "base_cost": 50000.0,
-            "per_requirement_cost": 2000.0,
-            "complexity_tiers": {"low": 1.0, "medium": 1.25, "high": 1.5},
-            "risk_margin_percent": 0.10,
-            "currency": "USD",
-        }
+        logger.warning(
+            "[KnowledgeStore] No pricing rules found in MongoDB. "
+            "Upload company documents to extract pricing data."
+        )
+        return {}
 
     # ── Query / Upsert: company profile (MongoDB) ─────────
 

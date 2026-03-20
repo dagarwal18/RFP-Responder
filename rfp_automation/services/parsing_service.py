@@ -35,6 +35,23 @@ _ORGANIZATION_RE = re.compile(
     r"(?:Issuing\s+Organization|Issued\s+by|Company|Organisation)[\s:]+(.+)",
     re.IGNORECASE,
 )
+_CLIENT_NAME_RE = re.compile(
+    r"(?:Prepared\s+for|Client\s+Name|Client|Proposal\s+for|Submitted\s+to|To)[\s:]+(.+)",
+    re.IGNORECASE,
+)
+_RFP_FOR_RE = re.compile(
+    r"Request\s+for\s+Proposal.*?(?:for|from)\s+(.+?)(?:\s*[-–—]|\n|$)",
+    re.IGNORECASE,
+)
+
+# Names that are obviously section headings, not client names
+_REJECTED_CLIENT_NAMES = {
+    "background", "introduction", "overview", "scope", "purpose",
+    "objective", "objectives", "summary", "context", "general",
+    "requirements", "technical", "specifications", "submission",
+    "instructions", "guidelines", "terms", "conditions",
+    "evaluation", "criteria", "annexure", "appendix",
+}
 _ISSUE_DATE_RE = re.compile(
     r"(?:Issue\s+Date|Date\s+of\s+Issue|Published|Release\s+Date)[\s:]+(.+)",
     re.IGNORECASE,
@@ -272,6 +289,16 @@ class ParsingService:
         m = _ORGANIZATION_RE.search(full_text)
         if m:
             metadata["organization"] = m.group(1).strip()
+
+        # Fallback: try additional client-name patterns if organization wasn't found
+        if not metadata["organization"] or _is_rejected_name(metadata["organization"]):
+            for pattern in [_CLIENT_NAME_RE, _RFP_FOR_RE]:
+                m2 = pattern.search(full_text)
+                if m2:
+                    candidate = m2.group(1).strip().rstrip(".,;:")
+                    if candidate and not _is_rejected_name(candidate):
+                        metadata["organization"] = candidate
+                        break
 
         m = _ISSUE_DATE_RE.search(full_text)
         if m:
@@ -533,6 +560,20 @@ class ParsingService:
 
 
 # ── Private helpers ──────────────────────────────────────
+
+
+def _is_rejected_name(name: str) -> bool:
+    """Check if a candidate client name is actually a section heading."""
+    if not name:
+        return True
+    normalized = name.strip().lower().rstrip(".,;:")
+    # Single word that's a common heading
+    if normalized in _REJECTED_CLIENT_NAMES:
+        return True
+    # Very short (1-2 chars) or just a number
+    if len(normalized) <= 2 or normalized.isdigit():
+        return True
+    return False
 
 
 def _classify_block(

@@ -130,6 +130,36 @@ class FinalReadinessAgent(BaseAgent):
         approval = state.approval_package
         review = state.review_package
 
+        # Perform placeholder replacement on the narrative body itself
+        full_narr = state.assembled_proposal.full_narrative or "No proposal narrative available."
+        import re
+        
+        # Build Markdown Table for Pricing
+        pricing_table = "\n\n### Pricing Line Items\n\n| Category | Label | Quantity | Unit Rate | Total |\n|---|---|---|---|---|\n"
+        for item in commercial.line_items:
+            unit_rate = f"{commercial.currency} {getattr(item, 'unit_rate', 0):,.2f}"
+            total = f"{commercial.currency} {getattr(item, 'total', 0):,.2f}"
+            pricing_table += f"| {getattr(item, 'category', '')} | {getattr(item, 'label', '')} | {getattr(item, 'quantity', '')} {getattr(item, 'unit', '')} | {unit_rate} | {total} |\n"
+        pricing_table += f"**Total Expected Price:** {commercial.currency} {commercial.total_price:,.2f}\n"
+
+        # Build Markdown List for Legal Risks
+        legal_table = "\n\n### Legal & Compliance Exceptions\n\n"
+        for risk in legal.clause_risks:
+            risk_level = getattr(getattr(risk, "risk_level", "low"), "name", "LOW")
+            legal_table += f"- **Clause {getattr(risk, 'clause_id', '?')} ({risk_level})**: {getattr(risk, 'concern', '')}\n"
+            legal_table += f"   *Recommendation*: {getattr(risk, 'recommendation', '')}\n"
+
+        def _stub_replacer(match):
+            title = match.group(1).lower()
+            if "commercial" in title or "pricing" in title:
+                return f"\n{(commercial.commercial_narrative or '').strip()}\n{pricing_table}\n"
+            elif "legal" in title or "contract" in title:
+                return f"\n{(legal.risk_register_summary or '').strip()}\n{legal_table}\n"
+            return match.group(0)
+
+        full_narr = re.sub(r">\s*\*\*Note:\*\*\s*\[PIPELINE_STUB:\s*(.*?)\]", _stub_replacer, full_narr)
+
+
         sections = [
             f"# {meta.rfp_title or 'Proposal Submission'}",
             "",
@@ -143,7 +173,7 @@ class FinalReadinessAgent(BaseAgent):
             "",
             "## Full Narrative",
             "",
-            state.assembled_proposal.full_narrative or "No proposal narrative available.",
+            full_narr,
             "",
             "## Commercial Summary",
             "",

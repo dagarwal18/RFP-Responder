@@ -245,22 +245,32 @@ class PolicyExtractionService:
     # ── Derived file sync ────────────────────────────
 
     # Categories that map to capabilities.json
-    _CAPABILITY_CATEGORIES = {"capability", "commercial", "governance", "operational"}
+    _CAPABILITY_CATEGORIES = {"capability", "governance", "operational"}
     # Categories that map to certifications.json
     _CERTIFICATION_CATEGORIES = {"certification", "compliance"}
+    # Categories that map to pricing_rules.json
+    _PRICING_CATEGORIES = {"commercial"}
+    # Categories that map to legal_templates.json
+    _LEGAL_CATEGORIES = {"legal", "privacy", "compliance"}
+    # Categories that map to past_proposals.json
+    _PROPOSAL_CATEGORIES = {"experience", "case_study", "past_performance"}
 
     @staticmethod
     def sync_derived_files() -> dict[str, int]:
-        """Derive capabilities.json and certifications.json from extracted_policies.json.
+        """Derive capabilities.json, certifications.json, pricing_rules.json,
+        legal_templates.json, and past_proposals.json from extracted_policies.json.
 
         Called after each document upload to keep the structured KB files
-        in sync with the LLM-extracted policies.  Returns counts of
+        in sync with the LLM-extracted policies. Returns counts of
         entries written to each file.
         """
         policies = PolicyExtractionService._load_policies_static()
         if not policies:
             logger.info("[PolicySync] No extracted policies — skipping sync")
-            return {"capabilities": 0, "certifications": 0}
+            return {
+                "capabilities": 0, "certifications": 0, "pricing": 0,
+                "legal": 0, "proposals": 0
+            }
 
         data_dir = _POLICIES_PATH.parent
 
@@ -309,6 +319,49 @@ class PolicyExtractionService:
             if cert_name:
                 certs[cert_name] = True
 
+        # ── Build pricing rules ─────────────────────────
+        pricing_entries: list[dict] = []
+        for pol in policies:
+            cat = pol.get("category", "")
+            if cat not in PolicyExtractionService._PRICING_CATEGORIES:
+                continue
+
+            text = pol.get("policy_text", "").strip()
+            if not text:
+                continue
+
+            pricing_entries.append({
+                "text": text,
+                "source_section": pol.get("source_section", ""),
+                "source_policy_id": pol.get("policy_id", ""),
+            })
+
+        pricing_rules = _build_pricing_rules(pricing_entries)
+
+        # ── Build legal templates ───────────────────────
+        legal_entries: list[dict] = []
+        for pol in policies:
+            cat = pol.get("category", "")
+            if cat not in PolicyExtractionService._LEGAL_CATEGORIES:
+                continue
+            text = pol.get("policy_text", "").strip()
+            if text:
+                legal_entries.append({"text": text, "id": pol.get("policy_id", "")})
+
+        legal_templates = _build_legal_templates(legal_entries)
+
+        # ── Build past proposals ────────────────────────
+        proposal_entries: list[dict] = []
+        for pol in policies:
+            cat = pol.get("category", "")
+            if cat not in PolicyExtractionService._PROPOSAL_CATEGORIES:
+                continue
+            text = pol.get("policy_text", "").strip()
+            if text:
+                proposal_entries.append({"text": text, "id": pol.get("policy_id", "")})
+
+        past_proposals = _build_past_proposals(proposal_entries)
+
         # ── Write files ─────────────────────────────────
         caps_path = data_dir / "capabilities.json"
         caps_path.write_text(
@@ -320,11 +373,37 @@ class PolicyExtractionService:
             json.dumps(certs, indent=2, ensure_ascii=False), encoding="utf-8"
         )
 
+        pricing_path = data_dir / "pricing_rules.json"
+        pricing_path.write_text(
+            json.dumps(pricing_rules, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+
+        legal_path = data_dir / "legal_templates.json"
+        if legal_templates:  # Only overwrite if we found some
+            legal_path.write_text(
+                json.dumps(legal_templates, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+
+        proposals_path = data_dir / "past_proposals.json"
+        if past_proposals:  # Only overwrite if we found some
+            proposals_path.write_text(
+                json.dumps(past_proposals, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+
         logger.info(
             f"[PolicySync] Synced {len(caps)} capabilities, "
-            f"{len(certs)} certifications from {len(policies)} policies"
+            f"{len(certs)} certifications, "
+            f"{len(pricing_entries)} pricing entries, "
+            f"{len(legal_templates)} legal templates, "
+            f"{len(past_proposals)} proposals from {len(policies)} policies"
         )
-        return {"capabilities": len(caps), "certifications": len(certs)}
+        return {
+            "capabilities": len(caps),
+            "certifications": len(certs),
+            "pricing": len(pricing_entries),
+            "legal": len(legal_templates),
+            "proposals": len(past_proposals),
+        }
 
 
 def _extract_tags(text: str) -> list[str]:
@@ -342,4 +421,121 @@ def _extract_tags(text: str) -> list[str]:
     ]
     text_lower = text.lower()
     return [kw for kw in _KEYWORDS if kw in text_lower][:8]  # cap at 8 tags
+
+
+def _build_pricing_rules(entries: list[dict]) -> dict:
+    """Build a pricing_rules.json structure from commercial policy entries.
+
+    Parses commercial policy texts for currency, cost figures, payment terms,
+    and discount details. Returns a structured dict for the commercial agent.
+    """
+    if not entries:
+        return {"source": "extracted", "entries": [], "currency": "", "payment_terms": ""}
+
+    all_texts = " ".join(e.get("text", "") for e in entries)
+
+    # Detect currency from texts
+    currency = ""
+    if re.search(r"\bINR\b|₹|\bRupee|Crore|Lakh", all_texts, re.IGNORECASE):
+        currency = "INR"
+    elif re.search(r"\bUSD\b|\$|\bDollar", all_texts, re.IGNORECASE):
+        currency = "USD"
+
+    # Extract payment terms
+    payment_terms = ""
+    pt_match = re.search(
+        r"(?:payment\s+terms?|payment\s+schedule|billing\s+cycle)[:\s]+([^\n.]{10,100})",
+        all_texts, re.IGNORECASE,
+    )
+    if pt_match:
+        payment_terms = pt_match.group(1).strip()
+
+    # Extract discount info
+    discount_info = ""
+    disc_match = re.search(
+        r"(?:discount|rebate|concession)[:\s]+([^\n.]{10,100})",
+        all_texts, re.IGNORECASE,
+    )
+    if disc_match:
+        discount_info = disc_match.group(1).strip()
+
+    return {
+        "source": "extracted",
+        "currency": currency,
+        "payment_terms": payment_terms,
+        "discount_info": discount_info,
+        "entries": [
+            {
+                "text": e.get("text", ""),
+                "source_section": e.get("source_section", ""),
+                "source_policy_id": e.get("source_policy_id", ""),
+            }
+            for e in entries
+        ],
+    }
+
+
+def _build_legal_templates(entries: list[dict]) -> list[dict]:
+    """Parse legal policies into legal_templates.json structure.
+    
+    Extracts clause snippets and constructs standard legal template blocks.
+    """
+    templates: list[dict] = []
+    for i, e in enumerate(entries):
+        text = e.get("text", "")
+        if len(text) < 20:
+            continue
+            
+        # VERY basic inference of clause type from keywords
+        text_lower = text.lower()
+        clause_type = "general"
+        if "liab" in text_lower: clause_type = "limitation_of_liability"
+        elif "ip " in text_lower or "intellectual" in text_lower: clause_type = "intellectual_property"
+        elif "indemn" in text_lower: clause_type = "indemnification"
+        elif "terminat" in text_lower: clause_type = "termination"
+        elif "data" in text_lower or "gdpr" in text_lower: clause_type = "data_protection"
+        elif "warrant" in text_lower: clause_type = "warranty"
+        elif "confidential" in text_lower: clause_type = "confidentiality"
+        
+        # Use first 150 chars as acceptable template, note it otherwise
+        templates.append({
+            "id": f"leg-doc-{i:03d}",
+            "clause_type": clause_type,
+            "acceptable_template": text[:200].strip() + ("..." if len(text) > 200 else ""),
+            "risk_threshold": f"Deviation from standard {clause_type}",
+            "auto_block": False,
+            "notes": text[:500] if len(text) > 200 else "Standard provision extracted from KB."
+        })
+    return templates
+
+
+def _build_past_proposals(entries: list[dict]) -> list[dict]:
+    """Parse experience/case_study policies into past_proposals.json structure."""
+    proposals: list[dict] = []
+    for i, e in enumerate(entries):
+        text = e.get("text", "")
+        if len(text) < 20:
+            continue
+            
+        # First sentence as title
+        title = text.split(".")[0][:100].strip()
+        
+        # Look for outcome-like keywords for the outcome
+        outcome = "Completed successfully."
+        out_match = re.search(r"(?:resulted in|achieved|outcome:?|won\s+-?)[^\n]{10,120}", text, re.IGNORECASE)
+        if out_match:
+            outcome = out_match.group(0).strip()
+            
+        tags = _extract_tags(text)
+        
+        proposals.append({
+            "id": f"prop-doc-{i:03d}",
+            "title": title,
+            "category": tags[0] if tags else "experience",
+            "excerpt": text[:600] + ("..." if len(text) > 600 else ""),
+            "outcome": outcome,
+            "tags": tags
+        })
+    return proposals
+
 
