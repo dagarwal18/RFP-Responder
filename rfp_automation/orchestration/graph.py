@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable
 
-from rfp_automation.persistence.checkpoint import save_checkpoint
+from rfp_automation.persistence.checkpoint import save_checkpoint, start_log_capture, stop_log_capture
 
 from langgraph.graph import StateGraph, END
 
@@ -269,6 +269,12 @@ def commercial_legal_parallel(state: dict[str, Any]) -> dict[str, Any]:
             _raw_stub_replacer, updated_narr, flags=_re.IGNORECASE,
         )
 
+        # Also replace raw C2 PIPELINE_STUB markers: *[PIPELINE_STUB: Title]*
+        updated_narr = _re.sub(
+            r"\*?\[PIPELINE_STUB:\s*(.*?)\]\*?",
+            _stub_replacer, updated_narr,
+        )
+
         # Update the assembled_proposal in state
         if isinstance(assembled, dict):
             assembled["full_narrative"] = updated_narr
@@ -441,6 +447,10 @@ def run_pipeline(
     state.setdefault("uploaded_file_path", uploaded_file_path)
     state.setdefault("status", PipelineStatus.RECEIVED.value)
 
+    # ── Start error/warning log capture ───────────────────
+    rfp_id = state.get("tracking_rfp_id") or "unknown"
+    start_log_capture(rfp_id)
+
     logger.info("═" * 60)
     logger.info("  RFP PIPELINE STARTING")
     logger.info("═" * 60)
@@ -453,15 +463,27 @@ def run_pipeline(
             for _node_name, node_state in step_output.items():
                 if isinstance(node_state, dict):
                     last_state = node_state
+                    # Update rfp_id if discovered during pipeline
+                    if rfp_id == "unknown":
+                        discovered = (
+                            node_state.get("tracking_rfp_id", "")
+                            or (node_state.get("rfp_metadata", {}) or {}).get("rfp_id", "")
+                        )
+                        if discovered:
+                            rfp_id = discovered
     except Exception as exc:
         logger.error(f"Pipeline failed at stream step: {exc}")
         # Attach partial state to the exception for the caller
         exc.partial_state = last_state  # type: ignore[attr-defined]
+        stop_log_capture()
         raise
 
     logger.info("═" * 60)
     logger.info(f"  PIPELINE FINISHED — status: {last_state.get('status')}")
     logger.info("═" * 60)
+
+    # ── Flush error/warning log to file ───────────────────
+    stop_log_capture()
 
     return last_state
 
@@ -491,6 +513,14 @@ def run_pipeline_from(
     # Remove checkpoint metadata keys that aren't part of the graph state
     checkpoint_state.pop("_checkpoint", None)
 
+    # ── Start error/warning log capture ───────────────────
+    rfp_id = (
+        checkpoint_state.get("tracking_rfp_id", "")
+        or (checkpoint_state.get("rfp_metadata", {}) or {}).get("rfp_id", "")
+        or "unknown"
+    )
+    start_log_capture(rfp_id)
+
     logger.info("═" * 60)
     logger.info(f"  RFP PIPELINE RE-RUNNING FROM: {start_from}")
     logger.info("═" * 60)
@@ -505,11 +535,15 @@ def run_pipeline_from(
     except Exception as exc:
         logger.error(f"Pipeline failed at stream step: {exc}")
         exc.partial_state = last_state  # type: ignore[attr-defined]
+        stop_log_capture()
         raise
 
     logger.info("═" * 60)
     logger.info(f"  PIPELINE FINISHED — status: {last_state.get('status')}")
     logger.info("═" * 60)
+
+    # ── Flush error/warning log to file ───────────────────
+    stop_log_capture()
 
     return last_state
 

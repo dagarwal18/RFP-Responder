@@ -425,10 +425,22 @@ class NarrativeAssemblyAgent(BaseAgent):
             (re.compile(r"\[TODO\]", re.IGNORECASE), ""),
             (re.compile(r"\[Current\s+Date\]", re.IGNORECASE), submitted_at or "the date of submission"),
         ]
-        for pattern, value in cleanup_patterns:
+
+        # Add explicit Insert patterns for company name BEFORE generic cleanup
+        if company_name:
+            replacements.extend([
+                (re.compile(r"\[Insert\s+(?:Proposing\s+)?Company\s+Name\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Insert\s+Vendor\s+(?:Company\s+)?Name\]", re.IGNORECASE), company_name),
+                (re.compile(r"\[Insert\s+Organization\s+Name\]", re.IGNORECASE), company_name),
+            ])
+
+        # ── Run specific replacements FIRST, then cleanup patterns ──
+        # This ensures [Insert Proposing Company Name] → "Vodafone Business"
+        # instead of the cleanup stripping it to "" first.
+        for pattern, value in replacements:
             text = pattern.sub(value, text)
 
-        for pattern, value in replacements:
+        for pattern, value in cleanup_patterns:
             text = pattern.sub(value, text)
 
         # ── Strip leaked KB block references ──
@@ -438,8 +450,9 @@ class NarrativeAssemblyAgent(BaseAgent):
         # Matches [number], [amount], [benchmark], [case study 1], etc.
         # Excludes [EVIDENCE NEEDED: ...] and [METRIC NEEDED: ...] which are intentional
         # Excludes [PIPELINE_STUB: ...] which is an internal marker
+        # Excludes [COMMERCIAL/LEGAL/PRICING ...] which are E1/E2 stub markers
         _generic_placeholder_re = re.compile(
-            r"\[(?!EVIDENCE NEEDED|METRIC NEEDED|PIPELINE_STUB)[a-z][a-z0-9 ]*\]",
+            r"\[(?!EVIDENCE NEEDED|METRIC NEEDED|PIPELINE_STUB|COMMERCIAL|LEGAL|PRICING)[a-z][a-z0-9 ]*\]",
             re.IGNORECASE,
         )
         text = _generic_placeholder_re.sub("", text)

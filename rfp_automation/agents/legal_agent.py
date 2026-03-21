@@ -164,6 +164,7 @@ class LegalAgent(BaseAgent):
             compliance_status=compliance_status,
             block_reasons=block_reasons,
             risk_register_summary=risk_narrative,
+            legal_narrative=legal_narrative,
             confidence=confidence,
         )
         state.status = PipelineStatus.COMMERCIAL_LEGAL_REVIEW

@@ -71,4 +71,4 @@ Return a JSON object with these keys:
    - "Implementation cost for data migration not available"
    If NO data is missing, return an empty array.
 
-Return valid JSON only. No markdown, no commentary, no text outside the JSON.
+Return valid JSON only. No markdown, no commentary, no text outside the JSON. NEVER use single-line comments like `//` inside the JSON, as this will break parsing.

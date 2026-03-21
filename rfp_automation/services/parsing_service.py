@@ -43,6 +43,10 @@ _RFP_FOR_RE = re.compile(
     r"Request\s+for\s+Proposal.*?(?:for|from)\s+(.+?)(?:\s*[-–—]|\n|$)",
     re.IGNORECASE,
 )
+_HEADER_ORG_RE = re.compile(
+    r"(?:^|\n)\s*(.{3,50}?)\s*\|\s*(?:RFP|REQUEST\s+FOR\s+PROPOSAL)",
+    re.IGNORECASE,
+)
 
 # Names that are obviously section headings, not client names
 _REJECTED_CLIENT_NAMES = {
@@ -292,13 +296,17 @@ class ParsingService:
 
         # Fallback: try additional client-name patterns if organization wasn't found
         if not metadata["organization"] or _is_rejected_name(metadata["organization"]):
-            for pattern in [_CLIENT_NAME_RE, _RFP_FOR_RE]:
+            found_valid = False
+            for pattern in [_CLIENT_NAME_RE, _RFP_FOR_RE, _HEADER_ORG_RE]:
                 m2 = pattern.search(full_text)
                 if m2:
                     candidate = m2.group(1).strip().rstrip(".,;:")
                     if candidate and not _is_rejected_name(candidate):
                         metadata["organization"] = candidate
+                        found_valid = True
                         break
+            if not found_valid and metadata.get("organization") and _is_rejected_name(metadata["organization"]):
+                metadata["organization"] = None
 
         m = _ISSUE_DATE_RE.search(full_text)
         if m:

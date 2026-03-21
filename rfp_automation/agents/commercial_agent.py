@@ -346,6 +346,8 @@ class CommercialAgent(BaseAgent):
         cleaned = raw.strip()
         cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
         cleaned = re.sub(r"\s*```$", "", cleaned)
+        # Strip single-line JS style comments (// comment) common in LLM hallucinations before JSON parse
+        cleaned = re.sub(r'//.*$', '', cleaned, flags=re.MULTILINE)
 
         data: dict[str, Any] | None = None
         try:

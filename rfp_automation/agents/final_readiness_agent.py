@@ -175,6 +175,12 @@ class FinalReadinessAgent(BaseAgent):
             _raw_stub_fallback, full_narr, flags=re.IGNORECASE,
         )
 
+        # Also replace raw C2 PIPELINE_STUB markers: *[PIPELINE_STUB: Title]*
+        full_narr = re.sub(
+            r"\*?\[PIPELINE_STUB:\s*(.*?)\]\*?",
+            _stub_replacer, full_narr,
+        )
+
         # Commercial/Legal content is now part of full_narr (injected by
         # commercial_legal_parallel before H1). We keep only the proposal
         # body and human validation sections to avoid duplication.

@@ -1457,8 +1457,8 @@ class TestWritingAgent:
         # Commercial and legal have placeholder content
         commercial = [s for s in wr["section_responses"] if s["section_id"] == "SEC-02"][0]
         legal = [s for s in wr["section_responses"] if s["section_id"] == "SEC-03"][0]
-        assert "COMMERCIAL" in commercial["content"]
-        assert "LEGAL" in legal["content"]
+        assert "PIPELINE_STUB" in commercial["content"]
+        assert "PIPELINE_STUB" in legal["content"]
 
     def test_writing_empty_plan(self, monkeypatch):
         """Empty architecture plan → empty WritingResult, no crash."""

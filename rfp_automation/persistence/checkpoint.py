@@ -213,3 +213,78 @@ def discover_all_rfps() -> list[str]:
         for d in sorted(_CHECKPOINT_ROOT.iterdir())
         if d.is_dir()
     ]
+
+
+# ═══════════════════════════════════════════════════════════
+#  Pipeline Log Collector — captures WARNING+ to file
+# ═══════════════════════════════════════════════════════════
+
+class PipelineLogCollector(logging.Handler):
+    """Logging handler that collects WARNING+ records during a pipeline run.
+
+    After the run, `flush_to_file()` writes all collected records to
+    ``storage/checkpoints/{rfp_id}/pipeline_errors.log``.
+    """
+
+    def __init__(self, rfp_id: str, level: int = logging.WARNING) -> None:
+        super().__init__(level)
+        self.rfp_id = rfp_id
+        self._records: list[logging.LogRecord] = []
+        self.setFormatter(logging.Formatter(
+            "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        ))
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self._records.append(record)
+
+    def flush_to_file(self) -> Path | None:
+        """Write collected records to disk and clear the buffer."""
+        if not self._records:
+            logger.info("No warnings or errors captured during this run.")
+            return None
+
+        checkpoint_dir = _checkpoint_dir(self.rfp_id)
+        checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        log_path = checkpoint_dir / "pipeline_errors.log"
+
+        with open(log_path, "a", encoding="utf-8") as f:
+            from datetime import datetime
+            f.write(f"\n{'=' * 70}\n")
+            f.write(f"Pipeline Run — {datetime.now().isoformat()} — RFP: {self.rfp_id}\n")
+            f.write(f"Total records: {len(self._records)}\n")
+            f.write("=" * 70 + "\n\n")
+            for record in self._records:
+                f.write(self.format(record) + "\n")
+
+        logger.info(
+            f"📋 Pipeline error log written: {len(self._records)} record(s) → {log_path}"
+        )
+        self._records.clear()
+        return log_path
+
+
+# Singleton reference for the active collector
+_active_collector: PipelineLogCollector | None = None
+
+
+def start_log_capture(rfp_id: str) -> None:
+    """Attach a PipelineLogCollector to the root logger."""
+    global _active_collector
+    stop_log_capture()  # clean up any previous collector
+
+    _active_collector = PipelineLogCollector(rfp_id)
+    logging.getLogger().addHandler(_active_collector)
+    logger.info(f"📋 Pipeline log capture started for {rfp_id}")
+
+
+def stop_log_capture() -> Path | None:
+    """Detach the collector, write to file, and return the log path."""
+    global _active_collector
+    if _active_collector is None:
+        return None
+
+    log_path = _active_collector.flush_to_file()
+    logging.getLogger().removeHandler(_active_collector)
+    _active_collector = None
+    return log_path
