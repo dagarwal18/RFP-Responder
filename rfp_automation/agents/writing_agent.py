@@ -264,7 +264,9 @@ class RequirementWritingAgent(BaseAgent):
             _TABLE_SECTION_RE = re.compile(
                 r'\b(?:compliance\s*matrix|requirements\s*matrix|response\s*table'
                 r'|C/PC/NC|compliance\s*table|technical\s*matrix'
-                r'|capability\s*matrix|conformance\s*matrix)\b',
+                r'|capability\s*matrix|conformance\s*matrix'
+                r'|vendor\s*response|fill[\s-]*in|questionnaire'
+                r'|checklist|self[\s-]*assessment|declaration\s*form)\b',
                 re.IGNORECASE,
             )
             desc_and_guidance = (

@@ -30,11 +30,33 @@ logger = logging.getLogger(__name__)
 
 # ── Prompts ──────────────────────────────────────────────
 
-_TABLE_EXTRACTION_PROMPT = """Extract ALL tables from this image as structured data.
-For each table, return a JSON object:
-{"table_id": "T1", "caption": "brief caption if visible", "headers": ["Col1", "Col2"], "rows": [["val1", "val2"]]}
-Return a JSON array of table objects. If no tables, return [].
-Return ONLY the JSON array, no other text."""
+_TABLE_EXTRACTION_PROMPT = """You are a meticulous data extraction engine. Convert ALL tables in this image into structured JSON.
+
+Return a JSON array of table objects. Each object MUST have:
+{"table_id": "T1", "caption": "exact title if visible", "headers": ["Col1", "Col2"], "rows": [["val1", "val2"]]}
+
+## Rules
+
+### Table Title / Caption
+- The title may appear ABOVE or BELOW the table grid (e.g. "Table 3.5: Perceived discrimination").
+- Capture the ENTIRE title string exactly: numbers, punctuation, colon, original casing.
+- If no title is found, set caption to "".
+
+### Headers
+- Simple headers: use the cell text as the JSON key.
+- Nested/multi-row headers: flatten into a single descriptive key by combining parent and child with " - ". Example: parent "Milling" over child "Side and Face" over "HSS" → "Milling - Side and Face - HSS".
+- Matrix headers (top + side): treat the side header (first column) as the first key.
+
+### Data Rows
+- Extract EVERY data row — do NOT skip any. The number of row arrays MUST equal the number of data rows.
+- Transcribe text, numbers, symbols EXACTLY as they appear (subscripts, superscripts, formulas, currency).
+- Empty/blank cells → null. Cells with "NA" or "—" → the string "NA" or "—".
+- If a cell spans multiple rows (rowspan), REPEAT its value in every affected row array.
+- Section-heading rows that span all columns → SKIP (do not create a row array).
+
+### Output Format
+- Return ONLY a JSON array, no markdown fences, no commentary.
+- If no tables exist, return []."""
 
 _DIAGRAM_DESCRIPTION_PROMPT = """Describe any diagrams, flowcharts, or figures visible in this image.
 Include all labels, arrows, relationships, and visible text.
@@ -174,12 +196,13 @@ class VisionService:
         for idx, det in enumerate(detections):
             bbox = det["bbox"]  # [x1, y1, x2, y2]
 
-            # Add small padding around the detected region
-            pad = 10
-            x1 = max(0, bbox[0] - pad)
-            y1 = max(0, bbox[1] - pad)
-            x2 = min(image.width, bbox[2] + pad)
-            y2 = min(image.height, bbox[3] + pad)
+            # Asymmetric padding: large vertical to capture titles/captions
+            pad_x = 15
+            pad_y = 100  # captures table titles above/below the grid
+            x1 = max(0, bbox[0] - pad_x)
+            y1 = max(0, bbox[1] - pad_y)
+            x2 = min(image.width, bbox[2] + pad_x)
+            y2 = min(image.height, bbox[3] + pad_y)
 
             cropped = image.crop((x1, y1, x2, y2))
 

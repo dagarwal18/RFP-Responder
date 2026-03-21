@@ -1,0 +1,1553 @@
+[
+  {
+    "page_number": 1,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Field",
+        "Value"
+      ],
+      "rows": [
+        [
+          "RFP Reference No.",
+          "AILL-PROC-2025-0078"
+        ],
+        [
+          "Issuing Authority",
+          "Group IT Infrastructure & Procurement"
+        ],
+        [
+          "Issue Date",
+          "10 October 2025"
+        ],
+        [
+          "Submission Deadline",
+          "21 November 2025, 17:00 IST"
+        ],
+        [
+          "Classification",
+          "STRICTLY CONFIDENTIAL"
+        ]
+      ],
+      "page_number": 1
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 3,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Pain Point",
+        "Current Impact on Operations"
+      ],
+      "rows": [
+        [
+          "Legacy MPLS Network",
+          "All 300 branch warehouses are connected via legacy Multiprotocol Label Switching (MPLS) circuits procured from a single incumbent carrier. Bandwidth tiers are rigid (2 Mbps to 10 Mbps per branch), costly to upgrade, and require 60\u201390-day lead times for any configuration change."
+        ],
+        [
+          "Chronic Network Outages",
+          "The Company experienced an average of 4.3 unplanned network outages per month per region in FY2024\u201325, each lasting an average of 47 minutes. These outages directly halt warehouse management system (WMS) operations, fleet tracking updates, and ERP transaction processing, resulting in an estimated revenue impact of INR 3.8 Crore per month."
+        ],
+        [
+          "Single-Link Dependency",
+          "Hub warehouse sites (Tier-1) currently operate on a single MPLS link with no active failover path. Loss of connectivity at a hub site cascades to 8\u201315 dependent spoke sites reliant on the hub for WMS access and IoT aggregation."
+        ],
+        [
+          "No Cloud On-Ramp",
+          "Apex is executing a cloud-first transformation programme (ERP on Microsoft Azure, data analytics on AWS). Currently, all cloud traffic is backhauled through the Mumbai Data Centre, introducing latency of 180\u2013340 ms for branch-to-cloud workloads and consuming disproportionate Data Centre bandwidth."
+        ],
+        [
+          "Security Perimeter Gaps",
+          "Branch sites lack next-generation firewall (NGFW) protection. A significant ransomware incident in Q3 FY2024 resulted in operational downtime of 72 hours across 14 warehouse sites and a forensic investigation cost of INR 1.1 Crore. Apex currently has no 24/7 Security Operations Centre (SOC) capability."
+        ],
+        [
+          "IoT Connectivity Fragmentation",
+          "Apex operates a fleet of 2.5 million IoT-enabled tracking SIMs across its vehicle fleet and warehouse assets. SIM Management is currently distributed across three different Mobile Virtual Network Operators (MVNOs), resulting in fragmented visibility, inconsistent data plans, and inability to enforce unified MDM policies."
+        ]
+      ],
+      "page_number": 3
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 5,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "2.1 Corporate Profile",
+      "headers": [
+        "Attribute",
+        "Detail"
+      ],
+      "rows": [
+        [
+          "Registered Name",
+          "Apex Industrial Logistics Limited"
+        ],
+        [
+          "CIN",
+          "L74899MH1994PLC076432"
+        ],
+        [
+          "Headquarters",
+          "Plot 14, Logistics Park, Bhiwandi, Thane, Maharashtra \u2014 421 302, India"
+        ],
+        [
+          "Data Centre",
+          "Primary Tier-III DC \u2014 NESCO IT Park, Goregaon East, Mumbai, Maharashtra"
+        ],
+        [
+          "Annual Revenue (FY25)",
+          "Approx. INR 5,500 Crore"
+        ],
+        [
+          "Employees",
+          "Approx. 15,000 (direct); 28,000 (including contract workforce)"
+        ],
+        [
+          "Operational Sites",
+          "300 branch warehouses; 12 regional hub facilities; 1 primary Data Centre; 2 Disaster Recovery sites"
+        ],
+        [
+          "Geographic Presence",
+          "28 Indian States and Union Territories; Cross-border operations in Nepal, Bangladesh, and Sri Lanka"
+        ],
+        [
+          "Stock Exchange Listing",
+          "National Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876)"
+        ],
+        [
+          "IT Governance",
+          "COBIT 2019 Framework; ISO/IEC 27001:2022 certified (STQC, Cert-In accredited)"
+        ]
+      ],
+      "page_number": 5
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 7,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "3.2 Success Criteria",
+      "headers": [
+        "KPI Reference",
+        "Success Criterion",
+        "Target / Threshold"
+      ],
+      "rows": [
+        [
+          "KPI-01",
+          "Network Availability \u2014 Tier-1 Hub Sites",
+          "\u2265 99.99% monthly"
+        ],
+        [
+          "KPI-02",
+          "Network Availability \u2014 Tier-2 Branch Sites",
+          "\u2265 99.95% monthly"
+        ],
+        [
+          "KPI-03",
+          "SD-WAN Failover Time (primary to secondary link)",
+          "< 50 milliseconds"
+        ],
+        [
+          "KPI-04",
+          "Cloud Interconnect Latency (Mumbai DC to Azure Central India)",
+          "< 8 ms round-trip"
+        ],
+        [
+          "KPI-05",
+          "SOC \u2014 P1 Security Incident Acknowledgement",
+          "< 15 minutes"
+        ],
+        [
+          "KPI-06",
+          "SOC \u2014 P1 Security Incident Containment",
+          "< 4 hours"
+        ],
+        [
+          "KPI-07",
+          "Migration Completion \u2014 All 300 Sites",
+          "Within 18 months of contract execution"
+        ],
+        [
+          "KPI-08",
+          "Zero-Touch Provisioning \u2014 New Branch Site",
+          "< 4 hours from hardware delivery"
+        ],
+        [
+          "KPI-09",
+          "MTTR \u2014 Network Incident (Branch Site)",
+          "< 4 hours"
+        ],
+        [
+          "KPI-10",
+          "IoT SIM Activation (eSIM / ICCID)",
+          "< 2 hours from portal request"
+        ]
+      ],
+      "page_number": 7
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 9,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "4.1.1 Site Classification and Link Requirements",
+      "headers": [
+        "Site Tier",
+        "Site Count",
+        "Primary Link",
+        "Secondary Link",
+        "Link Mode"
+      ],
+      "rows": [
+        [
+          "Tier-1 Hub",
+          "12 sites",
+          "Broadband / Dedicated Fibre \u2014 100 Mbps min",
+          "4G/5G LTE \u2014 50 Mbps min",
+          "Active / Active"
+        ],
+        [
+          "Tier-2 Branch",
+          "228 sites",
+          "Broadband Fibre \u2014 50 Mbps min",
+          "4G LTE Backup \u2014 20 Mbps min",
+          "Active / Standby"
+        ],
+        [
+          "Tier-3 Remote",
+          "60 sites",
+          "4G/5G LTE \u2014 20 Mbps min",
+          "VSAT (where terrestrial unavailable)",
+          "Active / Standby"
+        ]
+      ],
+      "page_number": 9
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 12,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "5.2 Requirements Matrix",
+      "headers": [
+        "Req. ID",
+        "Category",
+        "Description",
+        "Priority",
+        "Vendor Response",
+        "Vendor Remarks"
+      ],
+      "rows": [
+        [
+          "TR-001",
+          "SD-WAN \u2014 Architecture",
+          "The SD-WAN solution MUST be a cloud-managed, fully software-defined overlay capable of supporting all 300 Apex branch sites within a single management domain without requiring a hardware controller at the Data Centre.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-002",
+          "SD-WAN \u2014 ZTP",
+          "Zero-Touch Provisioning (ZTP) MUST be supported for all CPE devices. A branch site MUST be fully operational within 4 hours of CPE delivery, without requiring an on-site engineer from the vendor.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-003",
+          "SD-WAN \u2014 Failover",
+          "Dynamic path failover from primary to secondary link MUST complete in under 50 milliseconds as measured end-to-end from packet loss detection to traffic rerouting, without manual intervention.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-004",
+          "SD-WAN \u2014 BGP",
+          "The solution MUST support BGP routing with automated route advertisement and withdrawal upon link failure, supporting integration with Apex's Mumbai DC edge router (Cisco ASR 1002-HX) via eBGP peering.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ]
+      ],
+      "page_number": 12
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 13,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "TR-ID",
+        "Requirement",
+        "Description",
+        "Mandatory?",
+        "C / PC / NC",
+        "Vendor to fill"
+      ],
+      "rows": [
+        [
+          "TR-005",
+          "SD-WAN \u2014 OEM Hardware",
+          "Vendor MUST specify the OEM hardware partner(s) for SD-WAN CPE (e.g., Cisco, Fortinet, VMware VeloCloud, Palo Alto). CPE must be provided as-a-Service under OpEx pricing. Vendor-owned hardware is mandatory; Apex will not purchase CPE outright.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill \u2014 Name OEM]"
+        ],
+        [
+          "TR-006",
+          "SD-WAN \u2014 QoS",
+          "The solution MUST support a minimum of 8 QoS traffic classes with guaranteed bandwidth (GBW) and maximum bandwidth (MBW) policies configurable per application, per site. Guaranteed bandwidth for SAP S/4HANA and WMS traffic must be configurable independently of other traffic classes.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-007",
+          "SD-WAN \u2014 Security",
+          "Integrated NGFW capability at the SD-WAN edge MUST include IPS/IDS, URL filtering (minimum 60 URL categories), DNS security, and SSL deep inspection. Vendor must specify the OEM firewall solution (e.g., Fortinet FortiGate, Palo Alto Networks NGFW, Check Point).",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill \u2014 Name Firewall OEM]"
+        ],
+        [
+          "TR-008",
+          "SD-WAN \u2014 Portal",
+          "A self-service portal with role-based access control (RBAC) MUST be provided to Apex IT staff with read-only visibility of network topology, link health, traffic statistics, and active alerts across all 300 sites. No additional licensing cost for portal access.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-009",
+          "SD-WAN \u2014 Project Mgmt",
+          "Vendor MUST provide a detailed 300-site migration project plan conforming to either PRINCE2 or PMBOK methodology. A dedicated Project Manager (minimum PMP or PRINCE2 Practitioner certified) must be named in the proposal and committed to the programme through completion.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-010",
+          "Cloud Interconnect \u2014 Azure",
+          "Vendor MUST hold an active Microsoft Azure ExpressRoute Partner designation and provide two (2) x 10 Gbps circuits in active-active configuration to the Azure Central India region. Evidence of Microsoft partner designation MUST be attached as Appendix B.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-011",
+          "Cloud Interconnect \u2014 AWS",
+          "Vendor MUST hold an active AWS Direct Connect Delivery Partner designation and provide one (1) x 10 Gbps Dedicated Connection to the AWS ap-south-1 Mumbai region. Evidence of AWS partner designation MUST be attached as Appendix B.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ]
+      ],
+      "page_number": 13
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 14,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "TR-ID",
+        "Requirement",
+        "Description",
+        "Mandatory",
+        "C / PC / NC",
+        "Vendor to fill"
+      ],
+      "rows": [
+        [
+          "TR-012",
+          "Cloud Interconnect \u2014 Latency",
+          "The Azure ExpressRoute interconnect MUST achieve a maximum round-trip latency of 8 ms between the Apex Mumbai DC and the Azure Central India region under steady-state traffic conditions. Vendor must provide benchmark test evidence from equivalent deployments.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-013",
+          "SOC \u2014 Availability",
+          "The Managed SOC service MUST operate 24 hours per day, 7 days per week, 365 days per year (including Indian public holidays) with no scheduled maintenance windows that reduce monitoring coverage below Tier-1 analyst staffing levels.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-014",
+          "SOC \u2014 SIEM Platform",
+          "The SIEM platform used by the SOC MUST ingest logs from all 300 SD-WAN edge devices, the Mumbai DC, and cloud interconnects. The vendor must name the SIEM product proposed (e.g., Microsoft Sentinel, Splunk Enterprise Security, IBM QRadar, or equivalent). SIEM data MUST be stored in India.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill \u2014 Name SIEM]"
+        ],
+        [
+          "TR-015",
+          "SOC \u2014 Incident Response SLAs",
+          "P1 incidents MUST be acknowledged within 15 minutes and contained within 4 hours. P2 incidents MUST be acknowledged within 30 minutes and resolved within 8 hours. P3 incidents within 2 hours acknowledgement and 24 hours resolution. All timings measured 24x7.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-016",
+          "SOC \u2014 ITIL Alignment",
+          "The SOC MUST operate Incident Management, Problem Management, and Change Management processes conforming to ITIL v4. Root Cause Analysis (RCA) reports for P1 and P2 incidents MUST be delivered within 72 hours of incident containment. Vendor must provide sample RCA template with proposal.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-017",
+          "SOC \u2014 Threat Intelligence",
+          "Vendor MUST demonstrate active subscriptions to a minimum of two (2) commercial Threat Intelligence platforms and provide evidence of integration with the proposed SIEM, including IOC ingestion frequency and automated blocking workflow.",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-018",
+          "Compliance \u2014 DPDP Act 2023",
+          "Vendor MUST provide a written Data Privacy Impact Assessment (DPIA) framework for the proposed solution, demonstrating how personal data of Apex employees and customers processed across the network is handled in compliance with the Digital Personal Data Protection",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ]
+      ],
+      "page_number": 14
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 15,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "TR-ID",
+        "Requirement Description",
+        "Compliance Status",
+        "[C / PC / NC]",
+        "[Vendor to fill]"
+      ],
+      "rows": [
+        [
+          "TR-019",
+          "IoT \u2014 Private APN",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-020",
+          "IoT \u2014 eSIM",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-021",
+          "IoT \u2014 National Coverage",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-022",
+          "IoT \u2014 API Integration",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-023",
+          "General \u2014 Disaster Recovery",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-024",
+          "General \u2014 ServiceNow Integration",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ],
+        [
+          "TR-025",
+          "General \u2014 Reporting",
+          "Mandatory",
+          "[C / PC / NC]",
+          "[Vendor to fill]"
+        ]
+      ],
+      "page_number": 15
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 17,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "6.1 Procurement Timeline",
+      "headers": [
+        "Procurement Milestone",
+        "Target Date",
+        "Notes"
+      ],
+      "rows": [
+        [
+          "RFP Issue & Publication",
+          "10 October 2025",
+          "Issued via Apex procurement portal to pre-qualified vendors"
+        ],
+        [
+          "Vendor Registration Deadline",
+          "17 October 2025",
+          "Registration via procurement portal only. Email registration not accepted."
+        ],
+        [
+          "Pre-Bid Conference (Virtual)",
+          "22 October 2025, 11:00 IST",
+          "Microsoft Teams. Invitation issued to all registered vendors. Attendance mandatory for pre-qualification."
+        ],
+        [
+          "Vendor Written Q&A Submission Deadline",
+          "31 October 2025",
+          "Via procurement portal Q&A module only. Email queries not accepted."
+        ],
+        [
+          "Apex Q&A Response Publication",
+          "10 November 2025",
+          "Published simultaneously to all registered vendors. Responses form binding amendments to this RFP."
+        ],
+        [
+          "Final Proposal Submission Deadline",
+          "21 November 2025, 17:00 IST",
+          "Via procurement portal. Late submissions automatically disqualified."
+        ],
+        [
+          "Technical Evaluation & Scoring",
+          "21 Nov \u2014 05 Dec 2025",
+          "Internal evaluation by Apex Technical Evaluation Committee"
+        ],
+        [
+          "Shortlist Notification (Top 3 Vendors)",
+          "08 December 2025",
+          "Written notification via procurement portal"
+        ],
+        [
+          "Vendor Technical Demonstrations / PoC",
+          "15\u201319 December 2025",
+          "Apex HQ, Bhiwandi. Scenario brief issued 5 business days prior."
+        ],
+        [
+          "Best and Final Offer (BAFO)",
+          "09 January 2026",
+          "Invited shortlisted vendors only"
+        ],
+        [
+          "Contract Award Notification",
+          "23 January 2026",
+          "Formal written notification. Unsuccessful vendors notified simultaneously."
+        ],
+        [
+          "Contract Execution and Programme Kick-Off",
+          "03 February 2026",
+          "Programme kick-off meeting at Apex HQ, Bhiwandi"
+        ]
+      ],
+      "page_number": 17
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 17,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Phase",
+        "Title",
+        "Scope",
+        "Site Count",
+        "Target Duration"
+      ],
+      "rows": [
+        [
+          "Ph-1",
+          "Foundation & Pilot",
+          "SD-WAN CPE design lock; Mumbai DC cloud interconnect build; 5 pilot hub sites; SOC onboarding and SIEM integration",
+          "5 pilot sites + DC",
+          "Months 1\u20133"
+        ],
+        [
+          "Ph-2",
+          "Hub Rollout",
+          "All 12 Tier-1 hub sites migrated; active-active dual-link SD-WAN live; NGFW policy baseline deployed",
+          "12 sites",
+          "Months 4\u20136"
+        ]
+      ],
+      "page_number": 17
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 18,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Phase",
+        "Activity",
+        "Description",
+        "Number of Sites",
+        "Timeline"
+      ],
+      "rows": [
+        [
+          "Ph-3",
+          "Branch Rollout \u2014 North & West",
+          "First 100 Tier-2/Tier-3 branch sites (North and West India zones)",
+          "100 sites",
+          "Months 7\u201311"
+        ],
+        [
+          "Ph-4",
+          "Branch Rollout \u2014 South & East",
+          "Remaining 128 Tier-2/Tier-3 branch sites (South and East India zones)",
+          "128 sites",
+          "Months 12\u201316"
+        ],
+        [
+          "Ph-5",
+          "Steady-State & Handover",
+          "MPLS decommissioning confirmation; IoT SIM migration completion; SOC BAU handover; acceptance testing; documentation finalisation",
+          "All sites",
+          "Months 17\u201318"
+        ]
+      ],
+      "page_number": 18
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 19,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Requirement",
+        "Specification"
+      ],
+      "rows": [
+        [
+          "Format",
+          "Single consolidated PDF/A (ISO 19005 compliant) containing the complete proposal, including all appendices and supporting documents."
+        ],
+        [
+          "Language",
+          "English only. All technical specifications, SLA commitments, and commercial terms must be in English."
+        ],
+        [
+          "Page Limit",
+          "Main body (Sections 1\u201312): Maximum 120 pages (A4, minimum 11pt Arial, 25mm margins). Appendices are not subject to a page limit."
+        ],
+        [
+          "Section Order",
+          "Proposals must follow the identical section numbering as this RFP. Reordering of sections is not permitted."
+        ],
+        [
+          "Requirements Table",
+          "The requirements matrix (Section 5.2) must be reproduced in its entirety with Vendor Response and Vendor Remarks columns completed. Requirement IDs must not be altered."
+        ],
+        [
+          "Pricing",
+          "Pricing must be included within the same consolidated document in a clearly marked section titled \"COMMERCIAL PROPOSAL \u2014 STRICTLY CONFIDENTIAL\", placed at the end of the document."
+        ],
+        [
+          "Deviations",
+          "Any deviations from this RFP's requirements or proposed contractual terms must be compiled in a single 'Deviations Register' table as Appendix G. Deviations embedded in the main proposal text without corresponding Appendix G entry will be disregarded."
+        ]
+      ],
+      "page_number": 19
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 19,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "7.3 Appendix Structure",
+      "headers": [
+        "Appendix",
+        "Content Required"
+      ],
+      "rows": [
+        [
+          "Appendix A",
+          "Vendor Financials \u2014 Audited annual financial statements for FY2022\u201323, FY2023\u201324, and FY2024\u201325"
+        ],
+        [
+          "Appendix B",
+          "Certifications \u2014 ISO 27001:2022, ISO 20000-1:2018, SOC 2 Type II report, PCI-DSS AoC (if applicable), Microsoft Azure ExpressRoute Partner certificate, AWS Direct Connect Partner certificate"
+        ],
+        [
+          "Appendix C",
+          "Case Studies \u2014 Minimum 2 detailed Tier-1 enterprise case studies in logistics or manufacturing (format per Section 8.3)"
+        ]
+      ],
+      "page_number": 19
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 21,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "#",
+        "Criterion",
+        "Description",
+        "Evidence Required"
+      ],
+      "rows": [
+        [
+          "1",
+          "Annual Revenue",
+          "Vendor's consolidated annual revenue must exceed INR 500 Crore (or USD 60M equivalent) in each of the last three completed financial years.",
+          "Audited financial statements FY22\u201323, FY23\u201324, FY24\u201325"
+        ],
+        [
+          "2",
+          "ISO 27001:2022 Certification",
+          "Vendor and all subcontractors with >20% of delivery scope must hold a current, in-scope ISO/IEC 27001:2022 certification from an accredited body.",
+          "Current certificates \u2014 Appendix B"
+        ],
+        [
+          "3",
+          "ISO 20000-1:2018 Certification",
+          "Vendor must hold ISO/IEC 20000-1:2018 (IT Service Management) certification demonstrating ITIL-aligned service delivery capability.",
+          "Current certificates \u2014 Appendix B"
+        ],
+        [
+          "4",
+          "SOC 2 Type II Report",
+          "Vendor must provide a SOC 2 Type II report (not older than 12 months) covering Security, Availability, and Confidentiality Trust Service Criteria for all cloud-managed service components.",
+          "SOC 2 Type II Report \u2014 Appendix B"
+        ],
+        [
+          "5",
+          "India Operations",
+          "Vendor must maintain a wholly owned or majority-controlled legal entity registered in India, with a minimum 24x7 NOC and SOC staffed by a minimum of 50 India-based FTEs.",
+          "CIN certificate + India staffing declaration"
+        ],
+        [
+          "6",
+          "Cloud Partner Designations",
+          "Vendor must hold active Microsoft Azure ExpressRoute Partner AND AWS Direct Connect Delivery Partner designations at the time of proposal submission.",
+          "Partner designation certificates \u2014 Appendix B"
+        ],
+        [
+          "7",
+          "Comparable Deployments",
+          "Vendor must demonstrate a minimum of two (2) completed Managed SD-WAN deployments covering 100+ sites each in India, within the last four years, in the logistics, manufacturing, or BFSI sector.",
+          "Case Studies \u2014 Appendix C (format per Section 8.3)"
+        ],
+        [
+          "8",
+          "No Material Sanctions",
+          "Vendor, its subsidiaries, and key subcontractors must not be subject to any material economic sanction, debarment from Government of India procurement, or CBI/ED enforcement action.",
+          "Self-certification by authorised signatory"
+        ]
+      ],
+      "page_number": 21
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 21,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Role",
+        "Minimum Qualifications",
+        "Key Responsibilities"
+      ],
+      "rows": [
+        [
+          "Programme Director",
+          "15+ years' experience; minimum 3 as Programme Director for network",
+          "Overall delivery governance; executive escalation; contractual accountability;"
+        ]
+      ],
+      "page_number": 21
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 22,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Role",
+        "Requirements",
+        "Responsibilities"
+      ],
+      "rows": [
+        [
+          "Chief Network Architect",
+          "10+ years in SD-WAN / MPLS / cloud networking; Cisco CCIE or equivalent; verifiable Azure/AWS networking certifications.",
+          "End-to-end SD-WAN and cloud interconnect architecture design, compliance verification, and integration governance."
+        ],
+        [
+          "Head of Delivery (Project Manager)",
+          "PMP or PRINCE2 Practitioner certification mandatory; 7+ years managing large multi-site network rollouts.",
+          "Day-to-day delivery management; site migration scheduling; milestone tracking; RAID log management."
+        ],
+        [
+          "SOC Operations Lead",
+          "CISSP or CISM mandatory; 5+ years SOC operations management; demonstrable SIEM administration experience.",
+          "SOC operations governance; threat detection tuning; incident response escalation; monthly reporting."
+        ],
+        [
+          "IoT / Mobility Lead",
+          "5+ years IoT/EMM platform management; GSMA eSIM certification preferred; telco SIM management background.",
+          "IoT SIM platform migration; EMM policy design; private APN architecture; API integration."
+        ]
+      ],
+      "page_number": 22
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 23,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "9.2 Weighted Scoring Model",
+      "headers": [
+        "Evaluation Dimension",
+        "Weight",
+        "Sub-Criteria"
+      ],
+      "rows": [
+        [
+          "Technical Capability & Solution Quality",
+          "40%",
+          "\u2022 Requirements matrix compliance (TR-001 to TR-025) \u2014 20%\n\u2022 SD-WAN solution architecture quality & OEM credentials \u2014 8%\n\u2022 Cloud interconnect design & partner credentials \u2014 6%\n\u2022 Migration plan quality (phasing, ZTP, risk management) \u2014 6%"
+        ],
+        [
+          "Commercial Competitiveness",
+          "30%",
+          "\u2022 Total Cost of Ownership (TCO) over 36-month contract term \u2014 18%\n\u2022 OpEx hardware-as-a-service pricing model quality \u2014 6%\n\u2022 Commercial flexibility (payment milestones, volume discounts) \u2014 6%"
+        ],
+        [
+          "Security, Compliance & SOC Quality",
+          "20%",
+          "\u2022 ISO 27001, ISO 20000-1, SOC 2 Type II currency and scope \u2014 8%\n\u2022 SOC maturity: SIEM capability, analyst headcount, MTTD / MTTR evidence \u2014 8%\n\u2022 DPD P Act compliance framework & data localisation architecture \u2014 4%"
+        ],
+        [
+          "References & Track Record",
+          "10%",
+          "\u2022 Quality and relevance of case studies (Section 8.3) \u2014 6%\n\u2022 Verified client reference calls (shortlisted vendors only) \u2014 4%"
+        ],
+        [
+          "TOTAL",
+          "100%",
+          "Minimum qualifying score to proceed to BAFO: 65 out of 100"
+        ]
+      ],
+      "page_number": 23
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 23,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "9.3 Proposal Scoring Scale",
+      "headers": [
+        "Score",
+        "Rating",
+        "Interpretation"
+      ],
+      "rows": [
+        [
+          "5",
+          "Excellent",
+          "Exceeds requirement with demonstrated evidence and innovation"
+        ],
+        [
+          "4",
+          "Good",
+          "Fully meets requirement with strong evidence"
+        ]
+      ],
+      "page_number": 23
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 24,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Score",
+        "Rating",
+        "Description"
+      ],
+      "rows": [
+        [
+          "3",
+          "Adequate",
+          "Meets requirement with acceptable evidence"
+        ],
+        [
+          "2",
+          "Marginal",
+          "Partially meets requirement; material gaps identified"
+        ],
+        [
+          "1",
+          "Poor",
+          "Significant deficiencies; does not meaningfully satisfy requirement"
+        ],
+        [
+          "0",
+          "Non-Compliant",
+          "No response provided or requirement explicitly not met"
+        ]
+      ],
+      "page_number": 24
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 25,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Line #",
+        "Item Description",
+        "Category",
+        "Unit Type",
+        "NRC (One-Time) INR",
+        "MRC / Annual INR"
+      ],
+      "rows": [
+        [
+          "1.01",
+          "SD-WAN CPE Hardware (Tier-1 Hub Site) \u2014 HaaS OpEx",
+          "SD-WAN",
+          "Per device / month",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "1.02",
+          "SD-WAN CPE Hardware (Tier-2 Branch Site) \u2014 HaaS OpEx",
+          "SD-WAN",
+          "Per device / month",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "1.03",
+          "SD-WAN CPE Hardware (Tier-3 Remote Site) \u2014 HaaS OpEx",
+          "SD-WAN",
+          "Per device / month",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "1.04",
+          "SD-WAN Managed Service (NOC monitoring, config management, reporting) \u2014 All 300 sites",
+          "SD-WAN",
+          "Per site / month",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "1.05",
+          "Primary Broadband / Fibre Link Provisioning \u2014 Tier-1 (100 Mbps)",
+          "Connectivity",
+          "Per site / month",
+          "[Vendor to fill]",
+          "[Vendor to fill]"
+        ],
+        [
+          "1.06",
+          "Primary Broadband / Fibre Link Provisioning \u2014 Tier-2 (50 Mbps)",
+          "Connectivity",
+          "Per site / month",
+          "[Vendor to fill]",
+          "[Vendor to fill]"
+        ],
+        [
+          "1.07",
+          "4G/5G LTE Backup / Primary Link (per site)",
+          "Connectivity",
+          "Per SIM / month",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "1.08",
+          "SD-WAN Platform Installation & Commissioning (per site)",
+          "Professional Services",
+          "Per site",
+          "[Vendor to fill]",
+          "\u2014"
+        ],
+        [
+          "2.01",
+          "Azure ExpressRoute \u2014 10 Gbps x 2 circuits (active-active, Mumbai DC)",
+          "Cloud Interconnect",
+          "Per month",
+          "[Vendor to fill]",
+          "[Vendor to fill]"
+        ]
+      ],
+      "page_number": 25
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 26,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Item",
+        "Description",
+        "Service Type",
+        "Billing",
+        "Vendor to fill",
+        "Vendor to fill"
+      ],
+      "rows": [
+        [
+          "2.02",
+          "AWS Direct Connect \u2014 10 Gbps x 1 Dedicated Connection (ap-south-1)",
+          "Cloud Interconnect",
+          "Per month",
+          "[Vendor to fill]",
+          "[Vendor to fill]"
+        ],
+        [
+          "2.03",
+          "Last-mile fibre and cross-connect (Mumbai DC to carrier-neutral facility)",
+          "Cloud Interconnect",
+          "Per month",
+          "[Vendor to fill]",
+          "[Vendor to fill]"
+        ],
+        [
+          "2.04",
+          "Cloud Interconnect Design, Build & Commissioning (one-time)",
+          "Professional Services",
+          "Fixed",
+          "[Vendor to fill]",
+          "\u2014"
+        ],
+        [
+          "3.01",
+          "Managed SOC Service \u2014 24x7x365 (all 300 branch edge devices + DC)",
+          "Managed SOC",
+          "Per month",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "3.02",
+          "SIEM Platform (cloud-hosted, India DC) \u2014 per log source",
+          "Managed SOC",
+          "Per source / month",
+          "[Vendor to fill]",
+          "[Vendor to fill]"
+        ],
+        [
+          "3.03",
+          "Threat Intelligence Feeds (min. 2 commercial subscriptions)",
+          "Managed SOC",
+          "Per annum",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "3.04",
+          "Quarterly Penetration Testing (network perimeter)",
+          "Managed SOC",
+          "Per assessment",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "3.05",
+          "SOC Onboarding, SIEM Integration & Policy Baseline (one-time)",
+          "Professional Services",
+          "Fixed",
+          "[Vendor to fill]",
+          "\u2014"
+        ],
+        [
+          "4.01",
+          "IoT SIM \u2014 Pooled Data Plan (per SIM / month, 2.5M SIM pool)",
+          "IoT Mobility",
+          "Per SIM / month",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "4.02",
+          "Enterprise Mobility Management (EMM) Platform License",
+          "IoT Mobility",
+          "Per SIM / month",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "4.03",
+          "Private APN Setup and Monthly Management",
+          "IoT Mobility",
+          "Fixed / month",
+          "[Vendor to fill]",
+          "[Vendor to fill]"
+        ],
+        [
+          "4.04",
+          "eSIM Remote Provisioning Platform (per SIM, one-time migration)",
+          "IoT Mobility",
+          "Per SIM",
+          "[Vendor to fill]",
+          "\u2014"
+        ],
+        [
+          "5.01",
+          "Programme Management Office (PMO) \u2014 Full programme duration",
+          "Professional Services",
+          "Per day",
+          "\u2014",
+          "[Vendor to fill]"
+        ],
+        [
+          "5.02",
+          "Training \u2014 Apex IT and NOC Staff (per cohort of 10)",
+          "Training",
+          "Per cohort",
+          "[Vendor to fill]",
+          "\u2014"
+        ],
+        [
+          "5.03",
+          "24x7 Managed Service Support (post-go-live, BAU)",
+          "Support",
+          "Per annum",
+          "\u2014",
+          "[Vendor to fill]"
+        ]
+      ],
+      "page_number": 26
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 28,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Priority",
+        "Incident Type",
+        "Definition",
+        "Penalty"
+      ],
+      "rows": [
+        [
+          "P1",
+          "Critical Network Outage",
+          "Complete loss of SD-WAN connectivity affecting more than 5 Tier-1 or 10 Tier-2 sites simultaneously, or complete loss of both cloud interconnects simultaneously, for any period exceeding 30 minutes.",
+          "5% of total monthly invoice value per each 15-minute period (or part thereof) of outage duration, applied against Total Contract Value."
+        ],
+        [
+          "P2",
+          "Significant Degradation",
+          "Network performance degradation (latency >200ms, packet loss >2%) affecting more than 10 sites for a period exceeding 60 minutes, or SOC P1 incident acknowledgement breaching the 15-minute SLA.",
+          "2% of total monthly invoice value per each 30-minute period of sustained degradation."
+        ],
+        [
+          "P3",
+          "Non-Critical Incident",
+          "Single site outage exceeding 4-hour MTTR, or SLA reporting delay exceeding 30 minutes from incident detection.",
+          "0.5% of total monthly invoice value per incident."
+        ]
+      ],
+      "page_number": 28
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 29,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "Appendix B \u2014 Compliance Matrix Template",
+      "headers": [
+        "Region",
+        "States Covered",
+        "Total Sites",
+        "Tier-1 Hubs",
+        "Tier-2 Branch",
+        "Tier-3 Remote"
+      ],
+      "rows": [
+        [
+          "North India",
+          "Delhi, UP, Haryana, Punjab, Rajasthan, J&K, Himachal",
+          "82",
+          "3",
+          "63",
+          "16"
+        ],
+        [
+          "West India",
+          "Maharashtra, Gujarat, Goa, MP",
+          "74",
+          "3",
+          "56",
+          "15"
+        ],
+        [
+          "South India",
+          "Karnataka, Tamil Nadu, Kerala, Andhra, Telangana",
+          "68",
+          "3",
+          "52",
+          "13"
+        ],
+        [
+          "East India",
+          "West Bengal, Odisha, Bihar, Jharkhand, NE States",
+          "49",
+          "2",
+          "37",
+          "10"
+        ],
+        [
+          "Central India",
+          "Chhattisgarh, Telangana (Central), Vidarba",
+          "27",
+          "1",
+          "20",
+          "6"
+        ],
+        [
+          "TOTAL",
+          "28 States / UTs",
+          "300",
+          "12",
+          "228",
+          "60"
+        ]
+      ],
+      "page_number": 29
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 29,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Ref.",
+        "Requirement",
+        "Status (C/PC/NC)",
+        "Evidence Reference",
+        "Vendor Comments"
+      ],
+      "rows": [
+        [
+          "CM-01",
+          "ISO/IEC 27001:2022 \u2014 Vendor organisation",
+          "[C/PC/NC]",
+          "[Appendix B]",
+          "[Vendor to fill]"
+        ],
+        [
+          "CM-02",
+          "ISO/IEC 20000-1:2018 \u2014 Vendor organisation",
+          "[C/PC/NC]",
+          "[Appendix B]",
+          "[Vendor to fill]"
+        ],
+        [
+          "CM-03",
+          "SOC 2 Type II \u2014 Cloud-managed service components",
+          "[C/PC/NC]",
+          "[Appendix B]",
+          "[Vendor to fill]"
+        ],
+        [
+          "CM-04",
+          "Microsoft Azure ExpressRoute Partner Designation",
+          "[C/PC/NC]",
+          "[Appendix B]",
+          "[Vendor to fill]"
+        ]
+      ],
+      "page_number": 29
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 30,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "Line #",
+        "Item Description",
+        "Workstream",
+        "Unit Type",
+        "NRC (INR)",
+        "MRC (INR)",
+        "Annual (INR)"
+      ],
+      "rows": [
+        [
+          "[Line #]",
+          "[Item description \u2014 see Section 10.2]",
+          "[SD-WAN / Cloud / SOC / IoT / PS]",
+          "[Per site / per device / per SIM / fixed]",
+          "[INR]",
+          "[INR]",
+          "[INR]"
+        ],
+        [
+          "...",
+          "...",
+          "...",
+          "...",
+          "...",
+          "...",
+          "..."
+        ],
+        [
+          "TOTAL",
+          "TOTAL PROGRAMME TCO (36-month contract value)",
+          "All",
+          "Fixed",
+          "[Total NRC]",
+          "[Total MRC x 36]",
+          "[Total p.a.]"
+        ]
+      ],
+      "page_number": 30
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 30,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "Appendix D \u2014 Reference Matrix Template",
+      "headers": [
+        "Client Name",
+        "Industry",
+        "Sites Deployed",
+        "Go-Live Date",
+        "Services Provided",
+        "Outcome Metrics",
+        "Reference Contact"
+      ],
+      "rows": [
+        [
+          "[Vendor to fill]",
+          "[Vendor to fill]",
+          "[Vendor to fill]",
+          "[Vendor to fill]",
+          "[SD-WAN / Cloud IC / SOC / IoT]",
+          "[Vendor to fill]",
+          "[Name, Title, Email]"
+        ],
+        [
+          "[Vendor to fill]",
+          "[Vendor to fill]",
+          "[Vendor to fill]",
+          "[Vendor to fill]",
+          "[SD-WAN / Cloud IC / SOC / IoT]",
+          "[Vendor to fill]",
+          "[Name, Title, Email]"
+        ]
+      ],
+      "page_number": 30
+    },
+    "final_extraction_used": "vlm_only"
+  },
+  {
+    "page_number": 30,
+    "table_id": "unmatched_vlm_table",
+    "heuristic_extraction": null,
+    "vlm_extraction": {
+      "table_id": "T1",
+      "caption": "",
+      "headers": [
+        "CM-ID",
+        "Requirement",
+        "Status",
+        "Reference",
+        "Vendor Action"
+      ],
+      "rows": [
+        [
+          "CM-05",
+          "AWS Direct Connect Delivery Partner Designation",
+          "[C/PC/NC]",
+          "[Appendix B]",
+          "[Vendor to fill]"
+        ],
+        [
+          "CM-06",
+          "India Legal Entity (CIN registration)",
+          "[C/PC/NC]",
+          "[Appendix B]",
+          "[Vendor to fill]"
+        ],
+        [
+          "CM-07",
+          "DPDP Act 2023 \u2014 Data localisation within India",
+          "[C/PC/NC]",
+          "[Section 5 / Appendix]",
+          "[Vendor to fill]"
+        ],
+        [
+          "CM-08",
+          "SD-WAN OEM Hardware Partner named",
+          "[C/PC/NC]",
+          "[Section 5, TR-005]",
+          "[Name OEM]"
+        ],
+        [
+          "CM-09",
+          "Firewall OEM named for SD-WAN edge NGFW",
+          "[C/PC/NC]",
+          "[Section 5, TR-007]",
+          "[Name OEM]"
+        ],
+        [
+          "CM-10",
+          "SIEM platform named for Managed SOC",
+          "[C/PC/NC]",
+          "[Section 5, TR-014]",
+          "[Name SIEM]"
+        ],
+        [
+          "CM-11",
+          "GSMA eSIM RSP compliance certificate",
+          "[C/PC/NC]",
+          "[Appendix B]",
+          "[Vendor to fill]"
+        ],
+        [
+          "CM-12",
+          "ITIL v4 \u2014 SOC Incident and Problem Management",
+          "[C/PC/NC]",
+          "[Section 5, TR-016]",
+          "[Vendor to fill]"
+        ],
+        [
+          "CM-13",
+          "PRINCE2 or PMP certified Project Manager named",
+          "[C/PC/NC]",
+          "[Appendix D]",
+          "[Name of PM]"
+        ],
+        [
+          "CM-14",
+          "Deviations Register submitted as Appendix G",
+          "[C/PC/NC]",
+          "[Appendix G]",
+          "[Vendor to fill]"
+        ]
+      ],
+      "page_number": 30
+    },
+    "final_extraction_used": "vlm_only"
+  }
+]
