@@ -115,6 +115,7 @@ class ParsingService:
         blk_counter = 0
         tbl_counter = 0
         diag_counter = 0
+        extracted_tables_debug = []  # To store structured table extraction output for debugging
 
         # ── VLM setup (if enabled) ───────────────────────
         vlm_enabled = False
@@ -217,19 +218,33 @@ class ParsingService:
                 if _is_tabular(span_positions, line_texts):
                     tbl_counter += 1
 
+                    # Track table extraction variants for debugging and verification
+                    table_debug_info = {
+                        "page_number": page_number,
+                        "table_id": f"tbl-{tbl_counter:03d}",
+                        "heuristic_extraction": _extract_table_text(line_texts),
+                        "vlm_extraction": None,
+                        "final_extraction_used": "heuristic"
+                    }
+
                     # Use VLM-extracted tables if available for this page
                     page_vlm_tables = vlm_processed_pages.get(page_number, [])
                     if page_vlm_tables:
                         # Take the first unused VLM table for this page
                         from rfp_automation.services.vision_service import VisionService as _VS
                         vlm_tbl = page_vlm_tables.pop(0)
+                        table_debug_info["vlm_extraction"] = vlm_tbl
                         table_text = _VS.format_table_as_text(vlm_tbl)
                         if not table_text:
                             # VLM returned empty → fallback to heuristic
-                            table_text = _extract_table_text(line_texts)
+                            table_text = table_debug_info["heuristic_extraction"]
+                        else:
+                            table_debug_info["final_extraction_used"] = "vlm"
                     else:
                         # No VLM tables → use heuristic extraction
-                        table_text = _extract_table_text(line_texts)
+                        table_text = table_debug_info["heuristic_extraction"]
+
+                    extracted_tables_debug.append(table_debug_info)
 
                     blocks.append({
                         "block_id": f"tbl-{tbl_counter:03d}",
@@ -257,6 +272,31 @@ class ParsingService:
             f"Extracted {len(blocks)} blocks from {Path(file_path).name} "
             f"({blk_counter} text, {tbl_counter} tables, {diag_counter} diagrams)"
         )
+        
+        # Collect any leftover VLM tables that heuristic didn't match
+        for page_num, vlm_tables in vlm_processed_pages.items():
+            for v_tbl in vlm_tables:
+                extracted_tables_debug.append({
+                    "page_number": page_num,
+                    "table_id": "unmatched_vlm_table",
+                    "heuristic_extraction": None,
+                    "vlm_extraction": v_tbl,
+                    "final_extraction_used": "vlm_only"
+                })
+        
+        # Write extracted tables structured output for verification
+        if extracted_tables_debug:
+            import json
+            pdf_path = Path(file_path)
+            json_filename = f"{pdf_path.stem}_tables.json"
+            json_filepath = pdf_path.parent / json_filename
+            try:
+                with open(json_filepath, "w", encoding="utf-8") as f:
+                    json.dump(extracted_tables_debug, f, indent=2)
+                logger.info(f"Wrote extracted tables debug JSON to {json_filepath}")
+            except Exception as e:
+                logger.error(f"Failed to write extracted tables debug JSON: {e}")
+
         return blocks
 
     # ── Metadata extraction ──────────────────────────────

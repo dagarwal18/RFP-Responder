@@ -60,7 +60,17 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
 
 8. If the RFP specifies how the response should be structured, follow that structure. If not, use a logical professional proposal order.
 
-## Output Format
+## Structure Detection Rule
+
+BEFORE generating sections, analyze the RFP structure and submission instructions above:
+
+- **If the RFP mandates a specific Table of Contents, chapter numbering, or section ordering** (e.g., "responses must follow the format in Section 3.2", or the RFP has explicit chapter numbers like "5. Technical Requirements Matrix"), your sections MUST mirror the RFP's chapter structure 1:1. Use the RFP's exact section numbers and titles as your section titles (e.g., "5. Technical Requirements Matrix", "10.2 Pricing Schedule").
+
+- **If the RFP structure is implicit or left open** (no explicit ordering mandate), fall back to the logical professional proposal order described in rule 6 above.
+
+This rule takes HIGHEST PRIORITY — a strict RFP structure override takes precedence over all other grouping logic.
+
+
 
 Return a JSON object with two keys:
 - `"rfp_response_instructions"`: string — any explicit instructions found in the RFP about how to format/structure the response (empty string if none found)

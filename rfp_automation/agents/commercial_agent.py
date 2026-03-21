@@ -77,6 +77,13 @@ class CommercialAgent(BaseAgent):
         # ── Step 4: Build Requirement Details ────────────
         requirements_detail = self._build_requirements_detail(state)
 
+        # ── Step 4b: Detect RFP pricing table layout ─────
+        rfp_pricing_layout = self._extract_rfp_pricing_layout(mcp, rfp_id)
+        if rfp_pricing_layout:
+            logger.info(
+                f"[E1] RFP pricing layout detected: {len(rfp_pricing_layout)} chars"
+            )
+
         # ── Step 5: LLM Pricing + Narrative ──────────────
         try:
             llm_result = self._llm_commercial_analysis(
@@ -86,6 +93,7 @@ class CommercialAgent(BaseAgent):
                 rfp_commercial_context=rfp_commercial_context,
                 kb_pricing_data=kb_pricing_data,
                 requirements_detail=requirements_detail,
+                rfp_pricing_layout=rfp_pricing_layout,
             )
         except Exception as exc:
             logger.error(f"[E1] LLM commercial analysis failed: {exc}")
@@ -257,6 +265,45 @@ class CommercialAgent(BaseAgent):
 
         return "\n\n".join(all_texts) if all_texts else "No commercial context found in the RFP."
 
+    def _extract_rfp_pricing_layout(
+        self,
+        mcp: MCPService,
+        rfp_id: str,
+    ) -> str:
+        """Detect the RFP's expected pricing table column layout."""
+        queries = [
+            "pricing table format columns schedule line item",
+            "pricing schedule cost breakdown table structure",
+            "price schedule NRC MRC unit cost columns",
+            "commercial response format pricing template",
+        ]
+        layout_texts: list[str] = []
+        seen: set[str] = set()
+
+        for query in queries:
+            try:
+                results = mcp.query_rfp(query, rfp_id, top_k=3)
+                for r in results:
+                    text = r.get("text", "").strip()
+                    if text and text not in seen:
+                        # Look for table-like structures (pipe-delimited or column headers)
+                        if "|" in text or re.search(
+                            r'\b(?:Line\s*#|Item\s*Description|NRC|MRC|Unit\s*(?:Rate|Cost)|Total\s*(?:Cost|Price))\b',
+                            text, re.IGNORECASE
+                        ):
+                            seen.add(text)
+                            layout_texts.append(text)
+            except Exception as exc:
+                logger.warning(
+                    f"[E1] Pricing layout query failed for '{query}': {exc}"
+                )
+
+        if layout_texts:
+            logger.info(
+                f"[E1] Detected RFP pricing layout ({len(layout_texts)} fragments)"
+            )
+        return "\n\n".join(layout_texts) if layout_texts else ""
+
     def _query_kb_pricing(self, mcp: MCPService) -> str:
         """Query the knowledge base for product pricing catalog,
         rate cards, and commercial terms."""
@@ -312,6 +359,7 @@ class CommercialAgent(BaseAgent):
         rfp_commercial_context: str,
         kb_pricing_data: str,
         requirements_detail: str,
+        rfp_pricing_layout: str = "",
     ) -> dict[str, Any]:
         """Send context to LLM and get structured commercial analysis."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
@@ -332,6 +380,16 @@ class CommercialAgent(BaseAgent):
             .replace("{rfp_commercial_context}", self._truncate_at_word(rfp_commercial_context, 4000))
             .replace("{kb_pricing_data}", self._truncate_at_word(kb_pricing_data, 5000))
         )
+
+        # Inject RFP pricing layout if detected
+        if rfp_pricing_layout:
+            pricing_layout_block = (
+                "\n\n## RFP Pricing Table Layout (Detected)\n"
+                "The RFP specifies the following pricing table structure. "
+                "Your line_items and commercial_narrative MUST mirror this layout:\n\n"
+                f"{rfp_pricing_layout[:2000]}\n"
+            )
+            prompt += pricing_layout_block
 
         logger.info(
             f"[E1] Calling LLM for commercial analysis ({len(prompt)} chars)"

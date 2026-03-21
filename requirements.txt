@@ -41,3 +41,7 @@ transformers>=4.40.0             # DETR table-transformer-detection model
 timm>=0.9.0                      # Vision backbone for DETR
 Pillow>=10.0.0                   # Image processing for DETR input
 requests>=2.31.0                 # Direct HTTP calls to Groq VLM API
+
+# ── Export & Document Generation ────────────────────────
+xhtml2pdf>=0.2.11                # Pure Python PDF generation (replaces weasyprint)
+markdown>=3.6.0                  # Markdown to HTML conversion

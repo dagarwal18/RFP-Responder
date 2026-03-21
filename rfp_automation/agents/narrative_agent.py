@@ -416,13 +416,13 @@ class NarrativeAssemblyAgent(BaseAgent):
             ])
 
         # Remove remaining [Insert ...] / [TBD] / [TODO] / [Current ...] patterns
-        # that can't be resolved — strip them entirely rather than
-        # leaving raw placeholders in the final proposal.
+        # that can't be resolved — mark them for human review instead of
+        # silently stripping them.
         submitted_at = self._get_attr(rfp_metadata, "submission_deadline", "")
         cleanup_patterns = [
-            (re.compile(r"\[Insert\s+[^\]]*\]", re.IGNORECASE), ""),
-            (re.compile(r"\[TBD\]", re.IGNORECASE), ""),
-            (re.compile(r"\[TODO\]", re.IGNORECASE), ""),
+            (re.compile(r"\[Insert\s+[^\]]*\]", re.IGNORECASE), "**⚠ [TBD — Requires Manual Input]**"),
+            (re.compile(r"\[TBD\]", re.IGNORECASE), "**⚠ [TBD — Requires Manual Input]**"),
+            (re.compile(r"\[TODO\]", re.IGNORECASE), "**⚠ [TBD — Requires Manual Input]**"),
             (re.compile(r"\[Current\s+Date\]", re.IGNORECASE), submitted_at or "the date of submission"),
         ]
 
@@ -446,16 +446,16 @@ class NarrativeAssemblyAgent(BaseAgent):
         # ── Strip leaked KB block references ──
         text = re.sub(r"\[KB-[A-F0-9_]+(?:_block_\d+)?\]", "", text)
 
-        # ── Catch-all: strip remaining generic LLM placeholders ──
+        # ── Catch-all: mark remaining generic LLM placeholders for review ──
         # Matches [number], [amount], [benchmark], [case study 1], etc.
         # Excludes [EVIDENCE NEEDED: ...] and [METRIC NEEDED: ...] which are intentional
         # Excludes [PIPELINE_STUB: ...] which is an internal marker
         # Excludes [COMMERCIAL/LEGAL/PRICING ...] which are E1/E2 stub markers
         _generic_placeholder_re = re.compile(
-            r"\[(?!EVIDENCE NEEDED|METRIC NEEDED|PIPELINE_STUB|COMMERCIAL|LEGAL|PRICING)[a-z][a-z0-9 ]*\]",
+            r"\[(?!EVIDENCE NEEDED|METRIC NEEDED|PIPELINE_STUB|COMMERCIAL|LEGAL|PRICING|TBD)[a-z][a-z0-9 ]*\]",
             re.IGNORECASE,
         )
-        text = _generic_placeholder_re.sub("", text)
+        text = _generic_placeholder_re.sub("**⚠ [TBD — Requires Manual Input]**", text)
 
         return text
 
