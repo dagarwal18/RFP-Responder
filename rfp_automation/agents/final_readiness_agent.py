@@ -107,9 +107,23 @@ class FinalReadinessAgent(BaseAgent):
             out_dir.mkdir(parents=True, exist_ok=True)
 
             submitted_at = datetime.now(timezone.utc)
-            output_path = out_dir / "proposal.md"
 
             proposal_markdown = self._build_markdown(state, submitted_at.isoformat())
+
+            # Save pre-render artifact for debugging
+            raw_path = out_dir / "proposal_raw.md"
+            raw_path.write_text(proposal_markdown, encoding="utf-8")
+            logger.info(f"[F1] Saved raw markdown: {raw_path}")
+
+            # Process Mermaid diagrams (render to PNG, rewrite markdown)
+            try:
+                from rfp_automation.utils.mermaid_utils import process_mermaid_blocks
+                diagrams_dir = out_dir / "diagrams"
+                proposal_markdown = process_mermaid_blocks(proposal_markdown, diagrams_dir)
+            except Exception as e:
+                logger.warning(f"[F1] Mermaid processing failed (non-fatal): {e}")
+
+            output_path = out_dir / "proposal.md"
             output_path.write_text(proposal_markdown, encoding="utf-8")
 
             # Automatically convert to PDF using the md_to_pdf script

@@ -38,32 +38,39 @@ _CSS = """
     margin: 2.5cm 2cm 3cm 2cm;
     @frame footer {
         -pdf-frame-content: footerContent;
-        bottom: 1cm;
+        bottom: 0.8cm;
         margin-left: 2cm;
         margin-right: 2cm;
-        height: 1cm;
+        height: 1.2cm;
     }
     @frame header {
         -pdf-frame-content: headerContent;
-        top: 1cm;
+        top: 0.6cm;
         margin-left: 2cm;
         margin-right: 2cm;
         height: 1cm;
     }
 }
 
+/* Cover page gets its own page definition (no header/footer) */
+@page cover {
+    margin: 2.5cm 2cm 3cm 2cm;
+}
+
 body {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 11pt;
-    line-height: 1.5;
+    line-height: 1.6;
     color: #1a1a1a;
 }
 
 /* ── Cover page ───────────────────────────── */
 
 .cover-page {
+    page: cover;
     text-align: center;
     padding-top: 5cm;
+    page-break-after: always;
 }
 
 .cover-page .logo-bar {
@@ -99,16 +106,33 @@ body {
     color: #0052CC;
 }
 
+/* ── Header / Footer content ─────────────── */
+
+.page-header {
+    font-size: 8pt;
+    color: #888888;
+    border-bottom: 0.5px solid #cccccc;
+    padding-bottom: 4pt;
+}
+
+.page-footer {
+    font-size: 8pt;
+    color: #888888;
+    text-align: center;
+    border-top: 0.5px solid #cccccc;
+    padding-top: 4pt;
+}
+
 /* ── Headings ─────────────────────────────── */
 
 h1 {
     font-size: 18pt;
     font-weight: bold;
     color: #0052CC;
-    border-bottom: 1px solid #0052CC;
+    border-bottom: 2px solid #0052CC;
     padding-bottom: 6pt;
-    margin-top: 24pt;
-    margin-bottom: 12pt;
+    margin-top: 28pt;
+    margin-bottom: 14pt;
     page-break-after: avoid;
 }
 
@@ -116,8 +140,10 @@ h2 {
     font-size: 15pt;
     font-weight: bold;
     color: #1a3a5c;
-    margin-top: 18pt;
-    margin-bottom: 8pt;
+    border-bottom: 1px solid #d0d7de;
+    padding-bottom: 4pt;
+    margin-top: 22pt;
+    margin-bottom: 10pt;
     page-break-after: avoid;
 }
 
@@ -125,52 +151,76 @@ h3 {
     font-size: 13pt;
     font-weight: bold;
     color: #2d5f8a;
-    margin-top: 14pt;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+}
+
+h4 {
+    font-size: 11.5pt;
+    font-weight: bold;
+    color: #333333;
+    margin-top: 12pt;
     margin-bottom: 6pt;
     page-break-after: avoid;
 }
 
-h4, h5, h6 {
+h5, h6 {
     font-size: 11pt;
     font-weight: bold;
-    color: #333333;
+    font-style: italic;
+    color: #444444;
     margin-top: 10pt;
     margin-bottom: 4pt;
 }
 
-/* ── Tables ───────────────────────────────── */
+/* ── Tables (robust for xhtml2pdf) ───────── */
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin: 12pt 0;
-    font-size: 10pt;
+    margin: 14pt 0;
+    font-size: 9.5pt;
+    table-layout: fixed;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 th {
     background-color: #0052CC;
     color: #ffffff;
     font-weight: bold;
-    padding: 6pt 8pt;
+    padding: 7pt 8pt;
     text-align: left;
     border: 0.5px solid #004099;
+    word-wrap: break-word;
 }
 
 td {
     padding: 6pt 8pt;
     border: 0.5px solid #dddddd;
     vertical-align: top;
+    word-wrap: break-word;
+}
+
+tr {
+    page-break-inside: avoid;
+}
+
+tr:nth-child(even) td {
+    background-color: #f8f9fa;
 }
 
 /* ── Lists ────────────────────────────────── */
 
 ul, ol {
-    margin: 6pt 0;
-    padding-left: 20pt;
+    margin: 8pt 0;
+    padding-left: 22pt;
 }
 
 li {
     margin-bottom: 4pt;
+    line-height: 1.5;
 }
 
 /* ── Code ─────────────────────────────────── */
@@ -180,6 +230,7 @@ code {
     font-size: 9pt;
     background-color: #f4f4f4;
     padding: 1pt 4pt;
+    border-radius: 2pt;
 }
 
 pre {
@@ -187,16 +238,19 @@ pre {
     padding: 10pt;
     font-size: 9pt;
     line-height: 1.3;
+    border: 0.5px solid #dddddd;
+    page-break-inside: avoid;
 }
 
 /* ── Blockquotes ──────────────────────────── */
 
 blockquote {
     border-left: 3px solid #0052CC;
-    margin: 10pt 0;
-    padding: 6pt 12pt;
+    margin: 12pt 0;
+    padding: 8pt 14pt;
     background-color: #f0f4f8;
     color: #333333;
+    font-style: italic;
 }
 
 /* ── Horizontal rules ─────────────────────── */
@@ -204,14 +258,36 @@ blockquote {
 hr {
     border: 0;
     border-top: 0.5px solid #cccccc;
-    margin: 16pt 0;
+    margin: 18pt 0;
 }
 
 /* ── Paragraphs ───────────────────────────── */
 
 p {
-    margin-bottom: 8pt;
+    margin-bottom: 10pt;
     text-align: justify;
+    line-height: 1.6;
+}
+
+/* ── Images (for Mermaid diagrams) ────────── */
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 14pt auto;
+    page-break-inside: avoid;
+}
+
+/* ── Bold / Italic / Strong ──────────────── */
+
+strong, b {
+    font-weight: bold;
+    color: #111111;
+}
+
+em, i {
+    font-style: italic;
 }
 """
 
@@ -239,6 +315,34 @@ def _build_cover_html(
     </div>
 </div>
 """
+
+
+def _scrub_markdown(md_text: str) -> str:
+    """Pre-process markdown to remove artifacts that confuse xhtml2pdf.
+
+    Handles:
+      - Stray ```mermaid blocks (should already be replaced, but just in case)
+      - Orphaned markdown syntax characters that bleed through
+      - Excessively long unbroken strings in table cells
+    """
+    import re
+
+    # Remove any leftover mermaid code blocks (replace with placeholder note)
+    md_text = re.sub(
+        r"```mermaid\s*.*?```",
+        "\n> *[Diagram not rendered — see proposal_raw.md]*\n",
+        md_text,
+        flags=re.DOTALL,
+    )
+
+    # Remove orphaned bold/italic markers at start of otherwise empty lines
+    # e.g., a line that is just "**" or "***" with nothing else
+    md_text = re.sub(r"^\s*\*{1,3}\s*$", "", md_text, flags=re.MULTILINE)
+
+    # Remove stray hash lines (e.g., a line that is just "###" with no title)
+    md_text = re.sub(r"^\s*#{1,6}\s*$", "", md_text, flags=re.MULTILINE)
+
+    return md_text
 
 
 def convert_md_to_pdf(
@@ -284,12 +388,14 @@ def convert_md_to_pdf(
     md_text = md_path.read_text(encoding="utf-8")
     logger.info(f"Read {len(md_text)} chars from {md_path.name}")
 
+    # ── Pre-process: scrub stray markdown artifacts ──
+    md_text = _scrub_markdown(md_text)
+
     # Convert Markdown → HTML
     extensions = [
         "tables",         # pipe tables
         "fenced_code",    # ```code blocks```
         "toc",            # table of contents
-        "nl2br",          # newlines → <br>
         "sane_lists",     # better list handling
     ]
     html_body = markdown.markdown(md_text, extensions=extensions)
@@ -299,7 +405,20 @@ def convert_md_to_pdf(
     if include_cover:
         cover_html = _build_cover_html(rfp_title, client_name, company_name)
 
-    # Note: xhtml2pdf supports specific CSS features. Included CSS is mostly compatible.
+    # Header and footer content for non-cover pages
+    header_html = f"""
+<div id="headerContent">
+    <div class="page-header">{company_name} — {rfp_title}</div>
+</div>
+"""
+    footer_html = """
+<div id="footerContent">
+    <div class="page-footer">
+        <pdf:pagenumber />
+    </div>
+</div>
+"""
+
     full_html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -310,6 +429,8 @@ def convert_md_to_pdf(
     </style>
 </head>
 <body>
+{header_html}
+{footer_html}
 {cover_html}
 {html_body}
 </body>
@@ -319,8 +440,28 @@ def convert_md_to_pdf(
     out_path = Path(output_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Use link_callback to resolve relative image paths from the markdown dir
+    base_dir = str(md_path.parent.resolve())
+
+    def link_callback(uri, rel):
+        """Resolve image paths relative to the markdown file's directory."""
+        if uri.startswith(("http://", "https://", "data:")):
+            return uri
+        resolved = Path(base_dir) / uri
+        if resolved.exists():
+            return str(resolved)
+        # Try as absolute path
+        abs_path = Path(uri)
+        if abs_path.exists():
+            return str(abs_path)
+        return uri
+
     with open(out_path, "w+b") as result_file:
-        pisa_status = pisa.CreatePDF(full_html, dest=result_file)
+        pisa_status = pisa.CreatePDF(
+            full_html,
+            dest=result_file,
+            link_callback=link_callback,
+        )
 
     if pisa_status.err:
         print(f"ERROR: Generated PDF with errors", file=sys.stderr)

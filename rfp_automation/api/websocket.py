@@ -50,9 +50,11 @@ class PipelineProgress:
     async def connect(self, rfp_id: str, ws: WebSocket) -> None:
         await ws.accept()
         self._clients.setdefault(rfp_id, []).append(ws)
+        # Replay historical events with a flag so the frontend
+        # can distinguish them from live events and skip routing.
         for msg in self._history.get(rfp_id, []):
             try:
-                await ws.send_json(msg)
+                await ws.send_json({**msg, "is_history": True})
             except Exception:
                 break
 
