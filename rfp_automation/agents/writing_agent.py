@@ -224,7 +224,6 @@ class RequirementWritingAgent(BaseAgent):
             feedback_parts: list[str] = []
             if revision_feedback and req_ids:
                 feedback_lines = []
-                import re
                 # Split feedback by common delimiters to isolate individual points
                 parts = re.split(r'[;|\n]', revision_feedback)
                 for part in parts:
@@ -261,7 +260,24 @@ class RequirementWritingAgent(BaseAgent):
 
             section_feedback = "\n\n".join(part.strip() for part in feedback_parts if part.strip())
 
-            # ── 7e. Build prompt ────────────────────────
+            # ── 7e. Detect table/matrix response mode ───
+            _TABLE_SECTION_RE = re.compile(
+                r'\b(?:compliance\s*matrix|requirements\s*matrix|response\s*table'
+                r'|C/PC/NC|compliance\s*table|technical\s*matrix'
+                r'|capability\s*matrix|conformance\s*matrix)\b',
+                re.IGNORECASE,
+            )
+            desc_and_guidance = (
+                self._get_attr(section, "description", "") + " "
+                + self._get_attr(section, "content_guidance", "")
+            )
+            table_mode = bool(_TABLE_SECTION_RE.search(desc_and_guidance))
+            if table_mode:
+                logger.info(
+                    f"[C2] Table mode detected for {section_id}: {title}"
+                )
+
+            # ── 7f. Build prompt ────────────────────────
             prompt = self._build_prompt(
                 section_title=title,
                 section_type=section_type,
@@ -274,6 +290,7 @@ class RequirementWritingAgent(BaseAgent):
                 prev_section_context=prev_ctx,
                 next_section_context=next_ctx,
                 revision_feedback=section_feedback,
+                table_mode=table_mode,
             )
 
             # ── 7f. Call LLM ────────────────────────────
@@ -420,6 +437,7 @@ class RequirementWritingAgent(BaseAgent):
         prev_section_context: str = "",
         next_section_context: str = "",
         revision_feedback: str = "",
+        table_mode: bool = False,
     ) -> str:
         """Load the prompt template and inject context with token-aware truncation."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
@@ -448,7 +466,20 @@ class RequirementWritingAgent(BaseAgent):
             else "No revision feedback — this is the initial writing pass."
         )
 
-        return (
+        # ── Table mode injection ──────────────────────────
+        table_instruction = ""
+        if table_mode:
+            table_instruction = (
+                "\n\n## TABLE RESPONSE MODE\n"
+                "This section requires a TABLE-FORMAT response, NOT prose.\n"
+                "Return the content as a populated markdown table with columns:\n"
+                "| Req ID | Requirement | Compliance (C/PC/NC) | Vendor Remarks |\n"
+                "Keep remarks concise (1-2 sentences per row). Do NOT write "
+                "100+ word prose for each requirement — use table format.\n"
+                "The JSON output's 'content' field should contain this markdown table."
+            )
+
+        prompt = (
             template
             .replace("{section_title}", section_title)
             .replace("{section_type}", section_type)
@@ -462,6 +493,7 @@ class RequirementWritingAgent(BaseAgent):
             .replace("{next_section_context}", next_section_context or "No next section.")
             .replace("{revision_feedback}", feedback_block)
         )
+        return prompt + table_instruction
 
     def _parse_response(
         self, raw_response: str, section_id: str

@@ -109,11 +109,34 @@ class FinalReadinessAgent(BaseAgent):
             proposal_markdown = self._build_markdown(state, submitted_at.isoformat())
             output_path.write_text(proposal_markdown, encoding="utf-8")
 
+            # Automatically convert to PDF using the md_to_pdf script
+            pdf_path = out_dir / "proposal.pdf"
+            try:
+                import subprocess
+                client_name = state.rfp_metadata.client_name or "Client"
+                rfp_title = state.rfp_metadata.rfp_title or "RFP Response Proposal"
+                # Assuming the proposing company might be available or default to "Our Company"
+                # (For now we'll use a generic "Proposing Company" default if not defined)
+                subprocess.run(
+                    [
+                        "python", "scripts/md_to_pdf.py", 
+                        str(output_path), str(pdf_path),
+                        "--rfp-title", rfp_title,
+                        "--client-name", client_name
+                    ],
+                    check=True,
+                    capture_output=True,
+                    text=True
+                )
+                logger.info(f"[F1] Generated PDF: {pdf_path}")
+            except Exception as e:
+                logger.warning(f"[F1] Failed to generate PDF: {e}")
+
             file_hash = hashlib.sha256(proposal_markdown.encode("utf-8")).hexdigest()
             state.submission_record = SubmissionRecord(
                 submitted_at=submitted_at,
                 output_file_path=str(output_path),
-                archive_path=str(output_path),
+                archive_path=str(output_path),  # or pdf_path if we want to track that
                 file_hash=file_hash,
             )
             state.status = PipelineStatus.SUBMITTED

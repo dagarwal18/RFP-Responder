@@ -34,6 +34,11 @@ STRICT RULES (VIOLATION = FAILURE):
     BAD split (DO NOT produce): "<150ms" alone — this lacks the metric name
     and is NOT a valid requirement. Always include the metric name with its value.
 9. Return ONLY a valid JSON array — no markdown fencing, no extra text.
+10. If the candidate text is a STRUCTURED REQUIREMENTS TABLE containing
+    original requirement IDs (e.g., TR-001, OCS-002, BLL-010), you MUST
+    preserve those original IDs in the requirement_id field. Do NOT
+    assign sequential REQ-NNNN IDs when original IDs exist in the table.
+    Use the exact ID as it appears in the table.
 
 WHAT COUNTS AS A REQUIREMENT:
 - A statement that explicitly assigns an obligation or responsibility.
