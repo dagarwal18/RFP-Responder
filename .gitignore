@@ -6,3 +6,4 @@ storage/
 uvicorn
 logs/
 document prompts/
+docs/
