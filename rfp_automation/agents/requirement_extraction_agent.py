@@ -102,11 +102,56 @@ class RequirementsExtractionAgent(BaseAgent):
                 c.get("chunk_index", -1) for c in chunks
             ]
 
+            # ── Table-aware extraction: classify and handle table chunks ──
+            table_chunks = [c for c in chunks if c.get("content_type") == "table"]
+            text_chunks = [c for c in chunks if c.get("content_type") != "table"]
+
+            if table_chunks:
+                before_table = len(all_requirements)
+                for tc in table_chunks:
+                    table_text = tc.get("text", "")
+                    if not table_text.strip():
+                        continue
+
+                    table_purpose = self._classify_table_purpose(table_text, section_name)
+                    logger.info(
+                        f"[B1] Table in '{section_name}' classified as: {table_purpose}"
+                    )
+
+                    if table_purpose == "vendor_fill_in":
+                        # Bypass ObligationDetector — pass entire table to LLM
+                        table_reqs = self._extract_from_table(
+                            table_text, section_name, template, chunk_indices
+                        )
+                        all_requirements.extend(table_reqs)
+                    else:
+                        # Informational table — run through normal extraction
+                        table_candidates = ObligationDetector.detect_candidates(
+                            table_text, source_section=section_name
+                        )
+                        if table_candidates:
+                            # Merge into normal flow (handled below)
+                            text_chunks.append(tc)
+
+                table_extracted = len(all_requirements) - before_table
+                if table_extracted:
+                    logger.info(
+                        f"[B1] Extracted {table_extracted} requirements from "
+                        f"table(s) in '{section_name}' (IDs preserved)"
+                    )
+
+            # ── Normal text extraction (non-table chunks) ──
+            text_raw = "\n\n".join(
+                c.get("text", "") for c in text_chunks if c.get("text")
+            )
+            if not text_raw.strip():
+                continue
+
             # Layer 1: Rule-based obligation candidate detection
             candidates = ObligationDetector.detect_candidates(
-                raw_text, source_section=section_name
+                text_raw, source_section=section_name
             )
-            section_indicators = ObligationDetector.count_indicators(raw_text)
+            section_indicators = ObligationDetector.count_indicators(text_raw)
             total_indicator_count += section_indicators
 
             if not candidates:
@@ -224,8 +269,14 @@ class RequirementsExtractionAgent(BaseAgent):
             )
 
         # ── 6. Stable sequential ID re-assignment ────────────
-        for i, req in enumerate(all_requirements, start=1):
-            req.requirement_id = f"REQ-{i:04d}"
+        # Preserve original IDs from table-sourced requirements (e.g. TR-001)
+        _GENERIC_ID_RE = re.compile(r'^REQ-\d{4}$')
+        seq = 1
+        for req in all_requirements:
+            if _GENERIC_ID_RE.match(req.requirement_id):
+                req.requirement_id = f"REQ-{seq:04d}"
+                seq += 1
+            # else: keep the original table-sourced ID (TR-001, OCS-002, etc.)
 
         # ── 7. Coverage validation ───────────────────────────
         self._validate_coverage(
@@ -256,6 +307,142 @@ class RequirementsExtractionAgent(BaseAgent):
             f"Evaluation: {eval_count})"
         )
         return state
+
+    # ── Table classification & extraction ──────────────────────
+
+    # Patterns that indicate the vendor must fill in the table
+    _FILL_IN_HEADER_RE = re.compile(
+        r'\b(?:'
+        r'C/PC/NC|Complian[ct]|Comply|Response|Remarks|Vendor\s*Response'
+        r'|Yes\s*/\s*No|Bidder|Proposer|Offeror|Status|Deviation'
+        r'|Compliant|Non[\s-]Compliant|Partial'
+        r')\b',
+        re.IGNORECASE,
+    )
+    _BLANK_CELL_RE = re.compile(
+        r'\|\s*(?:___+|\[?\s*\]?|\s{3,}|TBD|N/?A)\s*\|',
+        re.IGNORECASE,
+    )
+    _REQ_ID_IN_TABLE_RE = re.compile(
+        r'\b[A-Z]{2,5}[-_]\d{2,4}\b'
+    )
+
+    def _classify_table_purpose(
+        self, table_text: str, section_name: str
+    ) -> str:
+        """
+        Classify a table as 'vendor_fill_in' or 'informational'.
+
+        Vendor fill-in tables are compliance matrices, requirement response
+        tables, and forms where the vendor must provide answers.
+
+        Informational tables are timelines, org charts, pricing examples,
+        scoring criteria, etc.
+        """
+        score = 0
+
+        # Check first 3 lines (usually headers) for fill-in keywords
+        header_lines = table_text.split('\n')[:3]
+        header_text = ' '.join(header_lines)
+
+        if self._FILL_IN_HEADER_RE.search(header_text):
+            score += 3
+            logger.debug(f"[B1] Table classification: fill-in header keywords found")
+
+        # Check for blank/empty cells (vendor needs to fill)
+        blank_matches = self._BLANK_CELL_RE.findall(table_text)
+        if len(blank_matches) >= 2:
+            score += 2
+            logger.debug(f"[B1] Table classification: {len(blank_matches)} blank cells found")
+
+        # Check for structured requirement IDs in table
+        req_ids = self._REQ_ID_IN_TABLE_RE.findall(table_text)
+        if len(req_ids) >= 2:
+            score += 2
+            logger.debug(f"[B1] Table classification: {len(req_ids)} req IDs found")
+
+        # Section name hints
+        section_lower = section_name.lower()
+        fill_in_section_keywords = {
+            'compliance', 'matrix', 'requirements table', 'response table',
+            'technical requirements', 'functional requirements',
+            'module specification', 'capability matrix',
+        }
+        if any(kw in section_lower for kw in fill_in_section_keywords):
+            score += 1
+            logger.debug(f"[B1] Table classification: section name hint")
+
+        result = "vendor_fill_in" if score >= 3 else "informational"
+        logger.debug(
+            f"[B1] Table classification score={score} → {result} "
+            f"(section='{section_name}')"
+        )
+        return result
+
+    def _extract_from_table(
+        self,
+        table_text: str,
+        section_name: str,
+        template: str,
+        chunk_indices: list[int],
+    ) -> list[Requirement]:
+        """
+        Extract requirements from a vendor fill-in table.
+
+        Bypasses ObligationDetector — sends the full table to the LLM
+        with instructions to preserve original requirement IDs.
+        """
+        # Build a specialized prompt for table extraction
+        table_prompt = (
+            "You are a DETERMINISTIC EXTRACTION ENGINE processing a structured "
+            "requirements table from an RFP.\n\n"
+            "STRICT RULES:\n"
+            "1. Extract EVERY row that contains a requirement or specification.\n"
+            "2. PRESERVE the original Requirement ID from the table (e.g., TR-001, "
+            "OCS-002, BLL-010). Do NOT assign sequential REQ-NNNN IDs.\n"
+            "3. Use the exact text from the table — do not rewrite or summarize.\n"
+            "4. If the table has Module/Category columns, use them for the "
+            "'category' field.\n"
+            "5. If the table has a Compliance column (C/PC/NC, Yes/No), note "
+            "it in the keywords.\n"
+            "6. Return ONLY a valid JSON array — no markdown fencing, no extra text.\n\n"
+            f"SECTION: {section_name}\n\n"
+            f"TABLE CONTENT:\n{table_text}\n\n"
+            "For each requirement found, return a JSON object:\n"
+            "  - requirement_id  : the ORIGINAL ID from the table (e.g., \"TR-001\")\n"
+            "  - text            : the requirement description from the table\n"
+            "  - type            : \"MANDATORY\" or \"OPTIONAL\"\n"
+            "  - classification  : \"FUNCTIONAL\" or \"NON_FUNCTIONAL\"\n"
+            "  - category        : from the table's category/module column, or "
+            "TECHNICAL | FUNCTIONAL | SECURITY | COMPLIANCE | COMMERCIAL | OPERATIONAL\n"
+            "  - impact          : CRITICAL | HIGH | MEDIUM | LOW\n"
+            "  - keywords        : list of 2-5 key terms\n\n"
+            "If no requirements are found, return an empty JSON array [].\n"
+        )
+
+        try:
+            raw_response = llm_deterministic_call(table_prompt)
+            logger.debug(f"[B1] Table LLM response: {len(raw_response)} chars")
+
+            parsed = self._parse_requirements_json(
+                raw_response, section_name, start_id=9000
+            )
+
+            for req in parsed:
+                req.source_chunk_indices = chunk_indices
+                req.source_section = section_name
+
+            logger.info(
+                f"[B1] Table extraction: {len(parsed)} requirements from "
+                f"'{section_name}'"
+            )
+            return parsed
+
+        except Exception as exc:
+            logger.error(
+                f"[B1] Table extraction failed for '{section_name}': {exc}"
+            )
+            return []
 
     # ── Section grouping ─────────────────────────────────────
 
