@@ -65,7 +65,7 @@ class CommercialConfig(BaseModel):
     """Commercial rule configuration."""
     minimum_margin_percent: float = 0.15
     maximum_discount_percent: float = 0.15
-    max_contract_value: float = 5000000.0
+    max_contract_value: float = 50000000000.0
     risky_payment_terms: list[str] = [
         "payment upon completion only",
         "net 120",

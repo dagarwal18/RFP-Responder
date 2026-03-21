@@ -92,6 +92,9 @@ class MCPService:
         # Save full texts to Mongo/JSON
         self.section_store.save_sections(rfp_id, chunks)
 
+        # Clear old Pinecone vectors before inserting new ones
+        self.rfp_store.delete_document(rfp_id)
+
         extra = {"source_file": source_file} if source_file else {}
         count = self.rfp_store.embed_chunks(rfp_id, chunks, extra_metadata=extra)
 
