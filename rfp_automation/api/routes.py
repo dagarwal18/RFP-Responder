@@ -743,12 +743,19 @@ async def get_checkpoints(rfp_id: str):
 async def clear_rfp_checkpoints(rfp_id: str):
     """Clear all cached checkpoints for an RFP to force a full re-run."""
     from rfp_automation.persistence.checkpoint import clear_checkpoints
+    from rfp_automation.services.section_store import SectionStore
+    from rfp_automation.mcp.vector_store.rfp_store import RFPVectorStore
 
     count = clear_checkpoints(rfp_id)
+    
+    # Garbage collect full-text chunks and vector embeddings
+    SectionStore().delete_sections(rfp_id)
+    RFPVectorStore().delete_document(rfp_id)
+    
     return {
         "rfp_id": rfp_id,
         "cleared": count,
-        "message": f"Cleared {count} checkpoint files. Next run will execute all agents.",
+        "message": f"Cleared {count} checkpoint files and purged document chunks/vectors. Next run will execute all agents.",
     }
 
 

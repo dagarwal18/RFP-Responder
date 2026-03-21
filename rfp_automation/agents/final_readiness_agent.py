@@ -10,8 +10,11 @@ submission record.
 from __future__ import annotations
 
 import hashlib
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from rfp_automation.agents.base_agent import BaseAgent
 from rfp_automation.models.enums import (
