@@ -336,38 +336,158 @@ class RequirementWritingAgent(BaseAgent):
                     if original_table_text:
                         break
 
-            # ── 7f. Build prompt ────────────────────────
-            prompt = self._build_prompt(
-                section_title=title,
-                section_type=section_type,
-                section_description=self._get_attr(section, "description", ""),
-                content_guidance=self._get_attr(section, "content_guidance", ""),
-                requirements=requirements_block,
-                capabilities=capabilities,
-                rfp_instructions=rfp_instructions,
-                rfp_metadata=rfp_metadata_block,
-                prev_section_context=prev_ctx,
-                next_section_context=next_ctx,
-                revision_feedback=section_feedback,
-                table_mode=table_mode,
-                original_table_text=original_table_text,
-            )
+            # ── 7e3. Disable fabricated tables ──────────
+            # If table_mode is active but we have no original table from the
+            # RFP, turn it off to avoid generating a generic 4-column matrix.
+            if table_mode and not original_table_text:
+                logger.info(
+                    f"[TABLE-TRACE][C2-WRITE] Disabling table_mode for "
+                    f"{section_id}: {title} — no original table text found, "
+                    f"preventing fabricated table generation"
+                )
+                table_mode = False
 
-            # ── 7f. Call LLM ────────────────────────────
-            logger.info(
-                f"[C2] Writing section {section_id}: {title} | "
-                f"type={section_type} | {len(req_ids)} requirements"
-            )
-            raw_response = llm_large_text_call(prompt, deterministic=True)
-            logger.debug(
-                f"[C2] LLM response for {section_id} "
-                f"({len(raw_response)} chars): {raw_response[:500]}"
-            )
+            # ── 7f. Build prompt & call LLM ────────────────
+            # For table-mode sections with many requirements, batch the
+            # LLM calls and merge the resulting markdown tables.
+            _TABLE_BATCH_SIZE = 12
 
-            # ── 7f. Parse response ──────────────────────
-            content, addressed, word_count = self._parse_response(
-                raw_response, section_id
-            )
+            if table_mode and original_table_text and len(req_ids) > _TABLE_BATCH_SIZE:
+                # ── BATCHED TABLE MODE ──
+                logger.info(
+                    f"[TABLE-TRACE][C2-WRITE] Batching table for {section_id}: "
+                    f"{title} | {len(req_ids)} reqs in batches of {_TABLE_BATCH_SIZE}"
+                )
+                all_content_parts: list[str] = []
+                all_batch_addressed: list[str] = []
+                total_word_count = 0
+                table_header: str | None = None
+
+                for batch_idx in range(0, len(req_ids), _TABLE_BATCH_SIZE):
+                    batch_rids = req_ids[batch_idx : batch_idx + _TABLE_BATCH_SIZE]
+                    batch_num = batch_idx // _TABLE_BATCH_SIZE + 1
+
+                    # Build requirements block for just this batch
+                    batch_req_texts = []
+                    for rid in batch_rids:
+                        req = req_map.get(rid)
+                        if req:
+                            req_type = req.get("type", "MANDATORY")
+                            req_text = req.get("text", "")[:300]
+                            batch_req_texts.append(f"- {rid} [{req_type}]: {req_text}")
+                        else:
+                            batch_req_texts.append(f"- {rid}: [requirement details not found]")
+                    batch_requirements_block = "\n".join(batch_req_texts)
+
+                    prompt = self._build_prompt(
+                        section_title=title,
+                        section_type=section_type,
+                        section_description=self._get_attr(section, "description", ""),
+                        content_guidance=self._get_attr(section, "content_guidance", ""),
+                        requirements=batch_requirements_block,
+                        capabilities=capabilities,
+                        rfp_instructions=rfp_instructions,
+                        rfp_metadata=rfp_metadata_block,
+                        prev_section_context=prev_ctx,
+                        next_section_context=next_ctx,
+                        revision_feedback=section_feedback,
+                        table_mode=table_mode,
+                        original_table_text=original_table_text,
+                    )
+
+                    logger.info(
+                        f"[C2] Writing table batch {batch_num} for {section_id}: "
+                        f"{title} | {len(batch_rids)} reqs in this batch"
+                    )
+                    raw_response = llm_large_text_call(prompt, deterministic=True)
+                    batch_content, batch_addressed, batch_wc = self._parse_response(
+                        raw_response, f"{section_id}_batch{batch_num}"
+                    )
+
+                    all_batch_addressed.extend(batch_addressed)
+                    total_word_count += batch_wc
+
+                    # Merge table: keep header from first batch only
+                    if batch_content.strip():
+                        lines = batch_content.strip().split("\n")
+                        if table_header is None:
+                            # First batch — keep everything including header
+                            all_content_parts.append(batch_content.strip())
+                            # Extract header (first two lines: header row + separator)
+                            if len(lines) >= 2 and "|" in lines[0] and "---" in lines[1]:
+                                table_header = lines[0] + "\n" + lines[1]
+                        else:
+                            # Subsequent batches — strip the header rows
+                            data_lines = []
+                            header_stripped = False
+                            for line in lines:
+                                if not header_stripped:
+                                    if "---" in line and "|" in line:
+                                        header_stripped = True
+                                        continue
+                                    elif "|" in line:
+                                        continue  # skip header row
+                                    else:
+                                        header_stripped = True
+                                        data_lines.append(line)
+                                else:
+                                    data_lines.append(line)
+                            if data_lines:
+                                all_content_parts.append("\n".join(data_lines))
+
+                    logger.info(
+                        f"[TABLE-TRACE][C2-WRITE] Batch {batch_num} done: "
+                        f"{len(batch_addressed)} reqs addressed, {batch_wc} words"
+                    )
+
+                content = "\n".join(all_content_parts)
+                addressed = list(dict.fromkeys(all_batch_addressed))  # dedupe, preserve order
+                word_count = total_word_count
+
+            else:
+                # ── NORMAL (single-call) MODE ──
+                prompt = self._build_prompt(
+                    section_title=title,
+                    section_type=section_type,
+                    section_description=self._get_attr(section, "description", ""),
+                    content_guidance=self._get_attr(section, "content_guidance", ""),
+                    requirements=requirements_block,
+                    capabilities=capabilities,
+                    rfp_instructions=rfp_instructions,
+                    rfp_metadata=rfp_metadata_block,
+                    prev_section_context=prev_ctx,
+                    next_section_context=next_ctx,
+                    revision_feedback=section_feedback,
+                    table_mode=table_mode,
+                    original_table_text=original_table_text,
+                )
+
+                logger.info(
+                    f"[C2] Writing section {section_id}: {title} | "
+                    f"type={section_type} | {len(req_ids)} requirements"
+                )
+                raw_response = llm_large_text_call(prompt, deterministic=True)
+                logger.debug(
+                    f"[C2] LLM response for {section_id} "
+                    f"({len(raw_response)} chars): {raw_response[:500]}"
+                )
+
+                content, addressed, word_count = self._parse_response(
+                    raw_response, section_id
+                )
+
+            # ── 7f2. Log filled tables ───────────────────
+            if table_mode and original_table_text and content:
+                try:
+                    filled_dir = Path(r"d:\RFP-Responder-1\storage\filled table")
+                    filled_dir.mkdir(parents=True, exist_ok=True)
+                    filled_path = filled_dir / f"{section_id}.txt"
+                    filled_path.write_text(content, encoding="utf-8")
+                    logger.info(
+                        f"[TABLE-TRACE][C2-WRITE] Saved filled table to {filled_path}"
+                    )
+                except Exception as exc:
+                    logger.warning(f"[TABLE-TRACE][C2-WRITE] Failed to save filled table: {exc}")
 
             # ── 7g. Detect placeholders ─────────────────
             self._detect_placeholders(content, section_id)

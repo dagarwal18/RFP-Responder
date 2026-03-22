@@ -126,6 +126,22 @@ class RequirementsExtractionAgent(BaseAgent):
                     )
 
                     if table_purpose == "vendor_fill_in":
+                        # ── Log detected fill-in table to storage/table/ ──
+                        try:
+                            table_log_dir = Path(r"d:\RFP-Responder-1\storage\table")
+                            table_log_dir.mkdir(parents=True, exist_ok=True)
+                            safe_name = re.sub(r'[^\w\-]', '_', section_name)[:80]
+                            table_log_path = table_log_dir / f"{safe_name}.txt"
+                            table_log_path.write_text(table_text, encoding="utf-8")
+                            logger.info(
+                                f"[TABLE-TRACE][B1-DETECT] Saved detected "
+                                f"fill-in table to {table_log_path}"
+                            )
+                        except Exception as exc:
+                            logger.warning(
+                                f"[TABLE-TRACE][B1-DETECT] Failed to save "
+                                f"table log: {exc}"
+                            )
                         # Bypass ObligationDetector — pass entire table to LLM
                         table_reqs = self._extract_from_table(
                             table_text, section_name, template, chunk_indices
