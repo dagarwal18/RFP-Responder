@@ -113,6 +113,19 @@ class RequirementWritingAgent(BaseAgent):
         # ── 5. Initialize MCP service ──────────────────
         mcp = MCPService()
 
+        # ── 5b. Fetch all RFP chunks for table lookup ───
+        all_rfp_chunks = mcp.fetch_all_rfp_chunks(rfp_id)
+        table_chunks_by_index: dict[int, dict] = {}
+        for ch in all_rfp_chunks:
+            if ch.get("content_type") == "table":
+                idx = ch.get("chunk_index", -1)
+                if idx >= 0:
+                    table_chunks_by_index[idx] = ch
+        logger.info(
+            f"[TABLE-TRACE][C2-WRITE] Loaded {len(table_chunks_by_index)} table chunks "
+            f"from {len(all_rfp_chunks)} total RFP chunks"
+        )
+
         # ── 6. RFP response instructions (from C1) ─────
         rfp_instructions = state.architecture_plan.rfp_response_instructions or ""
 
@@ -274,10 +287,54 @@ class RequirementWritingAgent(BaseAgent):
                 + self._get_attr(section, "content_guidance", "")
             )
             table_mode = bool(_TABLE_SECTION_RE.search(desc_and_guidance))
+
+            # ── 7e2. Find original table text from RFP chunks ──
+            original_table_text = ""
+            if table_mode and req_ids:
+                # Look up source chunk indices from the requirements
+                for rid in req_ids:
+                    req = req_map.get(rid)
+                    if req:
+                        src_indices = req.get("source_chunk_indices", [])
+                        for si in src_indices:
+                            tbl_chunk = table_chunks_by_index.get(si)
+                            if tbl_chunk:
+                                original_table_text = tbl_chunk.get("text", "")
+                                logger.info(
+                                    f"[TABLE-TRACE][C2-WRITE] Found original table "
+                                    f"for section {section_id} from chunk_index={si}, "
+                                    f"table_type={tbl_chunk.get('table_type', 'unknown')}, "
+                                    f"text_len={len(original_table_text)}"
+                                )
+                                break
+                    if original_table_text:
+                        break
+
             if table_mode:
                 logger.info(
-                    f"[C2] Table mode detected for {section_id}: {title}"
+                    f"[TABLE-TRACE][C2-WRITE] Table mode ACTIVE for {section_id}: {title} | "
+                    f"original_table_found={'YES' if original_table_text else 'NO'} | "
+                    f"original_table_len={len(original_table_text)}"
                 )
+            else:
+                # Also check if any mapped requirements come from table chunks
+                for rid in req_ids:
+                    req = req_map.get(rid)
+                    if req:
+                        src_indices = req.get("source_chunk_indices", [])
+                        for si in src_indices:
+                            if si in table_chunks_by_index:
+                                table_mode = True
+                                tbl_chunk = table_chunks_by_index[si]
+                                original_table_text = tbl_chunk.get("text", "")
+                                logger.info(
+                                    f"[TABLE-TRACE][C2-WRITE] Auto-detected table_mode "
+                                    f"for {section_id} via req {rid} → chunk_index={si}, "
+                                    f"table_type={tbl_chunk.get('table_type', 'unknown')}"
+                                )
+                                break
+                    if original_table_text:
+                        break
 
             # ── 7f. Build prompt ────────────────────────
             prompt = self._build_prompt(
@@ -293,6 +350,7 @@ class RequirementWritingAgent(BaseAgent):
                 next_section_context=next_ctx,
                 revision_feedback=section_feedback,
                 table_mode=table_mode,
+                original_table_text=original_table_text,
             )
 
             # ── 7f. Call LLM ────────────────────────────
@@ -440,6 +498,7 @@ class RequirementWritingAgent(BaseAgent):
         next_section_context: str = "",
         revision_feedback: str = "",
         table_mode: bool = False,
+        original_table_text: str = "",
     ) -> str:
         """Load the prompt template and inject context with token-aware truncation."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
@@ -468,18 +527,42 @@ class RequirementWritingAgent(BaseAgent):
             else "No revision feedback — this is the initial writing pass."
         )
 
-        # ── Table mode injection ──────────────────────────
+        # ── Table mode injection ──────────────────────
         table_instruction = ""
         if table_mode:
-            table_instruction = (
-                "\n\n## TABLE RESPONSE MODE\n"
-                "This section requires a TABLE-FORMAT response, NOT prose.\n"
-                "Return the content as a populated markdown table with columns:\n"
-                "| Req ID | Requirement | Compliance (C/PC/NC) | Vendor Remarks |\n"
-                "Keep remarks concise (1-2 sentences per row). Do NOT write "
-                "100+ word prose for each requirement — use table format.\n"
-                "The JSON output's 'content' field should contain this markdown table."
-            )
+            if original_table_text:
+                # Use the exact columns from the original RFP table
+                table_instruction = (
+                    "\n\n## TABLE RESPONSE MODE\n"
+                    "This section requires a TABLE-FORMAT response, NOT prose.\n"
+                    "Below is the ORIGINAL TABLE from the RFP that you must fill in.\n"
+                    "You MUST preserve the EXACT same column structure and headers.\n"
+                    "Fill in ONLY the columns that are meant for vendor responses "
+                    "(e.g. Compliance, Vendor Response, Remarks, Status, Yes/No columns).\n"
+                    "Keep the original requirement text, IDs, and descriptions unchanged.\n"
+                    "Return the content as a populated markdown table matching the original layout.\n\n"
+                    f"### ORIGINAL RFP TABLE:\n```\n{original_table_text[:6000]}\n```\n\n"
+                    "The JSON output's 'content' field should contain this filled-in markdown table."
+                )
+                logger.info(
+                    f"[TABLE-TRACE][C2-WRITE] Injected original table ({len(original_table_text)} chars) "
+                    f"into prompt for section '{section_title}'"
+                )
+            else:
+                # Fallback: generic table format if no original table found
+                table_instruction = (
+                    "\n\n## TABLE RESPONSE MODE\n"
+                    "This section requires a TABLE-FORMAT response, NOT prose.\n"
+                    "Return the content as a populated markdown table with columns:\n"
+                    "| Req ID | Requirement | Compliance (C/PC/NC) | Vendor Remarks |\n"
+                    "Keep remarks concise (1-2 sentences per row). Do NOT write "
+                    "100+ word prose for each requirement — use table format.\n"
+                    "The JSON output's 'content' field should contain this markdown table."
+                )
+                logger.info(
+                    f"[TABLE-TRACE][C2-WRITE] No original table found — using generic "
+                    f"4-column layout for section '{section_title}'"
+                )
 
         prompt = (
             template

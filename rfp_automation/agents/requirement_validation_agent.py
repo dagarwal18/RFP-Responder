@@ -67,65 +67,90 @@ class RequirementsValidationAgent(BaseAgent):
             state.status = PipelineStatus.ARCHITECTURE_PLANNING
             return state
 
-        # ── 1. Build validation prompt ──────────────────────
+        # ── 1. Build validation prompt (chunked) ────────────
         template = _PROMPT_PATH.read_text(encoding="utf-8")
-        requirements_json = json.dumps(
-            [r.model_dump(mode="json") for r in requirements],
-            indent=2,
-        )
-        # Inject original RFP text so LLM can cross-check factual accuracy.
-        # This agent calls llm_large_text_call → Llama 4 Scout
-        # with 131K context window and 30K TPM per key.
-        # Budget: ~25K tokens input comfortably fits all requirements + full RFP text.
-        rfp_context = state.raw_text[:80_000] if state.raw_text else "No RFP source text available."
-        prompt = template.format(
-            requirements_json=requirements_json[:50_000],
-            rfp_context=rfp_context,
+
+        # Groq free-tier TPM for Llama 4 Scout = 30,000 tokens.
+        # We chunk requirements into batches of 25 and use a smaller
+        # rfp_context to keep each payload well under the ceiling.
+        BATCH_SIZE = 25
+        rfp_context = state.raw_text[:15_000] if state.raw_text else "No RFP source text available."
+
+        all_issues_raw: list[dict] = []
+        confidence_scores: list[float] = []
+        num_batches = (len(requirements) + BATCH_SIZE - 1) // BATCH_SIZE
+
+        logger.info(
+            f"[B2] Splitting {len(requirements)} requirements into "
+            f"{num_batches} batch(es) of ≤{BATCH_SIZE}"
         )
 
-        if len(prompt) > 100_000:
-            logger.warning(
-                f"[B2] Prompt is large ({len(prompt)} chars ≈ "
-                f"{len(prompt) // 4} tokens) — may hit TPM limits"
+        # ── 2. Call LLM for validation (batched) ────────────
+        for batch_idx in range(num_batches):
+            batch_start = batch_idx * BATCH_SIZE
+            batch_end = min(batch_start + BATCH_SIZE, len(requirements))
+            batch = requirements[batch_start:batch_end]
+
+            requirements_json = json.dumps(
+                [r.model_dump(mode="json") for r in batch],
+                indent=2,
+            )
+            prompt = template.format(
+                requirements_json=requirements_json,
+                rfp_context=rfp_context,
             )
 
-        # ── 2. Call LLM for validation ──────────────────────
-        logger.info(f"[B2] Calling LLM for validation ({len(prompt)} char prompt)")
-        try:
-            raw_response = llm_large_text_call(prompt, deterministic=True)
-            logger.debug(
-                f"[B2] Validation LLM response ({len(raw_response)} chars):\n"
-                f"{raw_response[:2000]}"
+            logger.info(
+                f"[B2] Batch {batch_idx + 1}/{num_batches}: "
+                f"{len(batch)} requirements, {len(prompt)} char prompt "
+                f"(≈{len(prompt) // 4} tokens)"
             )
-        except Exception as exc:
-            logger.error(f"[B2] LLM call failed: {exc}")
-            # On failure, pass requirements through unvalidated
+
+            try:
+                raw_response = llm_large_text_call(prompt, deterministic=True)
+                logger.debug(
+                    f"[B2] Batch {batch_idx + 1} LLM response "
+                    f"({len(raw_response)} chars):\n{raw_response[:2000]}"
+                )
+                batch_data = self._parse_validation_json(raw_response)
+                all_issues_raw.extend(batch_data.get("issues", []))
+
+                raw_conf = batch_data.get("confidence_score")
+                if raw_conf is not None and raw_conf > 0:
+                    confidence_scores.append(float(raw_conf))
+
+            except Exception as exc:
+                logger.error(
+                    f"[B2] LLM call failed for batch {batch_idx + 1}: {exc}"
+                )
+                # Continue with remaining batches instead of aborting
+
+        # If every batch failed, pass through unvalidated
+        if not confidence_scores and not all_issues_raw:
+            logger.warning("[B2] All validation batches failed — passing through unvalidated")
             state.requirements_validation = self._build_result(
                 requirements, issues=[], confidence_score=0.0
             )
             state.status = PipelineStatus.ARCHITECTURE_PLANNING
             return state
 
-        # ── 3. Parse validation response ────────────────────
-        validation_data = self._parse_validation_json(raw_response)
-        issues = self._build_issues(validation_data.get("issues", []))
+        # ── 3. Aggregate batched results ─────────────────────
+        issues = self._build_issues(all_issues_raw)
 
-        # Confidence: use LLM value, but apply heuristic if it returned 0.0
-        # with no issues (likely a parse or LLM output quirk).
-        raw_conf = validation_data.get("confidence_score")
-        if raw_conf is None or (raw_conf == 0 and not issues):
+        # Confidence: average batched scores, with heuristic fallback
+        if confidence_scores:
+            confidence_score = sum(confidence_scores) / len(confidence_scores)
+        else:
             # Heuristic: base 0.90, subtract 0.05 per issue
             confidence_score = max(0.90 - 0.05 * len(issues), 0.10)
             logger.warning(
-                f"[B2] LLM returned no / zero confidence with {len(issues)} "
-                f"issues — using heuristic: {confidence_score:.3f}"
+                f"[B2] No valid confidence scores from LLM — "
+                f"using heuristic: {confidence_score:.3f}"
             )
-        else:
-            confidence_score = float(raw_conf)
 
         logger.info(
             f"[B2] Validation result: confidence={confidence_score:.3f}, "
-            f"{len(issues)} issues found"
+            f"{len(issues)} issues found (from {num_batches} batch(es))"
         )
         for issue in issues:
             logger.debug(
