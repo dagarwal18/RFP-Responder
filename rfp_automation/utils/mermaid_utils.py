@@ -38,6 +38,42 @@ class MermaidBlock:
 
 
 # ═══════════════════════════════════════════════════════════
+#  Sanitize — fix common syntax issues before rendering
+# ═══════════════════════════════════════════════════════════
+
+# Matches unquoted node labels inside [] that contain special characters.
+# Captures: the opening bracket-type char, the label text, the closing char.
+# Example: A[Microsoft Sentinel (SIEM)] → A["Microsoft Sentinel (SIEM)"]
+_LABEL_WITH_SPECIAL_RE = re.compile(
+    r'(\[)'             # opening [
+    r'([^\]"]*'         # label text that is NOT already quoted
+    r'[(){}]'           # must contain at least one special char
+    r'[^\]"]*)'         # rest of label
+    r'(\])',            # closing ]
+)
+
+
+def _sanitize_mermaid_code(code: str) -> str:
+    """Auto-quote Mermaid node labels containing special characters.
+
+    Mermaid uses ``()`` for rounded nodes, ``{}`` for diamond nodes, etc.
+    When these chars appear inside ``[...]`` labels (e.g. ``[SIEM (v2)]``),
+    the parser breaks.  Wrapping in ``"..."`` tells Mermaid to treat the
+    content as a literal string.
+
+    Only modifies labels that are NOT already quoted.
+    """
+    def _quote_label(m: re.Match) -> str:
+        open_br, label, close_br = m.group(1), m.group(2), m.group(3)
+        # Don't double-quote if already quoted
+        if label.startswith('"') and label.endswith('"'):
+            return m.group(0)
+        return f'{open_br}"{label}"{close_br}'
+
+    return _LABEL_WITH_SPECIAL_RE.sub(_quote_label, code)
+
+
+# ═══════════════════════════════════════════════════════════
 #  Extract
 # ═══════════════════════════════════════════════════════════
 
@@ -120,6 +156,9 @@ def render_block(
         return err
 
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Sanitize code: auto-quote labels with special chars like (SIEM)
+    block_code = _sanitize_mermaid_code(block_code)
 
     # Content-addressed filename for free caching
     digest = hashlib.sha256(block_code.encode("utf-8")).hexdigest()[:12]

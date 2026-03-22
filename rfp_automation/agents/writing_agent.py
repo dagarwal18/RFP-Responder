@@ -595,35 +595,55 @@ class RequirementWritingAgent(BaseAgent):
         # Strip <think>...</think> tags that Qwen models emit
         text = re.sub(r"<think>[\s\S]*?</think>", "", text, flags=re.DOTALL).strip()
 
-        # Strip markdown code fences
+        # Strip markdown code fences — try lazy match first, then greedy
+        # to handle nested ```mermaid blocks inside JSON content
         fence_match = re.search(
             r"```(?:json)?\s*(.*?)\s*```",
             text,
             re.DOTALL,
         )
+        json_extracted = None
         if fence_match:
-            text = fence_match.group(1).strip()
+            candidate_text = fence_match.group(1).strip()
+            # Verify it's actually valid JSON before committing
+            try:
+                json_extracted = json.loads(candidate_text, strict=False)
+            except json.JSONDecodeError:
+                # Lazy match may have stopped at an inner ``` (e.g. mermaid block)
+                # Try greedy: find LAST ``` close
+                greedy_match = re.search(
+                    r"```(?:json)?\s*(.*)\s*```",
+                    text,
+                    re.DOTALL,
+                )
+                if greedy_match:
+                    candidate_text = greedy_match.group(1).strip()
+
+            if json_extracted is None:
+                text = candidate_text
 
         # Try JSON parse
-        try:
-            data = json.loads(text, strict=False)
-        except json.JSONDecodeError:
-            # Try extracting JSON object from mixed content
-            obj_start = text.find("{")
-            obj_end = text.rfind("}")
-            if obj_start != -1 and obj_end > obj_start:
-                try:
-                    candidate = text[obj_start : obj_end + 1]
-                    # Fix trailing commas
-                    candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
-                    data = json.loads(candidate, strict=False)
-                except json.JSONDecodeError:
-                    # Attempt JSON repair for truncated output
-                    data = self._attempt_json_repair(
-                        text[obj_start : obj_end + 1], section_id
-                    )
-            else:
-                data = None
+        data = json_extracted  # may already be parsed from fence
+        if data is None:
+            try:
+                data = json.loads(text, strict=False)
+            except json.JSONDecodeError:
+                # Try extracting JSON object from mixed content
+                obj_start = text.find("{")
+                obj_end = text.rfind("}")
+                if obj_start != -1 and obj_end > obj_start:
+                    try:
+                        candidate = text[obj_start : obj_end + 1]
+                        # Fix trailing commas
+                        candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
+                        data = json.loads(candidate, strict=False)
+                    except json.JSONDecodeError:
+                        # Attempt JSON repair for truncated output
+                        data = self._attempt_json_repair(
+                            text[obj_start : obj_end + 1], section_id
+                        )
+                else:
+                    data = None
 
         if not data:
             data = self._fallback_regex_parse(text, section_id)
@@ -641,6 +661,11 @@ class RequirementWritingAgent(BaseAgent):
             # Always use actual word count — LLM self-reported counts
             # are systematically inflated by 18-95%.
             actual_word_count = len(content.split()) if content else 0
+
+            # ── Strip duplicate code blocks from parsed content ──
+            # Even after successful JSON parse, the "content" field may
+            # contain the LLM's own format echoes (```json / ```markdown blocks)
+            content = self._strip_echo_blocks(content)
 
             return content, addressed, actual_word_count
 
@@ -668,6 +693,10 @@ class RequirementWritingAgent(BaseAgent):
         
         # Clean up escaped newlines first, then quotes
         fallback_content = fallback_content.replace('\\n', '\n').replace('\\"', '"')
+
+        # ── Strip echo blocks (```json, ```markdown, ### Content, ### JSON Output) ──
+        fallback_content = self._strip_echo_blocks(fallback_content)
+
         fallback_content = fallback_content.strip()
 
         # Auto-recover requirements_addressed from REQ-XXXX patterns
@@ -680,6 +709,40 @@ class RequirementWritingAgent(BaseAgent):
                 f"from prose for {section_id}: {recovered_ids}"
             )
         return fallback_content, recovered_ids, len(fallback_content.split())
+
+    @staticmethod
+    def _strip_echo_blocks(content: str) -> str:
+        """Strip LLM echo blocks — ```json, ```markdown and similar fences
+        that duplicate already-rendered content, plus spurious labels like
+        '### Content' and '### JSON Output'.
+
+        Preserves ```mermaid blocks which are intentional diagram content.
+        """
+        if not content:
+            return content
+
+        # Remove ```json { "content": "..." ... } ``` blocks (full JSON echoes)
+        content = re.sub(
+            r'```json\s*\n\s*\{[^`]*?"content"\s*:.*?\}\s*\n\s*```',
+            '', content, flags=re.DOTALL,
+        )
+
+        # Remove ```markdown ... ``` blocks (content echoed in markdown fence)
+        content = re.sub(
+            r'```markdown\s*\n.*?```',
+            '', content, flags=re.DOTALL,
+        )
+
+        # Remove spurious LLM section labels that prefix echo blocks
+        content = re.sub(
+            r'^###\s*(?:Content|JSON Output|Markdown Output)\s*$',
+            '', content, flags=re.MULTILINE,
+        )
+
+        # Collapse 3+ consecutive blank lines into 2
+        content = re.sub(r'\n{3,}', '\n\n', content)
+
+        return content.strip()
 
     @staticmethod
     def _detect_placeholders(content: str, section_id: str) -> list[str]:
