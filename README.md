@@ -61,6 +61,11 @@ A multi-agent AI system that automates end-to-end RFP (Request for Proposal) res
 | Parsing | PyMuPDF (PDF), python-docx (DOCX) |
 | Config | pydantic-settings (secrets in `.env`, params in `config.py`) |
 
+## Prerequisites
+
+- **Python 3.10+**
+- **Node.js 18+** (Required for `npx` to automatically download and render Mermaid diagrams)
+
 ## Quick Start
 
 ```bash

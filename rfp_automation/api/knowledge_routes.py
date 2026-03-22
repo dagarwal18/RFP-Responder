@@ -355,7 +355,7 @@ async def delete_policy(policy_id: str):
         # Erase existing dynamic vectors/config
         from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
         store = KnowledgeStore()
-        store.clear_capabilities_and_certifications()
+        store.clear_derived_knowledge()
         
         # Re-seed remaining capabilities and certifications
         from rfp_automation.mcp.knowledge_loader import seed_capabilities, seed_certifications_to_mongo
@@ -380,17 +380,21 @@ async def delete_all_policies():
     
     # Explicitly clear derived capability and certification JSONs
     try:
-        data_dir = PolicyExtractionService._POLICIES_PATH.parent
+        from rfp_automation.services.policy_extraction_service import _POLICIES_PATH
+        data_dir = _POLICIES_PATH.parent
         (data_dir / "capabilities.json").write_text("[]", encoding="utf-8")
         (data_dir / "certifications.json").write_text("{}", encoding="utf-8")
-        logger.info("[KB] Cleared derived capabilities and certifications JSON files")
+        (data_dir / "pricing_rules.json").write_text("{}", encoding="utf-8")
+        (data_dir / "legal_templates.json").write_text("[]", encoding="utf-8")
+        (data_dir / "past_proposals.json").write_text("[]", encoding="utf-8")
+        logger.info("[KB] Cleared all derived knowledge JSON files")
     except Exception as e:
         logger.warning(f"[KB] Failed to clear derived JSON files: {e}")
 
     # Clear vectors/configs
     def _sync():
         from rfp_automation.mcp.vector_store.knowledge_store import KnowledgeStore
-        KnowledgeStore().clear_capabilities_and_certifications()
+        KnowledgeStore().clear_derived_knowledge()
         
     try:
         await asyncio.to_thread(_sync)

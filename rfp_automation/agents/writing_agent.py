@@ -567,6 +567,26 @@ class RequirementWritingAgent(BaseAgent):
             f"using raw text as content (recovering REQ-IDs from text)"
         )
         fallback_content = raw_response.strip()
+
+        # ── Strip JSON wrapper artifacts that bleed into prose ──
+        # If the LLM returned a JSON wrapper but we couldn't parse it,
+        # strip the structural keys so they don't appear in the proposal.
+        fallback_content = re.sub(
+            r'^```(?:json)?\s*', '', fallback_content
+        )
+        fallback_content = re.sub(
+            r'^\s*\{\s*"content"\s*:\s*"', '', fallback_content
+        )
+        # Remove trailing JSON metadata: ", "requirements_addressed": [...], "word_count": N }
+        fallback_content = re.sub(
+            r'",\s*"requirements_addressed"\s*:\s*\[.*?\]\s*,?\s*"word_count"\s*:\s*\d+\s*\}\s*```?\s*$',
+            '', fallback_content, flags=re.DOTALL,
+        )
+        
+        # Clean up escaped newlines first, then quotes
+        fallback_content = fallback_content.replace('\\n', '\n').replace('\\"', '"')
+        fallback_content = fallback_content.strip()
+
         # Auto-recover requirements_addressed from REQ-XXXX patterns
         recovered_ids = list(dict.fromkeys(
             re.findall(r'\bREQ-\d{4}\b', fallback_content)

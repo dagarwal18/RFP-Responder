@@ -326,6 +326,11 @@ function renderReviewWorkspace() {
 
   // Attach hover event delegation for the document reader
   attachDocReaderEvents();
+
+  // Render any Mermaid diagrams found in the review content
+  if (typeof renderMermaidDiagrams === 'function') {
+    setTimeout(renderMermaidDiagrams, 100);
+  }
 }
 
 function clearReviewWorkspace() {
@@ -751,7 +756,9 @@ function connectPipelineWS(rfpId) {
         renderStepper();
 
         // If a node ends with AWAITING_HUMAN_VALIDATION, enable the Review toggle
-        if (data.status && data.status.includes('AWAITING_HUMAN_VALIDATION')) {
+        // Skip auto-routing for historical (replayed) events to prevent
+        // the page from ping-ponging back to the review view.
+        if (!data.is_history && data.status && data.status.includes('AWAITING_HUMAN_VALIDATION')) {
           enableReviewToggle(true);
           if (activeRfpId) {
             loadReviewWorkspace(activeRfpId, data.status).then(() => {
@@ -789,13 +796,16 @@ function connectPipelineWS(rfpId) {
         }
 
         // Auto-toggle to review page if awaiting human validation
-        if (endStatus === 'AWAITING_HUMAN_VALIDATION') {
-          enableReviewToggle(true);
-          switchView('review');
-        } else {
-          // Pipeline completed (SUBMITTED, etc.) — disable review toggle
-          enableReviewToggle(false);
-          switchView('pipeline');
+        // Skip auto-routing for historical (replayed) events.
+        if (!data.is_history) {
+          if (endStatus === 'AWAITING_HUMAN_VALIDATION') {
+            enableReviewToggle(true);
+            switchView('review');
+          } else {
+            // Pipeline completed (SUBMITTED, etc.) — disable review toggle
+            enableReviewToggle(false);
+            switchView('pipeline');
+          }
         }
 
         // Show proposal link when submitted

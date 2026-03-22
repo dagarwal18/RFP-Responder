@@ -1,273 +1,213 @@
 {
   "source": "extracted",
   "currency": "INR",
-  "payment_terms": "for India proposals: Net 30 days from invoice with milestone-linked structure and bank guarantee for",
-  "discount_info": "",
+  "payment_terms": "",
+  "discount_info": "threshold authorities, and contract structuring mechanics for managed enterprise networks",
   "entries": [
     {
-      "text": "All prices in the catalog are in Indian Rupees (INR), exclusive of applicable GST (18% on software and professional services).",
-      "source_section": "Document Purpose & Scope",
-      "source_policy_id": "POL-001"
+      "text": "Commitments beyond stated SLAs (e.g., 99.999% uptime or <2 hour P1 resolution) require explicit Solution Engineering and Deal Desk pricing reviews.",
+      "source_section": "6) Constraints, Exclusions, and Dependencies",
+      "source_policy_id": "POL-056"
     },
     {
-      "text": "Implementation CapEx pricing is a one-time, milestone-linked cost of INR 312 Crores in Year 0.",
-      "source_section": "Five-Year Total Cost of Ownership (TCO) Summary",
-      "source_policy_id": "POL-002"
+      "text": "Bespoke integration development (custom middleware for proprietary customer application alarms) is prohibited under the standard Managed Services MSA and requires a separate Professional Services SOW.",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-215"
     },
     {
-      "text": "Annual Managed Services (AMS) OpEx in Year 1 is INR 68 Crores, commencing from Phase 3 go-live.",
-      "source_section": "Five-Year Total Cost of Ownership (TCO) Summary",
-      "source_policy_id": "POL-003"
+      "text": "The Pricing Catalog defines standard commercial models, OpEx frameworks, billing triggers, and volume thresholds for VI Business (India).",
+      "source_section": "1) Executive Purpose and Applicability",
+      "source_policy_id": "POL-300"
     },
     {
-      "text": "AMS OpEx in Year 2 includes a 4% escalation over Year 1, totaling INR 72 Crores.",
-      "source_section": "Five-Year Total Cost of Ownership (TCO) Summary",
-      "source_policy_id": "POL-004"
+      "text": "The document is applicable for designing Commercial Assumptions, OpEx matrices, and TCO evaluations in telecom bounds.",
+      "source_section": "1) Executive Purpose and Applicability",
+      "source_policy_id": "POL-301"
     },
     {
-      "text": "AMS OpEx in Year 3 includes a 4% escalation over Year 2, totaling INR 76 Crores.",
-      "source_section": "Five-Year Total Cost of Ownership (TCO) Summary",
-      "source_policy_id": "POL-005"
+      "text": "Indicative MRC for Edge Broadband (FTTx) is ₹ 8,000 - ₹ 15,000 per month.",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-302"
     },
     {
-      "text": "The catalog covers Implementation CapEx pricing by workstream, Annual Managed Services (AMS) OpEx by service tier, software license structures, optional modules, volume-based pricing tiers, and payment milestone schedules.",
-      "source_section": "Document Purpose & Scope",
-      "source_policy_id": "POL-007"
+      "text": "Indicative OTC for Edge Broadband (FTTx) is ₹ 15,000.",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-303"
     },
     {
-      "text": "Year 4 operational expenditure (OpEx) is INR 79 Crores with a 4% annual escalation rate from Year 3.",
-      "source_section": "Year 4 — OpEx",
-      "source_policy_id": "POL-008"
+      "text": "Indicative MRC for DIA Enterprise Fiber is ₹ 25,000 - ₹ 75,000 per month.",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-304"
     },
     {
-      "text": "Year 5 operational expenditure (OpEx) is INR 83 Crores with a 4% annual escalation rate from Year 4.",
-      "source_section": "Year 5 — OpEx",
-      "source_policy_id": "POL-009"
+      "text": "Indicative OTC for DIA Enterprise Fiber is ₹ 50,000.",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-305"
     },
     {
-      "text": "The 5-Year Total Cost of Ownership is INR 690 Crores, excluding optional modules and including cloud IaaS pass-through at cost.",
-      "source_section": "5-YEAR TOTAL COST OF OWNERSHIP",
-      "source_policy_id": "POL-010"
+      "text": "Indicative MRC for Active 4G/LTE Backup is ₹ 1,500 - ₹ 3,000 per month.",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-306"
     },
     {
-      "text": "Year 0 implementation capital expenditure (CapEx) is INR 312 Crores, structured across five delivery workstreams as defined in the RFP scope of work.",
-      "source_section": "3. Implementation CapEx — Workstream Breakdown",
-      "source_policy_id": "POL-011"
+      "text": "Indicative OTC for Active 4G/LTE Backup is ₹ 5,000 (including router).",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-307"
     },
     {
-      "text": "Stream A (Platform Design & Architecture) has an indicative cost of INR 22 Crores and a duration of 8 weeks (Phase 0).",
-      "source_section": "3. Implementation CapEx — Workstream Breakdown",
-      "source_policy_id": "POL-012"
+      "text": "Indicative OTC for Core Hub 1 Gbps PtP is ₹ 1,00,000.",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-308"
     },
     {
-      "text": "The cloud IaaS pass-through cost is included in the 5-Year Total Cost of Ownership at actual cost, with no markup applied.",
-      "source_section": "5-YEAR TOTAL COST OF OWNERSHIP",
-      "source_policy_id": "POL-016"
+      "text": "Placeholder INR rates represent standard un-discounted rack rates; bid-specific discounting requires systematic Deal Desk margin validation based on deal TCV.",
+      "source_section": "2) Definitions and Assumptions",
+      "source_policy_id": "POL-309"
     },
     {
-      "text": "34 Cr is allocated for Post-Go-Live Hypercare and included in Year 0 budget",
-      "source_section": "Concurrent, all phases",
-      "source_policy_id": "POL-23"
+      "text": "DIA Enterprise Fiber offers bandwidth capacities ranging from 50 Mbps to 500 Mbps.",
+      "source_section": "DIA Enterprise Fiber",
+      "source_policy_id": "POL-312"
     },
     {
-      "text": "Total Year 0 Implementation CapEx is INR 312 Crores over ~18 months",
-      "source_section": "TOTAL",
-      "source_policy_id": "POL-25"
-    },
-    {
-      "text": "Two platform enhancement releases per year are included as part of the standard service.",
-      "source_section": "Enhancement Releases",
-      "source_policy_id": "POL-031"
-    },
-    {
-      "text": "Major Enhancements (T&M) beyond the 2 base releases or new module development are quoted separately and billed as time-and-material.",
-      "source_section": "Major Enhancements (T&M)",
-      "source_policy_id": "POL-032"
-    },
-    {
-      "text": "The annual fee for Year 1 (FY2027–28) is INR 68 Cr, serving as the base year.",
-      "source_section": "4.2 AMS Annual Pricing Schedule",
-      "source_policy_id": "POL-034"
-    },
-    {
-      "text": "The annual fee for Year 2 (FY2028–29) is INR 72 Cr, with a 4% escalation of INR 2.72 Cr.",
-      "source_section": "4.2 AMS Annual Pricing Schedule",
-      "source_policy_id": "POL-035"
-    },
-    {
-      "text": "The annual fee for Year 3 (FY2029–30) is INR 76 Cr, with a 4% escalation of INR 2.88 Cr.",
-      "source_section": "4.2 AMS Annual Pricing Schedule",
-      "source_policy_id": "POL-036"
-    },
-    {
-      "text": "The annual fee for Year 4 (FY2030–31) is INR 79 Cr, with a 4% escalation of INR 3.04 Cr.",
-      "source_section": "4.2 AMS Annual Pricing Schedule",
-      "source_policy_id": "POL-037"
-    },
-    {
-      "text": "The annual fee for Year 5 (FY2031–32) is INR 83 Cr, with a 4% escalation of INR 3.16 Cr.",
-      "source_section": "4.2 AMS Annual Pricing Schedule",
-      "source_policy_id": "POL-038"
-    },
-    {
-      "text": "The total cumulative OpEx over FY2027–32 is INR 378 Crores.",
-      "source_section": "4.2 AMS Annual Pricing Schedule",
-      "source_policy_id": "POL-039"
-    },
-    {
-      "text": "The extended warranty (Years 6–7) has a flat annual maintenance cost of INR 41 Cr with no escalation.",
-      "source_section": "5. Optional Modules & Add-On Pricing",
-      "source_policy_id": "POL-042"
-    },
-    {
-      "text": "NexWave Technologies must ensure contract values for BSS/OSS transformations are comparable to Tier-1 scale engagements.",
-      "source_section": "CASE STUDY 1: AsiaNet Wireless — Philippines",
-      "source_policy_id": "POL-054"
-    },
-    {
-      "text": "Mohammed Al-Rashidi, VP IT, is available for Vi team site visits.",
-      "source_section": "Site Visit Available",
-      "source_policy_id": "POL-115"
-    },
-    {
-      "text": "Document type must be 'pricing'",
-      "source_section": "DOCUMENT TYPE",
-      "source_policy_id": "POL-135"
-    },
-    {
-      "text": "All prices in Indian Rupees (INR) with a forex protection statement ('all prices in INR; no forex exposure for client') for India proposals.",
-      "source_section": "5.2 India-Specific Proposal Requirements",
-      "source_policy_id": "POL-242"
-    },
-    {
-      "text": "Payment terms for India proposals: Net 30 days from invoice with milestone-linked structure and bank guarantee for advance payment.",
-      "source_section": "5.2 India-Specific Proposal Requirements",
-      "source_policy_id": "POL-243"
-    },
-    {
-      "text": "Include at least 3 client references with contact details and note availability for site visits.",
-      "source_section": "9. Client References",
-      "source_policy_id": "POL-246"
-    },
-    {
-      "text": "Structure commercial proposal with milestone payments and TCO summary from document NWTECH-PPC-2026-001.",
-      "source_section": "7. Commercial Proposal",
-      "source_policy_id": "POL-252"
-    },
-    {
-      "text": "Professional Indemnity insurance coverage must be INR 100 Crores per claim",
-      "source_section": "6. Insurance Coverage",
+      "text": "DIA Enterprise Fiber pricing ranges from ₹ 25,000 to ₹ 75,000 per month.",
+      "source_section": "DIA Enterprise Fiber",
       "source_policy_id": "POL-313"
     },
     {
-      "text": "Professional Indemnity insurance must be provided by New India Assurance Co.",
-      "source_section": "6. Insurance Coverage",
-      "source_policy_id": "POL-314"
+      "text": "DIA Enterprise Fiber charges between ₹ 1,500 and ₹ 3,000 for additional services.",
+      "source_section": "DIA Enterprise Fiber",
+      "source_policy_id": "POL-316"
     },
     {
-      "text": "Professional Indemnity insurance policy period must cover FY2026-27 and be renewable annually",
-      "source_section": "6. Insurance Coverage",
-      "source_policy_id": "POL-315"
+      "text": "DIA Enterprise Fiber includes a router with an indicative one-time charge of ₹ 5,000.",
+      "source_section": "DIA Enterprise Fiber",
+      "source_policy_id": "POL-317"
     },
     {
-      "text": "The Client shall process invoices within Net 30 days.",
-      "source_section": "3. Client Obligations",
-      "source_policy_id": "POL-344"
+      "text": "Core Hub has an indicative one-time charge (OTC) of ₹ 1,00,000.",
+      "source_section": "Core Hub 1 Gbps PtP",
+      "source_policy_id": "POL-320"
     },
     {
-      "text": "Implementation payments are milestone-linked as specified in the Commercial Exhibit.",
-      "source_section": "6.1 Payment Schedule",
-      "source_policy_id": "POL-362"
+      "text": "Connectivity Tier pricing includes an indicative one-time charge (OTC) of ₹ 1,50,000+ (varies by distance).",
+      "source_section": "Connectivity Tier",
+      "source_policy_id": "POL-321"
     },
     {
-      "text": "AMS payments are monthly in arrears from the AMS Commencement Date.",
-      "source_section": "6.1 Payment Schedule",
-      "source_policy_id": "POL-363"
+      "text": "Hyperscaler Interconnect Subscriptions have bandwidth capacities with indicative monthly recurring charges (MRC) and one-time charges (OTC).",
+      "source_section": "3.2 Hyperscaler Interconnect Subscriptions",
+      "source_policy_id": "POL-322"
     },
     {
-      "text": "All amounts are exclusive of applicable GST (currently 18% on software and professional services).",
-      "source_section": "6.1 Payment Schedule",
-      "source_policy_id": "POL-364"
+      "text": "Managed SOC and SIEM Licensing pricing scales based on ingestion volume (Events Per Second or daily log GB) and integrated SD-WAN edge points.",
+      "source_section": "3.3 Managed SOC and SIEM Licensing",
+      "source_policy_id": "POL-323"
     },
     {
-      "text": "Invoices shall be raised by the Vendor within 5 business days of milestone achievement, accompanied by evidence of completion.",
-      "source_section": "6.1 Payment Schedule",
-      "source_policy_id": "POL-365"
+      "text": "Managed SOC and SIEM Licensing prohibits surprise hourly 'time-and-materials' charges for P1 anomalies.",
+      "source_section": "3.3 Managed SOC and SIEM Licensing",
+      "source_policy_id": "POL-324"
     },
     {
-      "text": "Client shall pay undisputed invoices within Net 30 days of receipt.",
-      "source_section": "6.2 Payment Timelines",
-      "source_policy_id": "POL-366"
+      "text": "IoT Enterprise Mobility (EMM) offers volume discounts at scale markers: 100k, 500k, 1M, and 2.5M SIMs.",
+      "source_section": "3.4 IoT Enterprise Mobility (EMM)",
+      "source_policy_id": "POL-325"
     },
     {
-      "text": "For disputed invoices, the Client shall raise a written dispute within 15 business days with specific grounds.",
-      "source_section": "6.2 Payment Timelines",
-      "source_policy_id": "POL-367"
+      "text": "IoT Enterprise Mobility (EMM) prohibits individual endpoint overage penalties unless total organizational data limits are exceeded.",
+      "source_section": "3.4 IoT Enterprise Mobility (EMM)",
+      "source_policy_id": "POL-327"
     },
     {
-      "text": "Both parties shall resolve disputes within 30 days of the dispute notice.",
-      "source_section": "6.2 Payment Timelines",
-      "source_policy_id": "POL-368"
+      "text": "Pricing is illustrative and subject to regional transmission variants.",
+      "source_section": "DIA Enterprise Fiber",
+      "source_policy_id": "POL-328"
     },
     {
-      "text": "Undisputed portions of disputed invoices shall be paid within the original Net 30 timeline.",
-      "source_section": "6.2 Payment Timelines",
-      "source_policy_id": "POL-369"
+      "text": "Monthly billing for an individual location is securely activated 24 hours after validated ZTP configuration loading and formal User Acceptance Sign-off on stability.",
+      "source_section": "Trigger Condition",
+      "source_policy_id": "POL-329"
     },
     {
-      "text": "Overdue amounts beyond 45 days shall accrue interest at SBI MCLR (1-year) + 2% per annum, calculated daily.",
-      "source_section": "6.2 Payment Timelines",
-      "source_policy_id": "POL-370"
+      "text": "Connectivity Tier pricing is illustrative and subject to regional transmission variants; indicative MRC and OTC values are provided as baseline representations.",
+      "source_section": "Governance and Ownership",
+      "source_policy_id": "POL-332"
     },
     {
-      "text": "Persistent non-payment beyond 90 days (with a 30-day cure notice) shall entitle the Vendor to suspend non-critical services upon written notice.",
-      "source_section": "6.2 Payment Timelines",
-      "source_policy_id": "POL-371"
+      "text": "Reselling of bare-metal AWS/Azure compute VMs (non-networking) is excluded from VI Business core networking solutions and requires separate systems integration partnerships.",
+      "source_section": "Constraints, Exclusions, and Dependencies",
+      "source_policy_id": "POL-381"
     },
     {
-      "text": "AMS fees shall escalate annually at the lower of: (a) 4% per year (contractually committed), or (b) the Wholesale Price Index (WPI) published by the Ministry of Commerce, Government of India.",
-      "source_section": "6.4 AMS Price Escalation",
-      "source_policy_id": "POL-372"
+      "text": "SLA financial credits are capped at 10% to 15% of the offending service's MRC, aligning with liability structures in Standard Terms and Conditions.",
+      "source_section": "6) Constraints, Exclusions, and Dependencies",
+      "source_policy_id": "POL-513"
     },
     {
-      "text": "This cap is a contractual commitment and cannot be exceeded.",
-      "source_section": "6.4 AMS Price Escalation",
-      "source_policy_id": "POL-373"
+      "text": "The Standard Commercial Policy establishes financial guardrails, hardware leasing mechanisms, discount threshold authorities, and contract structuring mechanics for managed enterprise networks.",
+      "source_section": "1) Executive Purpose and Applicability",
+      "source_policy_id": "POL-515"
     },
     {
-      "text": "Escalation applies from the second AMS year onward.",
-      "source_section": "6.4 AMS Price Escalation",
-      "source_policy_id": "POL-374"
+      "text": "The policy applies to Deal Desk, Finance Managers, Sales Leads, and Bid Directors for drafting RFP Commercial Assumptions, generating OpEx TCO evaluations, and detailing minimum contract duration lock-ins.",
+      "source_section": "1) Executive Purpose and Applicability",
+      "source_policy_id": "POL-516"
     },
     {
-      "text": "CRs that reduce scope shall not entitle the Vendor to additional payment, but may reduce milestone-linked payments proportionally as agreed.",
-      "source_section": "7. Change Control Process",
-      "source_policy_id": "POL-380"
+      "text": "VI Business (India) must standardize on an end-to-end 'as-a-Service' connectivity model for SD-WAN Edge CPE, cellular failover links, and core SIEM ingestion licenses.",
+      "source_section": "3.1 Pricing Baseline and Hardware Leasing (As-a-Service)",
+      "source_policy_id": "POL-518"
     },
     {
-      "text": "Monthly credit rate for OCS / Charging Engine is 2% of monthly AMS fee per 0.001% shortfall.",
-      "source_section": "8. SLA, Service Credits & Liquidated Damages",
-      "source_policy_id": "POL-386"
+      "text": "VI retains full capital ownership of all provided hardware throughout the MSA term.",
+      "source_section": "3.1 Pricing Baseline and Hardware Leasing (As-a-Service)",
+      "source_policy_id": "POL-519"
     },
     {
-      "text": "In case of Client termination for Vendor's cause, the Vendor shall refund all milestone payments for undelivered milestones within 90 days.",
-      "source_section": "11.1 Termination for Cause",
-      "source_policy_id": "POL-406"
+      "text": "For multi-tiered rollups, billing scales linearly as individual branch site batches go live, with sites lacking active WAN delivery remaining dormant and unbilled.",
+      "source_section": "3.2 Billing Commencement Parameters",
+      "source_policy_id": "POL-521"
     },
     {
-      "text": "Termination for convenience during the implementation phase requires payment of: (a) all completed milestone payments; (b) reasonable mobilization costs for work-in-progress (not to exceed 20% of remaining implementation CapEx); and (c) committed third-party costs that cannot be cancelled.",
-      "source_section": "11.2 Termination for Convenience",
-      "source_policy_id": "POL-408"
+      "text": "For long-term MSAs extending beyond 36 months, extreme inflationary fluctuations exceeding standard CPI limits require mandatory commercial indexing protection clauses or re-negotiation gates defined heavily within the master agreement.",
+      "source_section": "3.3 Standard Commercial Protections & Indexing",
+      "source_policy_id": "POL-522"
     },
     {
-      "text": "The Vendor shall not be entitled to anticipated profits on unperformed work.",
-      "source_section": "11.2 Termination for Convenience",
-      "source_policy_id": "POL-409"
+      "text": "The enterprise customer explicitly bears direct financial liability for theft, vandalism, or gross negligence resulting in physical destruction of edge CPE units positioned inside their premises.",
+      "source_section": "3.3 Standard Commercial Protections & Indexing",
+      "source_policy_id": "POL-523"
     },
     {
-      "text": "Exit assistance is charged at the T&M rates defined in the Commercial Exhibit.",
-      "source_section": "11.3 Exit Assistance",
-      "source_policy_id": "POL-411"
+      "text": "Massive IoT fleet distributions utilize aggregate Custom APN data pools to shield customers from erratic billing variations. Individual endpoint overages do not trigger penalty rates unless the total accumulated organizational limit reaches 100% capacity.",
+      "source_section": "3.4 Volume Pricing & IoT Aggregation",
+      "source_policy_id": "POL-524"
+    },
+    {
+      "text": "Network ports terminating at Azure (ExpressRoute) and AWS (Direct Connect) are priced strictly upon the committed bandwidth pipe. The VI Business MRC does not absorb egress data transfer taxes levied individually by the cloud provider against the customer.",
+      "source_section": "3.4 Volume Pricing & IoT Aggregation",
+      "source_policy_id": "POL-525"
+    },
+    {
+      "text": "Accumulated monthly SLA financial credits crossing all tracked KPI parameters must never exceed 10% to 15% of that specific, offending link/service’s individual MRC.",
+      "source_section": "3.5 Penalty Payment Caps (Liquidated Damages)",
+      "source_policy_id": "POL-526"
+    },
+    {
+      "text": "Sustained non-payment of uncontested invoices exceeding 60-90 days past the due date structurally empowers VI Business (India) to initiate a staged suspension of non-critical data flows, escalating to hard port isolation, prior to formal contract termination.",
+      "source_section": "3.6 Payment Defaults and Service Suspensions",
+      "source_policy_id": "POL-527"
+    },
+    {
+      "text": "Legacy third-party telecom termination fees will not be inherently 'bought out' or subtracted from VI Business (India)'s OpEx proposals without exceptional TCV escalations.",
+      "source_section": "Exclusions",
+      "source_policy_id": "POL-530"
+    },
+    {
+      "text": "Managed Services are subject to a minimum lock-in period of 36 months. Termination for convenience during this period requires the Customer to pay the remaining MRC for the entire unexpired lock-in duration plus unrecovered capital costs.",
+      "source_section": "Lock-in Period and Termination",
+      "source_policy_id": "POL-542"
     }
   ]
 }

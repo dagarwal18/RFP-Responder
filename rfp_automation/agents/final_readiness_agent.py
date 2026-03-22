@@ -10,8 +10,11 @@ submission record.
 from __future__ import annotations
 
 import hashlib
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from rfp_automation.agents.base_agent import BaseAgent
 from rfp_automation.models.enums import (
@@ -104,9 +107,23 @@ class FinalReadinessAgent(BaseAgent):
             out_dir.mkdir(parents=True, exist_ok=True)
 
             submitted_at = datetime.now(timezone.utc)
-            output_path = out_dir / "proposal.md"
 
             proposal_markdown = self._build_markdown(state, submitted_at.isoformat())
+
+            # Save pre-render artifact for debugging
+            raw_path = out_dir / "proposal_raw.md"
+            raw_path.write_text(proposal_markdown, encoding="utf-8")
+            logger.info(f"[F1] Saved raw markdown: {raw_path}")
+
+            # Process Mermaid diagrams (render to PNG, rewrite markdown)
+            try:
+                from rfp_automation.utils.mermaid_utils import process_mermaid_blocks
+                diagrams_dir = out_dir / "diagrams"
+                proposal_markdown = process_mermaid_blocks(proposal_markdown, diagrams_dir)
+            except Exception as e:
+                logger.warning(f"[F1] Mermaid processing failed (non-fatal): {e}")
+
+            output_path = out_dir / "proposal.md"
             output_path.write_text(proposal_markdown, encoding="utf-8")
 
             # Automatically convert to PDF using the md_to_pdf script
@@ -115,6 +132,11 @@ class FinalReadinessAgent(BaseAgent):
                 import subprocess
                 client_name = state.rfp_metadata.client_name or "Client"
                 rfp_title = state.rfp_metadata.rfp_title or "RFP Response Proposal"
+                # Sanitize rfp_title: remove newlines and cap length
+                # (RFP titles from parsed docs may contain line breaks, and pipes break Windows subshells)
+                rfp_title = " - ".join(
+                    line.strip() for line in rfp_title.splitlines() if line.strip()
+                )[:120]
                 # Assuming the proposing company might be available or default to "Our Company"
                 # (For now we'll use a generic "Proposing Company" default if not defined)
                 subprocess.run(

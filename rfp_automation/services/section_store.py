@@ -129,7 +129,33 @@ class SectionStore:
                 return chunk_map
             except Exception as e:
                 logger.error(f"Failed to load JSON fallback for {rfp_id}: {e}")
-        else:
-            logger.warning(f"No JSON fallback found for {rfp_id} at {fallback_path}")
-
         return chunk_map
+
+    def delete_sections(self, rfp_id: str) -> bool:
+        """
+        Delete all full text chunks for a specific RFP from MongoDB and local JSON fallback.
+        Returns True if successful.
+        """
+        success = True
+        
+        # 1. MongoDB delete
+        db = self._get_db()
+        if db is not None:
+            try:
+                result = db.rfp_chunks.delete_many({"rfp_id": rfp_id})
+                logger.info(f"Deleted {result.deleted_count} sections for {rfp_id} from MongoDB")
+            except Exception as e:
+                logger.error(f"Failed to delete sections from MongoDB for {rfp_id}: {e}")
+                success = False
+                
+        # 2. JSON fallback delete
+        fallback_path = self.fallback_dir / f"{rfp_id}.json"
+        if fallback_path.exists():
+            try:
+                fallback_path.unlink()
+                logger.info(f"Deleted JSON fallback for {rfp_id}")
+            except Exception as e:
+                logger.error(f"Failed to delete JSON fallback for {rfp_id}: {e}")
+                success = False
+                
+        return success

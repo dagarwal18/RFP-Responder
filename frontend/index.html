@@ -8,6 +8,36 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    // Initialize Mermaid with a light theme for readability
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'default',
+      securityLevel: 'loose',
+    });
+
+    // Configure marked.js to render ```mermaid blocks as Mermaid-compatible divs
+    const renderer = new marked.Renderer();
+    const originalCode = renderer.code;
+    renderer.code = function({ text, lang }) {
+      if (lang === 'mermaid') {
+        return `<pre class="mermaid">${text}</pre>`;
+      }
+      // Default code block rendering
+      return `<pre><code class="language-${lang || ''}">${text}</code></pre>`;
+    };
+    marked.setOptions({ renderer });
+
+    // After any review render, re-run Mermaid to convert pre.mermaid → SVG
+    function renderMermaidDiagrams() {
+      try {
+        mermaid.run({ querySelector: 'pre.mermaid' });
+      } catch (e) {
+        console.warn('Mermaid rendering error:', e);
+      }
+    }
+  </script>
 </head>
 
 <body>
