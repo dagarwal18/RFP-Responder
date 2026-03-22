@@ -208,6 +208,501 @@
       "text": "Managed Services are subject to a minimum lock-in period of 36 months. Termination for convenience during this period requires the Customer to pay the remaining MRC for the entire unexpired lock-in duration plus unrecovered capital costs.",
       "source_section": "Lock-in Period and Termination",
       "source_policy_id": "POL-542"
+    },
+    {
+      "text": "All financial thresholds mentioned in the document are strictly in Indian Rupees (INR).",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-549"
+    },
+    {
+      "text": "The proposed margin must meet the VIL baseline Internal Rate of Return (IRR) hurdle of 15%.",
+      "source_section": "4.2 Commercial and Financial Approval",
+      "source_policy_id": "POL-561"
+    },
+    {
+      "text": "The total cost of ownership (Capex + Opex) must be modeled across the standard 3-year or 5-year contract term.",
+      "source_section": "4.2 Commercial and Financial Approval",
+      "source_policy_id": "POL-562"
+    },
+    {
+      "text": "The Head of Enterprise Commercials must sign off on commercial and financial approvals.",
+      "source_section": "4.2 Commercial and Financial Approval",
+      "source_policy_id": "POL-563"
+    },
+    {
+      "text": "Deal Desk escalation is triggered if projected margin or IRR is below 15%.",
+      "source_section": "Exception Approvals (The Deal Desk)",
+      "source_policy_id": "POL-569"
+    },
+    {
+      "text": "Deal Desk escalation is triggered if liability caps exceed 100% of the 12-month trailing contract value.",
+      "source_section": "Exception Approvals (The Deal Desk)",
+      "source_policy_id": "POL-571"
+    },
+    {
+      "text": "Deal Desk escalation is triggered for Capital Expenditure (Capex) requirements exceeding INR 5 Crores upfront.",
+      "source_section": "Exception Approvals (The Deal Desk)",
+      "source_policy_id": "POL-572"
+    },
+    {
+      "text": "The Commercial Packaging Guide provides a standardized framework for structuring, pricing, and bundling managed enterprise services.",
+      "source_section": "1. Executive Purpose and Document Scope",
+      "source_policy_id": "POL-695"
+    },
+    {
+      "text": "All managed enterprise services must ensure a minimum 15% Internal Rate of Return (IRR) for margin protection.",
+      "source_section": "1. Executive Purpose and Document Scope",
+      "source_policy_id": "POL-696"
+    },
+    {
+      "text": "All pricing metrics and thresholds are defined exclusively in Indian Rupees (INR), excluding applicable Goods and Services Tax (GST) unless explicitly noted.",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-699"
+    },
+    {
+      "text": "The baseline currency for contract generation is Indian Rupees (INR).",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-700"
+    },
+    {
+      "text": "Multi-currency contracts are only permitted via Deal Desk escalation for global subsidiaries operating within India.",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-701"
+    },
+    {
+      "text": "Enterprise IoT/Mobility Aggregation is priced on a shared data pool (cAPN) model rather than per-SIM linear pricing.",
+      "source_section": "3.2 Enterprise IoT/Mobility Aggregation",
+      "source_policy_id": "POL-714"
+    },
+    {
+      "text": "Advanced Threat Protection (ATP) adds a +15% uplift on the CPE MRC per site.",
+      "source_section": "Service Add-On | Pricing Logic | Deployment Condition",
+      "source_policy_id": "POL-719"
+    },
+    {
+      "text": "Dedicated SOC Analyst is priced at INR 15 Lakhs ARC (Annualized / Per FTE).",
+      "source_section": "Service Add-On | Pricing Logic | Deployment Condition",
+      "source_policy_id": "POL-720"
+    },
+    {
+      "text": "Baseline connectivity must be quoted with optional managed add-ons to increase ARPU and client stickiness.",
+      "source_section": "4. Attach Services and Add-Ons",
+      "source_policy_id": "POL-722"
+    },
+    {
+      "text": "Managed 4G/5G Wireless Backup is priced as a flat MRC per site (Includes SIM + Data Pool).",
+      "source_section": "Service Add-On",
+      "source_policy_id": "POL-723"
+    },
+    {
+      "text": "Advanced Threat Protection (ATP) requires a +15% uplift on the CPE MRC per site.",
+      "source_section": "Advanced Threat Protection (ATP)",
+      "source_policy_id": "POL-726"
+    },
+    {
+      "text": "Dedicated SOC Analyst pricing is INR 15 Lakhs ARC (Annualized / Per FTE).",
+      "source_section": "Dedicated SOC Analyst",
+      "source_policy_id": "POL-729"
+    },
+    {
+      "text": "Pricing discounts and Sales Incentive Plan payouts are heavily biased toward multi-year commitments.",
+      "source_section": "5. Contract Term Logic",
+      "source_policy_id": "POL-731"
+    },
+    {
+      "text": "12-month contract duration has a 0% discount (List Price) with AM Authority approval.",
+      "source_section": "5.1 Standard Term Discount Matrix",
+      "source_policy_id": "POL-732"
+    },
+    {
+      "text": "24-month contract duration allows up to 5% discount (Off List MRC) with AM Authority approval.",
+      "source_section": "5.1 Standard Term Discount Matrix",
+      "source_policy_id": "POL-733"
+    },
+    {
+      "text": "36-month contract duration allows up to 15% discount (Off List MRC) with Regional Sales Head approval.",
+      "source_section": "5.1 Standard Term Discount Matrix",
+      "source_policy_id": "POL-734"
+    },
+    {
+      "text": "If a customer refuses to pay the hardware OTC upfront, VI Business will finance the CPE.",
+      "source_section": "5.2 CapEx Surcharge (Financing)",
+      "source_policy_id": "POL-735"
+    },
+    {
+      "text": "The OTC is amortized across the contract term with a mandatory 12% annualized cost-of-capital markup added directly into the MRC line item.",
+      "source_section": "5.2 CapEx Surcharge (Financing)",
+      "source_policy_id": "POL-736"
+    },
+    {
+      "text": "Integrated 'Connectivity + Mobility + Cloud' constructs are strongly prioritized in Commercial Finance.",
+      "source_section": "6. Cross-Service Offers (The 'Enterprise Core' Construct)",
+      "source_policy_id": "POL-737"
+    },
+    {
+      "text": "If a single MSA or RFP BoM contains SD-WAN, Enterprise IoT, and an Azure/AWS Interconnect, an additional 5% strategic discount on TCV is automatically applied.",
+      "source_section": "6. Cross-Service Offers (The 'Enterprise Core' Construct)",
+      "source_policy_id": "POL-738"
+    },
+    {
+      "text": "Account Managers cannot waive initial setup fees (OTC) for custom fiber builds exceeding INR 50,000 without shifting the cost into a guaranteed 36-month minimum term MRC.",
+      "source_section": "7. Packaging Rules and Constraints",
+      "source_policy_id": "POL-739"
+    },
+    {
+      "text": "Customers may upgrade bandwidth dynamically via Bandwidth on Demand mid-contract but cannot downgrade below the original signed baseline commitment during the initial term.",
+      "source_section": "7. Packaging Rules and Constraints",
+      "source_policy_id": "POL-740"
+    },
+    {
+      "text": "RFPs must use Section 3 and Section 4 to answer questions about 'Service Tiering' and 'Value-Added Services'.",
+      "source_section": "8. Proposal-Use Guidance",
+      "source_policy_id": "POL-743"
+    },
+    {
+      "text": "Pricing submitted in external RFPs must be consolidated and not expose the raw 12% cost-of-capital amortization formula to the customer.",
+      "source_section": "8. Proposal-Use Guidance",
+      "source_policy_id": "POL-744"
+    },
+    {
+      "text": "Gold customers are defined as those with revenue exceeding INR 1 Crore.",
+      "source_section": "Weekly Touchpoint, Formal QBR",
+      "source_policy_id": "POL-0791"
+    },
+    {
+      "text": "Silver customers are defined as those with revenue below INR 1 Crore.",
+      "source_section": "Silver (< INR 1 Crore)",
+      "source_policy_id": "POL-0795"
+    },
+    {
+      "text": "Quality Assurance must emphasize Section 4 (Experience Bands) to justify premium delivery vs. low-cost integrators.",
+      "source_section": "Quality Assurance",
+      "source_policy_id": "POL-872"
+    },
+    {
+      "text": "National infrastructure value exceeds INR 2.0 Lakh Crore, representing the capitalized physical asset base (Optical, Core Routing, Radio).",
+      "source_section": "National Infrastructure Value",
+      "source_policy_id": "POL-927"
+    },
+    {
+      "text": "Enterprise customer base exceeds 10,000 active clients, representing exclusively business (B2B) billing accounts.",
+      "source_section": "Enterprise Customer Base",
+      "source_policy_id": "POL-928"
+    },
+    {
+      "text": "Enterprise IoT connections exceed 2.5 million active endpoints, demonstrating uncontested dominance in Indian telematics billing.",
+      "source_section": "Enterprise IoT Connections",
+      "source_policy_id": "POL-929"
+    },
+    {
+      "text": "Strategic direction pivots away from commoditized 'dumb pipe' connectivity toward high-margin, sticky Managed Digital Services.",
+      "source_section": "4. Business Performance Summary",
+      "source_policy_id": "POL-930"
+    },
+    {
+      "text": "The Enterprise (B2B) division represents the fastest-growing profitability segment within VIL.",
+      "source_section": "4. Business Performance Summary",
+      "source_policy_id": "POL-931"
+    },
+    {
+      "text": "Strategic investments have shifted from pure broadband to high-growth adjacency markets including SD-WAN & SASE Orchestration, Managed Security Operations (SOC), and Enterprise Mobility Management (Custom APNs).",
+      "source_section": "4. Business Performance Summary",
+      "source_policy_id": "POL-932"
+    },
+    {
+      "text": "Maintains a commanding enterprise revenue market share in India, securing anchor accounts within Banking, Financial Services, and Insurance (BFSI), IT/ITES, and Logistics verticals.",
+      "source_section": "4. Business Performance Summary",
+      "source_policy_id": "POL-933"
+    },
+    {
+      "text": "VI Business absorbs initial hardware capital expenditures exceeding INR 5 Crores on behalf of clients for complex, multi-site RFPs.",
+      "source_section": "5. Investment Capacity and CapEx Logic",
+      "source_policy_id": "POL-934"
+    },
+    {
+      "text": "CapEx absorption is amortized via monthly recurring charges (MRC) across 36- or 60-month Master Services Agreements (MSAs).",
+      "source_section": "5. Investment Capacity and CapEx Logic",
+      "source_policy_id": "POL-935"
+    },
+    {
+      "text": "Emphasize CapEx Absorption in Section 5 as a value-add during contract negotiations to transfer depreciation burden to VI Business.",
+      "source_section": "9. Proposal-Use Guidance",
+      "source_policy_id": "POL-950"
+    },
+    {
+      "text": "The templates apply to all managed network, IoT, and SOC onboarding projects exceeding INR 1 Crore Total Contract Value (TCV).",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-959"
+    },
+    {
+      "text": "Advance OTC invoice must be generated for billing.",
+      "source_section": "3.3 Executive Steering Deck (Monthly)",
+      "source_policy_id": "POL-971"
+    },
+    {
+      "text": "Payment confirmation is required after generating an advance OTC invoice.",
+      "source_section": "3.3 Executive Steering Deck (Monthly)",
+      "source_policy_id": "POL-972"
+    },
+    {
+      "text": "A formal commercial Change Request (CR) must be triggered if the customer alters the signed Bill of Materials (BoM).",
+      "source_section": "3.5 Change Request (CR) Template",
+      "source_policy_id": "POL-977"
+    },
+    {
+      "text": "Change Requests (CRs) must include the CR Reference, Initiator, Original Scope Constraint, Proposed Change, and Financial Impact (OTC/MRC).",
+      "source_section": "3.5 Change Request (CR) Template",
+      "source_policy_id": "POL-978"
+    },
+    {
+      "text": "The Base Fortinet 40F router is provided as the standard configuration.",
+      "source_section": "Base Fortinet 40F router provided.",
+      "source_policy_id": "POL-979"
+    },
+    {
+      "text": "Upgrading to Fortinet 80F for Branch 12 requires a +INR 15,000 one-time charge (OTC).",
+      "source_section": "Upgrade to Fortinet 80F for Branch 12 due to increased layout. +INR 15,000 OTC",
+      "source_policy_id": "POL-980"
+    },
+    {
+      "text": "RFP Matrix Responses must include the exact structure of Section 3.1 (RAID Log) to demonstrate administrative maturity.",
+      "source_section": "Proposal-Use Guidance",
+      "source_policy_id": "POL-985"
+    },
+    {
+      "text": "Scope-creep adjustments must be defended using Section 3.5 to justify formal commercial changes and protect internal margins.",
+      "source_section": "Proposal-Use Guidance",
+      "source_policy_id": "POL-986"
+    },
+    {
+      "text": "All insurance policy limits are quoted in Indian Rupees (INR) or US Dollars (USD) where global reinsurance treaties apply, converted at the prevailing RBI reference rate.",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-1022"
+    },
+    {
+      "text": "Commercial General Liability has an aggregate annual limit of INR 250 Crores and per occurrence limit of INR 50 Crores.",
+      "source_section": "Coverage Limits and Bands",
+      "source_policy_id": "POL-1030"
+    },
+    {
+      "text": "Professional Indemnity (E&O) has an aggregate annual limit of USD 50 Million and per occurrence limit of USD 10 Million.",
+      "source_section": "Coverage Limits and Bands",
+      "source_policy_id": "POL-1031"
+    },
+    {
+      "text": "Cyber Liability has an aggregate annual limit of USD 25 Million and per occurrence limit of USD 5 Million.",
+      "source_section": "Coverage Limits and Bands",
+      "source_policy_id": "POL-1032"
+    },
+    {
+      "text": "The USD 50 Million E&O policy does not imply VI Business accepts a USD 50 Million liability cap in customer contracts.",
+      "source_section": "7. Constraints, Exclusions, and Dependency Notes",
+      "source_policy_id": "POL-1041"
+    },
+    {
+      "text": "VI Business's total liability is hard-capped at 100% of the trailing 12-month Total Contract Value (TCV) in standard commercial MSAs.",
+      "source_section": "7. Constraints, Exclusions, and Dependency Notes",
+      "source_policy_id": "POL-1042"
+    },
+    {
+      "text": "VI Business will not build custom middleware translation scripts on behalf of the customer unless contracted under a separate Professional Services BoM.",
+      "source_section": "6.2 ITSM and API Interoperability",
+      "source_policy_id": "POL-1076"
+    },
+    {
+      "text": "Penalty-free termination of contracts is prohibited due to the risk of destroying deal profitability from absorbed CapEx.",
+      "source_section": "3.3 Termination for Convenience",
+      "source_policy_id": "POL-1098"
+    },
+    {
+      "text": "Adjusting Loss of Life (LoL) > 100% Total Contract Value (TCV) requires Enterprise CFO (Deal Desk) approval within 72 hours.",
+      "source_section": "4. Approval Rules and Escalation Matrix",
+      "source_policy_id": "POL-1104"
+    },
+    {
+      "text": "SIP Trunking Call Detail Records (CDR) must be generated dynamically and accessible via the Self-Care portal.",
+      "source_section": "5. Billing and Usage Reports",
+      "source_policy_id": "POL-1216"
+    },
+    {
+      "text": "Consolidated Invoicing must roll up multiple regional branches into a single HQ invoice, segregated by cost center or billing account number.",
+      "source_section": "5. Billing and Usage Reports",
+      "source_policy_id": "POL-1218"
+    },
+    {
+      "text": "Managed SD-WAN architectures require a minimum Total Contract Value (TCV) > INR 25 Lakhs.",
+      "source_section": "6. Commercial Prerequisites",
+      "source_policy_id": "POL-1247"
+    },
+    {
+      "text": "Smaller deployments default to standard unmanaged connectivity if TCV is below INR 25 Lakhs.",
+      "source_section": "6. Commercial Prerequisites",
+      "source_policy_id": "POL-1248"
+    },
+    {
+      "text": "Net-new enterprise logos requesting hardware CapEx exceeding INR 1 Crore require a D&B credit score review.",
+      "source_section": "6. Commercial Prerequisites",
+      "source_policy_id": "POL-1249"
+    },
+    {
+      "text": "The Proposal Pricing Assumptions Guide establishes a strict framework of caveats and preconditions for all commercial quotes issued by VI Business (India).",
+      "source_section": "1. Executive Purpose and Document Scope",
+      "source_policy_id": "POL-1262"
+    },
+    {
+      "text": "Pricing assumptions expire 90 days from the original proposal submission date.",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-1264"
+    },
+    {
+      "text": "If an RFP extends beyond 90 days, commercial tables must be re-validated by the Deal Desk against prevailing OEM hardware exchange rates.",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-1265"
+    },
+    {
+      "text": "The scope of this document covers Managed SD-WAN, Enterprise SIP Trunking, Colocation, and IoT MSAs.",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-1267"
+    },
+    {
+      "text": "Every commercial proposal must include the 'Standard Commercial Annexure,' with pricing derived mathematically from defined assumptions.",
+      "source_section": "3. The Assumption Framework and Legal Binding",
+      "source_policy_id": "POL-1268"
+    },
+    {
+      "text": "VI Business will not bear the cost of local municipal extortion or 'society fees'.",
+      "source_section": "Building Access",
+      "source_policy_id": "POL-1272"
+    },
+    {
+      "text": "A 'Fruitless Visit' surcharge of INR 5,000 per engineer, per day applies if a field engineer is dispatched but the site is locked or denied entry by customer security.",
+      "source_section": "Delays",
+      "source_policy_id": "POL-1274"
+    },
+    {
+      "text": "Wall-mounting brackets or bespoke ruggedized enclosures must be explicitly declared and costed in the BoM.",
+      "source_section": "Rack Density",
+      "source_policy_id": "POL-1278"
+    },
+    {
+      "text": "Quoted solution terminates cleanly at the router's LAN port; active reconfiguration of customer's downstream LAN switching architecture is strictly charged as Professional Services.",
+      "source_section": "LAN Compatibility",
+      "source_policy_id": "POL-1279"
+    },
+    {
+      "text": "All quotes, purchase orders, invoices, and payments must be exclusively executed in Indian Rupees (INR).",
+      "source_section": "Currency",
+      "source_policy_id": "POL-1280"
+    },
+    {
+      "text": "All stated prices are strictly exclusive of Goods and Services Tax (GST) and applicable statutory cesses/levies.",
+      "source_section": "Taxation (GST)",
+      "source_policy_id": "POL-1281"
+    },
+    {
+      "text": "GST at the prevailing DoT/Finance Ministry rate (18% for telecom services) will be applied at the time of final invoicing.",
+      "source_section": "Taxation (GST)",
+      "source_policy_id": "POL-1282"
+    },
+    {
+      "text": "INR OTC remains valid only if USD-to-INR exchange rate fluctuates by no more than +/- 5% during the 90-day proposal validity window for USD-denominated hardware imports.",
+      "source_section": "Hardware Import Fluctuations",
+      "source_policy_id": "POL-1283"
+    },
+    {
+      "text": "Deduplication/optimization tuning (e.g., rewriting ERP TCP sliding windows) is not included in Day-2 operations.",
+      "source_section": "Out-of-Scope Pricing Conditions",
+      "source_policy_id": "POL-1284"
+    },
+    {
+      "text": "Writing Python/Java scripts to integrate standard Webhooks/APIs into customer's legacy SAP/ServiceNow instance is outside pricing scope.",
+      "source_section": "Out-of-Scope Pricing Conditions",
+      "source_policy_id": "POL-1285"
+    },
+    {
+      "text": "Providing legal or cryptocurrency negotiation services with ransomware threat actors is entirely out of scope.",
+      "source_section": "Out-of-Scope Pricing Conditions",
+      "source_policy_id": "POL-1286"
+    },
+    {
+      "text": "Commercial/Financial risks include currency fluctuations impacting OEM hardware imports and massive SLA penalty triggers.",
+      "source_section": "3. Risk Taxonomy (Categorization)",
+      "source_policy_id": "POL-1370"
+    },
+    {
+      "text": "The manual is designed to secure high-availability contracts in the BFSI, ITES, and continuous-manufacturing sectors.",
+      "source_section": "1. Executive Purpose and Document Scope",
+      "source_policy_id": "POL-1461"
+    },
+    {
+      "text": "The internal Billing Operations team must automatically initiate Service Credit calculations for SLA breaches without requiring customer claims.",
+      "source_section": "7. Root Cause Management and Recovery Governance",
+      "source_policy_id": "POL-1481"
+    },
+    {
+      "text": "The document type is classified as 'pricing' and the source filename is 'Service Description Documents.pdf'.",
+      "source_section": "4. Inclusions and Exclusions",
+      "source_policy_id": "POL-1507"
+    },
+    {
+      "text": "Bespoke, multi-page custom reporting beyond the standard Monthly SLA PDF is excluded and requires Professional Services SoW.",
+      "source_section": "Explicit Exclusions (Not covered, requires Professional Services SoW)",
+      "source_policy_id": "POL-1513"
+    },
+    {
+      "text": "Writing entirely custom Python/API middleware to integrate the VI Orchestrator into the customer's legacy ERP platform is excluded and requires Professional Services SoW.",
+      "source_section": "Explicit Exclusions (Not covered, requires Professional Services SoW)",
+      "source_policy_id": "POL-1514"
+    },
+    {
+      "text": "Billing commences precisely on the 'Service Commencement Date' (SCD), declared when the Field Engineer completes the SAT and proves the router can ping the central Orchestrator.",
+      "source_section": "Ordering Rules and Billing Triggers",
+      "source_policy_id": "POL-1516"
+    },
+    {
+      "text": "If a site is mathematically ready for billing but the customer delays final migration due to internal IT team unavailability, 'Deemed Acceptance' triggers billing regardless of the delay.",
+      "source_section": "Ordering Rules and Billing Triggers",
+      "source_policy_id": "POL-1517"
+    },
+    {
+      "text": "Scope applies to commercial proposals exceeding INR 25 Lakhs TCV (Managed Networks, Security, IoT, Voice).",
+      "source_section": "2. Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-1570"
+    },
+    {
+      "text": "Integration with legacy SAP instances requires a Professional Services Statement of Work (SoW) scoping, excluded from this baseline quote.",
+      "source_section": "DOCUMENT TEXT",
+      "source_policy_id": "POL-1584"
+    },
+    {
+      "text": "The commercial proposal is valid for exactly ninety (90) days from the submission date of [Date].",
+      "source_section": "Assumptions and Deviations Template",
+      "source_policy_id": "POL-1587"
+    },
+    {
+      "text": "Pricing is contingent upon standard fiber feasibility. Extraordinary Right of Way (RoW) trenching charges will be passed through to [Customer Name] at cost.",
+      "source_section": "Assumptions and Deviations Template",
+      "source_policy_id": "POL-1588"
+    },
+    {
+      "text": "All quoted prices (OTC and MRC) are exclusive of the prevailing 18% Goods and Services Tax.",
+      "source_section": "Assumptions and Deviations Template",
+      "source_policy_id": "POL-1590"
+    },
+    {
+      "text": "Sales & Pre-Sales must use this document as a factual artifact for RFP responses questioning integration capabilities.",
+      "source_section": "Definitions, Assumptions, and Applicability",
+      "source_policy_id": "POL-1609"
+    },
+    {
+      "text": "Custom rate limit elevations (+500 TPS) are available exclusively under dedicated Commercial Priority Support contracts.",
+      "source_section": "Authentication",
+      "source_policy_id": "POL-1647"
+    },
+    {
+      "text": "On-Site Instructor-Led (Premium) training is reserved for TCV deals exceeding INR 10 Crore.",
+      "source_section": "On-Site Instructor-Led (Premium)",
+      "source_policy_id": "POL-1678"
     }
   ]
 }
