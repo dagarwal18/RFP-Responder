@@ -109,30 +109,20 @@ export default function KnowledgeBasePage() {
                 <span className="text-[14px] font-medium text-foreground tracking-tight">Upload Document</span>
                 <span className="text-[13px] text-muted-foreground mt-1.5">Select a PDF to extract and ingest into the vector database.</span>
                 {selectedFile && (
-                  <div className="flex items-center gap-3 mt-4 text-[13px] text-muted-foreground border-l-2 border-primary pl-3 bg-secondary/50 py-2 w-fit pr-4">
+                  <div className="flex items-center gap-3 mt-4 text-[13px] text-muted-foreground border-l-2 border-primary pl-3 bg-secondary/50 py-2">
                     <span className="font-medium text-foreground">{selectedFile.name}</span>
                     <span>{formatSize(selectedFile.size)}</span>
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-4 shrink-0 ml-6">
-                {selectedFile && (
-                  <span 
-                    className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                    onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
-                  >
-                    Clear
-                  </span>
-                )}
-                <Button 
-                  onClick={(e) => { e.stopPropagation(); uploadFile(); }}
-                  disabled={!selectedFile || uploading}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-6 text-[13px] font-medium shrink-0 cursor-pointer shadow-none rounded-none border-none"
-                >
-                  {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
-                  {uploading ? 'Processing' : 'Upload to Base'}
-                </Button>
-              </div>
+              <Button 
+                onClick={(e) => { e.stopPropagation(); uploadFile(); }}
+                disabled={!selectedFile || uploading}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-6 text-[13px] font-medium shrink-0 ml-6 cursor-pointer"
+              >
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+                {uploading ? 'Processing' : 'Upload to Base'}
+              </Button>
             </div>
 
             {/* Document List */}
@@ -208,11 +198,11 @@ export default function KnowledgeBasePage() {
       </div>
 
       {/* RIGHT CONTEXT ZONE */}
-      <div className="w-[320px] shrink-0 bg-sidebar flex flex-col z-10 border-l border-border">
+      <div className="w-[360px] min-w-[360px] max-w-[360px] shrink-0 bg-sidebar flex flex-col z-10 border-l border-border">
         <div className="h-14 border-b border-border flex items-center px-6 shrink-0 bg-background/50">
           <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Activity Stream</span>
         </div>
-        <div className="flex-1 overflow-y-auto p-6 font-mono text-[11px] leading-[1.6] text-muted-foreground space-y-2">
+        <div className="flex-1 overflow-y-auto p-6 font-mono text-[11px] leading-[1.6] text-muted-foreground space-y-2 break-all whitespace-pre-wrap">
           {logs.length === 0 ? (
             <span className="opacity-40">Awaiting database queries...</span>
           ) : (

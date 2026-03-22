@@ -220,11 +220,11 @@ export default function PipelinePage() {
       </div>
 
       {/* RIGHT CONTEXT ZONE */}
-      <div className="w-[320px] shrink-0 bg-sidebar flex flex-col z-10 border-l border-border">
+      <div className="w-[360px] min-w-[360px] max-w-[360px] shrink-0 bg-sidebar flex flex-col z-10 border-l border-border">
         <div className="h-14 border-b border-border flex items-center px-6 shrink-0 bg-background/50">
           <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Console Stream</span>
         </div>
-        <div className="flex-1 overflow-y-auto p-6 font-mono text-[11px] leading-[1.6] text-muted-foreground space-y-2">
+        <div className="flex-1 overflow-y-auto p-6 font-mono text-[11px] leading-[1.6] text-muted-foreground space-y-2 break-all whitespace-pre-wrap">
           {logs.length === 0 ? (
             <span className="opacity-40">Listening for pipeline execution...</span>
           ) : (
