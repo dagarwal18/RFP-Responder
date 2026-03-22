@@ -572,18 +572,19 @@ class RequirementWritingAgent(BaseAgent):
         # If the LLM returned a JSON wrapper but we couldn't parse it,
         # strip the structural keys so they don't appear in the proposal.
         fallback_content = re.sub(
-            r'```(?:json)?\s*', '', fallback_content
+            r'^```(?:json)?\s*', '', fallback_content
         )
         fallback_content = re.sub(
             r'^\s*\{\s*"content"\s*:\s*"', '', fallback_content
         )
         # Remove trailing JSON metadata: ", "requirements_addressed": [...], "word_count": N }
         fallback_content = re.sub(
-            r'",\s*"requirements_addressed"\s*:\s*\[.*?\]\s*,?\s*"word_count"\s*:\s*\d+\s*\}\s*$',
+            r'",\s*"requirements_addressed"\s*:\s*\[.*?\]\s*,?\s*"word_count"\s*:\s*\d+\s*\}\s*```?\s*$',
             '', fallback_content, flags=re.DOTALL,
         )
-        # Clean up escaped characters left from JSON string encoding
-        fallback_content = fallback_content.replace('\\"', '"').replace('\\n', '\n')
+        
+        # Clean up escaped newlines first, then quotes
+        fallback_content = fallback_content.replace('\\n', '\n').replace('\\"', '"')
         fallback_content = fallback_content.strip()
 
         # Auto-recover requirements_addressed from REQ-XXXX patterns
