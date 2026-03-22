@@ -1341,6 +1341,7 @@ class TestWritingAgent:
             "query_knowledge": lambda self, q, top_k=3: [
                 {"text": "ISO 27001 certified operations", "metadata": {}},
             ],
+            "fetch_all_rfp_chunks": lambda self, rid: [],
         })()
 
     def test_writing_success(self, monkeypatch):

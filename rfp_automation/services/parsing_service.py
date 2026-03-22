@@ -224,16 +224,20 @@ class ParsingService:
                         "table_id": f"tbl-{tbl_counter:03d}",
                         "heuristic_extraction": _extract_table_text(line_texts),
                         "vlm_extraction": None,
-                        "final_extraction_used": "heuristic"
+                        "final_extraction_used": "heuristic",
+                        "table_type": "unknown",
                     }
 
                     # Use VLM-extracted tables if available for this page
                     page_vlm_tables = vlm_processed_pages.get(page_number, [])
+                    table_type = "unknown"
                     if page_vlm_tables:
                         # Take the first unused VLM table for this page
                         from rfp_automation.services.vision_service import VisionService as _VS
                         vlm_tbl = page_vlm_tables.pop(0)
                         table_debug_info["vlm_extraction"] = vlm_tbl
+                        table_type = vlm_tbl.get("table_type", "unknown")
+                        table_debug_info["table_type"] = table_type
                         table_text = _VS.format_table_as_text(vlm_tbl)
                         if not table_text:
                             # VLM returned empty → fallback to heuristic
@@ -246,11 +250,21 @@ class ParsingService:
 
                     extracted_tables_debug.append(table_debug_info)
 
+                    logger.info(
+                        f"[TABLE-TRACE][PARSE] Block created: "
+                        f"id=tbl-{tbl_counter:03d}, page={page_number}, "
+                        f"table_type={table_type}, "
+                        f"source={table_debug_info['final_extraction_used']}, "
+                        f"text_len={len(table_text)}, "
+                        f"preview='{table_text[:80]}...'"
+                    )
+
                     blocks.append({
                         "block_id": f"tbl-{tbl_counter:03d}",
                         "type": "table",
                         "text": table_text,
                         "page_number": page_number,
+                        "table_type": table_type,
                     })
                     continue
 
@@ -274,14 +288,38 @@ class ParsingService:
         )
         
         # Collect any leftover VLM tables that heuristic didn't match
+        # These are tables DETR + VLM detected but no heuristic block matched.
+        # Inject them as proper blocks so they aren't lost.
         for page_num, vlm_tables in vlm_processed_pages.items():
             for v_tbl in vlm_tables:
+                tbl_counter += 1
+                from rfp_automation.services.vision_service import VisionService as _VS
+                table_text = _VS.format_table_as_text(v_tbl)
+                table_type = v_tbl.get("table_type", "unknown")
+
+                if table_text:
+                    logger.info(
+                        f"[TABLE-TRACE][PARSE] Injecting unmatched VLM table as block: "
+                        f"id=tbl-{tbl_counter:03d}, page={page_num}, "
+                        f"table_type={table_type}, "
+                        f"headers={v_tbl.get('headers', [])}, "
+                        f"rows={len(v_tbl.get('rows', []))}"
+                    )
+                    blocks.append({
+                        "block_id": f"tbl-{tbl_counter:03d}",
+                        "type": "table",
+                        "text": table_text,
+                        "page_number": page_num,
+                        "table_type": table_type,
+                    })
+
                 extracted_tables_debug.append({
                     "page_number": page_num,
-                    "table_id": "unmatched_vlm_table",
+                    "table_id": f"tbl-{tbl_counter:03d}",
                     "heuristic_extraction": None,
                     "vlm_extraction": v_tbl,
-                    "final_extraction_used": "vlm_only"
+                    "final_extraction_used": "vlm_only",
+                    "table_type": table_type,
                 })
         
         # Write extracted tables structured output for verification
@@ -477,11 +515,23 @@ class ParsingService:
                 table_text = block_text
                 if current_heading and current_heading != "Untitled Section":
                     table_text = f"[Section: {current_heading}]\n\n{block_text}"
-                    
+
+                table_type = block.get("table_type", "unknown")
+
+                logger.info(
+                    f"[TABLE-TRACE][CHUNK] Table chunk created: "
+                    f"chunk_id=sc-{chunk_counter:04d}, "
+                    f"table_type={table_type}, "
+                    f"section='{current_heading}', "
+                    f"page={block_page}, "
+                    f"text_len={len(table_text)}"
+                )
+
                 chunks.append({
                     "chunk_id": f"sc-{chunk_counter:04d}",
                     "chunk_index": chunk_counter,
                     "content_type": "table",
+                    "table_type": table_type,
                     "section_hint": current_heading,
                     "text": table_text,
                     "page_start": block_page,

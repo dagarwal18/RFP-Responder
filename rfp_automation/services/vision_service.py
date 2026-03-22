@@ -33,9 +33,17 @@ logger = logging.getLogger(__name__)
 _TABLE_EXTRACTION_PROMPT = """You are a meticulous data extraction engine. Convert ALL tables in this image into structured JSON.
 
 Return a JSON array of table objects. Each object MUST have:
-{"table_id": "T1", "caption": "exact title if visible", "headers": ["Col1", "Col2"], "rows": [["val1", "val2"]]}
+{"table_id": "T1", "caption": "exact title if visible", "table_type": "data_table or fill_in_table", "headers": ["Col1", "Col2"], "rows": [["val1", "val2"]]}
 
 ## Rules
+
+### Table Type Classification
+- "fill_in_table": The table has columns that a vendor/respondent must fill in. Indicators:
+  - Columns named: Response, Remarks, Compliance, C/PC/NC, Yes/No, Vendor Response, Status, Bidder Comments, or similar.
+  - Cells that are blank, contain underscores (___), TBD, N/A, or placeholder text meant to be replaced.
+  - Compliance matrices, questionnaires, checklists, self-assessment forms.
+- "data_table": The table is purely informational (timelines, org charts, scoring criteria, reference data, pricing examples). All cells are pre-filled by the RFP issuer.
+- When in doubt, classify as "fill_in_table".
 
 ### Table Title / Caption
 - The title may appear ABOVE or BELOW the table grid (e.g. "Table 3.5: Perceived discrimination").
@@ -134,13 +142,18 @@ class TableDetector:
 
         detections: list[dict[str, Any]] = []
         for score, bbox in zip(results["scores"], results["boxes"]):
-            detections.append({
+            det = {
                 "bbox": [round(c.item(), 1) for c in bbox],  # [x1, y1, x2, y2]
                 "confidence": round(score.item(), 3),
-            })
+            }
+            detections.append(det)
+            logger.info(
+                f"[TABLE-TRACE][DETR] Detected table region: "
+                f"bbox={det['bbox']}, confidence={det['confidence']:.3f}"
+            )
 
         logger.info(
-            f"[TableDetector] Detected {len(detections)} table(s) "
+            f"[TABLE-TRACE][DETR] Total {len(detections)} table(s) detected "
             f"(threshold={confidence_threshold})"
         )
         return detections
@@ -211,23 +224,38 @@ class VisionService:
             cropped.save(buf, format="PNG")
             cropped_bytes = buf.getvalue()
 
-            logger.debug(
-                f"[VisionService] Sending table region {idx + 1}/{len(detections)} "
-                f"to VLM (page {page_number}, bbox={bbox})"
+            logger.info(
+                f"[TABLE-TRACE][VLM] Sending table region {idx + 1}/{len(detections)} "
+                f"to VLM (page {page_number}, bbox={bbox}, "
+                f"crop_size={cropped.size[0]}x{cropped.size[1]})"
             )
 
             try:
                 vlm_response = self._call_vlm(cropped_bytes, _TABLE_EXTRACTION_PROMPT)
+                logger.info(
+                    f"[TABLE-TRACE][VLM] Raw VLM response length: "
+                    f"{len(vlm_response)} chars (page {page_number}, region {idx + 1})"
+                )
                 tables = self._parse_table_json(vlm_response, page_number, idx)
+                for tbl in tables:
+                    logger.info(
+                        f"[TABLE-TRACE][VLM] Parsed table: "
+                        f"id={tbl.get('table_id')}, "
+                        f"type={tbl.get('table_type', 'UNKNOWN')}, "
+                        f"caption='{tbl.get('caption', '')[:60]}', "
+                        f"headers={tbl.get('headers', [])}, "
+                        f"rows={len(tbl.get('rows', []))}, "
+                        f"page={page_number}"
+                    )
                 all_tables.extend(tables)
             except Exception as e:
                 logger.warning(
-                    f"[VisionService] VLM extraction failed for table region "
+                    f"[TABLE-TRACE][VLM] VLM extraction FAILED for table region "
                     f"{idx + 1} on page {page_number}: {e}"
                 )
 
         logger.info(
-            f"[VisionService] Extracted {len(all_tables)} table(s) from page {page_number}"
+            f"[TABLE-TRACE][VLM] Total extracted {len(all_tables)} table(s) from page {page_number}"
         )
         return all_tables
 
@@ -425,9 +453,15 @@ class VisionService:
             if not isinstance(tbl, dict):
                 continue
 
+            table_type = tbl.get("table_type", "unknown")
+            # Normalize to known values
+            if table_type not in ("data_table", "fill_in_table"):
+                table_type = "unknown"
+
             valid_tables.append({
                 "table_id": tbl.get("table_id", f"T{region_idx + 1}_{i + 1}"),
                 "caption": tbl.get("caption", ""),
+                "table_type": table_type,
                 "headers": tbl.get("headers", []),
                 "rows": tbl.get("rows", []),
                 "page_number": page_number,
