@@ -132,6 +132,11 @@ class FinalReadinessAgent(BaseAgent):
                 import subprocess
                 client_name = state.rfp_metadata.client_name or "Client"
                 rfp_title = state.rfp_metadata.rfp_title or "RFP Response Proposal"
+                # Sanitize rfp_title: remove newlines and cap length
+                # (RFP titles from parsed docs may contain line breaks)
+                rfp_title = " | ".join(
+                    line.strip() for line in rfp_title.splitlines() if line.strip()
+                )[:120]
                 # Assuming the proposing company might be available or default to "Our Company"
                 # (For now we'll use a generic "Proposing Company" default if not defined)
                 subprocess.run(

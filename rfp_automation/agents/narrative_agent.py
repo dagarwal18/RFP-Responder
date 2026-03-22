@@ -434,6 +434,21 @@ class NarrativeAssemblyAgent(BaseAgent):
                 (re.compile(r"\[Insert\s+Organization\s+Name\]", re.IGNORECASE), company_name),
             ])
 
+        # ── Protect mermaid code blocks from ALL replacements below ──
+        # Mermaid uses [text] syntax for node labels which any bracket-
+        # matching regex would corrupt (e.g. [SD-WAN Controller] → TBD).
+        mermaid_blocks: list[str] = []
+        def _preserve_mermaid(match: re.Match) -> str:
+            mermaid_blocks.append(match.group(0))
+            return f"__MERMAID_BLOCK_{len(mermaid_blocks) - 1}__"
+
+        text = re.sub(
+            r"```mermaid\s*\n.*?```",
+            _preserve_mermaid,
+            text,
+            flags=re.DOTALL,
+        )
+
         # ── Run specific replacements FIRST, then cleanup patterns ──
         # This ensures [Insert Proposing Company Name] → "Vodafone Business"
         # instead of the cleanup stripping it to "" first.
@@ -456,6 +471,10 @@ class NarrativeAssemblyAgent(BaseAgent):
             re.IGNORECASE,
         )
         text = _generic_placeholder_re.sub("**⚠ [TBD — Requires Manual Input]**", text)
+
+        # ── Restore mermaid blocks ──
+        for i, block in enumerate(mermaid_blocks):
+            text = text.replace(f"__MERMAID_BLOCK_{i}__", block)
 
         return text
 
@@ -669,7 +688,7 @@ class NarrativeAssemblyAgent(BaseAgent):
                 for child in group.children:
                     child_title = self._get_attr(child, "title", "")
                     sub_title = self._get_sub_title(child_title, group.parent_title)
-                    toc_lines.append(f"   - {sub_title}")
+                    toc_lines.append(f"    - {sub_title}")
             num += 1
         toc_lines.append(f"{num}. Appendix: Requirement Coverage Matrix")
         return "\n".join(toc_lines)
