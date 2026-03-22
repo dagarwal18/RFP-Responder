@@ -113,9 +113,16 @@ class RequirementsExtractionAgent(BaseAgent):
                     if not table_text.strip():
                         continue
 
-                    table_purpose = self._classify_table_purpose(table_text, section_name)
+                    # Use VLM table_type from chunk metadata if available
+                    vlm_table_type = tc.get("table_type", "") or tc.get("metadata", {}).get("table_type", "")
+                    table_purpose = self._classify_table_purpose(
+                        table_text, section_name, vlm_table_type=vlm_table_type
+                    )
                     logger.info(
-                        f"[B1] Table in '{section_name}' classified as: {table_purpose}"
+                        f"[TABLE-TRACE][B1-CLASSIFY] Table in '{section_name}': "
+                        f"vlm_table_type='{vlm_table_type}', "
+                        f"final_purpose='{table_purpose}', "
+                        f"text_len={len(table_text)}"
                     )
 
                     if table_purpose == "vendor_fill_in":
@@ -186,12 +193,12 @@ class RequirementsExtractionAgent(BaseAgent):
 
             # Layer 2: LLM structuring/classification (Batched Extraction)
             # Qwen3-32B context window ≈ 32K tokens.  Output cap = 8192 tokens.
-            # Input budget ≈ 32K - 8K = ~24K tokens ≈ 96K chars.
-            # We use conservative estimates to avoid prompt overflow.
-            MAX_CONTEXT_LEN = 20_000   # section context (was 8000)
+            # Groq free-tier TPM limit for Qwen = 6,000 tokens (~24K chars).
+            # We use small batches to stay well under the hard TPM ceiling.
+            MAX_CONTEXT_LEN = 4_000    # section context (conservative for TPM)
             section_context = truncate_at_boundary(raw_text, MAX_CONTEXT_LEN)
 
-            INPUT_BUDGET_CHARS = 80_000  # ~20K tokens for the full prompt
+            INPUT_BUDGET_CHARS = 12_000  # ~3K tokens keeps us under 6K TPM
             overhead_chars = len(section_context) + 1600  # context + template
             max_candidate_chars = max(2000, INPUT_BUDGET_CHARS - overhead_chars)
             
@@ -328,17 +335,36 @@ class RequirementsExtractionAgent(BaseAgent):
     )
 
     def _classify_table_purpose(
-        self, table_text: str, section_name: str
+        self, table_text: str, section_name: str,
+        vlm_table_type: str = "",
     ) -> str:
         """
         Classify a table as 'vendor_fill_in' or 'informational'.
 
-        Vendor fill-in tables are compliance matrices, requirement response
-        tables, and forms where the vendor must provide answers.
-
-        Informational tables are timelines, org charts, pricing examples,
-        scoring criteria, etc.
+        Priority:
+          1. VLM's table_type (from vision_service) if available.
+          2. Heuristic scoring as fallback.
         """
+        # ── Priority 1: VLM classification ────────────────
+        if vlm_table_type == "fill_in_table":
+            logger.info(
+                f"[TABLE-TRACE][B1-CLASSIFY] VLM classified as fill_in_table "
+                f"→ vendor_fill_in (section='{section_name}')"
+            )
+            return "vendor_fill_in"
+        elif vlm_table_type == "data_table":
+            logger.info(
+                f"[TABLE-TRACE][B1-CLASSIFY] VLM classified as data_table "
+                f"→ informational (section='{section_name}')"
+            )
+            return "informational"
+
+        # ── Priority 2: Heuristic fallback ────────────────
+        logger.info(
+            f"[TABLE-TRACE][B1-CLASSIFY] VLM table_type missing/unknown "
+            f"('{vlm_table_type}'), falling back to heuristic "
+            f"(section='{section_name}')"
+        )
         score = 0
 
         # Check first 3 lines (usually headers) for fill-in keywords
@@ -347,19 +373,19 @@ class RequirementsExtractionAgent(BaseAgent):
 
         if self._FILL_IN_HEADER_RE.search(header_text):
             score += 3
-            logger.debug(f"[B1] Table classification: fill-in header keywords found")
+            logger.debug(f"[TABLE-TRACE][B1-CLASSIFY] Heuristic: fill-in header keywords found (+3)")
 
         # Check for blank/empty cells (vendor needs to fill)
         blank_matches = self._BLANK_CELL_RE.findall(table_text)
         if len(blank_matches) >= 2:
             score += 2
-            logger.debug(f"[B1] Table classification: {len(blank_matches)} blank cells found")
+            logger.debug(f"[TABLE-TRACE][B1-CLASSIFY] Heuristic: {len(blank_matches)} blank cells found (+2)")
 
         # Check for structured requirement IDs in table
         req_ids = self._REQ_ID_IN_TABLE_RE.findall(table_text)
         if len(req_ids) >= 2:
             score += 2
-            logger.debug(f"[B1] Table classification: {len(req_ids)} req IDs found")
+            logger.debug(f"[TABLE-TRACE][B1-CLASSIFY] Heuristic: {len(req_ids)} req IDs found (+2)")
 
         # Section name hints
         section_lower = section_name.lower()
@@ -370,11 +396,11 @@ class RequirementsExtractionAgent(BaseAgent):
         }
         if any(kw in section_lower for kw in fill_in_section_keywords):
             score += 1
-            logger.debug(f"[B1] Table classification: section name hint")
+            logger.debug(f"[TABLE-TRACE][B1-CLASSIFY] Heuristic: section name hint (+1)")
 
         result = "vendor_fill_in" if score >= 3 else "informational"
-        logger.debug(
-            f"[B1] Table classification score={score} → {result} "
+        logger.info(
+            f"[TABLE-TRACE][B1-CLASSIFY] Heuristic score={score} → {result} "
             f"(section='{section_name}')"
         )
         return result

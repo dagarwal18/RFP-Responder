@@ -113,6 +113,19 @@ class RequirementWritingAgent(BaseAgent):
         # ── 5. Initialize MCP service ──────────────────
         mcp = MCPService()
 
+        # ── 5b. Fetch all RFP chunks for table lookup ───
+        all_rfp_chunks = mcp.fetch_all_rfp_chunks(rfp_id)
+        table_chunks_by_index: dict[int, dict] = {}
+        for ch in all_rfp_chunks:
+            if ch.get("content_type") == "table":
+                idx = ch.get("chunk_index", -1)
+                if idx >= 0:
+                    table_chunks_by_index[idx] = ch
+        logger.info(
+            f"[TABLE-TRACE][C2-WRITE] Loaded {len(table_chunks_by_index)} table chunks "
+            f"from {len(all_rfp_chunks)} total RFP chunks"
+        )
+
         # ── 6. RFP response instructions (from C1) ─────
         rfp_instructions = state.architecture_plan.rfp_response_instructions or ""
 
@@ -274,10 +287,54 @@ class RequirementWritingAgent(BaseAgent):
                 + self._get_attr(section, "content_guidance", "")
             )
             table_mode = bool(_TABLE_SECTION_RE.search(desc_and_guidance))
+
+            # ── 7e2. Find original table text from RFP chunks ──
+            original_table_text = ""
+            if table_mode and req_ids:
+                # Look up source chunk indices from the requirements
+                for rid in req_ids:
+                    req = req_map.get(rid)
+                    if req:
+                        src_indices = req.get("source_chunk_indices", [])
+                        for si in src_indices:
+                            tbl_chunk = table_chunks_by_index.get(si)
+                            if tbl_chunk:
+                                original_table_text = tbl_chunk.get("text", "")
+                                logger.info(
+                                    f"[TABLE-TRACE][C2-WRITE] Found original table "
+                                    f"for section {section_id} from chunk_index={si}, "
+                                    f"table_type={tbl_chunk.get('table_type', 'unknown')}, "
+                                    f"text_len={len(original_table_text)}"
+                                )
+                                break
+                    if original_table_text:
+                        break
+
             if table_mode:
                 logger.info(
-                    f"[C2] Table mode detected for {section_id}: {title}"
+                    f"[TABLE-TRACE][C2-WRITE] Table mode ACTIVE for {section_id}: {title} | "
+                    f"original_table_found={'YES' if original_table_text else 'NO'} | "
+                    f"original_table_len={len(original_table_text)}"
                 )
+            else:
+                # Also check if any mapped requirements come from table chunks
+                for rid in req_ids:
+                    req = req_map.get(rid)
+                    if req:
+                        src_indices = req.get("source_chunk_indices", [])
+                        for si in src_indices:
+                            if si in table_chunks_by_index:
+                                table_mode = True
+                                tbl_chunk = table_chunks_by_index[si]
+                                original_table_text = tbl_chunk.get("text", "")
+                                logger.info(
+                                    f"[TABLE-TRACE][C2-WRITE] Auto-detected table_mode "
+                                    f"for {section_id} via req {rid} → chunk_index={si}, "
+                                    f"table_type={tbl_chunk.get('table_type', 'unknown')}"
+                                )
+                                break
+                    if original_table_text:
+                        break
 
             # ── 7f. Build prompt ────────────────────────
             prompt = self._build_prompt(
@@ -293,6 +350,7 @@ class RequirementWritingAgent(BaseAgent):
                 next_section_context=next_ctx,
                 revision_feedback=section_feedback,
                 table_mode=table_mode,
+                original_table_text=original_table_text,
             )
 
             # ── 7f. Call LLM ────────────────────────────
@@ -440,6 +498,7 @@ class RequirementWritingAgent(BaseAgent):
         next_section_context: str = "",
         revision_feedback: str = "",
         table_mode: bool = False,
+        original_table_text: str = "",
     ) -> str:
         """Load the prompt template and inject context with token-aware truncation."""
         template = _PROMPT_PATH.read_text(encoding="utf-8")
@@ -468,18 +527,42 @@ class RequirementWritingAgent(BaseAgent):
             else "No revision feedback — this is the initial writing pass."
         )
 
-        # ── Table mode injection ──────────────────────────
+        # ── Table mode injection ──────────────────────
         table_instruction = ""
         if table_mode:
-            table_instruction = (
-                "\n\n## TABLE RESPONSE MODE\n"
-                "This section requires a TABLE-FORMAT response, NOT prose.\n"
-                "Return the content as a populated markdown table with columns:\n"
-                "| Req ID | Requirement | Compliance (C/PC/NC) | Vendor Remarks |\n"
-                "Keep remarks concise (1-2 sentences per row). Do NOT write "
-                "100+ word prose for each requirement — use table format.\n"
-                "The JSON output's 'content' field should contain this markdown table."
-            )
+            if original_table_text:
+                # Use the exact columns from the original RFP table
+                table_instruction = (
+                    "\n\n## TABLE RESPONSE MODE\n"
+                    "This section requires a TABLE-FORMAT response, NOT prose.\n"
+                    "Below is the ORIGINAL TABLE from the RFP that you must fill in.\n"
+                    "You MUST preserve the EXACT same column structure and headers.\n"
+                    "Fill in ONLY the columns that are meant for vendor responses "
+                    "(e.g. Compliance, Vendor Response, Remarks, Status, Yes/No columns).\n"
+                    "Keep the original requirement text, IDs, and descriptions unchanged.\n"
+                    "Return the content as a populated markdown table matching the original layout.\n\n"
+                    f"### ORIGINAL RFP TABLE:\n```\n{original_table_text[:6000]}\n```\n\n"
+                    "The JSON output's 'content' field should contain this filled-in markdown table."
+                )
+                logger.info(
+                    f"[TABLE-TRACE][C2-WRITE] Injected original table ({len(original_table_text)} chars) "
+                    f"into prompt for section '{section_title}'"
+                )
+            else:
+                # Fallback: generic table format if no original table found
+                table_instruction = (
+                    "\n\n## TABLE RESPONSE MODE\n"
+                    "This section requires a TABLE-FORMAT response, NOT prose.\n"
+                    "Return the content as a populated markdown table with columns:\n"
+                    "| Req ID | Requirement | Compliance (C/PC/NC) | Vendor Remarks |\n"
+                    "Keep remarks concise (1-2 sentences per row). Do NOT write "
+                    "100+ word prose for each requirement — use table format.\n"
+                    "The JSON output's 'content' field should contain this markdown table."
+                )
+                logger.info(
+                    f"[TABLE-TRACE][C2-WRITE] No original table found — using generic "
+                    f"4-column layout for section '{section_title}'"
+                )
 
         prompt = (
             template
@@ -512,35 +595,55 @@ class RequirementWritingAgent(BaseAgent):
         # Strip <think>...</think> tags that Qwen models emit
         text = re.sub(r"<think>[\s\S]*?</think>", "", text, flags=re.DOTALL).strip()
 
-        # Strip markdown code fences
+        # Strip markdown code fences — try lazy match first, then greedy
+        # to handle nested ```mermaid blocks inside JSON content
         fence_match = re.search(
             r"```(?:json)?\s*(.*?)\s*```",
             text,
             re.DOTALL,
         )
+        json_extracted = None
         if fence_match:
-            text = fence_match.group(1).strip()
+            candidate_text = fence_match.group(1).strip()
+            # Verify it's actually valid JSON before committing
+            try:
+                json_extracted = json.loads(candidate_text, strict=False)
+            except json.JSONDecodeError:
+                # Lazy match may have stopped at an inner ``` (e.g. mermaid block)
+                # Try greedy: find LAST ``` close
+                greedy_match = re.search(
+                    r"```(?:json)?\s*(.*)\s*```",
+                    text,
+                    re.DOTALL,
+                )
+                if greedy_match:
+                    candidate_text = greedy_match.group(1).strip()
+
+            if json_extracted is None:
+                text = candidate_text
 
         # Try JSON parse
-        try:
-            data = json.loads(text, strict=False)
-        except json.JSONDecodeError:
-            # Try extracting JSON object from mixed content
-            obj_start = text.find("{")
-            obj_end = text.rfind("}")
-            if obj_start != -1 and obj_end > obj_start:
-                try:
-                    candidate = text[obj_start : obj_end + 1]
-                    # Fix trailing commas
-                    candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
-                    data = json.loads(candidate, strict=False)
-                except json.JSONDecodeError:
-                    # Attempt JSON repair for truncated output
-                    data = self._attempt_json_repair(
-                        text[obj_start : obj_end + 1], section_id
-                    )
-            else:
-                data = None
+        data = json_extracted  # may already be parsed from fence
+        if data is None:
+            try:
+                data = json.loads(text, strict=False)
+            except json.JSONDecodeError:
+                # Try extracting JSON object from mixed content
+                obj_start = text.find("{")
+                obj_end = text.rfind("}")
+                if obj_start != -1 and obj_end > obj_start:
+                    try:
+                        candidate = text[obj_start : obj_end + 1]
+                        # Fix trailing commas
+                        candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
+                        data = json.loads(candidate, strict=False)
+                    except json.JSONDecodeError:
+                        # Attempt JSON repair for truncated output
+                        data = self._attempt_json_repair(
+                            text[obj_start : obj_end + 1], section_id
+                        )
+                else:
+                    data = None
 
         if not data:
             data = self._fallback_regex_parse(text, section_id)
@@ -558,6 +661,11 @@ class RequirementWritingAgent(BaseAgent):
             # Always use actual word count — LLM self-reported counts
             # are systematically inflated by 18-95%.
             actual_word_count = len(content.split()) if content else 0
+
+            # ── Strip duplicate code blocks from parsed content ──
+            # Even after successful JSON parse, the "content" field may
+            # contain the LLM's own format echoes (```json / ```markdown blocks)
+            content = self._strip_echo_blocks(content)
 
             return content, addressed, actual_word_count
 
@@ -585,6 +693,10 @@ class RequirementWritingAgent(BaseAgent):
         
         # Clean up escaped newlines first, then quotes
         fallback_content = fallback_content.replace('\\n', '\n').replace('\\"', '"')
+
+        # ── Strip echo blocks (```json, ```markdown, ### Content, ### JSON Output) ──
+        fallback_content = self._strip_echo_blocks(fallback_content)
+
         fallback_content = fallback_content.strip()
 
         # Auto-recover requirements_addressed from REQ-XXXX patterns
@@ -597,6 +709,40 @@ class RequirementWritingAgent(BaseAgent):
                 f"from prose for {section_id}: {recovered_ids}"
             )
         return fallback_content, recovered_ids, len(fallback_content.split())
+
+    @staticmethod
+    def _strip_echo_blocks(content: str) -> str:
+        """Strip LLM echo blocks — ```json, ```markdown and similar fences
+        that duplicate already-rendered content, plus spurious labels like
+        '### Content' and '### JSON Output'.
+
+        Preserves ```mermaid blocks which are intentional diagram content.
+        """
+        if not content:
+            return content
+
+        # Remove ```json { "content": "..." ... } ``` blocks (full JSON echoes)
+        content = re.sub(
+            r'```json\s*\n\s*\{[^`]*?"content"\s*:.*?\}\s*\n\s*```',
+            '', content, flags=re.DOTALL,
+        )
+
+        # Remove ```markdown ... ``` blocks (content echoed in markdown fence)
+        content = re.sub(
+            r'```markdown\s*\n.*?```',
+            '', content, flags=re.DOTALL,
+        )
+
+        # Remove spurious LLM section labels that prefix echo blocks
+        content = re.sub(
+            r'^###\s*(?:Content|JSON Output|Markdown Output)\s*$',
+            '', content, flags=re.MULTILINE,
+        )
+
+        # Collapse 3+ consecutive blank lines into 2
+        content = re.sub(r'\n{3,}', '\n\n', content)
+
+        return content.strip()
 
     @staticmethod
     def _detect_placeholders(content: str, section_id: str) -> list[str]:

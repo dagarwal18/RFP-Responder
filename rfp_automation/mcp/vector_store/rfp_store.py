@@ -135,6 +135,7 @@ class RFPVectorStore:
                 "chunk_index": i,
                 "chunk_id": chunk.get("chunk_id", ""),
                 "content_type": chunk.get("content_type", "text"),
+                "table_type": chunk.get("table_type", ""),
                 "section_hint": chunk.get("section_hint", "")[:200],
                 "page_start": chunk.get("page_start", 0),
                 "text": chunk["text"][:1000],  # Pinecone metadata limit
@@ -281,6 +282,7 @@ class RFPVectorStore:
                         "chunk_index": meta.get("chunk_index", -1),
                         "section_hint": meta.get("section_hint", ""),
                         "content_type": meta.get("content_type", "text"),
+                        "table_type": meta.get("table_type", ""),
                         "page_start": meta.get("page_start", 0),
                         "page_end": meta.get("page_end", 0),
                         "metadata": meta,

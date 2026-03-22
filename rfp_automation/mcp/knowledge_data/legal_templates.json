@@ -646,5 +646,917 @@
     "risk_threshold": "Deviation from standard general",
     "auto_block": false,
     "notes": "Services are provisioned under the Unified License (UL) granted by the Department of Telecommunications (DoT), India. VI Business must comply with all lawful interception, monitoring, and decryption directives from authorized Indian intelligence and security agencies without prior notification to the Customer."
+  },
+  {
+    "id": "leg-doc-081",
+    "clause_type": "general",
+    "acceptable_template": "Legal and Risk Approval must be obtained as part of the bid approval process.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-082",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "Review of the customer's Master Services Agreement (MSA), liability caps, Service Level Agreement (SLA) penalties, and Data Protection considerations (DPDP Act 2023) is required.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-083",
+    "clause_type": "general",
+    "acceptable_template": "The Red Team Review milestone requires a critical internal review of compliance and narrative 5 days prior to RFP submission (T-5).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-084",
+    "clause_type": "general",
+    "acceptable_template": "DO NOT modify the roles or thresholds in this document when responding to RFPs.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-085",
+    "clause_type": "general",
+    "acceptable_template": "The roles and thresholds in this document reflect actual internal audit controls aligned with ISO 27001 policies.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-086",
+    "clause_type": "general",
+    "acceptable_template": "The ISO/IEC 20000-1:2018 framework is audited annually across Pune and Mumbai Tier-III core operations centers.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-087",
+    "clause_type": "general",
+    "acceptable_template": "All emergency changes must have a formal RFC retrospectively logged in ServiceNow within 24 hours.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-088",
+    "clause_type": "general",
+    "acceptable_template": "Total Contract Value (TCV) configurations must comply with Department of Telecommunications (DoT) tariff regulations.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-089",
+    "clause_type": "general",
+    "acceptable_template": "Advanced Threat Protection (ATP) requires a unified threat management (UTM) capable uCPE.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-090",
+    "clause_type": "data_protection",
+    "acceptable_template": "Advanced Threat Protection (ATP) is mandated for banking/retail handling PCI-DSS data.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-091",
+    "clause_type": "data_protection",
+    "acceptable_template": "Advanced Threat Protection (ATP) is mandated for banking/retail handling PCI-DSS data.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-092",
+    "clause_type": "general",
+    "acceptable_template": "All claims in the document have been validated by the Enterprise Legal and Core Networks teams.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-093",
+    "clause_type": "general",
+    "acceptable_template": "100% of VI Business Core network elements, API gateways, and primary SOC ingestion points are physically hosted on Indian soil in Tier-III facilities (Pune/Mumbai).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-094",
+    "clause_type": "data_protection",
+    "acceptable_template": "VI Business complies with the Digital Personal Data Protection (DPDP) Act 2023 through auditable data residency in India.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-095",
+    "clause_type": "general",
+    "acceptable_template": "Offshore access is strictly prohibited for Billing & Financial Ledgers.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-096",
+    "clause_type": "general",
+    "acceptable_template": "Offshore access is strictly prohibited for Mumbai (NESCO) Tier-III DC.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-097",
+    "clause_type": "general",
+    "acceptable_template": "Offshore access is strictly prohibited for Pune Tier-III DC (Replication).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-098",
+    "clause_type": "general",
+    "acceptable_template": "Offshore access is strictly prohibited for NOC/SOC Telemetry Logs in Pune Tier-III DC.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-099",
+    "clause_type": "general",
+    "acceptable_template": "Offshore access is strictly prohibited for AWS ap-south-1 (Mumbai).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-100",
+    "clause_type": "data_protection",
+    "acceptable_template": "Offshore access is strictly prohibited for IoT/cAPN Routing Data.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-101",
+    "clause_type": "general",
+    "acceptable_template": "Offshore access is strictly prohibited for Customer API Credentials.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-102",
+    "clause_type": "general",
+    "acceptable_template": "VI Business does not inspect Customer Payload unless explicitly contracted as a Deep Packet Inspection (DPI) managed security service.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-103",
+    "clause_type": "data_protection",
+    "acceptable_template": "If a customer uses a VI-provided internet lease line (ILL) to send unencrypted data to offshore servers in the US or Europe, VI Business has no control over transit routing. Data residency guarantees...",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "If a customer uses a VI-provided internet lease line (ILL) to send unencrypted data to offshore servers in the US or Europe, VI Business has no control over transit routing. Data residency guarantees apply only to VI-managed control platforms, SIEM telemetry, and localized cAPN IoT routing."
+  },
+  {
+    "id": "leg-doc-104",
+    "clause_type": "general",
+    "acceptable_template": "All ecosystem partners must sign strict non-disclosure agreements (NDAs) mirroring core VIL compliance posture.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-105",
+    "clause_type": "general",
+    "acceptable_template": "External extracts from this document are permitted.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-106",
+    "clause_type": "general",
+    "acceptable_template": "Pune and Mumbai core routing layers are upgraded to strictly conform to IPv6 single-stack requirements mandated by the Department of Telecommunications (DoT).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-107",
+    "clause_type": "general",
+    "acceptable_template": "VI Business undergoes aggressive external financial auditing to maintain its public listing and enterprise trust baseline.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-108",
+    "clause_type": "general",
+    "acceptable_template": "S.R. Batliboi & Associates LLP (an EY Global member firm) acts as the statutory auditor for the consolidated VIL entity.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-109",
+    "clause_type": "general",
+    "acceptable_template": "VI Business is fully listed on the Bombay Stock Exchange (BSE: 532822) and National Stock Exchange (NSE: IDEA) with Corporate Identifier Number (CIN): L32100GJ1996PLC030976.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-110",
+    "clause_type": "general",
+    "acceptable_template": "Financial operations are audited by Big 4 statutory auditors to ensure stability.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-111",
+    "clause_type": "data_protection",
+    "acceptable_template": "Project data must be managed exclusively within the VI enterprise Smartsheet instance to ensure audit immutability.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-112",
+    "clause_type": "general",
+    "acceptable_template": "Customers are prohibited from using their internal Jira or ServiceNow instances for VI Business project management.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-113",
+    "clause_type": "general",
+    "acceptable_template": "All encryption algorithms must adhere to the minimum cryptographic standards endorsed by the Government of India (MeitY).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-114",
+    "clause_type": "general",
+    "acceptable_template": "Raw traffic telemetry and authentication logs are retained in encrypted cold storage (AWS ap-south-1) for a minimum of 12 rolling months to satisfy the Indian Department of Telecommunications (DoT) la...",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Raw traffic telemetry and authentication logs are retained in encrypted cold storage (AWS ap-south-1) for a minimum of 12 rolling months to satisfy the Indian Department of Telecommunications (DoT) lawful interception and forensics mandates."
+  },
+  {
+    "id": "leg-doc-115",
+    "clause_type": "general",
+    "acceptable_template": "Deliberate circumvention of the Access Control Policy or MFA protocols is classified as Gross Misconduct, leading to immediate suspension and potential civil litigation under the Information Technolog...",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Deliberate circumvention of the Access Control Policy or MFA protocols is classified as Gross Misconduct, leading to immediate suspension and potential civil litigation under the Information Technology Act, 2000."
+  },
+  {
+    "id": "leg-doc-116",
+    "clause_type": "general",
+    "acceptable_template": "This document must be updated annually, aligned strictly prior to the yearly external ISO surveillance audits.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-117",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "The Insurance Coverage Summary outlines corporate liability, cyber risk, and physical asset insurance shields maintained by Vodafone Idea Limited (VIL) for VI Business (India) enterprise operations.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-118",
+    "clause_type": "general",
+    "acceptable_template": "Covers financial losses strictly from proven failure of VI Business to perform telecom/IT services as defined in signed BoM and SLA.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-119",
+    "clause_type": "general",
+    "acceptable_template": "Excludes coverage for breaches originating from customer's own insecure LAN or compromised edge endpoints.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-120",
+    "clause_type": "general",
+    "acceptable_template": "Workmen’s Compensation adheres strictly to the Workmen’s Compensation Act, 1923 (India).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-121",
+    "clause_type": "general",
+    "acceptable_template": "Managed SD-WAN & MPLS are covered by E&O for configuration faults and CGL for physical installation risks.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-122",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "Security Operations (SOC) are exclusively covered under Cyber Liability for missed IOCs leading to proven breaches, subject to forensic limitations.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-123",
+    "clause_type": "general",
+    "acceptable_template": "Raw Bandwidth (Unmanaged ILL) excludes E&O coverage; SLA penalty (Service Credits) is the sole remedy for downtime.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-124",
+    "clause_type": "general",
+    "acceptable_template": "Customers must be provided proof of policies within 15 days of contract signature.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-125",
+    "clause_type": "general",
+    "acceptable_template": "Adding individual Indian enterprises as 'Additional Insured' on master VIL corporate policies is prohibited.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-126",
+    "clause_type": "general",
+    "acceptable_template": "If an RFP mandates adding an Indian enterprise as 'Additional Insured,' Legal will offer a 'Waiver of Subrogation' clause in the MSA instead.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-127",
+    "clause_type": "general",
+    "acceptable_template": "The Compliance Matrix in Section 4 must be used to answer questions about insurance limits.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-128",
+    "clause_type": "general",
+    "acceptable_template": "If an RFP demands 'INR 500 Crores of CGL,' a legal clarification must be filed stating VI Business adheres to a corporate AOY limit of INR 250 Crores.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-129",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "\"Unsupported/Best Effort\" configurations disclaim liability for performance degradation or outages.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-130",
+    "clause_type": "general",
+    "acceptable_template": "Interoperability is only guaranteed on OEM firmware versions explicitly approved by the VI Business Change Advisory Board (CAB).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-131",
+    "clause_type": "general",
+    "acceptable_template": "Customers forcefully demanding unvetted firmware upgrades instantly void hardware SLA guarantees.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-132",
+    "clause_type": "general",
+    "acceptable_template": "Cite Section 7 to defensively reject RFP requirements implying VI Business is responsible for integrating completely bespoke or sunset third-party applications.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-133",
+    "clause_type": "general",
+    "acceptable_template": "The Legal Clause Response Playbook applies exclusively to Enterprise B2B agreements under Indian jurisdiction.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-134",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "VI Business's total aggregate liability shall not exceed 100% of the total fees paid by the Customer for the specific Service giving rise to the claim during the twelve (12) months immediately precedi...",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "VI Business's total aggregate liability shall not exceed 100% of the total fees paid by the Customer for the specific Service giving rise to the claim during the twelve (12) months immediately preceding the event."
+  },
+  {
+    "id": "leg-doc-135",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "If the customer pushes back, VI Business's total aggregate liability shall not exceed 100% of the Total Contract Value (TCV) of the underlying Service Order.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-136",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "Uncapped liability must never be accepted except for statutory carve-outs (e.g., bodily injury, gross negligence, willful misconduct).",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-137",
+    "clause_type": "general",
+    "acceptable_template": "SLA penalties for minor outages must be paid as Service Credits, not cash, and represent 100% of the Monthly Recurring Charge (MRC).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-138",
+    "clause_type": "general",
+    "acceptable_template": "Service Credits are the Customer’s sole and exclusive remedy for performance failures under the SLA.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-139",
+    "clause_type": "general",
+    "acceptable_template": "Service Credits are capped at a maximum of 30% of the MRC for the affected link/site in the billing month of failure.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-140",
+    "clause_type": "termination",
+    "acceptable_template": "Termination for convenience requires 90 days’ prior written notice, with Early Termination Charges (ETC) equal to 100% of unamortized CapEx and 50% of remaining MRC for the unexpired term.",
+    "risk_threshold": "Deviation from standard termination",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-141",
+    "clause_type": "general",
+    "acceptable_template": "Customer may conduct paper-based audits of VI Business’s ISO 27001 and SOC 2 compliance reports on demand.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-142",
+    "clause_type": "general",
+    "acceptable_template": "Physical on-site audits require 30 days’ prior notice, are limited to once per calendar year, and must be strictly escorted.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-143",
+    "clause_type": "data_protection",
+    "acceptable_template": "Clauses requiring VI Business to act as a 'Data Fiduciary' for unencrypted Customer Payload must be rejected; VI Business acts solely as a 'Data Processor'.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-144",
+    "clause_type": "general",
+    "acceptable_template": "Indian subsidiaries of multinational corporations must conduct a bridging review to ensure compliance with Indian DoT licensing rules when enforcing a Global MSA.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-145",
+    "clause_type": "general",
+    "acceptable_template": "The Monthly SLA Performance & Attainment Report must include calculated uptime percentage per circuit, MTTR, MTTRes, and penalty/service credits for breaches.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-146",
+    "clause_type": "data_protection",
+    "acceptable_template": "Direct SQL access to the underlying VI databases is strictly prohibited under the Information Security Policy.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-147",
+    "clause_type": "intellectual_property",
+    "acceptable_template": "SIP Trunking (Voice) requires a VI Business dedicated fiber/copper underlay.",
+    "risk_threshold": "Deviation from standard intellectual_property",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-148",
+    "clause_type": "intellectual_property",
+    "acceptable_template": "VoIP over Open Internet (Toll Bypass) architectures are prohibited as they violate DoT OSP guidelines.",
+    "risk_threshold": "Deviation from standard intellectual_property",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-149",
+    "clause_type": "general",
+    "acceptable_template": "Customer contracts for exceptions must include a 'Limitations of Supportability' annexure outlining compromised SLAs.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-150",
+    "clause_type": "general",
+    "acceptable_template": "All commercial quotes must legally bind pricing to a specific baseline physical and operational reality, with any post-signature changes triggering the formal Change Request (CR) process.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-151",
+    "clause_type": "general",
+    "acceptable_template": "If site feasibility changes (e.g., rural vs. urban building permission), core OTC assumptions fail, requiring immediate commercial revision before hardware ordering.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-152",
+    "clause_type": "general",
+    "acceptable_template": "The QMF strictly aligns with ITIL v4 Release Management best practices.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-153",
+    "clause_type": "general",
+    "acceptable_template": "A random 10% sampling of all completed 'Standard Change' tickets must be audited monthly by the PMO to ensure compliance with structural approvals.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-154",
+    "clause_type": "general",
+    "acceptable_template": "Centralized Next-Gen Firewall (NGFW) clusters must be deployed at the VI Mumbai core for BFSI security.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-155",
+    "clause_type": "general",
+    "acceptable_template": "SSL deep-packet inspection (DPI) must be mandatory for BFSI security overlays.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-156",
+    "clause_type": "data_protection",
+    "acceptable_template": "All BFSI data must reside within India to comply with Reserve Bank of India (RBI) mandates.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-157",
+    "clause_type": "general",
+    "acceptable_template": "BFSI deployments must meet a 6-hour disaster recovery Recovery Time Objective (RTO) via the Pune DR site.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-158",
+    "clause_type": "general",
+    "acceptable_template": "Regulatory/Compliance risks include changes to DoT (Department of Telecommunications) OSP routing rules.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-159",
+    "clause_type": "general",
+    "acceptable_template": "DPDP Act 2023 breach fines",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-160",
+    "clause_type": "general",
+    "acceptable_template": "Risks are mathematically scored using a standardized 5x5 Probability vs. Impact matrix",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-161",
+    "clause_type": "general",
+    "acceptable_template": "Score range 1-6: Low (Green) - Accept Risk. Monitor quarterly",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-162",
+    "clause_type": "general",
+    "acceptable_template": "Score range 8-12: Medium (Amber) - Mitigate. Implement controls within 90 days",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-163",
+    "clause_type": "general",
+    "acceptable_template": "Score range 15-20: High (Red) - Mitigate Immediately. Weekly C-Suite review",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-164",
+    "clause_type": "general",
+    "acceptable_template": "Score range 25: Critical (Black) - Cease Operations. Immediate CEO intervention",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-165",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "VI Business assumes zero liability for risks introduced by customer-mandated architecture against engineering advice (e.g., single-point-of-failure firewall).",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-166",
+    "clause_type": "general",
+    "acceptable_template": "Digital evidence must comply with the Indian IT Act 2000 to survive scrutiny in Indian courts of law.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-167",
+    "clause_type": "general",
+    "acceptable_template": "Under CERT-In April 2022 directives, VI Business must report severe cyber incidents (e.g., ransomware, DDoS) to the national agency within 6 hours of detection, overriding any NDAs.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-168",
+    "clause_type": "general",
+    "acceptable_template": "When responding to RFP 'Incident Response' matrices, include Section 3 (Classification) and Section 7 (Reporting Obligations) to demonstrate CERT-In compliance.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-169",
+    "clause_type": "general",
+    "acceptable_template": "The Service Description Document (SDD) serves as the definitive legal and technical boundary for every managed service sold by VI Business (India).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-170",
+    "clause_type": "general",
+    "acceptable_template": "The SDD is the cornerstone of the Master Services Agreement (MSA).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-171",
+    "clause_type": "general",
+    "acceptable_template": "Enterprise customers explicitly agree to the parameters defined within the SDD when signing a contract.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-172",
+    "clause_type": "general",
+    "acceptable_template": "The Service Description supersedes all preliminary marketing brochures, emails, or verbal commitments made during the pre-sales cycle.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-173",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "The Demarcation Point is the absolute legal boundary of VI Business's liability.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-174",
+    "clause_type": "general",
+    "acceptable_template": "VI Business is responsible for everything from the public internet/MPLS cloud up to, and including, the physical Gigabit Ethernet port on the VI-owned core/edge router.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-175",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "Failure by the customer to adhere to responsibilities absolves VI Business of SLA penalty liability.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-176",
+    "clause_type": "general",
+    "acceptable_template": "Physical edge CPE (Cisco/Fortinet routers) remains VI Business property after 60-month contract term unless a formal \"Hardware Buy-Out\" clause exists.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-177",
+    "clause_type": "general",
+    "acceptable_template": "Use Section 7 (Demarcation) to reject contract modifications attempting to include free internal LAN support.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-178",
+    "clause_type": "general",
+    "acceptable_template": "The Customer holds ultimate legal leverage to compel the incumbent’s cooperation during transitions.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-179",
+    "clause_type": "general",
+    "acceptable_template": "In the event of an incumbent refusing to release Number Portability (SIP/PRI), VI Business must escalate directly to the Telecom Regulatory Authority of India (TRAI) ombudsman using MNP/FLNP mandates...",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "In the event of an incumbent refusing to release Number Portability (SIP/PRI), VI Business must escalate directly to the Telecom Regulatory Authority of India (TRAI) ombudsman using MNP/FLNP mandates to enforce compliance within 7 days."
+  },
+  {
+    "id": "leg-doc-180",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "VI Business cannot assume legal liability for early-termination penalties (ETC) levied by the incumbent vendor against the customer.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-181",
+    "clause_type": "general",
+    "acceptable_template": "The customer retains all financial responsibility for severing their legacy contracts.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-182",
+    "clause_type": "general",
+    "acceptable_template": "Proposals must legally protect VI Business (India) margin profile.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-183",
+    "clause_type": "general",
+    "acceptable_template": "VI Business is partially compliant with SAP ERP integration requirement (requires Professional Services SoW).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-184",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "VI Business is non-compliant with uncapped liability requirement (limits liability to 100% TCV).",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-185",
+    "clause_type": "general",
+    "acceptable_template": "Centralize firewall perimeter into VI Cloud to ensure compliance with [Specific Industry Regulation, e.g., RBI Guidelines / DPDP Act 2023].",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-186",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "Vendor accepts uncapped liability for all data breaches.",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-187",
+    "clause_type": "limitation_of_liability",
+    "acceptable_template": "VI Business explicitly limits aggregate liability to 100% of the Total Contract Value (TCV).",
+    "risk_threshold": "Deviation from standard limitation_of_liability",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-188",
+    "clause_type": "general",
+    "acceptable_template": "Past performance references must include HIPAA/SOC2 compliance overlays as demonstrated in client outcomes.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-189",
+    "clause_type": "general",
+    "acceptable_template": "Enterprise customers must possess a valid Master Services Agreement (MSA) and a dedicated VI Business Account Manager before receiving production API credentials.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-190",
+    "clause_type": "data_protection",
+    "acceptable_template": "Data residency regulations adhere rigorously to the DPDP Act 2023; all API endpoints resolve to instances physically hosted within Indian borders.",
+    "risk_threshold": "Deviation from standard data_protection",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-191",
+    "clause_type": "general",
+    "acceptable_template": "External developers are required to use TLS 1.2 or higher for all transmission.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-192",
+    "clause_type": "general",
+    "acceptable_template": "All VI Business APIs utilize OAuth 2.0 (Client Credentials Grant) for machine-to-machine (M2M) API interactions.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-193",
+    "clause_type": "general",
+    "acceptable_template": "For security questionnaires, unconditionally confirm OAuth 2.0 and TLS 1.2+ encryption.",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
+  },
+  {
+    "id": "leg-doc-194",
+    "clause_type": "general",
+    "acceptable_template": "Adoption KPIs track how deeply customers utilize advanced features (e.g., creating custom reporting dashboards in Splunk).",
+    "risk_threshold": "Deviation from standard general",
+    "auto_block": false,
+    "notes": "Standard provision extracted from KB."
   }
 ]

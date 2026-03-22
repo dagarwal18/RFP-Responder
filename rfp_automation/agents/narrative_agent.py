@@ -620,20 +620,21 @@ class NarrativeAssemblyAgent(BaseAgent):
             if group.is_split and len(group.children) > 1:
                 # Grouped parent heading with sub-sections
                 parts.append(f"\n## {group.parent_title}\n")
-                for child in group.children:
-                    child_title = self._get_attr(child, "title", "Untitled")
-                    content = self._get_attr(child, "content", "")
 
-                    sub_title = self._get_sub_title(child_title, group.parent_title)
+                # ── Merge children sharing the same base category ──
+                # E.g., "Commercial Terms (Part 1)" + "Commercial Terms (Part 2)"
+                # → single "### Commercial Terms" with combined content.
+                merged_children = self._merge_split_children(
+                    group.children, group.parent_title
+                )
+
+                for sub_title, contents in merged_children:
                     parts.append(f"\n### {sub_title}\n")
-
-                    content = self._strip_content_heading(content, child_title)
-                    content = self._strip_content_heading(content, sub_title)
-
-                    if self._is_stub_content(content):
-                        parts.append(f"\n> **Note:** [PIPELINE_STUB: {child_title}]\n")
-                    elif content:
-                        parts.append(content)
+                    for content in contents:
+                        if self._is_stub_content(content):
+                            parts.append(f"\n> **Note:** [PIPELINE_STUB: {sub_title}]\n")
+                        elif content:
+                            parts.append(content)
             else:
                 # Standalone section
                 child = group.children[0]
@@ -678,6 +679,46 @@ class NarrativeAssemblyAgent(BaseAgent):
             return "Overview"
         return child_title
 
+    def _merge_split_children(
+        self,
+        children: list[SectionResponse],
+        parent_title: str,
+    ) -> list[tuple[str, list[str]]]:
+        """Merge children that share the same base category into single entries.
+
+        E.g., "Commercial Terms (Part 1)" and "Commercial Terms (Part 2)"
+        both produce sub_title "Commercial Terms" → their content is merged
+        under one heading.
+
+        Returns:
+            List of (sub_title, [content_strings]) tuples, ordered by first
+            occurrence.
+        """
+        from collections import OrderedDict
+
+        merged: OrderedDict[str, list[str]] = OrderedDict()
+
+        for child in children:
+            child_title = self._get_attr(child, "title", "Untitled")
+            content = self._get_attr(child, "content", "")
+            raw_sub = self._get_sub_title(child_title, parent_title)
+
+            # Strip "(Part N)" from the sub-title to get the base category
+            base = _PART_SPLIT_PATTERN.sub("", raw_sub).strip()
+            if not base:
+                base = raw_sub  # keep original if stripping left nothing
+
+            # Strip duplicate headings from content
+            content = self._strip_content_heading(content, child_title)
+            content = self._strip_content_heading(content, raw_sub)
+            content = self._strip_content_heading(content, base)
+
+            merged.setdefault(base, [])
+            if content and content.strip():
+                merged[base].append(content)
+
+        return list(merged.items())
+
     def _build_table_of_contents(self, groups: list[SectionGroup]) -> str:
         """Generate a numbered table of contents."""
         toc_lines: list[str] = []
@@ -685,9 +726,11 @@ class NarrativeAssemblyAgent(BaseAgent):
         for group in groups:
             toc_lines.append(f"{num}. {group.parent_title}")
             if group.is_split and len(group.children) > 1:
-                for child in group.children:
-                    child_title = self._get_attr(child, "title", "")
-                    sub_title = self._get_sub_title(child_title, group.parent_title)
+                # Use merged sub-titles (strip Part N duplicates)
+                merged = self._merge_split_children(
+                    group.children, group.parent_title
+                )
+                for sub_title, _ in merged:
                     toc_lines.append(f"    - {sub_title}")
             num += 1
         toc_lines.append(f"{num}. Appendix: Requirement Coverage Matrix")
