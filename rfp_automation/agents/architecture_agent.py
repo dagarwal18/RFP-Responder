@@ -736,11 +736,28 @@ class ArchitecturePlanningAgent(BaseAgent):
             default=0,
         ) + 1
 
+        # Regex to detect table/matrix/compliance sections that should NOT
+        # be split — the writing agent will batch these instead.
+        _TABLE_TITLE_RE = re.compile(
+            r'\b(?:matrix|table|compliance|checklist|questionnaire)\b',
+            re.IGNORECASE,
+        )
+
         for section in sections:
             if (
                 section.section_type != "requirement_driven"
                 or len(section.requirement_ids) <= _MAX_REQS_PER_SECTION
             ):
+                result.append(section)
+                continue
+
+            # ── Bypass: never split table/matrix sections ──
+            if _TABLE_TITLE_RE.search(section.title):
+                logger.info(
+                    f"[C1] Keeping table/matrix section {section.section_id} "
+                    f"({section.title}) intact — {len(section.requirement_ids)} "
+                    f"reqs will be batched by the writing agent"
+                )
                 result.append(section)
                 continue
 

@@ -58,17 +58,19 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
 
 7. Provide a `description` for EVERY section explaining what it must contain.
 
-8. If the RFP specifies how the response should be structured, follow that structure. If not, use a logical professional proposal order.
+8. Design an ideal, professional proposal structure that is INFORMED BY the RFP's content but is NOT a 1:1 copy of the RFP's table of contents. Analyze the RFP's topics, scope, and requirement types to decide which proposal sections are needed (e.g., Technical Architecture, Security & Data Protection, Operational Support, Compliance, etc.). The section titles and grouping should reflect what a winning proposal for THIS SPECIFIC RFP would look like — not a hardcoded generic template and not a blind copy of the RFP's own headings.
+
+9. **Consolidate Requirement Matrices**: Do NOT create multiple separate "Requirement Matrix" or "Compliance Matrix" sections broken down by requirement class (e.g., separate sections for "Matrix — Security", "Matrix — Operations", "Matrix — Technical"). Instead, embed each group of requirements directly into the relevant logical section (e.g., security requirements go into the Security & Data Protection section as a compliance table within that section's content). Only create a standalone matrix section if the RFP explicitly demands a single unified compliance matrix appendix.
 
 ## Structure Detection Rule
 
 BEFORE generating sections, analyze the RFP structure and submission instructions above:
 
-- **If the RFP mandates a specific Table of Contents, chapter numbering, or section ordering** (e.g., "responses must follow the format in Section 3.2", or the RFP has explicit chapter numbers like "5. Technical Requirements Matrix"), your sections MUST mirror the RFP's chapter structure 1:1. Use the RFP's exact section numbers and titles as your section titles (e.g., "5. Technical Requirements Matrix", "10.2 Pricing Schedule").
+- **If the RFP explicitly mandates a strict response structure** (e.g., "Proposals MUST follow the order in Section 3.2"), honour that mandate by using sections that align with the RFP's chapter structure.
 
-- **If the RFP structure is implicit or left open** (no explicit ordering mandate), fall back to the logical professional proposal order described in rule 6 above.
+- **In all other cases** (the RFP has its own chapters but does NOT mandate how the response should be structured), design an ideal proposal structure based on the RFP's content areas. Group your sections by logical domain (e.g., Technical Architecture, Network Security, Operations & SLA, Commercial, Legal, etc.) rather than simply replicating the RFP's own headings.
 
-This rule takes HIGHEST PRIORITY — a strict RFP structure override takes precedence over all other grouping logic.
+This rule takes HIGHEST PRIORITY — proposal structure must be purposeful and driven by the RFP context, not a template.
 
 
 
