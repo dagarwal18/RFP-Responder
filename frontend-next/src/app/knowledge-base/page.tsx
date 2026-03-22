@@ -10,8 +10,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiFetch, formatSize, formatTime } from '@/lib/api';
 import type { KBStats, KBFile, LogEntry } from '@/lib/types';
 import {
-  Library, RefreshCw, Trash2, Search, FolderOpen, Sprout,
-  Upload, FileText
+  RefreshCw, Trash2, Search, Sprout,
+  Upload, Loader2
 } from 'lucide-react';
 
 export default function KnowledgeBasePage() {
@@ -78,150 +78,160 @@ export default function KnowledgeBasePage() {
   };
 
   return (
-    <>
-      <Topbar title="Knowledge Base" />
-      <ScrollArea className="flex-1">
-        <div className="p-8 space-y-8 max-w-6xl mx-auto w-full">
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-8">
-            {[
-              { label: 'Vectors', value: stats.vectors },
-              { label: 'Namespaces', value: stats.namespaces },
-              { label: 'Configs', value: stats.configs },
-            ].map(s => (
-              <Card key={s.label} className="bg-card border-border">
-                <CardContent className="text-center py-5">
-                  <p className="text-3xl font-bold text-foreground">{s.value}</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-1">{s.label}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Upload + Documents */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Library className="w-4 h-4 text-primary" strokeWidth={1.75} />
-                  Upload Documents
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div
-                  className="flex flex-col items-center justify-center gap-3 p-8 rounded-lg
-                             border-2 border-dashed border-border hover:border-muted-foreground/30
-                             transition-colors cursor-pointer group"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input ref={fileInputRef} type="file" accept=".pdf" multiple className="hidden" onChange={e => e.target.files?.[0] && setSelectedFile(e.target.files[0])} />
-                  <Upload className="w-6 h-6 text-muted-foreground group-hover:text-foreground transition-colors" strokeWidth={1.5} />
-                  <p className="text-sm text-muted-foreground">Drop company docs or <span className="text-primary">click to browse</span></p>
+    <div className="flex flex-1 h-full overflow-hidden bg-background">
+      {/* MAIN WORKSPACE ZONE */}
+      <div className="flex-1 flex flex-col min-w-0 border-r border-border relative">
+        <Topbar title="Knowledge Base" />
+        <ScrollArea className="flex-1">
+          <div className="flex flex-col">
+            
+            {/* Stats Strip */}
+            <div className="flex items-center border-b border-border divide-x divide-border">
+              {[
+                { label: 'Vectors', value: stats.vectors },
+                { label: 'Namespaces', value: stats.namespaces },
+                { label: 'Configs', value: stats.configs },
+              ].map(s => (
+                <div key={s.label} className="flex-1 px-8 py-5 flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{s.label}</span>
+                  <span className="text-2xl font-bold text-foreground">{s.value}</span>
                 </div>
+              ))}
+            </div>
+
+            {/* Upload Strip */}
+            <div 
+              className="px-8 py-6 border-b border-border flex items-center justify-between group cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear" 
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={e => { if (e.target.files) setSelectedFile(e.target.files[0]) }} />
+              <div className="flex flex-col">
+                <span className="text-[14px] font-medium text-foreground tracking-tight">Upload Document</span>
+                <span className="text-[13px] text-muted-foreground mt-1.5">Select a PDF to extract and ingest into the vector database.</span>
                 {selectedFile && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary rounded-md px-3 py-2">
-                    <FileText className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-3 mt-4 text-[13px] text-muted-foreground border-l-2 border-primary pl-3 bg-secondary/50 py-2 w-fit pr-4">
                     <span className="font-medium text-foreground">{selectedFile.name}</span>
-                    <span>({formatSize(selectedFile.size)})</span>
+                    <span>{formatSize(selectedFile.size)}</span>
                   </div>
                 )}
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={uploadFile} disabled={!selectedFile || uploading} className="cursor-pointer">Upload to KB</Button>
-                  <Button variant="outline" size="sm" onClick={async () => { addLog('Seeding…', 'info'); try { await apiFetch('/kb/seed', { method: 'POST' }); addLog('Done', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error'); }}} className="cursor-pointer">
-                    <Sprout className="w-3.5 h-3.5 mr-1.5" /> Seed from JSON
-                  </Button>
-                  <Button variant="outline" size="sm" className="text-destructive border-destructive/40 hover:bg-destructive/10 cursor-pointer"
-                    onClick={async () => { addLog('Clearing…', 'info'); try { await apiFetch('/kb/clear', { method: 'DELETE' }); addLog('Cleared', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`${e}`, 'error'); }}}>
-                    <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Clear
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between w-full">
-                  <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    <FolderOpen className="w-4 h-4 text-primary" strokeWidth={1.75} />
-                    Documents
-                  </CardTitle>
-                  <Button variant="ghost" size="icon" onClick={loadFiles} className="h-8 w-8 cursor-pointer">
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                {files.length === 0 ? (
-                  <div className="text-center py-10 text-muted-foreground text-sm px-6">No uploads yet.</div>
-                ) : (
-                  <ScrollArea className="max-h-64">
-                    <div className="divide-y divide-border">
-                      {files.map((f, i) => (
-                        <div key={i} className="flex items-center justify-between px-6 py-2.5 hover:bg-secondary/50 transition-colors">
-                          <span className="text-sm font-medium text-foreground truncate flex-1 min-w-0">{f.filename}</span>
-                          <div className="flex items-center gap-2 ml-3 shrink-0">
-                            <Badge variant="outline" className={`text-[10px] ${typeColor(f.doc_type)}`}>{f.doc_type}</Badge>
-                            <span className="text-[11px] text-muted-foreground">{f.chunks} chunks</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
+              </div>
+              <div className="flex items-center gap-4 shrink-0 ml-6">
+                {selectedFile && (
+                  <span 
+                    className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                    onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
+                  >
+                    Clear
+                  </span>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+                <Button 
+                  onClick={(e) => { e.stopPropagation(); uploadFile(); }}
+                  disabled={!selectedFile || uploading}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-6 text-[13px] font-medium shrink-0 cursor-pointer shadow-none rounded-none border-none"
+                >
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+                  {uploading ? 'Processing' : 'Upload to Base'}
+                </Button>
+              </div>
+            </div>
 
-          {/* Query */}
-          <Card className="bg-card border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Search className="w-4 h-4 text-primary" strokeWidth={1.75} />
-                Query Tester
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input value={queryInput} onChange={e => setQueryInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && runQuery()} placeholder="Test query…" className="bg-secondary border-border" />
-                <select value={queryType} onChange={e => setQueryType(e.target.value)} className="px-3 py-2 rounded-md text-xs bg-secondary border border-border text-foreground">
-                  <option value="">All</option><option value="capability">Capability</option><option value="past_proposal">Proposal</option><option value="certification">Cert</option><option value="pricing">Pricing</option><option value="legal">Legal</option>
+            {/* Document List */}
+            <div className="p-8 border-b border-border">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Indexed Documents</h2>
+                  <Badge variant="secondary" className="text-[10px]">{files.length}</Badge>
+                </div>
+                <div className="flex items-center gap-5">
+                  <span 
+                    className="text-[12px] text-primary cursor-pointer hover:underline underline-offset-4 flex items-center gap-1.5"
+                    onClick={async () => { addLog('Seeding…', 'info'); try { await apiFetch('/kb/seed', { method: 'POST' }); addLog('Done', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error'); }}}
+                  >
+                    <Sprout className="w-3.5 h-3.5" /> Seed JSON
+                  </span>
+                  <span 
+                    className="text-[12px] text-destructive cursor-pointer hover:underline underline-offset-4 flex items-center gap-1.5"
+                    onClick={async () => { addLog('Clearing…', 'info'); try { await apiFetch('/kb/clear', { method: 'DELETE' }); addLog('Cleared', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`${e}`, 'error'); }}}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Clear Index
+                  </span>
+                  <div className="w-[1px] h-4 bg-border mx-1" />
+                  <RefreshCw className="w-3.5 h-3.5 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" onClick={loadFiles} />
+                </div>
+              </div>
+
+              <div className="flex flex-col border-t border-border w-full">
+                {files.length === 0 ? (
+                  <div className="text-[13px] text-muted-foreground py-6">No documents indexed in the vector database.</div>
+                ) : (
+                  files.map((f, i) => (
+                    <div key={i} className="flex items-center justify-between py-4 border-b border-border hover:bg-muted/10 transition-colors duration-100 ease-linear">
+                      <span className="text-[13px] font-medium text-foreground truncate flex-1 min-w-0 pr-4">{f.filename}</span>
+                      <div className="flex items-center gap-4 shrink-0">
+                        <Badge variant="outline" className={`text-[10px] rounded-none ${typeColor(f.doc_type)}`}>{f.doc_type}</Badge>
+                        <span className="text-[11px] text-muted-foreground w-[70px] text-right font-mono">{f.chunks} <span className="font-sans">chunks</span></span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Query Tester */}
+            <div className="p-8">
+              <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-6">Semantic Query Tester</h2>
+              <div className="flex gap-3">
+                <Input value={queryInput} onChange={e => setQueryInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && runQuery()} placeholder="Test similarity search query…" className="flex-1 bg-secondary border-border h-9 shadow-none rounded-none focus-visible:ring-1 text-[13px]" />
+                <select value={queryType} onChange={e => setQueryType(e.target.value)} className="px-3 h-9 rounded-none text-[13px] bg-secondary border border-border text-foreground outline-none cursor-pointer">
+                  <option value="">All Types</option><option value="capability">Capability</option><option value="past_proposal">Proposal</option><option value="certification">Cert</option><option value="pricing">Pricing</option><option value="legal">Legal</option>
                 </select>
-                <Button variant="outline" size="sm" onClick={runQuery} className="cursor-pointer"><Search className="w-3.5 h-3.5 mr-1.5" /> Query</Button>
+                <Button onClick={runQuery} className="h-9 px-6 cursor-pointer shadow-none rounded-none bg-foreground text-background hover:bg-foreground/90 border-none">
+                  <Search className="w-3.5 h-3.5 mr-2" /> Query
+                </Button>
               </div>
               {queryResults.length > 0 && (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+                <div className="mt-6 flex flex-col gap-3">
                   {queryResults.map((r, i) => (
-                    <div key={i} className="p-3 bg-secondary border border-border rounded-lg text-xs">
-                      <span className="font-semibold text-primary">{(r.score * 100).toFixed(1)}%</span>
-                      <p className="mt-1 text-muted-foreground">{r.text}</p>
+                    <div key={i} className="p-4 bg-secondary/50 border-l-[3px] border-primary text-[13px]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-foreground text-[11px] uppercase tracking-wider">Relevance Matrix: {(r.score * 100).toFixed(1)}%</span>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">{r.text}</p>
                     </div>
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Logs */}
-          <Card className="bg-card border-border">
-            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Activity Log</CardTitle></CardHeader>
-            <CardContent className="p-0">
-              <div className="bg-background/50 rounded-b-lg mx-3 mb-3 border border-border overflow-hidden">
-                <ScrollArea className="h-[160px]">
-                  <div className="p-3 font-mono text-xs leading-relaxed space-y-0.5">
-                    {logs.length === 0 ? <span className="text-muted-foreground italic">No activity yet…</span> :
-                      logs.map((e, i) => (
-                        <div key={i} className="flex gap-2">
-                          <span className="text-muted-foreground shrink-0">[{e.time}]</span>
-                          <span className={e.type === 'success' ? 'text-success' : e.type === 'error' ? 'text-error' : e.type === 'info' ? 'text-info' : 'text-muted-foreground'}>{e.message}</span>
-                        </div>
-                      ))}
-                  </div>
-                </ScrollArea>
-              </div>
-            </CardContent>
-          </Card>
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* RIGHT CONTEXT ZONE */}
+      <div className="w-[320px] shrink-0 bg-sidebar flex flex-col z-10 border-l border-border">
+        <div className="h-14 border-b border-border flex items-center px-6 shrink-0 bg-background/50">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Activity Stream</span>
         </div>
-      </ScrollArea>
-    </>
+        <div className="flex-1 overflow-y-auto p-6 font-mono text-[11px] leading-[1.6] text-muted-foreground space-y-2">
+          {logs.length === 0 ? (
+            <span className="opacity-40">Awaiting database queries...</span>
+          ) : (
+            logs.map((entry, i) => (
+              <div key={i} className="flex gap-3">
+                <span className="opacity-40 shrink-0">[{entry.time}]</span>
+                <span className={
+                  entry.type === 'success' ? 'text-success' :
+                  entry.type === 'error' ? 'text-error' :
+                  entry.type === 'info' ? 'text-foreground' :
+                  'text-muted-foreground'
+                }>
+                  {entry.message}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
