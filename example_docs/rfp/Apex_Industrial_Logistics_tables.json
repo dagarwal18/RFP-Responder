@@ -307,15 +307,15 @@
         "TR-ID",
         "Requirement",
         "Description",
-        "Mandatory?",
-        "C / PC / NC",
-        "Vendor to fill"
+        "Mandatory/Optional",
+        "[C / PC / NC]",
+        "[Vendor to fill \u2014 Name OEM]"
       ],
       "rows": [
         [
           "TR-005",
           "SD-WAN \u2014 OEM Hardware",
-          "Vendor MUST specify the OEM hardware partner(s) for SD-WAN CPE (e.g., Cisco, Fortinet, VMware VeloCloud, Palo Alto). CPE must be provided as-a-Service under OpEx pricing. Vendor-owned hardware is mandatory; Apex will not purchase CPE outright.",
+          "Vendor MUST specify the OEM hardware partner(s) for SD-WAN CPE (e.g., Cisco, Fortinet, VMware Velocloud, Palo Alto). CPE must be provided as-a-Service under OpEx pricing. Vendor-owned hardware is mandatory; Apex will not purchase CPE outright.",
           "Mandatory",
           "[C / PC / NC]",
           "[Vendor to fill \u2014 Name OEM]"
@@ -459,15 +459,17 @@
       "caption": "",
       "headers": [
         "TR-ID",
-        "Requirement Description",
-        "Compliance Status",
-        "[C / PC / NC]",
-        "[Vendor to fill]"
+        "Requirement",
+        "Description",
+        "Mandatory?",
+        "C / PC / NC",
+        "Vendor to fill"
       ],
       "rows": [
         [
           "TR-019",
           "IoT \u2014 Private APN",
+          "The Enterprise Mobility platform MUST support a dedicated private APN for Apex IoT SIM traffic with routing directly into Apex's SD-WAN fabric via private peering. Traffic from IoT SIMs MUST NOT transit the public internet.",
           "Mandatory",
           "[C / PC / NC]",
           "[Vendor to fill]"
@@ -475,6 +477,7 @@
         [
           "TR-020",
           "IoT \u2014 eSIM",
+          "The EMM platform MUST support GSMA-compliant eSIM / eUICC remote provisioning for all 2.5 million SIMs at Apex's option. Vendor must provide the GSMA eSIM RSP (Remote SIM Provisioning) compliance certificate with the proposal.",
           "Mandatory",
           "[C / PC / NC]",
           "[Vendor to fill]"
@@ -482,6 +485,7 @@
         [
           "TR-021",
           "IoT \u2014 National Coverage",
+          "The vendor MUST provide demonstrable 4G LTE network coverage (own network or roaming agreement) covering a minimum of 98% of Apex's Tier-1 and Tier-2 site locations across all 28 operational states. A geo-referenced coverage report must be submitted with the proposal.",
           "Mandatory",
           "[C / PC / NC]",
           "[Vendor to fill]"
@@ -489,6 +493,7 @@
         [
           "TR-022",
           "IoT \u2014 API Integration",
+          "The EMM platform MUST expose a documented RESTful API (OpenAPI 3.0 specification) for SIM lifecycle management (activation, deactivation, suspension, data plan change) and consumption reporting. API documentation must be provided as Appendix F.",
           "Mandatory",
           "[C / PC / NC]",
           "[Vendor to fill]"
@@ -496,6 +501,7 @@
         [
           "TR-023",
           "General \u2014 Disaster Recovery",
+          "The vendor's managed service platform (SD-WAN controller, SOC SIEM, EMM platform) must operate from geo-redundant infrastructure within India with an RPO of less than 15 minutes and an RTO of less than 60 minutes for all Tier-1 managed services.",
           "Mandatory",
           "[C / PC / NC]",
           "[Vendor to fill]"
@@ -503,6 +509,7 @@
         [
           "TR-024",
           "General \u2014 ServiceNow Integration",
+          "The vendor's NOC and SOC ticketing systems MUST integrate bi-directionally with Apex's ServiceNow ITSM instance for automated incident creation, status updates, and closure. Vendor must describe the integration mechanism (native connector / REST API / email) and provide a sample integration architecture.",
           "Mandatory",
           "[C / PC / NC]",
           "[Vendor to fill]"
@@ -510,6 +517,7 @@
         [
           "TR-025",
           "General \u2014 Reporting",
+          "Vendor MUST provide a unified executive dashboard and monthly managed service report covering network availability, cloud interconnect performance, SOC incident statistics, IoT SIM health, and SLA performance against all KPIs defined in Section 3.2.",
           "Mandatory",
           "[C / PC / NC]",
           "[Vendor to fill]"
@@ -639,20 +647,13 @@
       "table_id": "T1",
       "caption": "",
       "headers": [
-        "Phase",
-        "Activity",
-        "Description",
-        "Number of Sites",
-        "Timeline"
+        "Ph-3",
+        "Branch Rollout \u2014 North & West",
+        "First 100 Tier-2/Tier-3 branch sites (North and West India zones)",
+        "100 sites",
+        "Months 7\u201311"
       ],
       "rows": [
-        [
-          "Ph-3",
-          "Branch Rollout \u2014 North & West",
-          "First 100 Tier-2/Tier-3 branch sites (North and West India zones)",
-          "100 sites",
-          "Months 7\u201311"
-        ],
         [
           "Ph-4",
           "Branch Rollout \u2014 South & East",
@@ -723,7 +724,7 @@
     "heuristic_extraction": null,
     "vlm_extraction": {
       "table_id": "T1",
-      "caption": "7.3 Appendix Structure",
+      "caption": "",
       "headers": [
         "Appendix",
         "Content Required"
@@ -805,7 +806,7 @@
         [
           "8",
           "No Material Sanctions",
-          "Vendor, its subsidiaries, and key subcontractors must not be subject to any material economic sanction, debarment from Government of India procurement, or CBI/ED enforcement action.",
+          "Vendor, its subsidiaries, and key subcontractors must not be subject to any material economic sanction, debarrment from Government of India procurement, or CBI/ED enforcement action.",
           "Self-certification by authorised signatory"
         ]
       ],
@@ -900,7 +901,7 @@
         [
           "Security, Compliance & SOC Quality",
           "20%",
-          "\u2022 ISO 27001, ISO 20000-1, SOC 2 Type II currency and scope \u2014 8%\n\u2022 SOC maturity: SIEM capability, analyst headcount, MTTD / MTTR evidence \u2014 8%\n\u2022 DPD P Act compliance framework & data localisation architecture \u2014 4%"
+          "\u2022 ISO 27001, ISO 20000-1, SOC 2 Type II currency and scope \u2014 8%\n\u2022 SOC maturity: SIEM capability, analyst headcount, MTTR / MTTD evidence \u2014 8%\n\u2022 DPDP Act compliance framework & data localisation architecture \u2014 4%"
         ],
         [
           "References & Track Record",
@@ -1084,22 +1085,14 @@
       "table_id": "T1",
       "caption": "",
       "headers": [
-        "Item",
-        "Description",
-        "Service Type",
-        "Billing",
-        "Vendor to fill",
-        "Vendor to fill"
+        "2.02",
+        "AWS Direct Connect \u2014 10 Gbps x 1 Dedicated Connection (ap-south-1)",
+        "Cloud Interconnect",
+        "Per month",
+        "[Vendor to fill]",
+        "[Vendor to fill]"
       ],
       "rows": [
-        [
-          "2.02",
-          "AWS Direct Connect \u2014 10 Gbps x 1 Dedicated Connection (ap-south-1)",
-          "Cloud Interconnect",
-          "Per month",
-          "[Vendor to fill]",
-          "[Vendor to fill]"
-        ],
         [
           "2.03",
           "Last-mile fibre and cross-connect (Mumbai DC to carrier-neutral facility)",
@@ -1260,7 +1253,7 @@
     "heuristic_extraction": null,
     "vlm_extraction": {
       "table_id": "T1",
-      "caption": "Appendix B \u2014 Compliance Matrix Template",
+      "caption": "",
       "headers": [
         "Region",
         "States Covered",
@@ -1469,10 +1462,10 @@
       "caption": "",
       "headers": [
         "CM-ID",
-        "Requirement",
-        "Status",
-        "Reference",
-        "Vendor Action"
+        "Requirement Description",
+        "[C/PC/NC]",
+        "[Appendix / Section]",
+        "[Vendor to fill]"
       ],
       "rows": [
         [

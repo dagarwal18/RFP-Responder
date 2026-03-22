@@ -151,6 +151,10 @@ class FinalReadinessAgent(BaseAgent):
                     text=True
                 )
                 logger.info(f"[F1] Generated PDF: {pdf_path}")
+            except subprocess.CalledProcessError as e:
+                logger.warning(f"[F1] Failed to generate PDF. Exit code: {e.returncode}")
+                logger.warning(f"[F1] PDF stdout: {e.stdout}")
+                logger.warning(f"[F1] PDF stderr: {e.stderr}")
             except Exception as e:
                 logger.warning(f"[F1] Failed to generate PDF: {e}")
 
