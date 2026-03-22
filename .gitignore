@@ -7,3 +7,4 @@ uvicorn
 logs/
 document prompts/
 docs/
+.agent

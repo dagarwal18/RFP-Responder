@@ -132,6 +132,11 @@ class FinalReadinessAgent(BaseAgent):
                 import subprocess
                 client_name = state.rfp_metadata.client_name or "Client"
                 rfp_title = state.rfp_metadata.rfp_title or "RFP Response Proposal"
+                # Sanitize rfp_title: remove newlines and cap length
+                # (RFP titles from parsed docs may contain line breaks, and pipes break Windows subshells)
+                rfp_title = " - ".join(
+                    line.strip() for line in rfp_title.splitlines() if line.strip()
+                )[:120]
                 # Assuming the proposing company might be available or default to "Our Company"
                 # (For now we'll use a generic "Proposing Company" default if not defined)
                 subprocess.run(
@@ -146,6 +151,10 @@ class FinalReadinessAgent(BaseAgent):
                     text=True
                 )
                 logger.info(f"[F1] Generated PDF: {pdf_path}")
+            except subprocess.CalledProcessError as e:
+                logger.warning(f"[F1] Failed to generate PDF. Exit code: {e.returncode}")
+                logger.warning(f"[F1] PDF stdout: {e.stdout}")
+                logger.warning(f"[F1] PDF stderr: {e.stderr}")
             except Exception as e:
                 logger.warning(f"[F1] Failed to generate PDF: {e}")
 

@@ -65,10 +65,44 @@ def _find_mmdc() -> str | None:
     return shutil.which("mmdc")
 
 
+def _validate_mermaid_syntax(block_code: str) -> str | None:
+    """Quick validation of Mermaid code before rendering.
+
+    Returns None if valid, or an error description if invalid.
+    Catches common issues that cause mmdc to hang indefinitely.
+    """
+    stripped = block_code.strip()
+    if not stripped:
+        return "Empty mermaid block"
+
+    # Must start with a valid diagram type keyword
+    valid_starts = (
+        "graph ", "graph\n", "flowchart ", "flowchart\n",
+        "sequenceDiagram", "classDiagram", "stateDiagram",
+        "erDiagram", "gantt", "pie", "journey",
+        "gitGraph", "mindmap", "timeline", "quadrantChart",
+        "sankey", "xychart", "block-beta",
+    )
+    first_line = stripped.split("\n")[0].strip()
+    if not any(first_line.startswith(s) for s in valid_starts):
+        return f"Invalid diagram type: '{first_line[:50]}'"
+
+    # Check for placeholder text that will break the parser
+    placeholder_patterns = [
+        "⚠", "[TBD", "[TODO", "[Insert", "**⚠",
+        "[Requires Manual Input]",
+    ]
+    for pattern in placeholder_patterns:
+        if pattern in block_code:
+            return f"Contains placeholder text: '{pattern}'"
+
+    return None  # valid
+
+
 def render_block(
     block_code: str,
     output_dir: Path,
-    timeout: int = 30,
+    timeout: int = 60,
 ) -> Path | Exception:
     """Render a single Mermaid block to a PNG image.
 
@@ -78,6 +112,13 @@ def render_block(
     Returns:
         Path to the rendered PNG on success, or an Exception on failure.
     """
+    # ── Validate syntax before attempting to render ──
+    validation_error = _validate_mermaid_syntax(block_code)
+    if validation_error:
+        err = ValueError(f"Mermaid syntax validation failed: {validation_error}")
+        logger.warning(f"[Mermaid] {err}")
+        return err
+
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Content-addressed filename for free caching
