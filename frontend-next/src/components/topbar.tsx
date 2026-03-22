@@ -22,24 +22,26 @@ export default function Topbar({ title }: { title: string }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-6 
-                        bg-background/90 backdrop-blur-xl border-b border-border">
-      <h1 className="text-base font-semibold text-foreground tracking-tight">
+    <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-8 shrink-0
+                        bg-background border-b border-border">
+      <h1 className="text-[13px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
         {title}
       </h1>
-      <div className="flex items-center gap-3 text-xs text-muted-foreground border-l pl-4 border-border ml-auto">
+      <div className="flex items-center gap-4 text-[12px] text-muted-foreground ml-auto">
         <ThemeToggle />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 border-l border-border pl-5">
           <span
-            className={`w-2 h-2 rounded-full ${
+            className={`w-1.5 h-1.5 rounded-none ${
               status === 'online'
-                ? 'bg-success shadow-[0_0_6px_var(--color-success)]'
+                ? 'bg-success'
                 : status === 'offline'
-                ? 'bg-error shadow-[0_0_6px_var(--color-error)]'
-                : 'bg-warning animate-pulse'
+                ? 'bg-error'
+                : 'bg-warning'
             }`}
           />
-          {status === 'online' ? 'Connected' : status === 'offline' ? 'API Offline' : 'Connecting…'}
+          <span className="font-medium tracking-wide">
+            {status === 'online' ? 'CONNECTED' : status === 'offline' ? 'OFFLINE' : 'CONNECTING...'}
+          </span>
         </div>
       </div>
     </header>

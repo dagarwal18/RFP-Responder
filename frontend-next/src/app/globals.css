@@ -1,90 +1,78 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@fontsource-variable/space-grotesk";
 
 @custom-variant dark (&:is(.dark *));
 
+/* Industrial Hard Theme */
 :root {
-  --radius: 0.625rem;
-  
-  /* Beige Light Mode with Orange Accent */
-  --background: 40 33% 96%;
-  --foreground: 20 14% 10%;
-  --card: 40 33% 98%;
-  --card-foreground: 20 14% 10%;
-  --popover: 40 33% 98%;
-  --popover-foreground: 20 14% 10%;
-  
-  --primary: 24.6 95% 53.1%;      /* Orange */
-  --primary-foreground: 60 9.1% 97.8%;
-  
-  --secondary: 40 20% 90%;
-  --secondary-foreground: 24 9.8% 10%;
-  --muted: 40 20% 90%;
-  --muted-foreground: 25 5.3% 44.7%;
-  --accent: 40 20% 90%;
-  --accent-foreground: 24 9.8% 10%;
+  --radius: 0px;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+  --primary: 15 98% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 9%;
   --destructive: 0 84.2% 60.2%;
-  
-  --border: 40 20% 86%;
-  --input: 40 20% 86%;
-  --ring: 24.6 95% 53.1%;         /* Orange */
-  
-  --chart-1: 24.6 95% 53.1%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --ring: 15 98% 50%;
+  --chart-1: 15 98% 50%;
   --chart-2: 142.1 76.2% 36.3%;
   --chart-3: 217.2 91.2% 59.8%;
   --chart-4: 47.9 95.8% 53.1%;
   --chart-5: 0 72.2% 50.6%;
-  
-  --sidebar: 40 33% 96%;
-  --sidebar-foreground: 20 14% 10%;
-  --sidebar-primary: 24.6 95% 53.1%;
-  --sidebar-primary-foreground: 60 9.1% 97.8%;
-  --sidebar-accent: 40 20% 90%;
-  --sidebar-accent-foreground: 24 9.8% 10%;
-  --sidebar-border: 40 20% 86%;
-  --sidebar-ring: 24.6 95% 53.1%;
+  --sidebar: 0 0% 98%;
+  --sidebar-foreground: 0 0% 9%;
+  --sidebar-primary: 15 98% 50%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 94%;
+  --sidebar-accent-foreground: 0 0% 9%;
+  --sidebar-border: 0 0% 88%;
+  --sidebar-ring: 15 98% 50%;
 }
 
-/* Force dark theme */
 .dark {
-  /* Jet Black Dark Mode with Orange Accent */
-  --background: 0 0% 2%;
-  --foreground: 0 0% 96%;
-  --card: 0 0% 5%;
-  --card-foreground: 0 0% 96%;
-  --popover: 0 0% 5%;
-  --popover-foreground: 0 0% 96%;
-  
-  --primary: 24.6 95% 53.1%;      /* Orange */
+  --background: 0 0% 4%;
+  --foreground: 0 0% 92%;
+  --card: 0 0% 7%;
+  --card-foreground: 0 0% 92%;
+  --popover: 0 0% 7%;
+  --popover-foreground: 0 0% 92%;
+  --primary: 15 98% 50%;
   --primary-foreground: 0 0% 100%;
-  
-  --secondary: 0 0% 10%;
-  --secondary-foreground: 0 0% 96%;
-  --muted: 0 0% 10%;
-  --muted-foreground: 0 0% 64%;
-  --accent: 0 0% 10%;
-  --accent-foreground: 0 0% 96%;
+  --secondary: 0 0% 11%;
+  --secondary-foreground: 0 0% 92%;
+  --muted: 0 0% 11%;
+  --muted-foreground: 0 0% 44%;
+  --accent: 0 0% 11%;
+  --accent-foreground: 0 0% 92%;
   --destructive: 0 62.8% 30.6%;
-  
-  --border: 0 0% 12%;
-  --input: 0 0% 12%;
-  --ring: 24.6 95% 53.1%;         /* Orange */
-  
-  --chart-1: 24.6 95% 53.1%;
+  --border: 0 0% 11%;
+  --input: 0 0% 11%;
+  --ring: 15 98% 50%;
+  --chart-1: 15 98% 50%;
   --chart-2: 142.1 76.2% 36.3%;
   --chart-3: 217.2 91.2% 59.8%;
   --chart-4: 47.9 95.8% 53.1%;
   --chart-5: 0 72.2% 50.6%;
-  
-  --sidebar: 0 0% 2%;
-  --sidebar-foreground: 0 0% 96%;
-  --sidebar-primary: 24.6 95% 53.1%;
+  --sidebar: 0 0% 0%;
+  --sidebar-foreground: 0 0% 92%;
+  --sidebar-primary: 15 98% 50%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 10%;
-  --sidebar-accent-foreground: 0 0% 96%;
-  --sidebar-border: 0 0% 12%;
-  --sidebar-ring: 24.6 95% 53.1%;
+  --sidebar-accent: 0 0% 11%;
+  --sidebar-accent-foreground: 0 0% 92%;
+  --sidebar-border: 0 0% 11%;
+  --sidebar-ring: 15 98% 50%;
 }
 
 @theme inline {
@@ -123,18 +111,20 @@
   --color-warning: #eab308;
   --color-error: #ef4444;
   --color-info: #60a5fa;
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --font-sans: var(--font-geist);
-  --font-mono: var(--font-jetbrains);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --font-sans: 'Space Grotesk Variable', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 * {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--border)) transparent;
+  border-radius: 0px !important;
+  box-shadow: none !important;
 }
 
 *::-webkit-scrollbar {
@@ -148,26 +138,11 @@
 
 *::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
-  border-radius: 3px;
+  border-radius: 0px !important;
 }
 
 *::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground)/0.5);
-}
-
-/* Subtle gradient atmosphere */
-body::before {
-  content: '';
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background:
-    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(249, 115, 22, 0.02) 0%, transparent 50%);
-  z-index: 0;
-  pointer-events: none;
 }
 
 @keyframes pulse-dot {

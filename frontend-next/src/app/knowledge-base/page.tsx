@@ -81,9 +81,9 @@ export default function KnowledgeBasePage() {
     <>
       <Topbar title="Knowledge Base" />
       <ScrollArea className="flex-1">
-        <div className="p-6 space-y-5 max-w-6xl mx-auto w-full">
+        <div className="p-8 space-y-8 max-w-6xl mx-auto w-full">
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-8">
             {[
               { label: 'Vectors', value: stats.vectors },
               { label: 'Namespaces', value: stats.namespaces },
@@ -99,7 +99,7 @@ export default function KnowledgeBasePage() {
           </div>
 
           {/* Upload + Documents */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="bg-card border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
