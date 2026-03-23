@@ -44,4 +44,5 @@ requests>=2.31.0                 # Direct HTTP calls to Groq VLM API
 
 # ── Export & Document Generation ────────────────────────
 xhtml2pdf>=0.2.11                # Pure Python PDF generation (replaces weasyprint)
+markdown>=3.4.0                  # Required by xhtml2pdf for markdown conversion
 markdown>=3.6.0                  # Markdown to HTML conversion

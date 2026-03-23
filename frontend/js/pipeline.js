@@ -218,6 +218,10 @@ window.toggleSection = function(titleEl) {
   const block = titleEl.closest('.doc-section-block');
   if (!block) return;
   block.classList.toggle('is-collapsed');
+  
+  if (!block.classList.contains('is-collapsed') && typeof renderMermaidDiagrams === 'function') {
+    renderMermaidDiagrams(block);
+  }
 };
 
 function renderReviewComments() {
@@ -328,9 +332,7 @@ function renderReviewWorkspace() {
   attachDocReaderEvents();
 
   // Render any Mermaid diagrams found in the review content
-  if (typeof renderMermaidDiagrams === 'function') {
-    setTimeout(renderMermaidDiagrams, 100);
-  }
+  // (Deferred to toggleSection since elements start collapsed)
 }
 
 function clearReviewWorkspace() {

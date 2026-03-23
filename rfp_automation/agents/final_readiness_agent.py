@@ -130,6 +130,7 @@ class FinalReadinessAgent(BaseAgent):
             pdf_path = out_dir / "proposal.pdf"
             try:
                 import subprocess
+                import sys
                 client_name = state.rfp_metadata.client_name or "Client"
                 rfp_title = state.rfp_metadata.rfp_title or "RFP Response Proposal"
                 # Sanitize rfp_title: remove newlines and cap length
@@ -141,7 +142,7 @@ class FinalReadinessAgent(BaseAgent):
                 # (For now we'll use a generic "Proposing Company" default if not defined)
                 subprocess.run(
                     [
-                        "python", "scripts/md_to_pdf.py", 
+                        sys.executable, "scripts/md_to_pdf.py", 
                         str(output_path), str(pdf_path),
                         "--rfp-title", rfp_title,
                         "--client-name", client_name
@@ -183,12 +184,14 @@ class FinalReadinessAgent(BaseAgent):
         full_narr = state.assembled_proposal.full_narrative or "No proposal narrative available."
         import re
         
-        # Build Markdown Table for Pricing
-        pricing_table = "\n\n### Pricing Line Items\n\n| Category | Label | Quantity | Unit Rate | Total |\n|---|---|---|---|---|\n"
+        # Build HTML Table for Pricing to enforce proper PDF column widths
+        pricing_table = "\n\n### Pricing Line Items\n\n<table style='width:100%;'>\n"
+        pricing_table += "<thead><tr><th style='width:15%; text-align:left;'>Category</th><th style='width:35%; text-align:left;'>Label</th><th style='width:20%; text-align:left;'>Quantity</th><th style='width:15%; text-align:left;'>Unit Rate</th><th style='width:15%; text-align:left;'>Total</th></tr></thead>\n<tbody>\n"
         for item in commercial.line_items:
             unit_rate = f"{commercial.currency} {getattr(item, 'unit_rate', 0):,.2f}"
             total = f"{commercial.currency} {getattr(item, 'total', 0):,.2f}"
-            pricing_table += f"| {getattr(item, 'category', '')} | {getattr(item, 'label', '')} | {getattr(item, 'quantity', '')} {getattr(item, 'unit', '')} | {unit_rate} | {total} |\n"
+            pricing_table += f"<tr><td>{getattr(item, 'category', '')}</td><td>{getattr(item, 'label', '')}</td><td>{getattr(item, 'quantity', '')} {getattr(item, 'unit', '')}</td><td>{unit_rate}</td><td>{total}</td></tr>\n"
+        pricing_table += "</tbody></table>\n\n"
         pricing_table += f"**Total Expected Price:** {commercial.currency} {commercial.total_price:,.2f}\n"
 
         # Build Markdown List for Legal Risks

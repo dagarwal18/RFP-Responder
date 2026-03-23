@@ -30,9 +30,13 @@
     marked.setOptions({ renderer });
 
     // After any review render, re-run Mermaid to convert pre.mermaid → SVG
-    function renderMermaidDiagrams() {
+    function renderMermaidDiagrams(container) {
       try {
-        mermaid.run({ querySelector: 'pre.mermaid' });
+        const target = container || document;
+        const nodes = target.querySelectorAll('pre.mermaid:not([data-processed="true"])');
+        if (nodes.length > 0) {
+          mermaid.run({ nodes: Array.from(nodes) });
+        }
       } catch (e) {
         console.warn('Mermaid rendering error:', e);
       }

@@ -59,8 +59,8 @@ _CSS = """
 
 body {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 11pt;
-    line-height: 1.6;
+    font-size: 10pt;
+    line-height: 1.45;
     color: #1a1a1a;
 }
 
@@ -180,8 +180,8 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin: 14pt 0;
-    font-size: 9.5pt;
-    table-layout: fixed;
+    font-size: 8.5pt;
+    line-height: 1.35;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
@@ -190,21 +190,21 @@ th {
     background-color: #0052CC;
     color: #ffffff;
     font-weight: bold;
-    padding: 7pt 8pt;
+    padding: 5pt 6pt;
     text-align: left;
     border: 0.5px solid #004099;
     word-wrap: break-word;
 }
 
 td {
-    padding: 6pt 8pt;
+    padding: 4pt 5pt;
     border: 0.5px solid #dddddd;
     vertical-align: top;
     word-wrap: break-word;
 }
 
+/* Removed page-break-inside: avoid from tr to allow long cells to break */
 tr {
-    page-break-inside: avoid;
 }
 
 tr:nth-child(even) td {
@@ -240,6 +240,8 @@ pre {
     line-height: 1.3;
     border: 0.5px solid #dddddd;
     page-break-inside: avoid;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 /* ── Blockquotes ──────────────────────────── */
@@ -264,9 +266,9 @@ hr {
 /* ── Paragraphs ───────────────────────────── */
 
 p {
-    margin-bottom: 10pt;
-    text-align: justify;
-    line-height: 1.6;
+    margin-bottom: 12pt;
+    text-align: left;
+    line-height: 1.5;
 }
 
 /* ── Images (for Mermaid diagrams) ────────── */
