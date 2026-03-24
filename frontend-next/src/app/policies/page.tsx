@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, fetchPolicies } from '@/lib/api';
 import type { Policy } from '@/lib/types';
 import { ScrollText, Plus, Trash2, Pencil, X } from 'lucide-react';
 
@@ -19,7 +19,7 @@ export default function PoliciesPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ text: '', category: 'capability', severity: 'medium', source_section: '' });
 
-  const load = useCallback(async () => { try { const d = await apiFetch<{ policies: Policy[] }>('/policies'); setPolicies(d.policies || []); } catch {} }, []);
+  const load = useCallback(async () => { try { const d = await fetchPolicies(); setPolicies(d.policies || []); } catch {} }, []);
   useEffect(() => { load(); }, [load]);
 
   const openAdd = () => { setEditId(null); setForm({ text: '', category: 'capability', severity: 'medium', source_section: '' }); setModalOpen(true); };
@@ -27,14 +27,14 @@ export default function PoliciesPage() {
 
   const save = async () => {
     try {
-      if (editId) await apiFetch(`/policies/${editId}`, { method: 'PUT', body: JSON.stringify(form) });
-      else await apiFetch('/policies', { method: 'POST', body: JSON.stringify(form) });
+      if (editId) await apiFetch(`/api/knowledge/policies/${editId}`, { method: 'PUT', body: JSON.stringify(form) });
+      else await apiFetch('/api/knowledge/policies', { method: 'POST', body: JSON.stringify(form) });
       setModalOpen(false); load();
     } catch {}
   };
 
-  const del = async (id: string) => { try { await apiFetch(`/policies/${id}`, { method: 'DELETE' }); load(); } catch {} };
-  const delAll = async () => { try { await apiFetch('/policies', { method: 'DELETE' }); load(); } catch {} };
+  const del = async (id: string) => { try { await apiFetch(`/api/knowledge/policies/${id}`, { method: 'DELETE' }); load(); } catch {} };
+  const delAll = async () => { try { await apiFetch('/api/knowledge/policies', { method: 'DELETE' }); load(); } catch {} };
 
   const sevClass = (s: string) => ({ critical: 'bg-error/15 text-error', high: 'bg-warning/15 text-warning', medium: 'bg-info/15 text-info', low: '' }[s] || '');
   const catClass = (c: string) => ({ capability: 'bg-primary/15 text-primary', legal: 'bg-error/15 text-error', certification: 'bg-success/15 text-success', compliance: 'bg-warning/15 text-warning', operational: 'bg-info/15 text-info' }[c] || '');
@@ -82,8 +82,8 @@ export default function PoliciesPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {filtered.map(p => (
-                        <tr key={p.id} className="hover:bg-secondary/30 transition-colors">
+                      {filtered.map((p, i) => (
+                        <tr key={`${p.id}-${i}`} className="hover:bg-secondary/30 transition-colors">
                           <td className="px-6 py-3 text-muted-foreground text-xs leading-relaxed">{p.text}</td>
                           <td className="px-3 py-3"><Badge variant="outline" className={`text-[10px] ${catClass(p.category)}`}>{p.category}</Badge></td>
                           <td className="px-3 py-3"><Badge variant="outline" className={`text-[10px] ${sevClass(p.severity)}`}>{p.severity}</Badge></td>

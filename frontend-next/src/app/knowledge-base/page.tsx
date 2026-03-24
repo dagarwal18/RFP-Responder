@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { apiFetch, formatSize, formatTime } from '@/lib/api';
+import { apiFetch, fetchKBStats, fetchKBFiles, formatSize, formatTime } from '@/lib/api';
 import type { KBStats, KBFile, LogEntry } from '@/lib/types';
 import {
   RefreshCw, Trash2, Search, Sprout,
@@ -30,11 +30,11 @@ export default function KnowledgeBasePage() {
   }, []);
 
   const loadStats = useCallback(async () => {
-    try { setStats(await apiFetch<KBStats>('/kb/stats')); } catch {}
+    try { setStats(await fetchKBStats()); } catch {}
   }, []);
 
   const loadFiles = useCallback(async () => {
-    try { const d = await apiFetch<{ files: KBFile[] }>('/kb/files'); setFiles(d.files || []); } catch {}
+    try { const d = await fetchKBFiles(); setFiles(d.files || []); } catch {}
   }, []);
 
   useEffect(() => { loadStats(); loadFiles(); }, [loadStats, loadFiles]);
@@ -46,7 +46,7 @@ export default function KnowledgeBasePage() {
     try {
       const form = new FormData();
       form.append('file', selectedFile);
-      await apiFetch('/kb/upload', { method: 'POST', headers: {}, body: form });
+      await apiFetch('/api/knowledge/upload', { method: 'POST', headers: {}, body: form });
       addLog(`Uploaded ${selectedFile.name}`, 'success');
       setSelectedFile(null);
       loadStats(); loadFiles();
@@ -58,9 +58,8 @@ export default function KnowledgeBasePage() {
     if (!queryInput.trim()) return;
     addLog(`Querying: "${queryInput}"`, 'info');
     try {
-      const params = new URLSearchParams({ q: queryInput });
-      if (queryType) params.set('type', queryType);
-      const d = await apiFetch<{ results: Array<{ score: number; text: string }> }>(`/kb/query?${params}`);
+      const bodyData = JSON.stringify({ query: queryInput, top_k: 5, doc_type: queryType || "" });
+      const d = await apiFetch<{ results: Array<{ score: number; text: string }> }>(`/api/knowledge/query`, { method: 'POST', body: bodyData });
       setQueryResults(d.results || []);
       addLog(`Found ${(d.results || []).length} results`, 'success');
     } catch (e) { addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error'); }
@@ -135,13 +134,13 @@ export default function KnowledgeBasePage() {
                 <div className="flex items-center gap-5">
                   <span 
                     className="text-[12px] text-primary cursor-pointer hover:underline underline-offset-4 flex items-center gap-1.5"
-                    onClick={async () => { addLog('Seeding…', 'info'); try { await apiFetch('/kb/seed', { method: 'POST' }); addLog('Done', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error'); }}}
+                    onClick={async () => { addLog('Seeding…', 'info'); try { await apiFetch('/api/knowledge/seed', { method: 'POST' }); addLog('Done', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error'); }}}
                   >
                     <Sprout className="w-3.5 h-3.5" /> Seed JSON
                   </span>
                   <span 
                     className="text-[12px] text-destructive cursor-pointer hover:underline underline-offset-4 flex items-center gap-1.5"
-                    onClick={async () => { addLog('Clearing…', 'info'); try { await apiFetch('/kb/clear', { method: 'DELETE' }); addLog('Cleared', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`${e}`, 'error'); }}}
+                    onClick={async () => { addLog('Clearing…', 'info'); try { await apiFetch('/api/knowledge/index', { method: 'DELETE' }); addLog('Cleared', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`${e}`, 'error'); }}}
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Clear Index
                   </span>

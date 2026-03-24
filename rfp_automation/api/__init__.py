@@ -25,7 +25,7 @@ from rfp_automation.utils.logger import setup_logging
 logger = logging.getLogger(__name__)
 
 
-def create_app() -> FastAPI:
+def create_app(serve_frontend: bool = True) -> FastAPI:
     """Application factory — create and configure the FastAPI instance."""
     settings = get_settings()
     setup_logging(settings.log_level)
@@ -52,26 +52,27 @@ def create_app() -> FastAPI:
     application.include_router(rfp_router, prefix="/api/rfp", tags=["RFP"])
     application.include_router(knowledge_router, prefix="/api/knowledge", tags=["Knowledge"])
 
-    # Serve frontend static files
-    from pathlib import Path
-    from fastapi.staticfiles import StaticFiles
-    from fastapi.responses import FileResponse
+    # Serve frontend static files if requested
+    if serve_frontend:
+        from pathlib import Path
+        from fastapi.staticfiles import StaticFiles
+        from fastapi.responses import FileResponse
 
-    frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
-    if frontend_dir.exists():
-        application.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
-        
-        css_dir = frontend_dir / "css"
-        if css_dir.exists():
-            application.mount("/css", StaticFiles(directory=str(css_dir)), name="css")
+        frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
+        if frontend_dir.exists():
+            application.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
             
-        js_dir = frontend_dir / "js"
-        if js_dir.exists():
-            application.mount("/js", StaticFiles(directory=str(js_dir)), name="js")
+            css_dir = frontend_dir / "css"
+            if css_dir.exists():
+                application.mount("/css", StaticFiles(directory=str(css_dir)), name="css")
+                
+            js_dir = frontend_dir / "js"
+            if js_dir.exists():
+                application.mount("/js", StaticFiles(directory=str(js_dir)), name="js")
 
-        @application.get("/")
-        async def serve_frontend():
-            return FileResponse(str(frontend_dir / "index.html"))
+            @application.get("/")
+            async def serve_frontend_html():
+                return FileResponse(str(frontend_dir / "index.html"))
 
     @application.on_event("startup")
     async def startup():
@@ -84,10 +85,16 @@ def create_app() -> FastAPI:
         hydrate_runs_from_checkpoints()
 
         logger.info(f"Starting {settings.app_name} API")
-        logger.info(f"Dashboard: http://localhost:8000/")
+        if serve_frontend:
+            logger.info(f"Dashboard: http://localhost:8000/")
+        else:
+            logger.info(f"API Backend running (Frontend disabled)")
 
     return application
 
 
-# Module-level instance for `uvicorn rfp_automation.api:app`
-app = create_app()
+# Module-level instance for `uvicorn rfp_automation.api:app` (serves both API and HTML)
+app = create_app(serve_frontend=True)
+
+# Module-level instance for `uvicorn rfp_automation.api:api_only_app` (serves API only)
+api_only_app = create_app(serve_frontend=False)

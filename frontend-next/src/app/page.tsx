@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Topbar from '@/components/topbar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { apiFetch, formatSize, formatTime, WS_BASE } from '@/lib/api';
+import { apiFetch, fetchRuns, uploadRfp, formatSize, formatTime, WS_BASE } from '@/lib/api';
 import { STAGES, type Run, type LogEntry } from '@/lib/types';
 import { Upload, Play, RefreshCw, Loader2 } from 'lucide-react';
 
@@ -42,7 +42,7 @@ export default function PipelinePage() {
 
   const loadRuns = useCallback(async () => {
     try {
-      const data = await apiFetch<{ runs: Run[] }>('/runs');
+      const data = await fetchRuns();
       setRuns(data.runs || []);
     } catch { /* ignore */ }
   }, []);
@@ -66,11 +66,7 @@ export default function PipelinePage() {
     try {
       const form = new FormData();
       form.append('file', file);
-      const data = await apiFetch<{ run_id: string }>('/upload-rfp', {
-        method: 'POST',
-        headers: {},
-        body: form,
-      });
+      const data = await uploadRfp(form);
       addLog(`Pipeline started: ${data.run_id}`, 'success');
       setSelectedRun(data.run_id);
 

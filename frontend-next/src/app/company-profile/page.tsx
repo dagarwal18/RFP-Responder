@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, fetchCompanyProfile } from '@/lib/api';
 import type { CompanyProfile } from '@/lib/types';
 import { Building2, Save, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -14,12 +14,12 @@ export default function CompanyProfilePage() {
   const [profile, setProfile] = useState<CompanyProfile>({ name: '', description: '', headquarters: '', website: '' });
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  const load = useCallback(async () => { try { setProfile(await apiFetch<CompanyProfile>('/company-profile')); } catch {} }, []);
+  const load = useCallback(async () => { try { setProfile(await fetchCompanyProfile()); } catch {} }, []);
   useEffect(() => { load(); }, [load]);
 
   const save = async () => {
     setStatus('saving');
-    try { await apiFetch('/company-profile', { method: 'PUT', body: JSON.stringify(profile) }); setStatus('saved'); setTimeout(() => setStatus('idle'), 3000); }
+    try { await apiFetch('/api/knowledge/company-profile', { method: 'PUT', body: JSON.stringify(profile) }); setStatus('saved'); setTimeout(() => setStatus('idle'), 3000); }
     catch { setStatus('error'); setTimeout(() => setStatus('idle'), 3000); }
   };
 

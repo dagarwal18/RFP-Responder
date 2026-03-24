@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, fetchRuns } from '@/lib/api';
 import {
   FileSearch, MessageSquare, Check, X, ChevronDown,
 } from 'lucide-react';
@@ -38,9 +38,9 @@ export default function ReviewPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const runs = await apiFetch<{ runs: Array<{ run_id: string; review_status?: string }> }>('/runs');
+      const runs = await fetchRuns();
       const r = (runs.runs || []).find(r => r.review_status);
-      if (r) { const d = await apiFetch<ReviewData>(`/runs/${r.run_id}/review`); setReview(d); setComments(d.comments || []); }
+      if (r) { const d = await apiFetch<ReviewData>(`/api/rfp/${r.run_id}/review`); setReview(d); setComments(d.comments || []); }
     } catch {}
     setLoading(false);
   }, []);
@@ -50,7 +50,7 @@ export default function ReviewPage() {
   const addComment = async () => {
     if (!review || !selectedAnchor || !commentText.trim()) return;
     try {
-      await apiFetch(`/runs/${review.run_id}/review/comments`, {
+      await apiFetch(`/api/rfp/${review.run_id}/review/comments`, {
         method: 'POST', body: JSON.stringify({ anchor: selectedAnchor, text: commentText, severity: commentSeverity, reviewer: reviewer || 'Anonymous' }),
       }); setCommentText(''); setSelectedAnchor(null); load();
     } catch {}
@@ -58,7 +58,7 @@ export default function ReviewPage() {
 
   const submitDecision = async (decision: string) => {
     if (!review) return;
-    try { await apiFetch(`/runs/${review.run_id}/review/decision`, { method: 'POST', body: JSON.stringify({ decision, reviewer: reviewer || 'Anonymous', summary: '' }) }); load(); } catch {}
+    try { await apiFetch(`/api/rfp/${review.run_id}/review/decision`, { method: 'POST', body: JSON.stringify({ decision, reviewer: reviewer || 'Anonymous', summary: '' }) }); load(); } catch {}
   };
 
   const statusClass = (s: string) => ({ Pending: 'bg-warning/15 text-warning', APPROVED: 'bg-success/15 text-success', REJECTED: 'bg-error/15 text-error', REQUEST_CHANGES: 'bg-info/15 text-info' }[s] || '');
