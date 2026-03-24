@@ -6,12 +6,15 @@ export { API_BASE, WS_BASE };
 /* ── Core fetch helper ─────────────────────────────────── */
 
 export async function apiFetch<T = unknown>(path: string, opts: RequestInit = {}): Promise<T> {
+  const isFormData = opts.body instanceof FormData;
+  const headers = new Headers(opts.headers || {});
+  if (!isFormData && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      ...opts.headers,
-    },
+    headers,
   });
 
   if (!res.ok) {
@@ -52,16 +55,35 @@ export async function fetchRuns() {
 
 /** /api/rfp/upload → { run_id: string, ... } */
 export async function uploadRfp(form: FormData) {
-  const raw = await apiFetch<any>('/api/rfp/upload', {
+  const res = await fetch(`${API_BASE}/api/rfp/upload`, {
     method: 'POST',
-    headers: {},  // let browser set multipart boundary
     body: form,
+    // Let the browser set Content-Type with multipart boundary natively
   });
+  if (!res.ok) {
+    throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
+  }
+  const raw = await res.json();
   return {
     run_id: raw.rfp_id ?? raw.run_id ?? '',
     status: raw.status ?? '',
     message: raw.message ?? '',
   };
+}
+
+/** /api/rfp/{rfp_id}/checkpoints */
+export async function fetchCheckpoints(rfpId: string) {
+  return apiFetch<any>(`/api/rfp/${rfpId}/checkpoints`);
+}
+
+/** /api/rfp/{rfp_id}/rerun */
+export async function rerunPipeline(rfpId: string, startFrom: string) {
+  return apiFetch<any>(`/api/rfp/${rfpId}/rerun?start_from=${startFrom}`, { method: 'POST' });
+}
+
+/** /api/rfp/{rfp_id}/checkpoints DELETE */
+export async function clearCheckpoints(rfpId: string) {
+  return apiFetch<any>(`/api/rfp/${rfpId}/checkpoints`, { method: 'DELETE' });
 }
 
 /** /api/knowledge/status → { vectors, namespaces, configs } */
