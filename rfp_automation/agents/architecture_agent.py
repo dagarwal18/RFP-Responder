@@ -43,7 +43,7 @@ _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "architectur
 
 # Maximum requirements per section before splitting — keeps C2's token budget
 # manageable and ensures each section gets adequate LLM attention.
-_MAX_REQS_PER_SECTION = 10
+_MAX_REQS_PER_SECTION = 20
 
 
 class ArchitecturePlanningAgent(BaseAgent):
@@ -596,14 +596,6 @@ class ArchitecturePlanningAgent(BaseAgent):
 
         # Track assignments for logging
         assignments: dict[str, int] = {}
-        catch_all_id: str | None = None
-
-        # Find or plan catch-all section
-        for s in req_driven:
-            lower_title = s.title.lower()
-            if any(kw in lower_title for kw in ["compliance matrix", "general", "additional"]):
-                catch_all_id = s.section_id
-                break
 
         # Process each unassigned mandatory requirement
         for req in requirements:
@@ -630,12 +622,13 @@ class ArchitecturePlanningAgent(BaseAgent):
             best_section: str | None = None
             best_score = 0
 
-            for s in req_driven:
-                # Skip sections already at capacity
-                current_count = len(s.requirement_ids)
-                if current_count >= _MAX_REQS_PER_SECTION:
-                    continue
+            # We need the table regex here as well
+            _TABLE_TITLE_RE = re.compile(
+                r'\b(?:matrix|table|compliance|checklist|questionnaire)\b',
+                re.IGNORECASE,
+            )
 
+            for s in req_driven:
                 score = 0
                 lower_title = s.title.lower()
                 lower_desc = s.description.lower()
@@ -673,23 +666,32 @@ class ArchitecturePlanningAgent(BaseAgent):
                     best_score = score
                     best_section = s.section_id
 
-            # Assign to best match, or catch-all
-            target = best_section if best_score >= 2 else catch_all_id
+            # Assign to best match, or a category-specific catch-all
+            target = best_section if best_score >= 2 else None
 
             if not target:
-                # Create catch-all Compliance Matrix section
-                catch_all_id = f"SEC-{len(sections) + 1:02d}"
-                catch_all = ResponseSection(
-                    section_id=catch_all_id,
-                    title="Compliance Matrix & General Requirements",
-                    section_type="requirement_driven",
-                    description="Catch-all section for requirements not fitting other sections",
-                    priority=5,
-                )
-                sections.append(catch_all)
-                req_driven.append(catch_all)
-                section_map[catch_all_id] = catch_all
-                target = catch_all_id
+                append_title = "Appendix: Additional Compliance"
+                
+                # Check if we already have this appendix
+                for s in sections:
+                    if s.title == append_title:
+                        target = s.section_id
+                        break
+                
+                if not target:
+                    # Create appendix section
+                    catch_all_id = f"SEC-{len(sections) + 1:02d}"
+                    catch_all = ResponseSection(
+                        section_id=catch_all_id,
+                        title=append_title,
+                        section_type="requirement_driven",
+                        description="Additional requirements mapped to an appendix to preserve main proposal flow",
+                        priority=10,
+                    )
+                    sections.append(catch_all)
+                    req_driven.append(catch_all)
+                    section_map[catch_all_id] = catch_all
+                    target = catch_all_id
 
             section = section_map[target]
             if req_id not in section.requirement_ids:
@@ -718,161 +720,12 @@ class ArchitecturePlanningAgent(BaseAgent):
         sections: list[ResponseSection],
     ) -> list[ResponseSection]:
         """
-        Split any section with more than _MAX_REQS_PER_SECTION requirements
-        into sub-sections grouped by requirement category.
-
-        This prevents C2's token budget from being overwhelmed and ensures
-        each sub-section gets adequate LLM attention.
+        Bypass programmatic splitting entirely. 
+        The writing agent now handles transparent chunking of large sections
+        to avoid injecting ugly "(Part X)" or category suffixes into the user's PDF.
         """
-        req_lookup = {
-            r.get("requirement_id", ""): r
-            for r in requirements if r.get("requirement_id")
-        }
-
-        result: list[ResponseSection] = []
-        next_section_num = max(
-            (int(re.search(r"\d+", s.section_id).group())
-             for s in sections if re.search(r"\d+", s.section_id)),
-            default=0,
-        ) + 1
-
-        # Regex to detect table/matrix/compliance sections that should NOT
-        # be split — the writing agent will batch these instead.
-        _TABLE_TITLE_RE = re.compile(
-            r'\b(?:matrix|table|compliance|checklist|questionnaire)\b',
-            re.IGNORECASE,
-        )
-
-        for section in sections:
-            if (
-                section.section_type != "requirement_driven"
-                or len(section.requirement_ids) <= _MAX_REQS_PER_SECTION
-            ):
-                result.append(section)
-                continue
-
-            # ── Bypass: never split table/matrix sections ──
-            if _TABLE_TITLE_RE.search(section.title):
-                logger.info(
-                    f"[C1] Keeping table/matrix section {section.section_id} "
-                    f"({section.title}) intact — {len(section.requirement_ids)} "
-                    f"reqs will be batched by the writing agent"
-                )
-                result.append(section)
-                continue
-
-            # Group requirements by category
-            category_groups: dict[str, list[str]] = {}
-            for rid in section.requirement_ids:
-                req = req_lookup.get(rid, {})
-                cat = req.get("category", "GENERAL")
-                if not isinstance(cat, str):
-                    cat = str(cat)
-                cat = cat.upper()
-                category_groups.setdefault(cat, []).append(rid)
-
-            # Friendly names for sub-section titles
-            _CAT_LABELS: dict[str, str] = {
-                "TECHNICAL": "Core Platform & Infrastructure",
-                "FUNCTIONAL": "Functional Capabilities",
-                "SECURITY": "Security & Data Protection",
-                "COMPLIANCE": "Regulatory Compliance",
-                "OPERATIONAL": "Operations & Support",
-                "COMMERCIAL": "Commercial Terms",
-            }
-
-            logger.info(
-                f"[C1] Splitting overloaded section {section.section_id} "
-                f"({section.title}): {len(section.requirement_ids)} reqs "
-                f"→ {len(category_groups)} sub-sections by category"
-            )
-
-            # If all reqs are same category, split by chunks instead
-            if len(category_groups) <= 1:
-                reqs = section.requirement_ids
-                chunk_size = _MAX_REQS_PER_SECTION
-                for i in range(0, len(reqs), chunk_size):
-                    chunk = reqs[i : i + chunk_size]
-                    part_num = i // chunk_size + 1
-                    sub = ResponseSection(
-                        section_id=f"SEC-{next_section_num:02d}",
-                        title=f"{section.title} (Part {part_num})",
-                        section_type="requirement_driven",
-                        description=section.description,
-                        content_guidance=section.content_guidance,
-                        requirement_ids=chunk,
-                        mapped_capabilities=section.mapped_capabilities,
-                        priority=section.priority,
-                        source_rfp_section=section.source_rfp_section,
-                    )
-                    result.append(sub)
-                    next_section_num += 1
-                    logger.debug(
-                        f"[C1]   Created {sub.section_id}: "
-                        f"{sub.title} ({len(chunk)} reqs)"
-                    )
-            else:
-                # Create a sub-section per category group
-                for cat, req_ids in sorted(category_groups.items()):
-                    label = _CAT_LABELS.get(cat, cat.title())
-                    sub = ResponseSection(
-                        section_id=f"SEC-{next_section_num:02d}",
-                        title=f"{section.title} — {label}",
-                        section_type="requirement_driven",
-                        description=(
-                            f"{section.description} "
-                            f"Focus on {label.lower()} requirements."
-                        ),
-                        content_guidance=section.content_guidance,
-                        requirement_ids=req_ids,
-                        mapped_capabilities=section.mapped_capabilities,
-                        priority=section.priority,
-                        source_rfp_section=section.source_rfp_section,
-                    )
-                    result.append(sub)
-                    next_section_num += 1
-                    logger.debug(
-                        f"[C1]   Created {sub.section_id}: "
-                        f"{sub.title} ({len(req_ids)} reqs)"
-                    )
-
-                    # Recursively split if still overloaded
-                    if len(req_ids) > _MAX_REQS_PER_SECTION:
-                        logger.info(
-                            f"[C1] Sub-section {sub.section_id} still "
-                            f"overloaded ({len(req_ids)} reqs) — "
-                            f"will be split again"
-                        )
-
-        # Second pass: split any sub-sections still over limit
-        final: list[ResponseSection] = []
-        for section in result:
-            if (
-                section.section_type == "requirement_driven"
-                and len(section.requirement_ids) > _MAX_REQS_PER_SECTION
-            ):
-                reqs = section.requirement_ids
-                chunk_size = _MAX_REQS_PER_SECTION
-                for i in range(0, len(reqs), chunk_size):
-                    chunk = reqs[i : i + chunk_size]
-                    part_num = i // chunk_size + 1
-                    sub = ResponseSection(
-                        section_id=f"SEC-{next_section_num:02d}",
-                        title=f"{section.title} (Part {part_num})",
-                        section_type=section.section_type,
-                        description=section.description,
-                        content_guidance=section.content_guidance,
-                        requirement_ids=chunk,
-                        mapped_capabilities=section.mapped_capabilities,
-                        priority=section.priority,
-                        source_rfp_section=section.source_rfp_section,
-                    )
-                    final.append(sub)
-                    next_section_num += 1
-            else:
-                final.append(section)
-
-        return final
+        logger.info("[C1] Bypassing programmatic section splitting. Sections will remain intact.")
+        return sections
 
     def _enforce_section_types(
         self, sections: list[ResponseSection]

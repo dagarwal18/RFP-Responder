@@ -82,7 +82,7 @@ class Settings(BaseSettings):
     # ═══════════════════════════════════════════════════════
     #  PIPELINE BEHAVIOR — thresholds & limits
     # ═══════════════════════════════════════════════════════
-    max_validation_retries: int = 3
+    max_validation_retries: int = 0
     max_structuring_retries: int = 3
     min_validation_confidence: float = 0.7
     approval_timeout_hours: int = 48

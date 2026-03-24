@@ -193,9 +193,9 @@ class GoNoGoAgent(BaseAgent):
         template = _PROMPT_PATH.read_text(encoding="utf-8")
         return (
             template
-            .replace("{rfp_sections}", rfp_sections[:12_000])
-            .replace("{company_policies}", policies[:8_000])
-            .replace("{capabilities}", capabilities[:5_000])
+            .replace("{rfp_sections}", rfp_sections[:9_000])
+            .replace("{company_policies}", policies[:6_000])
+            .replace("{capabilities}", capabilities[:4_000])
         )
 
     def _parse_response(self, raw: str) -> GoNoGoResult:

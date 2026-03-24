@@ -64,13 +64,14 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
 
 ## Structure Detection Rule
 
-BEFORE generating sections, analyze the RFP structure and submission instructions above:
+BEFORE generating sections, analyze the RFP structure and submission instructions above.
+Design an ideal proposal structure based on the RFP's content areas. Group your sections by logical domain rather than simply replicating the RFP's own headings.
 
-- **If the RFP explicitly mandates a strict response structure** (e.g., "Proposals MUST follow the order in Section 3.2"), honour that mandate by using sections that align with the RFP's chapter structure.
+CRITICAL RULE: NEVER group all technical requirements into a single massive umbrella section like "Technical Solution Overview" or "Response to Requirements".
+You MUST explicitly create granular, distinct sections for each major technical or operational domain.
+For example, instead of one "Technical Solution Overview", create separate sections such as "SD-WAN Core Architecture", "Cloud Interconnects & Data Center", "Managed Security Services (SOC)", "IoT & Mobility", "Commercial Terms", and "Operational Support & SLAs". Each granular section should only contain requirements relevant to its specific domain.
 
-- **In all other cases** (the RFP has its own chapters but does NOT mandate how the response should be structured), design an ideal proposal structure based on the RFP's content areas. Group your sections by logical domain (e.g., Technical Architecture, Network Security, Operations & SLA, Commercial, Legal, etc.) rather than simply replicating the RFP's own headings.
-
-This rule takes HIGHEST PRIORITY — proposal structure must be purposeful and driven by the RFP context, not a template.
+This rule takes HIGHEST PRIORITY — proposal structure must be purposeful, granular, and driven by logical domains based on the RFP context. You must absolutely avoid blindly replicating the RFP's table of contents or dumping requirements into catch-all sections.
 
 
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -340,51 +341,178 @@ class RequirementWritingAgent(BaseAgent):
             # If table_mode is active but we have no original table from the
             # RFP, turn it off to avoid generating a generic 4-column matrix.
             if table_mode and not original_table_text:
-                logger.info(
-                    f"[TABLE-TRACE][C2-WRITE] Disabling table_mode for "
-                    f"{section_id}: {title} — no original table text found, "
+                logger.warning(
+                    f"[TABLE-TRACE][C2-WRITE] headers not extracted for section '{section_id}' — "
                     f"preventing fabricated table generation"
                 )
                 table_mode = False
 
             # ── 7f. Build prompt & call LLM ────────────────
-            # For table-mode sections with many requirements, batch the
-            # LLM calls and merge the resulting markdown tables.
+            # For table-mode sections, group requirements by their source
+            # table chunk and process each table independently.  This prevents
+            # different tables from being merged together randomly.
             _TABLE_BATCH_SIZE = 12
 
-            if table_mode and original_table_text and len(req_ids) > _TABLE_BATCH_SIZE:
-                # ── BATCHED TABLE MODE ──
-                logger.info(
-                    f"[TABLE-TRACE][C2-WRITE] Batching table for {section_id}: "
-                    f"{title} | {len(req_ids)} reqs in batches of {_TABLE_BATCH_SIZE}"
-                )
-                all_content_parts: list[str] = []
-                all_batch_addressed: list[str] = []
-                total_word_count = 0
-                table_header: str | None = None
+            if table_mode and original_table_text:
+                # ── PER-TABLE ISOLATED PROCESSING ──
+                # Group requirements by source_table_chunk_index
+                table_groups: dict[int, list[str]] = {}  # chunk_index → [req_ids]
+                ungrouped: list[str] = []
 
-                for batch_idx in range(0, len(req_ids), _TABLE_BATCH_SIZE):
-                    batch_rids = req_ids[batch_idx : batch_idx + _TABLE_BATCH_SIZE]
-                    batch_num = batch_idx // _TABLE_BATCH_SIZE + 1
+                for rid in req_ids:
+                    req = req_map.get(rid)
+                    if req:
+                        tci = req.get("source_table_chunk_index", -1)
+                        if tci >= 0 and tci in table_chunks_by_index:
+                            table_groups.setdefault(tci, []).append(rid)
+                        else:
+                            ungrouped.append(rid)
+                    else:
+                        ungrouped.append(rid)
 
-                    # Build requirements block for just this batch
-                    batch_req_texts = []
-                    for rid in batch_rids:
+                # If no requirements were tagged (legacy data), fall back to
+                # treating all reqs under the first found table
+                if not table_groups and req_ids:
+                    first_tci = None
+                    for rid in req_ids:
                         req = req_map.get(rid)
                         if req:
-                            req_type = req.get("type", "MANDATORY")
-                            req_text = req.get("text", "")[:300]
-                            batch_req_texts.append(f"- {rid} [{req_type}]: {req_text}")
-                        else:
-                            batch_req_texts.append(f"- {rid}: [requirement details not found]")
-                    batch_requirements_block = "\n".join(batch_req_texts)
+                            for si in req.get("source_chunk_indices", []):
+                                if si in table_chunks_by_index:
+                                    first_tci = si
+                                    break
+                        if first_tci is not None:
+                            break
+                    if first_tci is not None:
+                        table_groups[first_tci] = req_ids
+                        ungrouped = []
 
+                logger.info(
+                    f"[TABLE-TRACE][C2-WRITE] Per-table processing for {section_id}: "
+                    f"{len(table_groups)} table group(s), {len(ungrouped)} ungrouped reqs"
+                )
+
+                all_table_contents: list[str] = []
+                all_table_addressed: list[str] = []
+                total_table_wc = 0
+
+                for tci, group_rids in sorted(table_groups.items()):
+                    tbl_chunk = table_chunks_by_index[tci]
+                    tbl_text = tbl_chunk.get("text", "")
+
+                    # Extract and log headers for this specific table (must have at least 2 pipes)
+                    pipe_lines = [l for l in tbl_text.split("\n") if l.count("|") >= 2]
+                    if pipe_lines:
+                        logger.info(
+                            f"[TABLE-TRACE][C2-WRITE] these headers are extracted: "
+                            f"{pipe_lines[0].strip()}"
+                        )
+                    else:
+                        logger.warning(
+                            f"[TABLE-TRACE][C2-WRITE] headers not extracted "
+                            f"for table chunk {tci}"
+                        )
+
+                    logger.info(
+                        f"[TABLE-TRACE][C2-WRITE] Processing table chunk {tci} "
+                        f"with {len(group_rids)} reqs for {section_id}"
+                    )
+
+                    # Fill this one table independently
+                    filled_content, addrs, wc = self._fill_single_table(
+                        table_text=tbl_text,
+                        req_ids=group_rids,
+                        req_map=req_map,
+                        section=section,
+                        capabilities=capabilities,
+                        rfp_instructions=rfp_instructions,
+                        rfp_metadata_block=rfp_metadata_block,
+                        prev_ctx=prev_ctx,
+                        next_ctx=next_ctx,
+                        section_feedback=section_feedback,
+                        section_id=section_id,
+                        title=title,
+                        section_type=section_type,
+                        batch_size=_TABLE_BATCH_SIZE,
+                        original_headers=pipe_lines,
+                    )
+
+                    logger.info(
+                        f"[TABLE-TRACE][C2-WRITE] table is merged for chunk {tci}"
+                    )
+
+                    all_table_contents.append(filled_content)
+                    all_table_addressed.extend(addrs)
+                    total_table_wc += wc
+
+                # Handle ungrouped requirements as normal prose
+                if ungrouped:
+                    ungrouped_block = "\n".join(
+                        f"- {rid} [{req_map.get(rid, {}).get('type', 'MANDATORY')}]: "
+                        f"{req_map.get(rid, {}).get('text', '')[:300]}"
+                        for rid in ungrouped
+                    )
+                    prose_prompt = self._build_prompt(
+                        section_title=title,
+                        section_type=section_type,
+                        section_description=self._get_attr(section, "description", ""),
+                        content_guidance=self._get_attr(section, "content_guidance", ""),
+                        requirements=ungrouped_block,
+                        capabilities=capabilities,
+                        rfp_instructions=rfp_instructions,
+                        rfp_metadata=rfp_metadata_block,
+                        prev_section_context=prev_ctx,
+                        next_section_context=next_ctx,
+                        revision_feedback=section_feedback,
+                        table_mode=False,
+                        original_table_text="",
+                    )
+                    raw_resp = llm_large_text_call(prose_prompt, deterministic=True)
+                    prose_content, prose_addrs, prose_wc = self._parse_response(
+                        raw_resp, f"{section_id}_prose"
+                    )
+                    all_table_contents.append(prose_content)
+                    all_table_addressed.extend(prose_addrs)
+                    total_table_wc += prose_wc
+
+                content = "\n\n".join(c for c in all_table_contents if c.strip())
+                addressed = list(dict.fromkeys(all_table_addressed))
+                word_count = total_table_wc
+                logger.info(
+                    f"[TABLE-TRACE][C2-WRITE] final table stored: "
+                    f"{len(table_groups)} table(s) for '{section_id}'"
+                )
+
+            else:
+                # ── NORMAL (BATCHED) PROSE MODE ──
+                all_content_parts = []
+                chunk_addressed_list = []
+                total_word_count = 0
+                
+                # We chunk the requirements into groups of 15 to prevent prompt overflow
+                CHUNK_SIZE = 15
+                req_chunks = [req_ids[i:i + CHUNK_SIZE] for i in range(0, max(1, len(req_ids)), CHUNK_SIZE)]
+                
+                logger.info(
+                    f"[C2] Writing section {section_id}: {title} | "
+                    f"type={section_type} | {len(req_ids)} requirements "
+                    f"({len(req_chunks)} chunks)"
+                )
+                
+                for i, chunk in enumerate(req_chunks):
+                    # Build a specific requirements block for just this chunk
+                    chunk_reqs_block = "\n".join(
+                        f"- {rid} [{req_map.get(rid, {}).get('type', 'MANDATORY')}]: "
+                        f"{req_map.get(rid, {}).get('text', '')[:300]}"
+                        for rid in chunk
+                    ) if chunk else "No specific RFP requirements mapped; write general response based on title and description."
+                    
                     prompt = self._build_prompt(
                         section_title=title,
                         section_type=section_type,
                         section_description=self._get_attr(section, "description", ""),
                         content_guidance=self._get_attr(section, "content_guidance", ""),
-                        requirements=batch_requirements_block,
+                        requirements=chunk_reqs_block,
                         capabilities=capabilities,
                         rfp_instructions=rfp_instructions,
                         rfp_metadata=rfp_metadata_block,
@@ -394,87 +522,20 @@ class RequirementWritingAgent(BaseAgent):
                         table_mode=table_mode,
                         original_table_text=original_table_text,
                     )
-
-                    logger.info(
-                        f"[C2] Writing table batch {batch_num} for {section_id}: "
-                        f"{title} | {len(batch_rids)} reqs in this batch"
-                    )
+                    
                     raw_response = llm_large_text_call(prompt, deterministic=True)
-                    batch_content, batch_addressed, batch_wc = self._parse_response(
-                        raw_response, f"{section_id}_batch{batch_num}"
+                    logger.debug(f"[C2] LLM response for {section_id} chunk {i+1}/{len(req_chunks)} ({len(raw_response)} chars)")
+                    
+                    part_content, part_addressed, part_wc = self._parse_response(
+                        raw_response, f"{section_id}_part{i}"
                     )
-
-                    all_batch_addressed.extend(batch_addressed)
-                    total_word_count += batch_wc
-
-                    # Merge table: keep header from first batch only
-                    if batch_content.strip():
-                        lines = batch_content.strip().split("\n")
-                        if table_header is None:
-                            # First batch — keep everything including header
-                            all_content_parts.append(batch_content.strip())
-                            # Extract header (first two lines: header row + separator)
-                            if len(lines) >= 2 and "|" in lines[0] and "---" in lines[1]:
-                                table_header = lines[0] + "\n" + lines[1]
-                        else:
-                            # Subsequent batches — strip the header rows
-                            data_lines = []
-                            header_stripped = False
-                            for line in lines:
-                                if not header_stripped:
-                                    if "---" in line and "|" in line:
-                                        header_stripped = True
-                                        continue
-                                    elif "|" in line:
-                                        continue  # skip header row
-                                    else:
-                                        header_stripped = True
-                                        data_lines.append(line)
-                                else:
-                                    data_lines.append(line)
-                            if data_lines:
-                                all_content_parts.append("\n".join(data_lines))
-
-                    logger.info(
-                        f"[TABLE-TRACE][C2-WRITE] Batch {batch_num} done: "
-                        f"{len(batch_addressed)} reqs addressed, {batch_wc} words"
-                    )
-
-                content = "\n".join(all_content_parts)
-                addressed = list(dict.fromkeys(all_batch_addressed))  # dedupe, preserve order
+                    all_content_parts.append(part_content)
+                    chunk_addressed_list.extend(part_addressed)
+                    total_word_count += part_wc
+                    
+                content = "\n\n".join(c for c in all_content_parts if c.strip())
+                addressed = list(dict.fromkeys(chunk_addressed_list))
                 word_count = total_word_count
-
-            else:
-                # ── NORMAL (single-call) MODE ──
-                prompt = self._build_prompt(
-                    section_title=title,
-                    section_type=section_type,
-                    section_description=self._get_attr(section, "description", ""),
-                    content_guidance=self._get_attr(section, "content_guidance", ""),
-                    requirements=requirements_block,
-                    capabilities=capabilities,
-                    rfp_instructions=rfp_instructions,
-                    rfp_metadata=rfp_metadata_block,
-                    prev_section_context=prev_ctx,
-                    next_section_context=next_ctx,
-                    revision_feedback=section_feedback,
-                    table_mode=table_mode,
-                    original_table_text=original_table_text,
-                )
-
-                logger.info(
-                    f"[C2] Writing section {section_id}: {title} | "
-                    f"type={section_type} | {len(req_ids)} requirements"
-                )
-                raw_response = llm_large_text_call(prompt, deterministic=True)
-                logger.debug(
-                    f"[C2] LLM response for {section_id} "
-                    f"({len(raw_response)} chars): {raw_response[:500]}"
-                )
-
-                content, addressed, word_count = self._parse_response(
-                    raw_response, section_id
-                )
 
             # ── 7f2. Log filled tables ───────────────────
             if table_mode and original_table_text and content:
@@ -484,7 +545,7 @@ class RequirementWritingAgent(BaseAgent):
                     filled_path = filled_dir / f"{section_id}.txt"
                     filled_path.write_text(content, encoding="utf-8")
                     logger.info(
-                        f"[TABLE-TRACE][C2-WRITE] Saved filled table to {filled_path}"
+                        f"[TABLE-TRACE][C2-WRITE] final table stored: {filled_path}"
                     )
                 except Exception as exc:
                     logger.warning(f"[TABLE-TRACE][C2-WRITE] Failed to save filled table: {exc}")
@@ -604,6 +665,154 @@ class RequirementWritingAgent(BaseAgent):
 
         return "\n\n".join(capability_texts)
 
+    def _fill_single_table(
+        self,
+        table_text: str,
+        req_ids: list[str],
+        req_map: dict[str, dict[str, Any]],
+        section: Any,
+        capabilities: str,
+        rfp_instructions: str,
+        rfp_metadata_block: str,
+        prev_ctx: str,
+        next_ctx: str,
+        section_feedback: str,
+        section_id: str,
+        title: str,
+        section_type: str,
+        batch_size: int = 12,
+        original_headers: list[str] | None = None,
+    ) -> tuple[str, list[str], int]:
+        """
+        Processes a single table by optionally batching its requirements,
+        calling the LLM, and merging the resulting rows under a single header.
+        """
+        all_content_parts: list[str] = []
+        all_batch_addressed: list[str] = []
+        total_word_count = 0
+        table_header: str | None = None
+
+        if original_headers:
+            header_block = "\n".join(original_headers)
+            
+            # Count the columns in the actual column row (last header line)
+            last_line = original_headers[-1]
+            stripped = last_line.strip()
+            pipes = stripped.count("|")
+            
+            if stripped.startswith("|") and stripped.endswith("|"):
+                col_count = pipes - 1
+            elif not stripped.startswith("|") and not stripped.endswith("|"):
+                col_count = pipes + 1
+            else:
+                col_count = pipes
+
+            if col_count < 1:
+                col_count = 1
+                
+            # Create a markdown separator
+            separator = "|" + "|".join(["---"] * col_count) + "|"
+            
+            # Add separator if it's not already there
+            if "---" not in last_line:
+                table_header = header_block + "\n" + separator
+            else:
+                table_header = header_block
+                
+            all_content_parts.append(table_header)
+
+        # Even for small tables, we run through the batch loop once to use consistent logic
+        for batch_idx in range(0, max(1, len(req_ids)), batch_size):
+            batch_rids = req_ids[batch_idx : batch_idx + batch_size]
+            batch_num = batch_idx // batch_size + 1
+
+            batch_req_texts = []
+            for rid in batch_rids:
+                req = req_map.get(rid)
+                if req:
+                    req_type = req.get("type", "MANDATORY")
+                    req_text = req.get("text", "")[:300]
+                    batch_req_texts.append(f"- {rid} [{req_type}]: {req_text}")
+                else:
+                    batch_req_texts.append(f"- {rid}: [requirement details not found]")
+            batch_requirements_block = "\n".join(batch_req_texts)
+
+            prompt = self._build_prompt(
+                section_title=title,
+                section_type=section_type,
+                section_description=self._get_attr(section, "description", ""),
+                content_guidance=self._get_attr(section, "content_guidance", ""),
+                requirements=batch_requirements_block,
+                capabilities=capabilities,
+                rfp_instructions=rfp_instructions,
+                rfp_metadata=rfp_metadata_block,
+                prev_section_context=prev_ctx,
+                next_section_context=next_ctx,
+                revision_feedback=section_feedback,
+                table_mode=True,
+                original_table_text=table_text,
+            )
+
+            logger.info(
+                f"[C2] Writing table batch {batch_num} for {section_id}: "
+                f"{len(batch_rids)} reqs in this batch"
+            )
+            raw_response = llm_large_text_call(prompt, deterministic=True)
+            batch_content, batch_addressed, batch_wc = self._parse_response(
+                raw_response, f"{section_id}_table_batch{batch_num}"
+            )
+
+            # --- API RATE LIMIT PROTECTION ---
+            # To respect low TPM limits (e.g. Groq 6000 limit) when looping.
+            # Using 65s wait guarantees the 1-minute tracking window fully resets
+            # for these massive table prompts.
+            if batch_num * batch_size < len(req_ids):
+                logger.info(
+                    f"[C2] Batch {batch_num} complete. Pausing 65s to fully reset TPM limits..."
+                )
+                time.sleep(65)
+
+            all_batch_addressed.extend(batch_addressed)
+            total_word_count += batch_wc
+
+            # Merge table rows, keeping only the first batch's header
+            if batch_content.strip():
+                lines = batch_content.strip().split("\n")
+                table_lines = [line for line in lines if "|" in line]
+                
+                if table_lines:
+                    if table_header is None:
+                        # First batch with a table provides the overarching header
+                        if len(table_lines) >= 2 and "---" in table_lines[1] and "|" in table_lines[0]:
+                            table_header = table_lines[0] + "\n" + table_lines[1]
+                            all_content_parts.append("\n".join(table_lines))
+                        else:
+                            all_content_parts.append(batch_content.strip())
+                    else:
+                        # Subsequent batches (or if we pre-populated table_header): 
+                        # strip the header and separator rows generated by the LLM
+                        data_lines = []
+                        
+                        start_idx = 0
+                        if len(table_lines) >= 2 and "---" in table_lines[1]:
+                            start_idx = 2
+                        elif len(table_lines) >= 1 and "---" in table_lines[0]:
+                            start_idx = 1
+                            
+                        for line in table_lines[start_idx:]:
+                            if "---" in line:
+                                continue
+                            data_lines.append(line)
+                            
+                        if data_lines:
+                            all_content_parts.append("\n".join(data_lines))
+                else:
+                    all_content_parts.append(batch_content.strip())
+
+        content = "\n".join(all_content_parts)
+        addressed = list(dict.fromkeys(all_batch_addressed))
+        return content, addressed, total_word_count
+
     def _build_prompt(
         self,
         section_title: str,
@@ -667,21 +876,6 @@ class RequirementWritingAgent(BaseAgent):
                 logger.info(
                     f"[TABLE-TRACE][C2-WRITE] Injected original table ({len(original_table_text)} chars) "
                     f"into prompt for section '{section_title}'"
-                )
-            else:
-                # Fallback: generic table format if no original table found
-                table_instruction = (
-                    "\n\n## TABLE RESPONSE MODE\n"
-                    "This section requires a TABLE-FORMAT response, NOT prose.\n"
-                    "Return the content as a populated markdown table with columns:\n"
-                    "| Req ID | Requirement | Compliance (C/PC/NC) | Vendor Remarks |\n"
-                    "Keep remarks concise (1-2 sentences per row). Do NOT write "
-                    "100+ word prose for each requirement — use table format.\n"
-                    "The JSON output's 'content' field should contain this markdown table."
-                )
-                logger.info(
-                    f"[TABLE-TRACE][C2-WRITE] No original table found — using generic "
-                    f"4-column layout for section '{section_title}'"
                 )
 
         prompt = (
@@ -786,6 +980,10 @@ class RequirementWritingAgent(BaseAgent):
             # Even after successful JSON parse, the "content" field may
             # contain the LLM's own format echoes (```json / ```markdown blocks)
             content = self._strip_echo_blocks(content)
+
+            # ── Strip internal headers to ensure clean batched merging ──
+            # Remove any Markdown header (# Title) that appears at the very beginning of the output.
+            content = re.sub(r'^\s*(?:#+)\s+[^\n]+\n+', '', content).strip()
 
             return content, addressed, actual_word_count
 

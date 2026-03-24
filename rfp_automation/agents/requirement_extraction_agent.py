@@ -108,22 +108,38 @@ class RequirementsExtractionAgent(BaseAgent):
 
             if table_chunks:
                 before_table = len(all_requirements)
-                for tc in table_chunks:
+                for table_idx, tc in enumerate(table_chunks):
                     table_text = tc.get("text", "")
                     if not table_text.strip():
                         continue
+
+                    chunk_idx = tc.get("chunk_index", -1)
 
                     # Use VLM table_type from chunk metadata if available
                     vlm_table_type = tc.get("table_type", "") or tc.get("metadata", {}).get("table_type", "")
                     table_purpose = self._classify_table_purpose(
                         table_text, section_name, vlm_table_type=vlm_table_type
                     )
+
+                    # Extract and log headers
+                    pipe_lines = [l for l in table_text.split("\n") if "|" in l]
+                    extracted_headers = pipe_lines[0].strip() if pipe_lines else ""
+
                     logger.info(
-                        f"[TABLE-TRACE][B1-CLASSIFY] Table in '{section_name}': "
-                        f"vlm_table_type='{vlm_table_type}', "
-                        f"final_purpose='{table_purpose}', "
-                        f"text_len={len(table_text)}"
+                        f"[TABLE-TRACE][B1-CLASSIFY] Table {table_idx+1}/{len(table_chunks)} "
+                        f"in '{section_name}': vlm='{vlm_table_type}', "
+                        f"purpose='{table_purpose}', chunk={chunk_idx}"
                     )
+                    if extracted_headers:
+                        logger.info(
+                            f"[TABLE-TRACE][B1-HEADERS] these headers are extracted: "
+                            f"{extracted_headers}"
+                        )
+                    else:
+                        logger.warning(
+                            f"[TABLE-TRACE][B1-HEADERS] headers not extracted for "
+                            f"table at chunk {chunk_idx}"
+                        )
 
                     if table_purpose == "vendor_fill_in":
                         # ── Log detected fill-in table to storage/table/ ──
@@ -131,7 +147,7 @@ class RequirementsExtractionAgent(BaseAgent):
                             table_log_dir = Path(r"d:\RFP-Responder-1\storage\table")
                             table_log_dir.mkdir(parents=True, exist_ok=True)
                             safe_name = re.sub(r'[^\w\-]', '_', section_name)[:80]
-                            table_log_path = table_log_dir / f"{safe_name}.txt"
+                            table_log_path = table_log_dir / f"{safe_name}_chunk{chunk_idx}.txt"
                             table_log_path.write_text(table_text, encoding="utf-8")
                             logger.info(
                                 f"[TABLE-TRACE][B1-DETECT] Saved detected "
@@ -144,8 +160,22 @@ class RequirementsExtractionAgent(BaseAgent):
                             )
                         # Bypass ObligationDetector — pass entire table to LLM
                         table_reqs = self._extract_from_table(
-                            table_text, section_name, template, chunk_indices
+                            table_text, section_name, template, [chunk_idx]
                         )
+
+                        # Tag each requirement with its specific table chunk
+                        for req in table_reqs:
+                            req.source_table_chunk_index = chunk_idx
+
+                        logger.info(
+                            f"[TABLE-TRACE][B1-EXTRACT] table is merged: "
+                            f"{len(table_reqs)} reqs from chunk {chunk_idx}"
+                        )
+                        logger.info(
+                            f"[TABLE-TRACE][B1-EXTRACT] final table stored: "
+                            f"chunk {chunk_idx} with {len(table_reqs)} requirements"
+                        )
+
                         all_requirements.extend(table_reqs)
                     else:
                         # Informational table — run through normal extraction
@@ -336,9 +366,9 @@ class RequirementsExtractionAgent(BaseAgent):
     # Patterns that indicate the vendor must fill in the table
     _FILL_IN_HEADER_RE = re.compile(
         r'\b(?:'
-        r'C/PC/NC|Complian[ct]|Comply|Response|Remarks|Vendor\s*Response'
+        r'C/PC/NC|Complian(?:ce|t)|Comply|Response|Remarks|Vendor\s*Response'
         r'|Yes\s*/\s*No|Bidder|Proposer|Offeror|Status|Deviation'
-        r'|Compliant|Non[\s-]Compliant|Partial'
+        r'|Non[\s-]Compliant|Partial'
         r')\b',
         re.IGNORECASE,
     )
@@ -447,7 +477,10 @@ class RequirementsExtractionAgent(BaseAgent):
             "'category' field.\n"
             "5. If the table has a Compliance column (C/PC/NC, Yes/No), note "
             "it in the keywords.\n"
-            "6. Return ONLY a valid JSON array — no markdown fencing, no extra text.\n\n"
+            "6. IGNORE instructional rows, legends, boilerplate submission warnings, "
+            "and meta-text (e.g., 'The column MUST contain a full explanation', "
+            "'Proposals with more than four Non-Compliant...'). ONLY extract actual requirements.\n"
+            "7. Return ONLY a valid JSON array — no markdown fencing, no extra text.\n\n"
             f"SECTION: {section_name}\n\n"
             f"TABLE CONTENT:\n{table_text}\n\n"
             "For each requirement found, return a JSON object:\n"

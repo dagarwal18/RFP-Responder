@@ -109,6 +109,7 @@ class Requirement(BaseModel):
     source_section: str = ""
     keywords: list[str] = []
     source_chunk_indices: list[int] = []  # chunk_index values for traceability
+    source_table_chunk_index: int = -1    # specific table chunk this req came from (-1 = not from table)
 
 
 # ── B2 Requirements Validation ───────────────────────────

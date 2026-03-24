@@ -567,18 +567,44 @@ class ParsingService:
 
                 _flush()
                 level = _get_heading_level(heading_text)
-                
-                if level > 0:
+
+                # ── Detect top-level section headings ──
+                # Headings like "SECTION 3 ..." or "APPENDIX A ..." signal
+                # a completely new top-level section.  Reset the entire
+                # breadcrumb stack so downstream agents get a clean,
+                # section-specific section_hint for each RFP section.
+                _TOP_LEVEL_RE = re.compile(
+                    r'^(?:SECTION|PART|CHAPTER|APPENDIX|ANNEX)\s+',
+                    re.IGNORECASE,
+                )
+                is_top_level = bool(_TOP_LEVEL_RE.match(heading_text))
+
+                if is_top_level:
+                    # Full reset — new top-level section starts fresh
+                    heading_stack = [(0, "Untitled Section")]
+                    logger.debug(
+                        f"[PARSE] Heading stack reset at top-level: "
+                        f"{heading_text[:80]}"
+                    )
+                elif level > 0:
+                    # Sub-heading — pop siblings and children, keep parents
                     while heading_stack and heading_stack[-1][0] >= level:
                         heading_stack.pop()
                     if not heading_stack:
                         heading_stack.append((0, "Untitled Section"))
                 else:
-                    if heading_stack and heading_stack[-1][0] == 0:
+                    # Unnumbered heading (level 0) — replace last level-0
+                    # entry but clear stale children from previous sections
+                    while (heading_stack
+                           and heading_stack[-1][0] == 0
+                           and heading_stack[-1][1] != "Untitled Section"):
                         heading_stack.pop()
-                
+
                 heading_stack.append((level, heading_text))
-                current_heading = " > ".join(h[1] for h in heading_stack if h[1] != "Untitled Section") or "Untitled Section"
+                current_heading = " > ".join(
+                    h[1] for h in heading_stack
+                    if h[1] != "Untitled Section"
+                ) or "Untitled Section"
                 
                 current_page_start = block_page
                 current_page_end = block_page

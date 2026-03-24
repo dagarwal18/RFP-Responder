@@ -53,15 +53,15 @@ _PROMPT_PATH = (
 # This agent calls llm_large_text_call → Llama 4 Scout
 # with 131K context window and 30K TPM per key.
 # Budget: ~25K tokens input (~100K chars) with 8K reserved for output.
-_SINGLE_CALL_MAX_CHARS = 80_000   # switch to multi-pass above this
-_MAX_PROPOSAL_CHARS = 100_000
-_MAX_REQUIREMENTS_CHARS = 50_000
+_SINGLE_CALL_MAX_CHARS = 10_000   # switch to multi-pass above this
+_MAX_PROPOSAL_CHARS = 10_000
+_MAX_REQUIREMENTS_CHARS = 5_000
 _MAX_REQ_TEXT_LEN = 200
 _MAX_REQUIREMENTS_COUNT = 150
 
-# Multi-pass budget per call — still generous with Llama's context
-_PASS_MAX_PROPOSAL_CHARS = 30_000
-_PASS_MAX_REQ_CHARS = 20_000
+# Multi-pass budget per call — lower to prevent 6k TPM limits
+_PASS_MAX_PROPOSAL_CHARS = 10_000
+_PASS_MAX_REQ_CHARS = 5_000
 
 
 class TechnicalValidationAgent(BaseAgent):
