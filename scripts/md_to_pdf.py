@@ -180,7 +180,8 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin: 14pt 0;
-    font-size: 8.5pt;
+    table-layout: fixed;
+    font-size: 7.5pt;
     line-height: 1.35;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -190,17 +191,21 @@ th {
     background-color: #0052CC;
     color: #ffffff;
     font-weight: bold;
-    padding: 5pt 6pt;
+    padding: 3pt 4pt;
     text-align: left;
     border: 0.5px solid #004099;
     word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 td {
-    padding: 4pt 5pt;
+    padding: 3pt 4pt;
     border: 0.5px solid #dddddd;
     vertical-align: top;
     word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 /* Removed page-break-inside: avoid from tr to allow long cells to break */
@@ -350,6 +355,17 @@ def _scrub_markdown(md_text: str) -> str:
         first_cell = line.strip().lstrip("|").split("|", 1)[0].strip()
         return bool(re.match(r"^(?:[A-Z]{1,4}-?\d+|\d+(?:\.\d+)?)$", first_cell))
 
+    def _normalize_table_line(line: str, expected_cols: int) -> str:
+        stripped = line.strip().strip("|")
+        parts = [part.strip() for part in stripped.split("|")]
+        if len(parts) < expected_cols:
+            parts.extend([""] * (expected_cols - len(parts)))
+        elif len(parts) > expected_cols:
+            head = parts[: expected_cols - 1]
+            tail = " | ".join(parts[expected_cols - 1 :]).strip()
+            parts = head + [tail]
+        return "| " + " | ".join(parts) + " |"
+
     def _sanitize_table_chunk(table_lines: list[str]) -> list[str]:
         sanitized_blocks: list[list[str]] = []
         current: list[str] = []
@@ -389,8 +405,19 @@ def _scrub_markdown(md_text: str) -> str:
                     cleaned.append(line)
                 block = cleaned
 
-            if current_cols >= 5 or max(len(line) for line in block) > 350:
+            block = [
+                _normalize_table_line(line, current_cols)
+                if not _is_separator_line(line)
+                else "|" + "|".join(["---"] * current_cols) + "|"
+                for line in block
+            ]
+
+            data_rows = block[2:]
+            if current_cols >= 8 or max(len(line) for line in block) > 700:
                 sanitized_blocks.append(["```text", *block, "```"])
+            elif len(data_rows) > 8:
+                for start in range(0, len(data_rows), 8):
+                    sanitized_blocks.append(block[:2] + data_rows[start : start + 8])
             else:
                 sanitized_blocks.append(block)
             current = []
@@ -477,6 +504,69 @@ def _scrub_markdown(md_text: str) -> str:
     return md_text
 
 
+def _inject_table_width_hints(html: str) -> str:
+    """Add stable widths to rendered HTML tables for xhtml2pdf/reportlab."""
+    import re
+
+    def _column_widths(col_count: int) -> list[str]:
+        if col_count == 6:
+            return ["8%", "16%", "34%", "10%", "18%", "14%"]
+        if col_count == 5:
+            return ["10%", "34%", "12%", "22%", "22%"]
+        if col_count == 7:
+            return ["8%", "14%", "18%", "12%", "16%", "16%", "16%"]
+        width = f"{100 / max(col_count, 1):.2f}%"
+        return [width] * col_count
+
+    table_re = re.compile(r"<table>(.*?)</table>", re.DOTALL)
+    row_re = re.compile(r"<tr>(.*?)</tr>", re.DOTALL)
+    cell_re = re.compile(r"<(th|td)([^>]*)>(.*?)</\1>", re.DOTALL)
+
+    def _rewrite_table(match: re.Match[str]) -> str:
+        inner_html = match.group(1)
+        first_row = re.search(r"<tr>(.*?)</tr>", inner_html, re.DOTALL)
+        if not first_row:
+            return match.group(0)
+
+        col_count = len(
+            re.findall(r"<t[hd][^>]*>.*?</t[hd]>", first_row.group(1), re.DOTALL)
+        )
+        if col_count < 2:
+            return match.group(0)
+
+        widths = _column_widths(col_count)
+        colgroup = "<colgroup>" + "".join(
+            f'<col width="{width}" style="width:{width};" />' for width in widths
+        ) + "</colgroup>"
+
+        def _rewrite_row(row_match: re.Match[str]) -> str:
+            row_html = row_match.group(1)
+            rebuilt_cells: list[str] = []
+            cells = list(cell_re.finditer(row_html))
+            if not cells:
+                return row_match.group(0)
+
+            for idx, cell_match in enumerate(cells):
+                tag = cell_match.group(1)
+                attrs = cell_match.group(2) or ""
+                content = cell_match.group(3)
+                width = widths[min(idx, len(widths) - 1)]
+                rebuilt_cells.append(
+                    f'<{tag}{attrs} width="{width}" style="width:{width};">'
+                    f"{content}</{tag}>"
+                )
+
+            return "<tr>" + "".join(rebuilt_cells) + "</tr>"
+
+        inner_html = row_re.sub(_rewrite_row, inner_html)
+        return (
+            '<table style="width:100%; table-layout:fixed;">'
+            f"{colgroup}{inner_html}</table>"
+        )
+
+    return table_re.sub(_rewrite_table, html)
+
+
 def convert_md_to_pdf(
     input_path: str,
     output_path: str,
@@ -531,6 +621,7 @@ def convert_md_to_pdf(
         "sane_lists",     # better list handling
     ]
     html_body = markdown.markdown(md_text, extensions=extensions)
+    html_body = _inject_table_width_hints(html_body)
 
     # Build full HTML document
     cover_html = ""

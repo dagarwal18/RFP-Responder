@@ -157,6 +157,26 @@ class MCPService:
         logger.debug(f"[MCPService] query_rfp returned {len(results)} results")
         return results
 
+    def query_rfp_batch(
+        self,
+        queries: list[str],
+        rfp_id: str = "",
+        top_k: int = 5,
+    ) -> list[list[dict[str, Any]]]:
+        """Convenience: batch semantic search over RFP chunks."""
+        logger.debug(
+            f"[MCPService] query_rfp_batch: {len(queries)} queries, "
+            f"rfp_id={rfp_id}, top_k={top_k}"
+        )
+        results = self.rfp_store.query_batch(queries, rfp_id, top_k)
+        if rfp_id:
+            for result_set in results:
+                self._hydrate_chunks(rfp_id, result_set)
+        logger.debug(
+            f"[MCPService] query_rfp_batch returned {len(results)} distinct result sets"
+        )
+        return results
+
     # ── Convenience: Hybrid RFP query ────────────────────
 
     def query_rfp_hybrid(

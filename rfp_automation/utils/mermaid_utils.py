@@ -51,6 +51,50 @@ _LABEL_WITH_SPECIAL_RE = re.compile(
     r'[^\]"]*)'         # rest of label
     r'(\])',            # closing ]
 )
+_GANTT_RANGE_RE = re.compile(
+    r"^(?P<label>[^:]+?)\s*:\s*(?P<start>\d{4}-\d{2}-\d{2})\s*,\s*(?P<end>\d{4}-\d{2}-\d{2})\s*$"
+)
+
+
+def _sanitize_gantt_code(code: str) -> str:
+    """Repair common invalid gantt syntax emitted by the writer."""
+    lines = code.splitlines()
+    if not lines or lines[0].strip() != "gantt":
+        return code
+
+    sanitized: list[str] = []
+    has_date_format = False
+    task_counter = 1
+
+    for idx, raw_line in enumerate(lines):
+        stripped = raw_line.strip()
+        if idx == 0:
+            sanitized.append("gantt")
+            continue
+        if not stripped:
+            continue
+        if stripped.startswith("desc "):
+            continue
+        if stripped.startswith("dateFormat"):
+            has_date_format = True
+            sanitized.append("    dateFormat YYYY-MM-DD")
+            continue
+
+        match = _GANTT_RANGE_RE.match(stripped)
+        if match:
+            label = match.group("label").strip()
+            sanitized.append(
+                f"    {label} : task_{task_counter}, {match.group('start')}, {match.group('end')}"
+            )
+            task_counter += 1
+            continue
+
+        sanitized.append(raw_line.rstrip())
+
+    if not has_date_format:
+        sanitized.insert(1, "    dateFormat YYYY-MM-DD")
+
+    return "\n".join(sanitized)
 
 
 def _sanitize_mermaid_code(code: str) -> str:
@@ -70,7 +114,8 @@ def _sanitize_mermaid_code(code: str) -> str:
             return m.group(0)
         return f'{open_br}"{label}"{close_br}'
 
-    return _LABEL_WITH_SPECIAL_RE.sub(_quote_label, code)
+    code = _LABEL_WITH_SPECIAL_RE.sub(_quote_label, code)
+    return _sanitize_gantt_code(code)
 
 
 # ═══════════════════════════════════════════════════════════

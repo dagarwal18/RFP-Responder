@@ -44,12 +44,24 @@ _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "architectur
 # Maximum requirements per section before splitting — keeps C2's token budget
 # manageable and ensures each section gets adequate LLM attention.
 _MAX_REQS_PER_SECTION = 20
-_TABLE_TECH_REQ_ID_RE = re.compile(r"^(TR-\d{3}|KPI-\d{2})$", re.IGNORECASE)
+_TABLE_TECH_REQ_ID_RE = re.compile(r"^TR-\d{3}$", re.IGNORECASE)
 _TABLE_PRICING_REQ_ID_RE = re.compile(r"^\d+\.\d{2}$")
 _TABLE_APPENDIX_REQ_ID_RE = re.compile(r"^CM-\d{2}$", re.IGNORECASE)
 _MERGED_TECH_SECTION_TITLE = "Technical Implementation"
+_TECHNICAL_NARRATIVE_TITLE = "Technical Solution Narrative"
 _PRICING_MATRIX_TITLE = "Pricing Schedule Matrix"
 _APPENDIX_TABLES_TITLE = "Appendix Forms & Declarations"
+_SECTION_TITLE_NORMALIZATION: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"^technical implementation$", re.IGNORECASE), "Technical Solution — Technical Compliance Matrix"),
+    (re.compile(r"^technical solution narrative$", re.IGNORECASE), "Technical Solution — Solution Narrative"),
+    (re.compile(r"sd-wan|network & edge", re.IGNORECASE), "Technical Solution — Network & Edge Architecture"),
+    (re.compile(r"cloud interconnect", re.IGNORECASE), "Technical Solution — Cloud Interconnect"),
+    (re.compile(r"managed security operations|soc", re.IGNORECASE), "Technical Solution — Managed Security Operations"),
+    (re.compile(r"iot|mobility", re.IGNORECASE), "Technical Solution — IoT & Mobility"),
+    (re.compile(r"^compliance & regulatory framework$", re.IGNORECASE), "Governance & Compliance — Compliance Framework"),
+    (re.compile(r"^operational support & slas?$", re.IGNORECASE), "Service Management — Operations & SLA Commitments"),
+    (re.compile(r"^implementation & migration plan$", re.IGNORECASE), "Delivery Approach — Implementation & Migration"),
+)
 
 
 class ArchitecturePlanningAgent(BaseAgent):
@@ -260,16 +272,26 @@ class ArchitecturePlanningAgent(BaseAgent):
         all_texts: list[str] = []
         seen: set[str] = set()
 
-        for query in queries:
-            try:
-                results = mcp.query_rfp(query, rfp_id, top_k=5)
+        try:
+            result_sets = mcp.query_rfp_batch(queries, rfp_id, top_k=5)
+            for query, results in zip(queries, result_sets):
                 for r in results:
                     text = r.get("text", "").strip()
                     if text and text not in seen:
                         seen.add(text)
                         all_texts.append(text)
-            except Exception as exc:
-                logger.warning(f"[C1] RFP query failed for '{query}': {exc}")
+        except Exception as exc:
+            logger.warning(f"[C1] Batched RFP submission-instruction query failed: {exc}")
+            for query in queries:
+                try:
+                    results = mcp.query_rfp(query, rfp_id, top_k=5)
+                    for r in results:
+                        text = r.get("text", "").strip()
+                        if text and text not in seen:
+                            seen.add(text)
+                            all_texts.append(text)
+                except Exception as inner_exc:
+                    logger.warning(f"[C1] RFP query failed for '{query}': {inner_exc}")
 
         return "\n\n".join(all_texts) if all_texts else "No explicit submission instructions found."
 
@@ -324,9 +346,10 @@ class ArchitecturePlanningAgent(BaseAgent):
         seen_texts: set[str] = set()
         all_capabilities: list[dict[str, Any]] = []
 
-        for query in queries:
-            try:
-                results = mcp.query_knowledge(query, top_k=5)
+        unique_queries = list(dict.fromkeys(queries))
+        try:
+            result_sets = mcp.query_knowledge_batch(unique_queries, top_k=5)
+            for query, results in zip(unique_queries, result_sets):
                 for r in results:
                     text = r.get("text", "")
                     if text and text not in seen_texts:
@@ -335,8 +358,21 @@ class ArchitecturePlanningAgent(BaseAgent):
                             "text": text,
                             "metadata": r.get("metadata", {}),
                         })
-            except Exception as exc:
-                logger.warning(f"[C1] Knowledge query failed for '{query}': {exc}")
+        except Exception as exc:
+            logger.warning(f"[C1] Batched knowledge query failed: {exc}")
+            for query in unique_queries:
+                try:
+                    results = mcp.query_knowledge(query, top_k=5)
+                    for r in results:
+                        text = r.get("text", "")
+                        if text and text not in seen_texts:
+                            seen_texts.add(text)
+                            all_capabilities.append({
+                                "text": text,
+                                "metadata": r.get("metadata", {}),
+                            })
+                except Exception as inner_exc:
+                    logger.warning(f"[C1] Knowledge query failed for '{query}': {inner_exc}")
 
         return all_capabilities
 
@@ -802,7 +838,10 @@ class ArchitecturePlanningAgent(BaseAgent):
             if _TABLE_APPENDIX_REQ_ID_RE.match(rid)
         )
 
-        sections = self._merge_technical_sections(sections)
+        sections = self._merge_technical_sections(
+            sections,
+            set(technical_table_ids),
+        )
         sections = self._reassign_requirement_ids(
             sections=sections,
             target_title=_MERGED_TECH_SECTION_TITLE,
@@ -847,13 +886,18 @@ class ArchitecturePlanningAgent(BaseAgent):
             ),
             priority=95,
         )
-        return self._drop_empty_requirement_sections(sections)
+        sections = self._drop_empty_requirement_sections(sections)
+        return self._normalize_section_titles(sections)
 
     def _merge_technical_sections(
         self,
         sections: list[ResponseSection],
+        technical_table_ids: set[str],
     ) -> list[ResponseSection]:
         """Replace fragmented domain sections with one Technical Implementation section."""
+        if not technical_table_ids:
+            return sections
+
         tech_keywords = (
             "sd-wan",
             "cloud interconnect",
@@ -880,8 +924,16 @@ class ArchitecturePlanningAgent(BaseAgent):
                 and any(keyword in title_lower for keyword in tech_keywords)
                 and section.title not in {_PRICING_MATRIX_TITLE, _APPENDIX_TABLES_TITLE}
             )
+            table_ids_here = [
+                rid for rid in section.requirement_ids
+                if rid in technical_table_ids
+            ]
+            leftover_ids = [
+                rid for rid in section.requirement_ids
+                if rid not in technical_table_ids
+            ]
 
-            if is_target or is_fragment:
+            if is_target or (is_fragment and table_ids_here):
                 if technical_section is None:
                     technical_section = ResponseSection(
                         section_id=section.section_id,
@@ -889,20 +941,35 @@ class ArchitecturePlanningAgent(BaseAgent):
                         section_type="requirement_driven",
                         description=section.description,
                         content_guidance=section.content_guidance,
-                        requirement_ids=list(section.requirement_ids),
+                        requirement_ids=list(table_ids_here),
                         mapped_capabilities=[],
                         priority=min(getattr(section, "priority", 4), 4),
                         source_rfp_section=section.source_rfp_section,
                     )
                 else:
-                    for rid in section.requirement_ids:
+                    for rid in table_ids_here:
                         if rid not in technical_section.requirement_ids:
                             technical_section.requirement_ids.append(rid)
                 if section.description:
                     merged_descriptions.append(section.description)
                 if section.content_guidance:
                     merged_guidance.append(section.content_guidance)
-                merged_ids.extend(section.requirement_ids)
+                merged_ids.extend(table_ids_here)
+                if leftover_ids:
+                    fallback_title = (
+                        _TECHNICAL_NARRATIVE_TITLE if is_target else section.title
+                    )
+                    keep.append(
+                        section.model_copy(
+                            update={
+                                "section_id": self._next_section_id(
+                                    keep + sections + ([technical_section] if technical_section else [])
+                                ),
+                                "title": fallback_title,
+                                "requirement_ids": leftover_ids,
+                            }
+                        )
+                    )
                 continue
 
             keep.append(section)
@@ -1011,6 +1078,31 @@ class ArchitecturePlanningAgent(BaseAgent):
         cleaned.sort(key=lambda sec: sec.priority)
         return cleaned
 
+    @staticmethod
+    def _normalize_section_titles(
+        sections: list[ResponseSection],
+    ) -> list[ResponseSection]:
+        """Rename overly specific top-level sections into broader parent/subsection titles."""
+        normalized: list[ResponseSection] = []
+        seen_titles: set[str] = set()
+
+        for section in sections:
+            title = section.title.strip()
+            new_title = title
+            for pattern, replacement in _SECTION_TITLE_NORMALIZATION:
+                if pattern.search(title):
+                    new_title = replacement
+                    break
+
+            candidate = section.model_copy(update={"title": new_title})
+            if candidate.title in seen_titles:
+                continue
+            seen_titles.add(candidate.title)
+            normalized.append(candidate)
+
+        normalized.sort(key=lambda sec: sec.priority)
+        return normalized
+
     def _enrich_sections_with_capabilities(
         self,
         mcp: MCPService,
@@ -1025,6 +1117,10 @@ class ArchitecturePlanningAgent(BaseAgent):
         """
         # Create a lookup for requirement text
         req_lookup = {r.get("requirement_id"): r for r in requirements}
+
+        section_queries: list[tuple[ResponseSection, list[str]]] = []
+        unique_queries: list[str] = []
+        query_to_results: dict[str, list[dict[str, Any]]] = {}
 
         for section in sections:
             queries: set[str] = set()
@@ -1054,15 +1150,33 @@ class ArchitecturePlanningAgent(BaseAgent):
             for cat in cats:
                 queries.add(f"{cat} capabilities features")
 
-            # Execute queries and collect unique capabilities
+            top_queries = list(queries)[:4]
+            section_queries.append((section, top_queries))
+            for query in top_queries:
+                if query not in query_to_results:
+                    unique_queries.append(query)
+                    query_to_results[query] = []
+
+        try:
+            result_sets = mcp.query_knowledge_batch(unique_queries, top_k=3)
+            for query, results in zip(unique_queries, result_sets):
+                query_to_results[query] = results
+        except Exception as exc:
+            logger.warning(f"[C1] Batched section-enrichment query failed: {exc}")
+            for query in unique_queries:
+                try:
+                    query_to_results[query] = mcp.query_knowledge(query, top_k=3)
+                except Exception as inner_exc:
+                    logger.warning(
+                        f"[C1] Knowledge query failed for enrich query '{query}': {inner_exc}"
+                    )
+
+        for section, top_queries in section_queries:
             seen_texts: set[str] = set()
             section_caps: list[str] = []
-
-            # Limit to top 3-4 queries to avoid excessive DB calls
-            top_queries = list(queries)[:4]
             for query in top_queries:
                 try:
-                    results = mcp.query_knowledge(query, top_k=3)
+                    results = query_to_results.get(query, [])
                     for r in results:
                         text = r.get("text", "")
                         if text and text not in seen_texts:

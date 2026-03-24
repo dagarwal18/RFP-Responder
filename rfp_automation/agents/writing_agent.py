@@ -84,6 +84,11 @@ _UNRESOLVED_CELL_RE = re.compile(
     r'|TBD',
     re.IGNORECASE,
 )
+_TABLE_ONLY_SECTION_TITLES = {
+    "technical implementation",
+    "pricing schedule matrix",
+    "appendix forms & declarations",
+}
 
 
 class RequirementWritingAgent(BaseAgent):
@@ -308,19 +313,10 @@ class RequirementWritingAgent(BaseAgent):
             section_feedback = "\n\n".join(part.strip() for part in feedback_parts if part.strip())
 
             # ── 7e. Detect table/matrix response mode ───
-            _TABLE_SECTION_RE = re.compile(
-                r'\b(?:compliance\s*matrix|requirements\s*matrix|response\s*table'
-                r'|C/PC/NC|compliance\s*table|technical\s*matrix'
-                r'|capability\s*matrix|conformance\s*matrix'
-                r'|vendor\s*response|fill[\s-]*in|questionnaire'
-                r'|checklist|self[\s-]*assessment|declaration\s*form)\b',
-                re.IGNORECASE,
-            )
-            desc_and_guidance = (
-                self._get_attr(section, "description", "") + " "
-                + self._get_attr(section, "content_guidance", "")
-            )
-            table_mode = bool(_TABLE_SECTION_RE.search(desc_and_guidance))
+            # Only the dedicated matrix sections are allowed to emit tables.
+            # This prevents stray vendor-fill-backed requirements from turning
+            # normal narrative sections into malformed table dumps.
+            table_mode = self._is_table_only_section(title)
 
             # ── 7e2. Find original table text from RFP chunks ──
             original_table_text = ""
@@ -353,29 +349,6 @@ class RequirementWritingAgent(BaseAgent):
                     f"original_table_found={'YES' if original_table_text else 'NO'} | "
                     f"original_table_len={len(original_table_text)}"
                 )
-            else:
-                # Also check if any mapped requirements come from table chunks
-                for rid in req_ids:
-                    req = req_map.get(rid)
-                    if req:
-                        src_indices = req.get("source_chunk_indices", [])
-                        for si in src_indices:
-                            tbl_chunk = table_chunks_by_index.get(si)
-                            if tbl_chunk and self._is_vendor_fill_table(
-                                tbl_chunk.get("text", ""),
-                                tbl_chunk.get("table_type", "unknown"),
-                            ):
-                                table_mode = True
-                                original_table_text = tbl_chunk.get("text", "")
-                                logger.info(
-                                    f"[TABLE-TRACE][C2-WRITE] Auto-detected table_mode "
-                                    f"for {section_id} via req {rid} → chunk_index={si}, "
-                                    f"table_type={tbl_chunk.get('table_type', 'unknown')}"
-                                )
-                                break
-                    if original_table_text:
-                        break
-
             # ── 7e3. Disable fabricated tables ──────────
             # If table_mode is active but we have no original table from the
             # RFP, turn it off to avoid generating a generic 4-column matrix.
@@ -451,30 +424,37 @@ class RequirementWritingAgent(BaseAgent):
                         ungrouped.extend(group_rids)
                 table_groups = filtered_groups
 
+                logical_groups = self._build_logical_table_groups(
+                    table_groups,
+                    table_chunks_by_index,
+                )
+
                 logger.info(
                     f"[TABLE-TRACE][C2-WRITE] Per-table processing for {section_id}: "
-                    f"{len(table_groups)} table group(s), {len(ungrouped)} ungrouped reqs"
+                    f"{len(logical_groups)} logical table group(s), "
+                    f"{len(ungrouped)} ungrouped reqs"
                 )
 
                 all_table_contents: list[str] = []
                 all_table_addressed: list[str] = []
                 total_table_wc = 0
-                full_table_section = title.lower() in {
-                    "pricing schedule matrix",
-                    "appendix forms & declarations",
-                }
+                full_table_section = self._is_table_only_section(title)
+                multi_table_section = len(logical_groups) > 1 or "appendix" in title.lower()
 
-                for tci, group_rids in sorted(table_groups.items()):
-                    tbl_chunk = table_chunks_by_index[tci]
-                    tbl_text = tbl_chunk.get("text", "")
+                for logical_group in logical_groups:
+                    chunk_indices = logical_group["chunk_indices"]
+                    group_rids = logical_group["req_ids"]
+                    tbl_text, header_lines = self._merge_logical_table_chunks(
+                        chunk_indices,
+                        table_chunks_by_index,
+                    )
+                    group_rids = self._order_req_ids_by_table_text(
+                        tbl_text,
+                        group_rids,
+                    )
                     if not full_table_section:
-                        tbl_text = self._extract_relevant_table_text(
-                            tbl_text,
-                            group_rids,
-                        )
+                        tbl_text = self._extract_relevant_table_text(tbl_text, group_rids)
 
-                    # Extract only the actual header row(s), not the source data rows.
-                    header_lines = self._extract_table_header_lines(tbl_text)
                     if header_lines:
                         logger.info(
                             f"[TABLE-TRACE][C2-WRITE] these headers are extracted: "
@@ -487,11 +467,10 @@ class RequirementWritingAgent(BaseAgent):
                         )
 
                     logger.info(
-                        f"[TABLE-TRACE][C2-WRITE] Processing table chunk {tci} "
+                        f"[TABLE-TRACE][C2-WRITE] Processing logical table {chunk_indices} "
                         f"with {len(group_rids)} reqs for {section_id}"
                     )
 
-                    # Fill this one table independently
                     filled_content, addrs, wc = self._fill_single_table(
                         table_text=tbl_text,
                         req_ids=group_rids,
@@ -511,9 +490,12 @@ class RequirementWritingAgent(BaseAgent):
                     )
 
                     logger.info(
-                        f"[TABLE-TRACE][C2-WRITE] table is merged for chunk {tci}"
+                        f"[TABLE-TRACE][C2-WRITE] table is merged for chunks {chunk_indices}"
                     )
 
+                    caption = self._table_caption(title, header_lines)
+                    if caption and multi_table_section:
+                        filled_content = f"### {caption}\n\n{filled_content}".strip()
                     all_table_contents.append(filled_content)
                     all_table_addressed.extend(addrs)
                     total_table_wc += wc
@@ -536,64 +518,60 @@ class RequirementWritingAgent(BaseAgent):
                             continue
 
                         header_lines = self._extract_table_header_lines(tbl_text)
-                        filled_content, addrs, wc = self._fill_single_table(
-                            table_text=tbl_text,
-                            req_ids=[],
-                            req_map=req_map,
-                            section=section,
-                            capabilities=capabilities,
-                            rfp_instructions=rfp_instructions,
-                            rfp_metadata_block=rfp_metadata_block,
-                            prev_ctx=prev_ctx,
-                            next_ctx=next_ctx,
-                            section_feedback=section_feedback,
-                            section_id=section_id,
-                            title=title,
-                            section_type=section_type,
-                            batch_size=_TABLE_BATCH_SIZE,
-                            original_headers=header_lines,
-                        )
+                        filled_content = self._normalize_markdown_table_output(tbl_text)
+                        filled_content = self._sanitize_markdown_tables(filled_content)
+                        addrs = []
+                        wc = len(filled_content.split())
+                        caption = self._table_caption(title, header_lines)
+                        if caption:
+                            filled_content = f"### {caption}\n\n{filled_content}".strip()
                         all_table_contents.append(filled_content)
                         all_table_addressed.extend(addrs)
                         total_table_wc += wc
 
-                # Handle ungrouped requirements as normal prose
                 if ungrouped:
-                    ungrouped_block = "\n".join(
-                        f"- {rid} [{req_map.get(rid, {}).get('type', 'MANDATORY')}]: "
-                        f"{req_map.get(rid, {}).get('text', '')[:300]}"
-                        for rid in ungrouped
-                    )
-                    prose_prompt = self._build_prompt(
-                        section_title=title,
-                        section_type=section_type,
-                        section_description=self._get_attr(section, "description", ""),
-                        content_guidance=self._get_attr(section, "content_guidance", ""),
-                        requirements=ungrouped_block,
-                        capabilities=capabilities,
-                        rfp_instructions=rfp_instructions,
-                        rfp_metadata=rfp_metadata_block,
-                        prev_section_context=prev_ctx,
-                        next_section_context=next_ctx,
-                        revision_feedback=section_feedback,
-                        table_mode=False,
-                        original_table_text="",
-                    )
-                    raw_resp = llm_large_text_call(prose_prompt, deterministic=True)
-                    prose_content, prose_addrs, prose_wc = self._parse_response(
-                        raw_resp, f"{section_id}_prose"
-                    )
-                    all_table_contents.append(prose_content)
-                    all_table_addressed.extend(prose_addrs)
-                    total_table_wc += prose_wc
+                    if self._is_table_only_section(title):
+                        logger.warning(
+                            f"[TABLE-TRACE][C2-WRITE] Skipping {len(ungrouped)} "
+                            f"ungrouped requirement(s) for table-only section '{title}'"
+                        )
+                    else:
+                        ungrouped_block = "\n".join(
+                            f"- {rid} [{req_map.get(rid, {}).get('type', 'MANDATORY')}]: "
+                            f"{req_map.get(rid, {}).get('text', '')[:300]}"
+                            for rid in ungrouped
+                        )
+                        prose_prompt = self._build_prompt(
+                            section_title=title,
+                            section_type=section_type,
+                            section_description=self._get_attr(section, "description", ""),
+                            content_guidance=self._get_attr(section, "content_guidance", ""),
+                            requirements=ungrouped_block,
+                            capabilities=capabilities,
+                            rfp_instructions=rfp_instructions,
+                            rfp_metadata=rfp_metadata_block,
+                            prev_section_context=prev_ctx,
+                            next_section_context=next_ctx,
+                            revision_feedback=section_feedback,
+                            table_mode=False,
+                            original_table_text="",
+                        )
+                        raw_resp = llm_large_text_call(prose_prompt, deterministic=True)
+                        prose_content, prose_addrs, prose_wc = self._parse_response(
+                            raw_resp, f"{section_id}_prose"
+                        )
+                        all_table_contents.append(prose_content)
+                        all_table_addressed.extend(prose_addrs)
+                        total_table_wc += prose_wc
 
                 content = "\n\n".join(c for c in all_table_contents if c.strip())
                 content = self._normalize_markdown_table_output(content)
+                content = self._sanitize_markdown_tables(content)
                 addressed = list(dict.fromkeys(all_table_addressed))
                 word_count = total_table_wc
                 logger.info(
                     f"[TABLE-TRACE][C2-WRITE] final table stored: "
-                    f"{len(table_groups)} table(s) for '{section_id}'"
+                    f"{len(logical_groups)} table(s) for '{section_id}'"
                 )
 
             else:
@@ -645,8 +623,11 @@ class RequirementWritingAgent(BaseAgent):
                     all_content_parts.append(part_content)
                     chunk_addressed_list.extend(part_addressed)
                     total_word_count += part_wc
-                    
+                
                 content = "\n\n".join(c for c in all_content_parts if c.strip())
+                content = self._sanitize_markdown_tables(content)
+                if not self._is_table_only_section(title):
+                    content = self._strip_markdown_tables(content)
                 addressed = list(dict.fromkeys(chunk_addressed_list))
                 word_count = total_word_count
 
@@ -799,6 +780,252 @@ class RequirementWritingAgent(BaseAgent):
         return table_text
 
     @staticmethod
+    def _is_table_only_section(title: str) -> bool:
+        return title.strip().lower() in _TABLE_ONLY_SECTION_TITLES
+
+    @staticmethod
+    def _count_table_columns(line: str) -> int:
+        stripped = line.strip()
+        pipes = stripped.count("|")
+        if stripped.startswith("|") and stripped.endswith("|"):
+            return max(1, pipes - 1)
+        if not stripped.startswith("|") and not stripped.endswith("|"):
+            return max(1, pipes + 1)
+        return max(1, pipes)
+
+    @classmethod
+    def _extract_table_data_lines(cls, table_text: str) -> list[str]:
+        pipe_lines = cls._extract_pipe_table_lines(table_text)
+        header_lines = cls._extract_table_header_lines(table_text)
+        return pipe_lines[len(header_lines):]
+
+    @classmethod
+    def _table_family(cls, table_text: str) -> str:
+        for line in cls._extract_table_data_lines(table_text):
+            row_id = cls._extract_table_row_id(line)
+            if not row_id:
+                continue
+            if _TECHNICAL_REQ_ID_RE.match(row_id):
+                return "technical"
+            if _PRICING_REQ_ID_RE.match(row_id):
+                return "pricing"
+            if _COMPLIANCE_REQ_ID_RE.match(row_id):
+                return "compliance"
+            if _KPI_REQ_ID_RE.match(row_id):
+                return "kpi"
+            return "other"
+        return ""
+
+    @classmethod
+    def _should_merge_table_chunks(cls, left_chunk: dict[str, Any], right_chunk: dict[str, Any]) -> bool:
+        if not left_chunk or not right_chunk:
+            return False
+        if right_chunk.get("chunk_index", -1) != left_chunk.get("chunk_index", -1) + 1:
+            return False
+        left_text = left_chunk.get("text", "")
+        right_text = right_chunk.get("text", "")
+        if not (
+            cls._is_vendor_fill_table(left_text, left_chunk.get("table_type", "unknown"))
+            and cls._is_vendor_fill_table(right_text, right_chunk.get("table_type", "unknown"))
+        ):
+            return False
+        left_family = cls._table_family(left_text)
+        right_family = cls._table_family(right_text)
+        if not left_family or left_family != right_family:
+            return False
+        left_hint = (left_chunk.get("section_hint") or "").strip().lower()
+        right_hint = (right_chunk.get("section_hint") or "").strip().lower()
+        if left_hint and right_hint and left_hint != right_hint:
+            return False
+        return True
+
+    @classmethod
+    def _build_logical_table_groups(
+        cls,
+        table_groups: dict[int, list[str]],
+        table_chunks_by_index: dict[int, dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        if not table_groups:
+            return []
+
+        logical_groups: list[dict[str, Any]] = []
+        current: dict[str, Any] | None = None
+
+        for tci in sorted(table_groups):
+            chunk = table_chunks_by_index.get(tci, {})
+            req_ids = list(dict.fromkeys(table_groups.get(tci, [])))
+            if current is None:
+                current = {"chunk_indices": [tci], "req_ids": req_ids}
+                continue
+
+            prev_chunk = table_chunks_by_index.get(current["chunk_indices"][-1], {})
+            if cls._should_merge_table_chunks(prev_chunk, chunk):
+                current["chunk_indices"].append(tci)
+                for rid in req_ids:
+                    if rid not in current["req_ids"]:
+                        current["req_ids"].append(rid)
+            else:
+                logical_groups.append(current)
+                current = {"chunk_indices": [tci], "req_ids": req_ids}
+
+        if current is not None:
+            logical_groups.append(current)
+        return logical_groups
+
+    @classmethod
+    def _coerce_table_line_to_columns(
+        cls,
+        line: str,
+        expected_col_count: int,
+    ) -> str:
+        stripped = line.strip().strip("|")
+        cells = [cell.strip() for cell in stripped.split("|")]
+        if not expected_col_count or not cells:
+            return line.strip()
+
+        if len(cells) == expected_col_count - 1 and cells:
+            split_tail = re.split(r"(?<=\])\s+(?=\[)", cells[-1], maxsplit=1)
+            if len(split_tail) == 2:
+                cells = cells[:-1] + split_tail
+
+        if len(cells) > expected_col_count:
+            cells = cells[:expected_col_count - 1] + [" | ".join(cells[expected_col_count - 1:])]
+        elif len(cells) < expected_col_count:
+            cells.extend([""] * (expected_col_count - len(cells)))
+
+        return f"| {' | '.join(cells)} |"
+
+    @classmethod
+    def _merge_logical_table_chunks(
+        cls,
+        chunk_indices: list[int],
+        table_chunks_by_index: dict[int, dict[str, Any]],
+    ) -> tuple[str, list[str]]:
+        header_candidates: list[list[str]] = []
+        row_lines: list[str] = []
+
+        for tci in chunk_indices:
+            tbl_chunk = table_chunks_by_index.get(tci, {})
+            tbl_text = tbl_chunk.get("text", "")
+            header_lines = cls._extract_table_header_lines(tbl_text)
+            if header_lines:
+                header_candidates.append(header_lines)
+            row_lines.extend(cls._extract_table_data_lines(tbl_text))
+
+        if not header_candidates:
+            merged_text = "\n".join(
+                table_chunks_by_index.get(tci, {}).get("text", "").strip()
+                for tci in chunk_indices
+                if table_chunks_by_index.get(tci, {}).get("text", "").strip()
+            )
+            return merged_text, []
+
+        chosen_headers = max(
+            header_candidates,
+            key=lambda headers: (
+                cls._count_table_columns(headers[-1]),
+                -chunk_indices[header_candidates.index(headers)],
+            ),
+        )
+        expected_col_count = cls._count_table_columns(chosen_headers[-1])
+        merged_lines: list[str] = list(chosen_headers)
+        seen_keys: set[str] = set()
+
+        for line in row_lines:
+            normalized = cls._coerce_table_line_to_columns(line, expected_col_count)
+            row_id = cls._extract_table_row_id(normalized)
+            key = row_id or normalized.strip()
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            merged_lines.append(normalized)
+
+        return "\n".join(merged_lines), chosen_headers
+
+    @classmethod
+    def _order_req_ids_by_table_text(
+        cls,
+        table_text: str,
+        req_ids: list[str],
+    ) -> list[str]:
+        wanted = {str(rid).strip().upper() for rid in req_ids if str(rid).strip()}
+        if not wanted:
+            return []
+
+        ordered: list[str] = []
+        for line in cls._extract_table_data_lines(table_text):
+            row_id = cls._extract_table_row_id(line)
+            if row_id and row_id in wanted and row_id not in ordered:
+                ordered.append(row_id)
+
+        for rid in req_ids:
+            normalized = str(rid).strip().upper()
+            if normalized and normalized not in ordered:
+                ordered.append(normalized)
+        return ordered
+
+    @classmethod
+    def _extract_generated_table_rows(
+        cls,
+        batch_content: str,
+        table_header_line: str,
+        expected_col_count: int,
+    ) -> list[str]:
+        lines = batch_content.strip().split("\n")
+        table_lines = [line for line in lines if "|" in line]
+        if not table_lines:
+            return []
+
+        start_idx = 0
+        if len(table_lines) >= 2 and "---" in table_lines[1]:
+            start_idx = 2
+        elif table_lines and "---" in table_lines[0]:
+            start_idx = 1
+
+        data_lines: list[str] = []
+        for line in table_lines[start_idx:]:
+            normalized_line = line.strip()
+            if not normalized_line or "---" in normalized_line:
+                continue
+            if table_header_line and normalized_line == table_header_line:
+                continue
+            if expected_col_count:
+                normalized_line = cls._coerce_table_line_to_columns(
+                    normalized_line,
+                    expected_col_count,
+                ).strip()
+                if cls._count_table_columns(normalized_line) != expected_col_count:
+                    continue
+            data_lines.append(normalized_line)
+        return data_lines
+
+    @classmethod
+    def _order_generated_rows(
+        cls,
+        data_lines: list[str],
+        batch_rids: list[str],
+    ) -> list[str]:
+        if not batch_rids:
+            return data_lines
+
+        by_id: dict[str, str] = {}
+        extras: list[str] = []
+        for line in data_lines:
+            row_id = cls._extract_table_row_id(line)
+            if row_id and row_id not in by_id:
+                by_id[row_id] = line
+            elif not row_id:
+                extras.append(line)
+
+        ordered = [by_id[rid] for rid in batch_rids if rid in by_id]
+        for line in data_lines:
+            row_id = cls._extract_table_row_id(line)
+            if row_id and row_id not in batch_rids and line not in ordered:
+                ordered.append(line)
+        ordered.extend(line for line in extras if line not in ordered)
+        return ordered
+
+    @staticmethod
     def _normalize_markdown_table_output(content: str) -> str:
         """Normalize generated table rows so markdown renders consistently."""
         normalized_lines: list[str] = []
@@ -813,6 +1040,105 @@ class RequirementWritingAgent(BaseAgent):
             else:
                 normalized_lines.append(line)
         return "\n".join(normalized_lines).strip()
+
+    @classmethod
+    def _sanitize_markdown_tables(cls, content: str) -> str:
+        """Drop duplicate/orphan header rows so markdown tables render cleanly."""
+        if not content.strip():
+            return content
+
+        lines = content.splitlines()
+        rewritten: list[str] = []
+        idx = 0
+
+        while idx < len(lines):
+            if cls._count_table_columns(lines[idx]) >= 2:
+                block: list[str] = []
+                while idx < len(lines) and cls._count_table_columns(lines[idx]) >= 2:
+                    block.append(lines[idx].rstrip())
+                    idx += 1
+                rewritten.extend(cls._sanitize_table_block(block))
+                continue
+
+            rewritten.append(lines[idx])
+            idx += 1
+
+        return "\n".join(rewritten).strip()
+
+    @classmethod
+    def _strip_markdown_tables(cls, content: str) -> str:
+        """Remove markdown table blocks from prose-only sections."""
+        if not content.strip():
+            return content
+
+        lines = content.splitlines()
+        rewritten: list[str] = []
+        idx = 0
+
+        while idx < len(lines):
+            if cls._count_table_columns(lines[idx]) >= 2:
+                while idx < len(lines) and cls._count_table_columns(lines[idx]) >= 2:
+                    idx += 1
+                if rewritten and rewritten[-1].strip():
+                    rewritten.append("")
+                continue
+
+            rewritten.append(lines[idx])
+            idx += 1
+
+        return "\n".join(rewritten).strip()
+
+    @classmethod
+    def _sanitize_table_block(cls, block: list[str]) -> list[str]:
+        if not block:
+            return []
+
+        header = block[0].strip()
+        expected_cols = cls._count_table_columns(header)
+        separator = "|" + "|".join(["---"] * expected_cols) + "|"
+        sanitized = [header, separator]
+        seen_rows: set[str] = set()
+
+        for raw in block[1:]:
+            line = raw.strip()
+            if not line:
+                continue
+            if cls._is_separator_line(line):
+                continue
+            if line == header:
+                continue
+            normalized = cls._coerce_table_line_to_columns(line, expected_cols).strip()
+            if cls._count_table_columns(normalized) != expected_cols:
+                continue
+            row_id = cls._extract_table_row_id(normalized)
+            key = row_id or normalized
+            if key in seen_rows:
+                continue
+            seen_rows.add(key)
+            sanitized.append(normalized)
+
+        if len(sanitized) <= 2:
+            return []
+        return sanitized + [""]
+
+    @staticmethod
+    def _is_separator_line(line: str) -> bool:
+        normalized = line.strip().replace(" ", "")
+        return bool(normalized) and set(normalized) <= {"|", "-", ":"}
+
+    @classmethod
+    def _table_caption(cls, section_title: str, header_lines: list[str] | None) -> str:
+        title = section_title.strip().lower()
+        header = (header_lines or [""])[0].lower()
+        if "pricing schedule matrix" in title:
+            return "Pricing Schedule Matrix"
+        if "appendix forms" in title and "client name" in header:
+            return "Client Reference Form"
+        if "appendix forms" in title and ("cm-number" in header or "ref." in header):
+            return "Compliance Matrix"
+        if "technical" in title and ("req. id" in header or "tr-id" in header):
+            return "Technical Compliance Matrix"
+        return ""
 
     @classmethod
     def _is_vendor_fill_table(
@@ -905,17 +1231,27 @@ class RequirementWritingAgent(BaseAgent):
                 seen_texts.add(cap)
                 capability_texts.append(f"- {cap}")
 
-        # Fetch from MCP
-        for query in queries:
-            try:
-                results = mcp.query_knowledge(query, top_k=3)
+        unique_queries = list(dict.fromkeys(queries))
+        try:
+            result_sets = mcp.query_knowledge_batch(unique_queries, top_k=3)
+            for query, results in zip(unique_queries, result_sets):
                 for r in results:
                     text = r.get("text", "").strip()
                     if text and text not in seen_texts:
                         seen_texts.add(text)
                         capability_texts.append(text)
-            except Exception as exc:
-                logger.warning(f"[C2] Knowledge query failed for '{query}': {exc}")
+        except Exception as exc:
+            logger.warning(f"[C2] Batched knowledge query failed: {exc}")
+            for query in unique_queries:
+                try:
+                    results = mcp.query_knowledge(query, top_k=3)
+                    for r in results:
+                        text = r.get("text", "").strip()
+                        if text and text not in seen_texts:
+                            seen_texts.add(text)
+                            capability_texts.append(text)
+                except Exception as inner_exc:
+                    logger.warning(f"[C2] Knowledge query failed for '{query}': {inner_exc}")
 
         if not capability_texts:
             return "No specific capabilities available for this section."
@@ -950,6 +1286,8 @@ class RequirementWritingAgent(BaseAgent):
         table_header: str | None = None
         table_header_line = ""
         expected_col_count = 0
+        seen_row_ids: set[str] = set()
+        ordered_req_ids = self._order_req_ids_by_table_text(table_text, req_ids)
 
         if original_headers:
             header_block = "\n".join(original_headers)
@@ -982,9 +1320,9 @@ class RequirementWritingAgent(BaseAgent):
                 
             all_content_parts.append(table_header)
 
-        # Even for small tables, we run through the batch loop once to use consistent logic
-        for batch_idx in range(0, max(1, len(req_ids)), batch_size):
-            batch_rids = req_ids[batch_idx : batch_idx + batch_size]
+        batch_ranges = range(0, max(1, len(ordered_req_ids)), batch_size)
+        for batch_idx in batch_ranges:
+            batch_rids = ordered_req_ids[batch_idx : batch_idx + batch_size]
             batch_num = batch_idx // batch_size + 1
 
             batch_req_texts = []
@@ -997,6 +1335,11 @@ class RequirementWritingAgent(BaseAgent):
                 else:
                     batch_req_texts.append(f"- {rid}: [requirement details not found]")
             batch_requirements_block = "\n".join(batch_req_texts)
+            batch_table_text = (
+                self._extract_relevant_table_text(table_text, batch_rids)
+                if batch_rids
+                else table_text
+            )
 
             prompt = self._build_prompt(
                 section_title=title,
@@ -1011,7 +1354,7 @@ class RequirementWritingAgent(BaseAgent):
                 next_section_context=next_ctx,
                 revision_feedback=section_feedback,
                 table_mode=True,
-                original_table_text=table_text,
+                original_table_text=batch_table_text,
             )
 
             logger.info(
@@ -1027,7 +1370,7 @@ class RequirementWritingAgent(BaseAgent):
             # To respect low TPM limits (e.g. Groq 6000 limit) when looping.
             # Using 65s wait guarantees the 1-minute tracking window fully resets
             # for these massive table prompts.
-            if batch_num * batch_size < len(req_ids):
+            if batch_num * batch_size < len(ordered_req_ids):
                 logger.info(
                     f"[C2] Batch {batch_num} complete. Pausing 65s to fully reset TPM limits..."
                 )
@@ -1038,52 +1381,54 @@ class RequirementWritingAgent(BaseAgent):
 
             # Merge table rows, keeping only the first batch's header
             if batch_content.strip():
-                lines = batch_content.strip().split("\n")
-                table_lines = [line for line in lines if "|" in line]
-                
+                table_lines = [line for line in batch_content.strip().split("\n") if "|" in line]
                 if table_lines:
                     if table_header is None:
-                        # First batch with a table provides the overarching header
-                        if len(table_lines) >= 2 and "---" in table_lines[1] and "|" in table_lines[0]:
-                            table_header = table_lines[0] + "\n" + table_lines[1]
-                            all_content_parts.append("\n".join(table_lines))
+                        inferred_header = table_lines[0].strip()
+                        inferred_cols = self._count_table_columns(inferred_header)
+                        if inferred_cols >= 2:
+                            table_header_line = inferred_header
+                            expected_col_count = inferred_cols
+                            separator = "|" + "|".join(["---"] * inferred_cols) + "|"
+                            table_header = f"{inferred_header}\n{separator}"
+                            all_content_parts.append(table_header)
+
+                            data_lines = self._extract_generated_table_rows(
+                                batch_content,
+                                table_header_line,
+                                expected_col_count,
+                            )
+                            data_lines = self._order_generated_rows(data_lines, batch_rids)
+                            filtered_lines: list[str] = []
+                            for line in data_lines:
+                                row_id = self._extract_table_row_id(line)
+                                if row_id:
+                                    if row_id in seen_row_ids:
+                                        continue
+                                    seen_row_ids.add(row_id)
+                                filtered_lines.append(line)
+
+                            if filtered_lines:
+                                all_content_parts.append("\n".join(filtered_lines))
                         else:
                             all_content_parts.append(batch_content.strip())
                     else:
-                        # Subsequent batches (or if we pre-populated table_header): 
-                        # strip the header and separator rows generated by the LLM
-                        data_lines = []
-                        
-                        start_idx = 0
-                        if len(table_lines) >= 2 and "---" in table_lines[1]:
-                            start_idx = 2
-                        elif len(table_lines) >= 1 and "---" in table_lines[0]:
-                            start_idx = 1
-                            
-                        for line in table_lines[start_idx:]:
-                            normalized_line = line.strip()
-                            if "---" in line:
-                                continue
-                            if table_header_line and normalized_line == table_header_line:
-                                continue
-
-                            if expected_col_count:
-                                line_pipes = normalized_line.count("|")
-                                if normalized_line.startswith("|") and normalized_line.endswith("|"):
-                                    col_count = line_pipes - 1
-                                elif not normalized_line.startswith("|") and not normalized_line.endswith("|"):
-                                    col_count = line_pipes + 1
-                                else:
-                                    col_count = line_pipes
-                                if col_count != expected_col_count:
-                                    logger.info(
-                                        f"[TABLE-TRACE][C2-WRITE] Dropping malformed row in {section_id}: "
-                                        f"expected {expected_col_count} cols, got {col_count}"
-                                    )
+                        data_lines = self._extract_generated_table_rows(
+                            batch_content,
+                            table_header_line,
+                            expected_col_count,
+                        )
+                        data_lines = self._order_generated_rows(data_lines, batch_rids)
+                        filtered_lines: list[str] = []
+                        for line in data_lines:
+                            row_id = self._extract_table_row_id(line)
+                            if row_id:
+                                if row_id in seen_row_ids:
                                     continue
+                                seen_row_ids.add(row_id)
+                            filtered_lines.append(line)
 
-                            data_lines.append(line)
-                            
+                        data_lines = filtered_lines
                         if data_lines:
                             all_content_parts.append("\n".join(data_lines))
                 else:
@@ -1092,6 +1437,7 @@ class RequirementWritingAgent(BaseAgent):
         content = self._normalize_markdown_table_output(
             "\n".join(all_content_parts)
         )
+        content = self._sanitize_markdown_tables(content)
         addressed = list(dict.fromkeys(all_batch_addressed))
         return content, addressed, total_word_count
 
@@ -1154,7 +1500,8 @@ class RequirementWritingAgent(BaseAgent):
                     "[Name SIEM], [Name of PM], and [C / PC / NC] with concrete values "
                     "in the returned table.\n"
                     "Keep each completed table cell concise and single-line where possible. "
-                    "Vendor Remarks must stay brief and should not become paragraph-length.\n"
+                    "Vendor Response should usually be one short sentence (max ~20 words). "
+                    "Vendor Remarks must stay very brief (max ~10 words) and should not become paragraph-length.\n"
                     "Keep the original requirement text, IDs, and descriptions unchanged.\n"
                     "Return the content as a populated markdown table matching the original layout.\n\n"
                     f"### ORIGINAL RFP TABLE:\n```\n{original_table_text[:6000]}\n```\n\n"
@@ -1164,6 +1511,13 @@ class RequirementWritingAgent(BaseAgent):
                     f"[TABLE-TRACE][C2-WRITE] Injected original table ({len(original_table_text)} chars) "
                     f"into prompt for section '{section_title}'"
                 )
+        else:
+            table_instruction = (
+                "\n\n## OUTPUT FORMAT GUARDRAIL\n"
+                "Return narrative prose for this section.\n"
+                "Do NOT output markdown tables, requirement matrices, KPI grids, or pricing schedules here.\n"
+                "Use short paragraphs and bullets only when they improve readability.\n"
+            )
 
         prompt = (
             template

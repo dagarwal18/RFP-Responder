@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 import time
 import random
+import threading
 from huggingface_hub import InferenceClient
 
 from rfp_automation.config import get_settings
@@ -17,6 +18,10 @@ logger = logging.getLogger(__name__)
 
 class EmbeddingModel:
     """Generate embeddings for text chunks via HuggingFace InferenceClient."""
+
+    _cache: dict[str, list[float]] = {}
+    _cache_lock = threading.Lock()
+    _max_cache_entries = 4096
 
     def __init__(self):
         self.settings = get_settings()
@@ -59,14 +64,28 @@ class EmbeddingModel:
         """Generate embeddings for a list of texts."""
         if not texts:
             return []
-            
-        all_embeddings = []
+
+        all_embeddings: list[list[float] | None] = [None] * len(texts)
+        uncached_positions: dict[str, list[int]] = {}
+
+        with self._cache_lock:
+            for idx, text in enumerate(texts):
+                cached = self._cache.get(text)
+                if cached is not None:
+                    all_embeddings[idx] = cached
+                else:
+                    uncached_positions.setdefault(text, []).append(idx)
+
+        uncached_texts = list(uncached_positions.keys())
+        if not uncached_texts:
+            return [emb for emb in all_embeddings if emb is not None]
+
         batch_size = 16
         # Max retries extended to cover the number of keys we have + a few standard retries
         max_retries = max(5, len(self.keys) + 2)
         
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
+        for i in range(0, len(uncached_texts), batch_size):
+            batch = uncached_texts[i:i + batch_size]
             
             # Rotate key on every batch using round-robin to avoid rate limits
             self._rotate_key(verbose=False)
@@ -84,8 +103,15 @@ class EmbeddingModel:
                     
                     if len(emb_batch) > 0 and isinstance(emb_batch[0], list) and isinstance(emb_batch[0][0], list):
                         emb_batch = [seq[0] for seq in emb_batch]
-                        
-                    all_embeddings.extend(emb_batch)
+
+                    with self._cache_lock:
+                        for text, emb in zip(batch, emb_batch):
+                            self._cache[text] = emb
+                            while len(self._cache) > self._max_cache_entries:
+                                self._cache.pop(next(iter(self._cache)))
+                            for pos in uncached_positions.get(text, []):
+                                all_embeddings[pos] = emb
+
                     logger.info(f"[Embedding] Batch size {len(batch)} embedded in {time.perf_counter() - t0:.2f}s")
                     break  # Success, exit retry loop
                     
@@ -108,7 +134,7 @@ class EmbeddingModel:
                         logger.error(f"[Embedding] Failed to embed batch after {max_retries} attempts: {e}")
                         raise
 
-        return all_embeddings
+        return [emb for emb in all_embeddings if emb is not None]
 
     def embed_single(self, text: str) -> list[float]:
         return self.embed([text])[0]
