@@ -44,6 +44,12 @@ _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "architectur
 # Maximum requirements per section before splitting — keeps C2's token budget
 # manageable and ensures each section gets adequate LLM attention.
 _MAX_REQS_PER_SECTION = 20
+_TABLE_TECH_REQ_ID_RE = re.compile(r"^(TR-\d{3}|KPI-\d{2})$", re.IGNORECASE)
+_TABLE_PRICING_REQ_ID_RE = re.compile(r"^\d+\.\d{2}$")
+_TABLE_APPENDIX_REQ_ID_RE = re.compile(r"^CM-\d{2}$", re.IGNORECASE)
+_MERGED_TECH_SECTION_TITLE = "Technical Implementation"
+_PRICING_MATRIX_TITLE = "Pricing Schedule Matrix"
+_APPENDIX_TABLES_TITLE = "Appendix Forms & Declarations"
 
 
 class ArchitecturePlanningAgent(BaseAgent):
@@ -157,6 +163,9 @@ class ArchitecturePlanningAgent(BaseAgent):
 
         # ── 8b2. Enforce correct types for commercial/legal sections ──
         sections = self._enforce_section_types(sections)
+        sections = self._normalize_vendor_fill_sections(
+            requirements_data, sections
+        )
 
         # ── 8c. PASS 2 — Per-section capability enrichment ──
         #    Now that we know the structure, query KB for capabilities
@@ -746,7 +755,10 @@ class ArchitecturePlanningAgent(BaseAgent):
 
         for section in sections:
             title_lower = section.title.lower()
-            if any(kw in title_lower for kw in _COMMERCIAL_KEYWORDS):
+            if (
+                any(kw in title_lower for kw in _COMMERCIAL_KEYWORDS)
+                and not any(kw in title_lower for kw in ("matrix", "schedule"))
+            ):
                 if section.section_type != "commercial":
                     logger.info(
                         f"[C1] Overriding section_type for '{section.title}': "
@@ -761,6 +773,243 @@ class ArchitecturePlanningAgent(BaseAgent):
                     )
                     section.section_type = "legal"
         return sections
+
+    def _normalize_vendor_fill_sections(
+        self,
+        requirements: list[dict[str, Any]],
+        sections: list[ResponseSection],
+    ) -> list[ResponseSection]:
+        """Preserve original vendor-fill tables in dedicated sections."""
+        if not sections:
+            return sections
+
+        req_map = {
+            str(req.get("requirement_id", "")).strip(): req
+            for req in requirements
+            if req.get("requirement_id")
+        }
+
+        technical_table_ids = sorted(
+            rid for rid in req_map
+            if _TABLE_TECH_REQ_ID_RE.match(rid)
+        )
+        pricing_table_ids = sorted(
+            rid for rid in req_map
+            if _TABLE_PRICING_REQ_ID_RE.match(rid)
+        )
+        appendix_table_ids = sorted(
+            rid for rid in req_map
+            if _TABLE_APPENDIX_REQ_ID_RE.match(rid)
+        )
+
+        sections = self._merge_technical_sections(sections)
+        sections = self._reassign_requirement_ids(
+            sections=sections,
+            target_title=_MERGED_TECH_SECTION_TITLE,
+            requirement_ids=technical_table_ids,
+            description=(
+                "Primary technical implementation section. Reproduce the exact "
+                "technical requirement matrix from the RFP as one consolidated "
+                "table and support it with the architecture narrative."
+            ),
+            content_guidance=(
+                "Keep all table-backed technical requirements together in a single "
+                "Technical Implementation section. Do not split the matrix by "
+                "workstream or platform."
+            ),
+            priority=4,
+        )
+        sections = self._reassign_requirement_ids(
+            sections=sections,
+            target_title=_PRICING_MATRIX_TITLE,
+            requirement_ids=pricing_table_ids,
+            description=(
+                "Exact pricing schedule from the RFP. Preserve the original row "
+                "IDs and vendor-fill columns."
+            ),
+            content_guidance=(
+                "Reproduce the original pricing table exactly. Keep line IDs such "
+                "as 1.01, 2.01, 4.04, and 5.03 unchanged."
+            ),
+            priority=90,
+        )
+        sections = self._reassign_requirement_ids(
+            sections=sections,
+            target_title=_APPENDIX_TABLES_TITLE,
+            requirement_ids=appendix_table_ids,
+            description=(
+                "Appendix declarations, compliance matrices, and other small "
+                "vendor-fill tables that belong in the appendices."
+            ),
+            content_guidance=(
+                "Keep appendix declaration tables together. Preserve exact row IDs "
+                "and fill only the vendor-input cells."
+            ),
+            priority=95,
+        )
+        return self._drop_empty_requirement_sections(sections)
+
+    def _merge_technical_sections(
+        self,
+        sections: list[ResponseSection],
+    ) -> list[ResponseSection]:
+        """Replace fragmented domain sections with one Technical Implementation section."""
+        tech_keywords = (
+            "sd-wan",
+            "cloud interconnect",
+            "managed security operations center",
+            "managed security operations centre",
+            "mobility",
+            "operational support",
+            "technical solution",
+            "architecture",
+            "soc",
+        )
+
+        merged_ids: list[str] = []
+        merged_descriptions: list[str] = []
+        merged_guidance: list[str] = []
+        keep: list[ResponseSection] = []
+        technical_section: ResponseSection | None = None
+
+        for section in sections:
+            title_lower = section.title.lower()
+            is_target = section.title == _MERGED_TECH_SECTION_TITLE
+            is_fragment = (
+                section.section_type == "requirement_driven"
+                and any(keyword in title_lower for keyword in tech_keywords)
+                and section.title not in {_PRICING_MATRIX_TITLE, _APPENDIX_TABLES_TITLE}
+            )
+
+            if is_target or is_fragment:
+                if technical_section is None:
+                    technical_section = ResponseSection(
+                        section_id=section.section_id,
+                        title=_MERGED_TECH_SECTION_TITLE,
+                        section_type="requirement_driven",
+                        description=section.description,
+                        content_guidance=section.content_guidance,
+                        requirement_ids=list(section.requirement_ids),
+                        mapped_capabilities=[],
+                        priority=min(getattr(section, "priority", 4), 4),
+                        source_rfp_section=section.source_rfp_section,
+                    )
+                else:
+                    for rid in section.requirement_ids:
+                        if rid not in technical_section.requirement_ids:
+                            technical_section.requirement_ids.append(rid)
+                if section.description:
+                    merged_descriptions.append(section.description)
+                if section.content_guidance:
+                    merged_guidance.append(section.content_guidance)
+                merged_ids.extend(section.requirement_ids)
+                continue
+
+            keep.append(section)
+
+        if technical_section is None:
+            return sections
+
+        technical_section.requirement_ids = list(dict.fromkeys(merged_ids))
+        technical_section.description = " ".join(
+            part for part in dict.fromkeys(merged_descriptions) if part
+        ).strip() or technical_section.description
+        technical_section.content_guidance = " ".join(
+            part for part in dict.fromkeys(merged_guidance) if part
+        ).strip() or technical_section.content_guidance
+
+        keep.append(technical_section)
+        keep.sort(key=lambda sec: sec.priority)
+        return keep
+
+    def _reassign_requirement_ids(
+        self,
+        sections: list[ResponseSection],
+        target_title: str,
+        requirement_ids: list[str],
+        description: str,
+        content_guidance: str,
+        priority: int,
+    ) -> list[ResponseSection]:
+        """Move the supplied requirement IDs into a dedicated section."""
+        if not requirement_ids:
+            return sections
+
+        req_id_set = {rid for rid in requirement_ids if rid}
+        target_section: ResponseSection | None = None
+
+        for section in sections:
+            if section.title == target_title:
+                target_section = section
+                break
+
+        if target_section is None:
+            target_section = ResponseSection(
+                section_id=self._next_section_id(sections),
+                title=target_title,
+                section_type="requirement_driven",
+                description=description,
+                content_guidance=content_guidance,
+                requirement_ids=[],
+                priority=priority,
+            )
+            sections.append(target_section)
+
+        for section in sections:
+            if section.section_id == target_section.section_id:
+                continue
+            section.requirement_ids = [
+                rid for rid in section.requirement_ids
+                if rid not in req_id_set
+            ]
+
+        merged_ids = list(target_section.requirement_ids)
+        for rid in requirement_ids:
+            if rid not in merged_ids:
+                merged_ids.append(rid)
+        target_section.requirement_ids = merged_ids
+        target_section.section_type = "requirement_driven"
+        target_section.description = description
+        target_section.content_guidance = content_guidance
+        target_section.priority = priority
+
+        sections.sort(key=lambda sec: sec.priority)
+        return sections
+
+    @staticmethod
+    def _next_section_id(sections: list[ResponseSection]) -> str:
+        used_numbers = {
+            int(match.group(1))
+            for section in sections
+            for match in [re.match(r"SEC-(\d+)", section.section_id)]
+            if match
+        }
+        next_number = 1
+        while next_number in used_numbers:
+            next_number += 1
+        return f"SEC-{next_number:02d}"
+
+    @staticmethod
+    def _drop_empty_requirement_sections(
+        sections: list[ResponseSection],
+    ) -> list[ResponseSection]:
+        """Remove fragmented requirement-driven sections left empty after normalization."""
+        cleaned: list[ResponseSection] = []
+        for section in sections:
+            if (
+                section.section_type == "requirement_driven"
+                and not section.requirement_ids
+                and section.title not in {
+                    "Executive Summary",
+                    _MERGED_TECH_SECTION_TITLE,
+                    _PRICING_MATRIX_TITLE,
+                    _APPENDIX_TABLES_TITLE,
+                }
+            ):
+                continue
+            cleaned.append(section)
+        cleaned.sort(key=lambda sec: sec.priority)
+        return cleaned
 
     def _enrich_sections_with_capabilities(
         self,

@@ -128,6 +128,7 @@ class FinalReadinessAgent(BaseAgent):
 
             # Automatically convert to PDF using the md_to_pdf script
             pdf_path = out_dir / "proposal.pdf"
+            pdf_generated = False
             try:
                 import subprocess
                 import sys
@@ -151,6 +152,7 @@ class FinalReadinessAgent(BaseAgent):
                     capture_output=True,
                     text=True
                 )
+                pdf_generated = True
                 logger.info(f"[F1] Generated PDF: {pdf_path}")
             except subprocess.CalledProcessError as e:
                 logger.warning(f"[F1] Failed to generate PDF. Exit code: {e.returncode}")
@@ -163,10 +165,14 @@ class FinalReadinessAgent(BaseAgent):
             state.submission_record = SubmissionRecord(
                 submitted_at=submitted_at,
                 output_file_path=str(output_path),
-                archive_path=str(output_path),  # or pdf_path if we want to track that
+                archive_path=str(pdf_path if pdf_generated else output_path),
                 file_hash=file_hash,
             )
-            state.status = PipelineStatus.SUBMITTED
+            if pdf_generated:
+                state.status = PipelineStatus.SUBMITTED
+            else:
+                state.error_message = "PDF generation failed during final readiness."
+                state.status = PipelineStatus.FAILED
         else:
             state.status = PipelineStatus.REJECTED
 

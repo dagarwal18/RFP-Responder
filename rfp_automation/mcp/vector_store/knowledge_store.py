@@ -183,6 +183,35 @@ class KnowledgeStore:
             for m in results.get("matches", [])
         ]
 
+    def query_all_types_batch(self, queries: list[str], top_k: int = 5) -> list[list[dict[str, Any]]]:
+        """Batch semantic search over ALL knowledge documents."""
+        if not queries:
+            return []
+            
+        index = self._get_index()
+        query_embs = self._embedder.embed(queries)
+        
+        all_results = []
+        for emb in query_embs:
+            results = index.query(
+                vector=emb,
+                top_k=top_k,
+                namespace=KNOWLEDGE_NAMESPACE,
+                include_metadata=True,
+            )
+            parsed = [
+                {
+                    "id": m["id"],
+                    "score": m["score"],
+                    "text": m.get("metadata", {}).get("text", ""),
+                    "doc_type": m.get("metadata", {}).get("doc_type", ""),
+                    "metadata": m.get("metadata", {}),
+                }
+                for m in results.get("matches", [])
+            ]
+            all_results.append(parsed)
+        return all_results
+
     # ── Query: by specific type ──────────────────────────
 
     def query_by_type(self, query: str, doc_type: str, top_k: int = 5) -> list[dict[str, Any]]:
@@ -208,6 +237,36 @@ class KnowledgeStore:
             }
             for m in results.get("matches", [])
         ]
+
+    def query_by_type_batch(self, queries: list[str], doc_type: str, top_k: int = 5) -> list[list[dict[str, Any]]]:
+        """Batch semantic search filtered by a specific doc_type."""
+        if not queries:
+            return []
+            
+        index = self._get_index()
+        query_embs = self._embedder.embed(queries)
+        
+        all_results = []
+        for emb in query_embs:
+            results = index.query(
+                vector=emb,
+                top_k=top_k,
+                namespace=KNOWLEDGE_NAMESPACE,
+                include_metadata=True,
+                filter={"doc_type": doc_type},
+            )
+            parsed = [
+                {
+                    "id": m["id"],
+                    "score": m["score"],
+                    "text": m.get("metadata", {}).get("text", ""),
+                    "doc_type": doc_type,
+                    "metadata": m.get("metadata", {}),
+                }
+                for m in results.get("matches", [])
+            ]
+            all_results.append(parsed)
+        return all_results
 
     # ── Query: capabilities (Pinecone) ───────────────────
 

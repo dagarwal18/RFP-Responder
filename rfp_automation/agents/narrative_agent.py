@@ -448,6 +448,26 @@ class NarrativeAssemblyAgent(BaseAgent):
             text,
             flags=re.DOTALL,
         )
+        table_blocks: list[str] = []
+        lines = text.splitlines()
+        rewritten_lines: list[str] = []
+        idx = 0
+        while idx < len(lines):
+            if lines[idx].count("|") >= 1:
+                block: list[str] = []
+                while idx < len(lines) and lines[idx].count("|") >= 1:
+                    block.append(lines[idx])
+                    idx += 1
+                if len(block) >= 2:
+                    table_blocks.append("\n".join(block))
+                    rewritten_lines.append(f"__TABLE_BLOCK_{len(table_blocks) - 1}__")
+                    continue
+                rewritten_lines.extend(block)
+                continue
+
+            rewritten_lines.append(lines[idx])
+            idx += 1
+        text = "\n".join(rewritten_lines)
 
         # ── Run specific replacements FIRST, then cleanup patterns ──
         # This ensures [Insert Proposing Company Name] → "Vodafone Business"
@@ -473,6 +493,8 @@ class NarrativeAssemblyAgent(BaseAgent):
         text = _generic_placeholder_re.sub("**⚠ [TBD — Requires Manual Input]**", text)
 
         # ── Restore mermaid blocks ──
+        for i, block in enumerate(table_blocks):
+            text = text.replace(f"__TABLE_BLOCK_{i}__", block)
         for i, block in enumerate(mermaid_blocks):
             text = text.replace(f"__MERMAID_BLOCK_{i}__", block)
 

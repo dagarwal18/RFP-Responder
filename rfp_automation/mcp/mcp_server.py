@@ -288,6 +288,21 @@ class MCPService:
         logger.debug(f"[MCPService] query_knowledge returned {len(results)} results")
         return results
 
+    def query_knowledge_batch(
+        self,
+        queries: list[str],
+        top_k: int = 5,
+        doc_type: str = "",
+    ) -> list[list[dict[str, Any]]]:
+        """Convenience: batch semantic search over company knowledge."""
+        logger.debug(f"[MCPService] query_knowledge_batch: {len(queries)} queries, doc_type={doc_type!r}, top_k={top_k}")
+        if doc_type:
+            results = self.knowledge_base.query_by_type_batch(queries, doc_type, top_k)
+        else:
+            results = self.knowledge_base.query_all_types_batch(queries, top_k)
+        logger.debug(f"[MCPService] query_knowledge_batch returned {len(results)} distinct result sets")
+        return results
+
     # ── Knowledge base admin ─────────────────────────────
 
     def ingest_knowledge_doc(
