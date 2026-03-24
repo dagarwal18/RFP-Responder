@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Topbar from '@/components/topbar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -18,7 +17,7 @@ export default function KnowledgeBasePage() {
   const [stats, setStats] = useState<KBStats>({ vectors: 0, namespaces: 0, configs: 0 });
   const [files, setFiles] = useState<KBFile[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [queryInput, setQueryInput] = useState('');
   const [queryType, setQueryType] = useState('');
@@ -40,19 +39,43 @@ export default function KnowledgeBasePage() {
   useEffect(() => { loadStats(); loadFiles(); }, [loadStats, loadFiles]);
 
   const uploadFile = useCallback(async () => {
-    if (!selectedFile) return;
+    if (selectedFiles.length === 0) return;
     setUploading(true);
-    addLog(`Uploading ${selectedFile.name}…`, 'info');
+
+    let successCount = 0;
+    let failCount = 0;
+
     try {
-      const form = new FormData();
-      form.append('file', selectedFile);
-      await apiFetch('/api/knowledge/upload', { method: 'POST', headers: {}, body: form });
-      addLog(`Uploaded ${selectedFile.name}`, 'success');
-      setSelectedFile(null);
-      loadStats(); loadFiles();
-    } catch (e) { addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error'); }
-    finally { setUploading(false); }
-  }, [selectedFile, addLog, loadStats, loadFiles]);
+      for (const [index, selectedFile] of selectedFiles.entries()) {
+        addLog(`Uploading ${selectedFile.name} (${index + 1}/${selectedFiles.length})...`, 'info');
+        const form = new FormData();
+        form.append('file', selectedFile);
+        try {
+          await apiFetch('/api/knowledge/upload', { method: 'POST', headers: {}, body: form });
+          addLog(`Uploaded ${selectedFile.name}`, 'success');
+          successCount += 1;
+        } catch (e) {
+          addLog(`Upload failed for ${selectedFile.name}: ${e instanceof Error ? e.message : 'Unknown'}`, 'error');
+          failCount += 1;
+        }
+      }
+
+      if (selectedFiles.length > 1) {
+        addLog(`Batch upload complete. ${successCount} succeeded, ${failCount} failed.`, failCount > 0 ? 'info' : 'success');
+      }
+
+      setSelectedFiles([]);
+      loadStats();
+      loadFiles();
+    } catch (e) {
+      addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [selectedFiles, addLog, loadStats, loadFiles]);
 
   const runQuery = useCallback(async () => {
     if (!queryInput.trim()) return;
@@ -76,15 +99,14 @@ export default function KnowledgeBasePage() {
     return map[t] || '';
   };
 
+  const totalSelectedSize = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+
   return (
     <div className="flex flex-1 h-full overflow-hidden bg-background">
-      {/* MAIN WORKSPACE ZONE */}
       <div className="flex-1 flex flex-col min-w-0 border-r border-border relative">
         <Topbar title="Knowledge Base" />
         <ScrollArea className="flex-1">
           <div className="flex flex-col">
-            
-            {/* Stats Strip */}
             <div className="flex items-center border-b border-border divide-x divide-border">
               {[
                 { label: 'Vectors', value: stats.vectors },
@@ -98,25 +120,31 @@ export default function KnowledgeBasePage() {
               ))}
             </div>
 
-            {/* Upload Strip */}
-            <div 
-              className="px-8 py-6 border-b border-border flex items-center justify-between group cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear" 
+            <div
+              className="px-8 py-6 border-b border-border flex items-center justify-between group cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear"
               onClick={() => fileInputRef.current?.click()}
             >
-              <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={e => { if (e.target.files) setSelectedFile(e.target.files[0]) }} />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf"
+                multiple
+                className="hidden"
+                onChange={e => { if (e.target.files) setSelectedFiles(Array.from(e.target.files)); }}
+              />
               <div className="flex flex-col">
                 <span className="text-[14px] font-medium text-foreground tracking-tight">Upload Document</span>
-                <span className="text-[13px] text-muted-foreground mt-1.5">Select a PDF to extract and ingest into the vector database.</span>
-                {selectedFile && (
+                <span className="text-[13px] text-muted-foreground mt-1.5">Select one or more PDFs to extract and ingest into the vector database.</span>
+                {selectedFiles.length > 0 && (
                   <div className="flex items-center gap-3 mt-4 text-[13px] text-muted-foreground border-l-2 border-primary pl-3 bg-secondary/50 py-2">
-                    <span className="font-medium text-foreground">{selectedFile.name}</span>
-                    <span>{formatSize(selectedFile.size)}</span>
+                    <span className="font-medium text-foreground">{selectedFiles.length === 1 ? selectedFiles[0].name : `${selectedFiles.length} files selected`}</span>
+                    <span>{formatSize(totalSelectedSize)}</span>
                   </div>
                 )}
               </div>
-              <Button 
+              <Button
                 onClick={(e) => { e.stopPropagation(); uploadFile(); }}
-                disabled={!selectedFile || uploading}
+                disabled={selectedFiles.length === 0 || uploading}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-6 text-[13px] font-medium shrink-0 ml-6 cursor-pointer"
               >
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
@@ -124,7 +152,6 @@ export default function KnowledgeBasePage() {
               </Button>
             </div>
 
-            {/* Document List */}
             <div className="p-8 border-b border-border">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
@@ -132,15 +159,15 @@ export default function KnowledgeBasePage() {
                   <Badge variant="secondary" className="text-[10px]">{files.length}</Badge>
                 </div>
                 <div className="flex items-center gap-5">
-                  <span 
+                  <span
                     className="text-[12px] text-primary cursor-pointer hover:underline underline-offset-4 flex items-center gap-1.5"
-                    onClick={async () => { addLog('Seeding…', 'info'); try { await apiFetch('/api/knowledge/seed', { method: 'POST' }); addLog('Done', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error'); }}}
+                    onClick={async () => { addLog('Seeding...', 'info'); try { await apiFetch('/api/knowledge/seed', { method: 'POST' }); addLog('Done', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error'); }}}
                   >
                     <Sprout className="w-3.5 h-3.5" /> Seed JSON
                   </span>
-                  <span 
+                  <span
                     className="text-[12px] text-destructive cursor-pointer hover:underline underline-offset-4 flex items-center gap-1.5"
-                    onClick={async () => { addLog('Clearing…', 'info'); try { await apiFetch('/api/knowledge/index', { method: 'DELETE' }); addLog('Cleared', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`${e}`, 'error'); }}}
+                    onClick={async () => { addLog('Clearing...', 'info'); try { await apiFetch('/api/knowledge/index', { method: 'DELETE' }); addLog('Cleared', 'success'); loadStats(); loadFiles(); } catch(e) { addLog(`${e instanceof Error ? e.message : e}`, 'error'); }}}
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Clear Index
                   </span>
@@ -166,11 +193,10 @@ export default function KnowledgeBasePage() {
               </div>
             </div>
 
-            {/* Query Tester */}
             <div className="p-8">
               <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-6">Semantic Query Tester</h2>
               <div className="flex gap-3">
-                <Input value={queryInput} onChange={e => setQueryInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && runQuery()} placeholder="Test similarity search query…" className="flex-1 bg-secondary border-border h-9 shadow-none rounded-none focus-visible:ring-1 text-[13px]" />
+                <Input value={queryInput} onChange={e => setQueryInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && runQuery()} placeholder="Test similarity search query..." className="flex-1 bg-secondary border-border h-9 shadow-none rounded-none focus-visible:ring-1 text-[13px]" />
                 <select value={queryType} onChange={e => setQueryType(e.target.value)} className="px-3 h-9 rounded-none text-[13px] bg-secondary border border-border text-foreground outline-none cursor-pointer">
                   <option value="">All Types</option><option value="capability">Capability</option><option value="past_proposal">Proposal</option><option value="certification">Cert</option><option value="pricing">Pricing</option><option value="legal">Legal</option>
                 </select>
@@ -191,12 +217,10 @@ export default function KnowledgeBasePage() {
                 </div>
               )}
             </div>
-
           </div>
         </ScrollArea>
       </div>
 
-      {/* RIGHT CONTEXT ZONE */}
       <div className="w-[360px] min-w-[360px] max-w-[360px] shrink-0 bg-sidebar flex flex-col z-10 border-l border-border">
         <div className="h-14 border-b border-border flex items-center px-6 shrink-0 bg-background/50">
           <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Activity Stream</span>

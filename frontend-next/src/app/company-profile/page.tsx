@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { apiFetch, fetchCompanyProfile } from '@/lib/api';
+import { fetchCompanyProfile, saveCompanyProfile } from '@/lib/api';
 import type { CompanyProfile } from '@/lib/types';
 import { Building2, Save, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -19,7 +19,7 @@ export default function CompanyProfilePage() {
 
   const save = async () => {
     setStatus('saving');
-    try { await apiFetch('/api/knowledge/company-profile', { method: 'PUT', body: JSON.stringify(profile) }); setStatus('saved'); setTimeout(() => setStatus('idle'), 3000); }
+    try { await saveCompanyProfile(profile); setStatus('saved'); setTimeout(() => setStatus('idle'), 3000); }
     catch { setStatus('error'); setTimeout(() => setStatus('idle'), 3000); }
   };
 

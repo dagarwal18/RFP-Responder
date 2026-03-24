@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Topbar from '@/components/topbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { apiFetch, fetchRuns } from '@/lib/api';
+import {
+  fetchReviewPackage,
+  fetchRuns,
+  saveReviewComments,
+  submitReviewDecision,
+} from '@/lib/api';
 import { FileSearch, MessageSquare, Check, X, ChevronDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -70,25 +75,27 @@ function Mermaid({ chart }: { chart: string }) {
 
 function MarkdownRenderer({ content }: { content: string }) {
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        code({node, inline, className, children, ...props}: any) {
-          const match = /language-(\w+)/.exec(className || '');
-          if (!inline && match && match[1] === 'mermaid') {
-            return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+    <div className="prose prose-sm dark:prose-invert max-w-none text-xs text-muted-foreground">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code({ inline, className, children, ...props }: any) {
+            const match = /language-(\w+)/.exec(className || '');
+            if (!inline && match && match[1] === 'mermaid') {
+              return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+            }
+            return <code className={className} {...props}>{children}</code>;
           }
-          return <code className={className} {...props}>{children}</code>;
-        }
-      }}
-      className="prose prose-sm dark:prose-invert max-w-none text-xs text-muted-foreground"
-    >
-      {content}
-    </ReactMarkdown>
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 }
 
 function ReviewContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const explicitRunId = searchParams.get('run_id');
 
@@ -114,7 +121,7 @@ function ReviewContent() {
       }
       
       if (rfpIdToLoad) {
-        const d = await apiFetch<ReviewData>(`/api/rfp/${rfpIdToLoad}/review`);
+        const d = await fetchReviewPackage(rfpIdToLoad);
         setReview(d);
         setComments(d.review_package?.comments || []);
       }
@@ -129,36 +136,45 @@ function ReviewContent() {
   const addComment = async () => {
     if (!review || !selectedAnchor || !commentText.trim()) return;
     try {
-      await apiFetch(`/api/rfp/${review.rfp_id}/review/comments`, {
-        method: 'POST', 
-        body: JSON.stringify({ 
+      const nextComments = [
+        ...comments,
+        {
+          comment_id: `REV-CMT-${Date.now()}`,
           anchor: {
-             anchor_level: 'paragraph',
-             domain: 'response',
-             section_id: selectedAnchor.section_id,
-             section_title: selectedAnchor.section_title,
-             paragraph_id: selectedAnchor.paragraph_id,
-             excerpt: selectedAnchor.excerpt
+            anchor_level: 'paragraph',
+            domain: 'response',
+            section_id: selectedAnchor.section_id,
+            section_title: selectedAnchor.section_title,
+            paragraph_id: selectedAnchor.paragraph_id,
+            excerpt: selectedAnchor.excerpt,
           },
-          text: commentText, 
-          severity: commentSeverity, 
-          reviewer: reviewer || 'Anonymous' 
-        }),
-      });
+          comment: commentText,
+          severity: commentSeverity,
+          rerun_hint: 'auto',
+          status: 'open',
+          author: reviewer || 'Anonymous',
+          created_at: new Date().toISOString(),
+        },
+      ];
+      const response = await saveReviewComments(review.rfp_id, nextComments);
+      setReview(response);
+      setComments(response.review_package?.comments || nextComments);
       setCommentText(''); 
       setSelectedAnchor(null); 
-      load();
     } catch {}
   };
 
   const submitDecision = async (decision: string) => {
     if (!review) return;
     try { 
-      await apiFetch(`/api/rfp/${review.rfp_id}/review/decision`, { 
-        method: 'POST', 
-        body: JSON.stringify({ decision, reviewer: reviewer || 'Anonymous', summary: 'Reviewed via Next.js', rerun_from: 'auto' }) 
-      }); 
-      load(); 
+      await submitReviewDecision(review.rfp_id, {
+        decision,
+        reviewer: reviewer || 'Anonymous',
+        summary: 'Reviewed via Next.js',
+        rerun_from: 'auto',
+        comments,
+      });
+      router.push(`/?run_id=${review.rfp_id}`);
     } catch {}
   };
 

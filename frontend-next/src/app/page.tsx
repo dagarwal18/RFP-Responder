@@ -1,12 +1,22 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Topbar from '@/components/topbar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { apiFetch, fetchRuns, uploadRfp, formatSize, formatTime, WS_BASE } from '@/lib/api';
+import {
+  apiFetch,
+  fetchRunStatus,
+  fetchRuns,
+  formatSize,
+  formatTime,
+  normalizeStageKey,
+  uploadRfp,
+  WS_BASE,
+} from '@/lib/api';
 import { STAGES, type Run, type LogEntry } from '@/lib/types';
-import { Upload, Play, RefreshCw, Loader2 } from 'lucide-react';
+import { Play, RefreshCw, Loader2 } from 'lucide-react';
 import CheckpointsPanel from '@/components/checkpoints-panel';
 import AgentOutputs from '@/components/agent-outputs';
 
@@ -20,26 +30,61 @@ interface AgentStep {
   state: StepState;
 }
 
+function resolveStageKeys(agentName: string | null | undefined): string[] {
+  const raw = String(agentName || '').trim();
+  if (!raw) return [];
+  if (raw === 'COMMERCIAL_LEGAL_PARALLEL' || raw === 'commercial_legal_parallel') {
+    return ['E1_COMMERCIAL', 'E2_LEGAL'];
+  }
+  const normalized = normalizeStageKey(raw);
+  return normalized ? [normalized] : [];
+}
+
+function buildInitialAgents(): AgentStep[] {
+  const agentNames: Record<string, string> = {
+    A1_INTAKE: 'Intake Agent',
+    A2_STRUCTURING: 'Structuring Agent',
+    A3_GO_NO_GO: 'Go / No-Go Agent',
+    B1_REQUIREMENTS_EXTRACTION: 'Requirements Extraction Agent',
+    B2_REQUIREMENTS_VALIDATION: 'Requirements Validation Agent',
+    C1_ARCHITECTURE_PLANNING: 'Architecture Planning Agent',
+    C2_REQUIREMENT_WRITING: 'Requirement Writing Agent',
+    C3_NARRATIVE_ASSEMBLY: 'Narrative Assembly Agent',
+    D1_TECHNICAL_VALIDATION: 'Technical Validation Agent',
+    E1_COMMERCIAL: 'Commercial Review Agent',
+    E2_LEGAL: 'Legal Review Agent',
+    H1_HUMAN_VALIDATION: 'Human Validation Agent',
+    F1_FINAL_READINESS: 'Final Readiness Agent',
+  };
+  return STAGES.map((stage) => ({
+    key: stage.key,
+    label: stage.label,
+    agentName: agentNames[stage.key] || `${stage.key} Agent`,
+    summary: '',
+    state: 'pending',
+  }));
+}
+
 export default function PipelinePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [file, setFile] = useState<File | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [agents, setAgents] = useState<AgentStep[]>(
-    STAGES.map(s => ({
-      key: s.key,
-      label: s.label,
-      agentName: s.label.split(' — ')[1] || s.label.replace(/^[A-Z]\d\s*—?\s*/, '') + ' Agent',
-      summary: '',
-      state: 'pending' as StepState,
-    }))
-  );
+  const [agents, setAgents] = useState<AgentStep[]>(buildInitialAgents);
   const [running, setRunning] = useState(false);
   const [selectedRun, setSelectedRun] = useState<string | null>(null);
+  const [selectedRunStatus, setSelectedRunStatus] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const selectedRunRef = useRef<string | null>(null);
 
   const addLog = useCallback((msg: string, type: LogEntry['type'] = 'default') => {
     setLogs(prev => [...prev, { time: formatTime(), message: msg, type }]);
+  }, []);
+
+  const resetAgents = useCallback(() => {
+    setAgents(buildInitialAgents());
   }, []);
 
   const loadRuns = useCallback(async () => {
@@ -49,7 +94,44 @@ export default function PipelinePage() {
     } catch { /* ignore */ }
   }, []);
 
+  const applyRunStatusToStepper = useCallback((status: any) => {
+    const currentAgents = resolveStageKeys(status?.current_agent);
+    const runStatus = String(status?.status || '').toUpperCase();
+    const isFinal = runStatus === 'SUBMITTED' || runStatus === 'COMPLETED';
+
+    setAgents((prev) => {
+      let hitCurrent = false;
+      return prev.map((agent) => {
+        if (currentAgents.includes(agent.key)) {
+          hitCurrent = true;
+          return {
+            ...agent,
+            state: runStatus === 'FAILED' ? 'failed' : isFinal ? 'complete' : 'active',
+            summary: '',
+          };
+        }
+        if (!hitCurrent && currentAgents.length > 0) {
+          return { ...agent, state: 'complete', summary: '' };
+        }
+        if (currentAgents.length === 0 && isFinal) {
+          return { ...agent, state: 'complete', summary: '' };
+        }
+        return { ...agent, state: 'pending', summary: '' };
+      });
+    });
+  }, []);
+
+  const loadRun = useCallback(async (rfpId: string) => {
+    const status = await fetchRunStatus(rfpId);
+    setSelectedRun(rfpId);
+    setSelectedRunStatus(status);
+    setRunning(status.status === 'RUNNING');
+    applyRunStatusToStepper(status);
+    return status;
+  }, [applyRunStatusToStepper]);
+
   useEffect(() => { loadRuns(); }, [loadRuns]);
+  useEffect(() => { selectedRunRef.current = selectedRun; }, [selectedRun]);
 
   const handleFiles = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -58,8 +140,6 @@ export default function PipelinePage() {
       addLog(`Selected: ${f.name} (${formatSize(f.size)})`, 'info');
     }
   }, [addLog]);
-
-  const [selectedRunStatus, setSelectedRunStatus] = useState<any>(null);
 
   const connectWS = useCallback((rfpId: string) => {
     setRunning(true);
@@ -80,7 +160,7 @@ export default function PipelinePage() {
               next[idx] = {
                 ...next[idx],
                 state: msg.status === 'done' ? 'complete' : msg.status === 'error' ? 'failed' : 'active',
-                summary: msg.summary || `${msg.status === 'done' ? 'Completed' : msg.status === 'error' ? 'Failed' : 'Processing'}…`,
+                summary: msg.summary || `${msg.status === 'done' ? 'Completed' : msg.status === 'error' ? 'Failed' : 'Processing'}â€¦`,
               };
               return next;
             });
@@ -125,12 +205,126 @@ export default function PipelinePage() {
     }
   }, [addLog, connectWS]);
 
+  void connectWS;
+  void viewRun;
+
+  const connectLiveUpdates = useCallback((rfpId: string) => {
+    if (wsRef.current) {
+      try { wsRef.current.close(); } catch { /* ignore */ }
+    }
+
+    setRunning(true);
+    const ws = new WebSocket(`${WS_BASE}/api/rfp/ws/${rfpId}`);
+    wsRef.current = ws;
+
+    ws.onmessage = (evt) => {
+      try {
+        const msg = JSON.parse(evt.data);
+        const event = msg.event;
+        const stageKeys = resolveStageKeys(msg.agent);
+
+        switch (event) {
+          case 'node_start':
+            if (stageKeys.length > 0) {
+              setAgents((prev) => prev.map((agent) => (
+                stageKeys.includes(agent.key)
+                  ? { ...agent, state: 'active', summary: 'Processing execution subroutines...' }
+                  : agent
+              )));
+            }
+            addLog(`Starting ${msg.agent}`, 'info');
+            break;
+
+          case 'node_end':
+            if (stageKeys.length > 0) {
+              setAgents((prev) => prev.map((agent) => (
+                stageKeys.includes(agent.key)
+                  ? { ...agent, state: 'complete', summary: msg.status || 'Completed' }
+                  : agent
+              )));
+            }
+            addLog(`${msg.agent} -> ${msg.status || 'Completed'}`, 'success');
+            if (!msg.is_history && String(msg.status || '').includes('AWAITING_HUMAN_VALIDATION')) {
+              router.push(`/review?run_id=${rfpId}`);
+            }
+            break;
+
+          case 'error':
+            if (stageKeys.length > 0) {
+              setAgents((prev) => prev.map((agent) => (
+                stageKeys.includes(agent.key)
+                  ? { ...agent, state: 'failed', summary: msg.message || 'Failed' }
+                  : agent
+              )));
+            }
+            addLog(`${msg.agent || 'SYSTEM'}: ${msg.message || 'Pipeline error'}`, 'error');
+            setRunning(false);
+            break;
+
+          case 'pipeline_end':
+            setRunning(false);
+            addLog(`Pipeline finished: ${msg.status || 'UNKNOWN'}`, msg.status === 'FAILED' ? 'error' : 'success');
+            loadRuns();
+            fetchRunStatus(rfpId).then((status) => {
+              setSelectedRun(rfpId);
+              setSelectedRunStatus(status);
+              applyRunStatusToStepper(status);
+            }).catch(() => {});
+            if (!msg.is_history && msg.status === 'AWAITING_HUMAN_VALIDATION') {
+              router.push(`/review?run_id=${rfpId}`);
+            }
+            break;
+
+          default:
+            break;
+        }
+      } catch {
+        /* ignore malformed messages */
+      }
+    };
+
+    ws.onerror = () => {
+      addLog('WebSocket error', 'error');
+      setRunning(false);
+    };
+
+    ws.onclose = () => {
+      if (wsRef.current === ws) {
+        wsRef.current = null;
+      }
+    };
+  }, [addLog, applyRunStatusToStepper, loadRuns, router]);
+
+  const openRun = useCallback(async (rfpId: string) => {
+    try {
+      const status = await loadRun(rfpId);
+      addLog(`Viewing run ${rfpId}: ${status.status}`, 'info');
+      if (status.status === 'RUNNING') {
+        connectLiveUpdates(rfpId);
+      }
+    } catch (e: any) {
+      addLog(`Failed to load run: ${e.message}`, 'error');
+    }
+  }, [addLog, connectLiveUpdates, loadRun]);
+
+  useEffect(() => {
+    const runId = searchParams.get('run_id');
+    if (!runId || runId === selectedRunRef.current) return;
+    openRun(runId);
+  }, [openRun, searchParams]);
+
+  useEffect(() => () => {
+    if (wsRef.current) {
+      try { wsRef.current.close(); } catch { /* ignore */ }
+    }
+  }, []);
+
   const runPipeline = useCallback(async () => {
     if (!file) return;
     setRunning(true);
-    setAgents(prev => prev.map(a => ({ ...a, state: 'pending', summary: '' })));
+    resetAgents();
     setSelectedRunStatus(null);
-    addLog('Uploading RFP and starting pipeline…', 'info');
+    addLog('Uploading RFP and starting pipelineâ€¦', 'info');
 
     try {
       const form = new FormData();
@@ -139,18 +333,21 @@ export default function PipelinePage() {
       addLog(`Pipeline started: ${data.run_id}`, 'success');
       setSelectedRun(data.run_id);
 
-      if (data.status === 'COMPLETED' || data.status === 'SUBMITTED' || data.status === 'REJECTED') {
-         viewRun(data.run_id);
+      if (data.status === 'COMPLETED' || data.status === 'SUBMITTED' || data.status === 'REJECTED' || data.status === 'AWAITING_HUMAN_VALIDATION') {
+         await openRun(data.run_id);
          setRunning(false);
          loadRuns();
+         if (data.status === 'AWAITING_HUMAN_VALIDATION') {
+           router.push(`/review?run_id=${data.run_id}`);
+         }
       } else {
-         connectWS(data.run_id);
+         connectLiveUpdates(data.run_id);
       }
     } catch (e) {
       addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error');
       setRunning(false);
     }
-  }, [file, addLog, loadRuns, connectWS, viewRun]);
+  }, [file, addLog, loadRuns, connectLiveUpdates, openRun, resetAgents, router]);
 
   const timeAgo = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -232,7 +429,7 @@ export default function PipelinePage() {
             {/* Run Details (Checkpoints & Outputs) */}
             {selectedRun && selectedRunStatus && (
               <div className="flex flex-col border-b border-border">
-                 <CheckpointsPanel rfpId={selectedRun} onRerun={(id) => { viewRun(id); loadRuns(); }} />
+                 <CheckpointsPanel rfpId={selectedRun} onRerun={(id) => { openRun(id); loadRuns(); }} />
                  <AgentOutputs outputs={selectedRunStatus.agent_outputs || {}} />
               </div>
             )}
@@ -249,7 +446,7 @@ export default function PipelinePage() {
                   <div className="text-[13px] text-muted-foreground py-6">No historical runs associated with this workspace.</div>
                 ) : (
                   runs.slice(0, 10).map(run => (
-                    <div key={run.run_id} onClick={() => viewRun(run.run_id)} className={`flex items-center justify-between py-4 border-b border-border cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear ${selectedRun === run.run_id ? 'bg-muted/10' : ''}`}>
+                    <div key={run.run_id} onClick={() => openRun(run.run_id)} className={`flex items-center justify-between py-4 border-b border-border cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear ${selectedRun === run.run_id ? 'bg-muted/10' : ''}`}>
                       <div className="pl-4">
                         <p className="text-[13px] font-medium text-foreground">{run.filename?.replace('.pdf', '') || `Execution ${run.run_id.slice(0, 8)}`}</p>
                         <p className="text-[12px] text-muted-foreground mt-1.5">{timeAgo(run.created_at)}</p>

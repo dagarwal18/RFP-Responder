@@ -8,7 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { apiFetch, fetchPolicies } from '@/lib/api';
+import {
+  createPolicy,
+  deleteAllPolicies,
+  deletePolicy,
+  fetchPolicies,
+  updatePolicy,
+} from '@/lib/api';
 import type { Policy } from '@/lib/types';
 import { ScrollText, Plus, Trash2, Pencil, X } from 'lucide-react';
 
@@ -27,14 +33,17 @@ export default function PoliciesPage() {
 
   const save = async () => {
     try {
-      if (editId) await apiFetch(`/api/knowledge/policies/${editId}`, { method: 'PUT', body: JSON.stringify(form) });
-      else await apiFetch('/api/knowledge/policies', { method: 'POST', body: JSON.stringify(form) });
+      if (editId) {
+        await updatePolicy(editId, form);
+      } else {
+        await createPolicy(form);
+      }
       setModalOpen(false); load();
     } catch {}
   };
 
-  const del = async (id: string) => { try { await apiFetch(`/api/knowledge/policies/${id}`, { method: 'DELETE' }); load(); } catch {} };
-  const delAll = async () => { try { await apiFetch('/api/knowledge/policies', { method: 'DELETE' }); load(); } catch {} };
+  const del = async (id: string) => { try { await deletePolicy(id); load(); } catch {} };
+  const delAll = async () => { try { await deleteAllPolicies(); load(); } catch {} };
 
   const sevClass = (s: string) => ({ critical: 'bg-error/15 text-error', high: 'bg-warning/15 text-warning', medium: 'bg-info/15 text-info', low: '' }[s] || '');
   const catClass = (c: string) => ({ capability: 'bg-primary/15 text-primary', legal: 'bg-error/15 text-error', certification: 'bg-success/15 text-success', compliance: 'bg-warning/15 text-warning', operational: 'bg-info/15 text-info' }[c] || '');
