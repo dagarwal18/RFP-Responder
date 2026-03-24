@@ -44,6 +44,13 @@ logger = logging.getLogger(__name__)
 _PROMPT_PATH = (
     Path(__file__).resolve().parent.parent / "prompts" / "legal_prompt.txt"
 )
+_LEGAL_CLAUSE_RE = re.compile(
+    r"\b(?:liability|indemn|confidential|non-disclosure|intellectual property|"
+    r"ownership|governing law|jurisdiction|penalt|termination|warranty|"
+    r"data protection|privacy|dpdp|msa|contract|clause|deviation|"
+    r"reimburse|limitation of liability)\b",
+    re.IGNORECASE,
+)
 
 
 class LegalAgent(BaseAgent):
@@ -176,34 +183,66 @@ class LegalAgent(BaseAgent):
     def _extract_clauses(
         self, state: RFPGraphState, mcp: MCPService, rfp_id: str,
     ) -> list[str]:
-        """Extract contract/legal clauses from structuring result + MCP."""
+        """Extract contract/legal clauses from raw RFP chunks, structuring metadata, and MCP."""
         clauses: list[str] = []
+        seen: set[str] = set()
 
-        # From structuring result — sections categorised as "legal"
+        def add_clause(text: str) -> None:
+            cleaned = self._normalize_clause_text(text)
+            if not cleaned or cleaned in seen:
+                return
+            if not self._looks_like_legal_clause(cleaned):
+                return
+            seen.add(cleaned)
+            clauses.append(cleaned)
+
         for section in state.structuring_result.sections:
             cat = section.category.lower() if isinstance(section.category, str) else ""
             if cat in ("legal", "contract", "terms", "compliance"):
+                if section.title:
+                    add_clause(section.title)
                 if section.content_summary:
-                    clauses.append(section.content_summary)
+                    add_clause(f"{section.title}\n{section.content_summary}")
 
-        # From MCP — semantic search for legal content
         if rfp_id:
+            try:
+                for chunk in mcp.fetch_all_rfp_chunks(rfp_id):
+                    if chunk.get("content_type") == "table":
+                        continue
+                    text = chunk.get("text", "")
+                    hint = chunk.get("section_hint", "")
+                    page_text = f"{hint}\n{text}" if hint else text
+                    add_clause(page_text)
+            except Exception as exc:
+                logger.warning(f"[E2] Failed to fetch raw RFP chunks for legal extraction: {exc}")
+
             legal_chunks = mcp.query_rfp(
-                "contract clauses terms conditions liability indemnification",
+                "contract clauses terms conditions liability indemnification confidentiality data protection governing law deviation penalty",
                 rfp_id=rfp_id,
-                top_k=10,
+                top_k=15,
             )
             for chunk in legal_chunks:
-                text = chunk.get("text", "")
-                if text and text not in clauses:
-                    clauses.append(text)
+                add_clause(chunk.get("text", ""))
 
-        # Fallback: if no clauses found, use a placeholder
         if not clauses:
             logger.warning("[E2] No contract clauses found in RFP")
             clauses = ["No explicit contract clauses found in the RFP document."]
 
-        return clauses
+        return clauses[:20]
+
+    @staticmethod
+    def _normalize_clause_text(text: str) -> str:
+        cleaned = re.sub(r"^\[Section:\s*[^\]]+\]\s*", "", text or "").strip()
+        cleaned = re.sub(r"\s+", " ", cleaned)
+        return cleaned[:2000].strip()
+
+    @classmethod
+    def _looks_like_legal_clause(cls, text: str) -> bool:
+        if not text or len(text) < 40:
+            return False
+        if text.count("|") >= 3:
+            return False
+        return bool(_LEGAL_CLAUSE_RE.search(text))
 
     def _load_legal_templates(self, mcp: MCPService) -> list[dict]:
         """Load acceptable legal clause templates from knowledge base."""
@@ -333,18 +372,28 @@ class LegalAgent(BaseAgent):
         all_texts: list[str] = []
         seen: set[str] = set()
 
-        for query in queries:
-            try:
-                results = mcp.query_knowledge(query, top_k=5)
+        try:
+            result_sets = mcp.query_knowledge_batch(queries, top_k=5)
+            for query, results in zip(queries, result_sets):
                 for r in results:
                     text = r.get("text", "").strip()
                     if text and text not in seen:
                         seen.add(text)
                         all_texts.append(text)
-            except Exception as exc:
-                logger.warning(
-                    f"[E2] KB legal query failed for '{query}': {exc}"
-                )
+        except Exception as exc:
+            logger.warning(f"[E2] Batched KB legal query failed: {exc}")
+            for query in queries:
+                try:
+                    results = mcp.query_knowledge(query, top_k=5)
+                    for r in results:
+                        text = r.get("text", "").strip()
+                        if text and text not in seen:
+                            seen.add(text)
+                            all_texts.append(text)
+                except Exception as inner_exc:
+                    logger.warning(
+                        f"[E2] KB legal query failed for '{query}': {inner_exc}"
+                    )
 
         return (
             "\n\n".join(all_texts)
@@ -440,10 +489,18 @@ class LegalAgent(BaseAgent):
                     risk_level = RiskLevel(risk_str)
                 except (ValueError, KeyError):
                     risk_level = RiskLevel.LOW
+                clause_id = item.get("clause_id", f"CLAUSE-{len(risks)+1:03d}")
+                clause_text = item.get("clause_text", "").strip()
+                if not clause_text:
+                    match = re.search(r"(\d+)$", clause_id)
+                    if match:
+                        idx = int(match.group(1)) - 1
+                        if 0 <= idx < len(clause_texts):
+                            clause_text = clause_texts[idx]
 
                 risks.append(ContractClauseRisk(
-                    clause_id=item.get("clause_id", f"CLAUSE-{len(risks)+1:03d}"),
-                    clause_text=item.get("clause_text", "")[:500],
+                    clause_id=clause_id,
+                    clause_text=clause_text[:500],
                     risk_level=risk_level,
                     concern=item.get("concern", ""),
                     recommendation=item.get("recommendation", "accept"),

@@ -186,6 +186,41 @@ class RFPVectorStore:
             })
         return chunks
 
+    def query_batch(
+        self,
+        query_texts: list[str],
+        rfp_id: str = "",
+        top_k: int = 5,
+    ) -> list[list[dict[str, Any]]]:
+        """Embed multiple queries together and search Pinecone for each."""
+        if not query_texts:
+            return []
+
+        index = self._get_index()
+        query_embeddings = self._embedder.embed(query_texts)
+        all_results: list[list[dict[str, Any]]] = []
+
+        for query_embedding in query_embeddings:
+            results = index.query(
+                vector=query_embedding,
+                top_k=top_k,
+                namespace=rfp_id if rfp_id else None,
+                include_metadata=True,
+            )
+
+            chunks = []
+            for match in results.get("matches", []):
+                chunks.append({
+                    "id": match["id"],
+                    "score": match["score"],
+                    "text": match.get("metadata", {}).get("text", ""),
+                    "chunk_index": match.get("metadata", {}).get("chunk_index", -1),
+                    "metadata": match.get("metadata", {}),
+                })
+            all_results.append(chunks)
+
+        return all_results
+
     def query_all(
         self,
         rfp_id: str,

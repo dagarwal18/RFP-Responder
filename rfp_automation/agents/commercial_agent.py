@@ -233,18 +233,28 @@ class CommercialAgent(BaseAgent):
         all_texts: list[str] = []
         seen: set[str] = set()
 
-        for query in queries:
-            try:
-                results = mcp.query_rfp(query, rfp_id, top_k=5)
+        try:
+            result_sets = mcp.query_rfp_batch(queries, rfp_id, top_k=5)
+            for query, results in zip(queries, result_sets):
                 for r in results:
                     text = r.get("text", "").strip()
                     if text and text not in seen:
                         seen.add(text)
                         all_texts.append(text)
-            except Exception as exc:
-                logger.warning(
-                    f"[E1] RFP query failed for '{query}': {exc}"
-                )
+        except Exception as exc:
+            logger.warning(f"[E1] Batched RFP pricing query failed: {exc}")
+            for query in queries:
+                try:
+                    results = mcp.query_rfp(query, rfp_id, top_k=5)
+                    for r in results:
+                        text = r.get("text", "").strip()
+                        if text and text not in seen:
+                            seen.add(text)
+                            all_texts.append(text)
+                except Exception as inner_exc:
+                    logger.warning(
+                        f"[E1] RFP query failed for '{query}': {inner_exc}"
+                    )
 
         # Also include any commercial-category requirements
         reqs = (
@@ -280,23 +290,36 @@ class CommercialAgent(BaseAgent):
         layout_texts: list[str] = []
         seen: set[str] = set()
 
-        for query in queries:
-            try:
-                results = mcp.query_rfp(query, rfp_id, top_k=3)
+        try:
+            result_sets = mcp.query_rfp_batch(queries, rfp_id, top_k=3)
+            for query, results in zip(queries, result_sets):
                 for r in results:
                     text = r.get("text", "").strip()
                     if text and text not in seen:
-                        # Look for table-like structures (pipe-delimited or column headers)
                         if "|" in text or re.search(
                             r'\b(?:Line\s*#|Item\s*Description|NRC|MRC|Unit\s*(?:Rate|Cost)|Total\s*(?:Cost|Price))\b',
                             text, re.IGNORECASE
                         ):
                             seen.add(text)
                             layout_texts.append(text)
-            except Exception as exc:
-                logger.warning(
-                    f"[E1] Pricing layout query failed for '{query}': {exc}"
-                )
+        except Exception as exc:
+            logger.warning(f"[E1] Batched pricing-layout query failed: {exc}")
+            for query in queries:
+                try:
+                    results = mcp.query_rfp(query, rfp_id, top_k=3)
+                    for r in results:
+                        text = r.get("text", "").strip()
+                        if text and text not in seen:
+                            if "|" in text or re.search(
+                                r'\b(?:Line\s*#|Item\s*Description|NRC|MRC|Unit\s*(?:Rate|Cost)|Total\s*(?:Cost|Price))\b',
+                                text, re.IGNORECASE
+                            ):
+                                seen.add(text)
+                                layout_texts.append(text)
+                except Exception as inner_exc:
+                    logger.warning(
+                        f"[E1] Pricing layout query failed for '{query}': {inner_exc}"
+                    )
 
         if layout_texts:
             logger.info(
@@ -319,18 +342,28 @@ class CommercialAgent(BaseAgent):
         all_texts: list[str] = []
         seen: set[str] = set()
 
-        for query in queries:
-            try:
-                results = mcp.query_knowledge(query, top_k=5)
+        try:
+            result_sets = mcp.query_knowledge_batch(queries, top_k=5)
+            for query, results in zip(queries, result_sets):
                 for r in results:
                     text = r.get("text", "").strip()
                     if text and text not in seen:
                         seen.add(text)
                         all_texts.append(text)
-            except Exception as exc:
-                logger.warning(
-                    f"[E1] KB pricing query failed for '{query}': {exc}"
-                )
+        except Exception as exc:
+            logger.warning(f"[E1] Batched KB pricing query failed: {exc}")
+            for query in queries:
+                try:
+                    results = mcp.query_knowledge(query, top_k=5)
+                    for r in results:
+                        text = r.get("text", "").strip()
+                        if text and text not in seen:
+                            seen.add(text)
+                            all_texts.append(text)
+                except Exception as inner_exc:
+                    logger.warning(
+                        f"[E1] KB pricing query failed for '{query}': {inner_exc}"
+                    )
 
         return "\n\n".join(all_texts) if all_texts else "NO PRICING DATA FOUND IN KNOWLEDGE BASE."
 

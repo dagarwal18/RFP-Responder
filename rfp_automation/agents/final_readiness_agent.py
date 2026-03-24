@@ -200,12 +200,24 @@ class FinalReadinessAgent(BaseAgent):
         pricing_table += "</tbody></table>\n\n"
         pricing_table += f"**Total Expected Price:** {commercial.currency} {commercial.total_price:,.2f}\n"
 
-        # Build Markdown List for Legal Risks
+        # Build Markdown Table for Legal Risks
         legal_table = "\n\n### Legal & Compliance Exceptions\n\n"
-        for risk in legal.clause_risks:
-            risk_level = getattr(getattr(risk, "risk_level", "low"), "name", "LOW")
-            legal_table += f"- **Clause {getattr(risk, 'clause_id', '?')} ({risk_level})**: {getattr(risk, 'concern', '')}\n"
-            legal_table += f"   *Recommendation*: {getattr(risk, 'recommendation', '')}\n"
+        if legal.clause_risks:
+            legal_table += "| Clause / Topic | Risk | Exception / Concern | Position |\n"
+            legal_table += "|---|---|---|---|\n"
+            for risk in legal.clause_risks:
+                risk_level = getattr(getattr(risk, "risk_level", "low"), "name", "LOW")
+                clause_text = " ".join(getattr(risk, "clause_text", "").split())
+                clause_label = clause_text[:90] + ("..." if len(clause_text) > 90 else "")
+                concern = " ".join(getattr(risk, "concern", "").split())
+                concern = concern[:140] + ("..." if len(concern) > 140 else "")
+                recommendation = str(getattr(risk, "recommendation", "")).strip().capitalize() or "Review"
+                legal_table += (
+                    f"| {clause_label or getattr(risk, 'clause_id', '?')} "
+                    f"| {risk_level} | {concern or 'See legal narrative.'} | {recommendation} |\n"
+                )
+        else:
+            legal_table += "No specific legal exceptions were extracted.\n"
 
         def _stub_replacer(match):
             title = match.group(1).lower()

@@ -27,7 +27,7 @@ For each contract clause identified:
 - **clause_id**: Unique identifier (e.g., "CLAUSE-001")
 - **clause_text**: The clause text (abbreviated if long)
 - **risk_level**: "LOW", "MEDIUM", "HIGH", or "CRITICAL"
-- **concern**: What specific risk does this clause pose?
+- **concern**: What specific risk does this clause pose? Be concrete and clause-specific, not generic.
 - **recommendation**: "accept", "negotiate", or "reject"
 
 Consider the pre-computed rule scores. If a clause was auto-blocked, it MUST be CRITICAL.
@@ -37,6 +37,7 @@ Compare each clause against our standard terms. Flag deviations, especially:
 - Non-compete longer than the contract term
 - Indemnification without mutual obligations
 - Missing data protection provisions
+- When recommending negotiation, state the specific fallback position we should propose.
 
 ### 2. risk_register_summary
 2-3 paragraphs summarizing: overall risk posture, key negotiation points, recommended next steps.
@@ -47,6 +48,7 @@ A 400-600 word professional legal section for inclusion in the proposal. This se
 - Reference specific company terms from the Knowledge Base (e.g., "Our standard Master Services Agreement includes...")
 - Address data protection, confidentiality, liability, and IP provisions explicitly
 - Note any deviations from the RFP's requested terms that require negotiation
+- Include a short, clause-specific exceptions register inside the narrative when deviations exist
 - Be written in formal proposal language suitable for client presentation
 - If the KB does not contain relevant legal terms, state that explicitly — do NOT fabricate terms
 
