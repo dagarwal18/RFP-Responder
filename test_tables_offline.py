@@ -95,7 +95,8 @@ def test_vlm_table_fixes():
     print("-> Prompt #1 correctly contains the exact original column structure: '[Vendor to fill — Name OEM]'")
 
     print("\nExamining Prompt #2 for matching its own distinct headers:")
-    assert "Vendor to fill" in captured_prompts[1] and "Name OEM" not in captured_prompts[1], "Table 2 inherited Table 1's headers!"
+    prompt_2_table = captured_prompts[1].split("### ORIGINAL RFP TABLE:\n```", 1)[1]
+    assert "Vendor to fill" in prompt_2_table and "Name OEM" not in prompt_2_table, "Table 2 inherited Table 1's headers!"
     print("-> Prompt #2 independent processing confirmed. No cross-contamination.")
 
     print("\n--- ALL TESTS PASSED SUCCESSFULLY! ---")

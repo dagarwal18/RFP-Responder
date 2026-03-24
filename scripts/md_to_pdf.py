@@ -325,9 +325,128 @@ def _scrub_markdown(md_text: str) -> str:
     Handles:
       - Stray ```mermaid blocks (should already be replaced, but just in case)
       - Orphaned markdown syntax characters that bleed through
-      - Excessively long unbroken strings in table cells
+      - Malformed markdown tables that xhtml2pdf/reportlab cannot safely render
     """
     import re
+
+    def _count_table_columns(line: str) -> int:
+        stripped = line.strip()
+        if "-->" in stripped or "-.->" in stripped or "==>" in stripped:
+            return 0
+        pipes = stripped.count("|")
+        if pipes < 2:
+            return 0
+        if stripped.startswith("|") and stripped.endswith("|"):
+            return pipes - 1
+        if not stripped.startswith("|") and not stripped.endswith("|"):
+            return pipes + 1
+        return pipes
+
+    def _is_separator_line(line: str) -> bool:
+        normalized = line.strip().replace(" ", "")
+        return bool(normalized) and set(normalized) <= {"|", "-", ":"}
+
+    def _looks_like_data_row(line: str) -> bool:
+        first_cell = line.strip().lstrip("|").split("|", 1)[0].strip()
+        return bool(re.match(r"^(?:[A-Z]{1,4}-?\d+|\d+(?:\.\d+)?)$", first_cell))
+
+    def _sanitize_table_chunk(table_lines: list[str]) -> list[str]:
+        sanitized_blocks: list[list[str]] = []
+        current: list[str] = []
+        current_cols = 0
+        current_header = ""
+
+        def _flush_current() -> None:
+            nonlocal current, current_cols, current_header
+            if not current:
+                return
+
+            block = [line.rstrip() for line in current if line.strip()]
+            if len(block) < 2 or current_cols < 2:
+                current = []
+                current_cols = 0
+                current_header = ""
+                return
+
+            has_separator = any(_is_separator_line(line) for line in block[1:3])
+            if not has_separator:
+                if _looks_like_data_row(block[0]):
+                    current = []
+                    current_cols = 0
+                    current_header = ""
+                    return
+                separator = "|" + "|".join(["---"] * current_cols) + "|"
+                block.insert(1, separator)
+            else:
+                cleaned = [block[0]]
+                separator_added = False
+                for line in block[1:]:
+                    if _is_separator_line(line):
+                        if not separator_added:
+                            cleaned.append(line)
+                            separator_added = True
+                        continue
+                    cleaned.append(line)
+                block = cleaned
+
+            if current_cols >= 5 or max(len(line) for line in block) > 350:
+                sanitized_blocks.append(["```text", *block, "```"])
+            else:
+                sanitized_blocks.append(block)
+            current = []
+            current_cols = 0
+            current_header = ""
+
+        for raw_line in table_lines:
+            line = raw_line.rstrip()
+            col_count = _count_table_columns(line)
+            if col_count < 2:
+                _flush_current()
+                continue
+
+            normalized = line.strip()
+            if not current:
+                current = [line]
+                current_cols = col_count
+                current_header = normalized
+                continue
+
+            if col_count != current_cols or (
+                normalized == current_header and any(_is_separator_line(l) for l in current[1:])
+            ):
+                _flush_current()
+                current = [line]
+                current_cols = col_count
+                current_header = normalized
+                continue
+
+            current.append(line)
+
+        _flush_current()
+
+        normalized_lines: list[str] = []
+        for idx, block in enumerate(sanitized_blocks):
+            if idx > 0:
+                normalized_lines.append("")
+            normalized_lines.extend(block)
+        return normalized_lines
+
+    def _normalize_pipe_tables(text: str) -> str:
+        lines = text.splitlines()
+        rewritten: list[str] = []
+        idx = 0
+        while idx < len(lines):
+            if _count_table_columns(lines[idx]) >= 2:
+                block: list[str] = []
+                while idx < len(lines) and _count_table_columns(lines[idx]) >= 2:
+                    block.append(lines[idx])
+                    idx += 1
+                rewritten.extend(_sanitize_table_chunk(block))
+                continue
+
+            rewritten.append(lines[idx])
+            idx += 1
+        return "\n".join(rewritten)
 
     # Remove any leftover mermaid code blocks (replace with placeholder note)
     md_text = re.sub(
@@ -343,6 +462,17 @@ def _scrub_markdown(md_text: str) -> str:
 
     # Remove stray hash lines (e.g., a line that is just "###" with no title)
     md_text = re.sub(r"^\s*#{1,6}\s*$", "", md_text, flags=re.MULTILINE)
+
+    # Remove obvious raw mermaid edge lines that leaked out of a code block.
+    md_text = re.sub(
+        r"^\s*.*(?:-->|-.->|==>).*$",
+        "",
+        md_text,
+        flags=re.MULTILINE,
+    )
+
+    # Normalize malformed table blocks before markdown conversion.
+    md_text = _normalize_pipe_tables(md_text)
 
     return md_text
 

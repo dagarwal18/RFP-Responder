@@ -43,12 +43,13 @@ class EmbeddingModel:
             api_key=selected_key,
         )
 
-    def _rotate_key(self):
+    def _rotate_key(self, verbose: bool = True):
         """Rotate to the next API key in the list."""
         if len(self.keys) > 1:
             self._current_key_idx = (self._current_key_idx + 1) % len(self.keys)
             self._client = self._create_client()
-            logger.info(f"[Embedding-API] Rotated to HuggingFace API key index {self._current_key_idx + 1}/{len(self.keys)}")
+            if verbose:
+                logger.info(f"[Embedding-API] Rotated to HuggingFace API key index {self._current_key_idx + 1}/{len(self.keys)}")
 
     @property
     def dimension(self) -> int:
@@ -60,12 +61,15 @@ class EmbeddingModel:
             return []
             
         all_embeddings = []
-        batch_size = 2
+        batch_size = 16
         # Max retries extended to cover the number of keys we have + a few standard retries
         max_retries = max(5, len(self.keys) + 2)
         
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
+            
+            # Rotate key on every batch using round-robin to avoid rate limits
+            self._rotate_key(verbose=False)
             
             for attempt in range(max_retries):
                 try:

@@ -51,6 +51,39 @@ _PLACEHOLDER_RE = re.compile(
     r'\[(?:Insert|Vendor|Company|Client|Authorized|Name|Address|'
     r'Date|Digital Signature|TBD|TODO)[^\]]*\]', re.IGNORECASE,
 )
+_TABLE_FILL_HEADER_RE = re.compile(
+    r'\b(?:'
+    r'vendor\s*(?:response|remarks|comments|to\s*fill)'
+    r'|compliance(?:\s*status)?'
+    r'|c\s*/\s*pc\s*/\s*nc'
+    r'|status'
+    r'|remarks'
+    r'|yes\s*/\s*no'
+    r'|bidder'
+    r'|offeror'
+    r'|proposer'
+    r')\b',
+    re.IGNORECASE,
+)
+_TABLE_FILL_PLACEHOLDER_RE = re.compile(
+    r'\[(?:'
+    r'Vendor\s+to\s+fill[^\]]*'
+    r'|C\s*/\s*PC\s*/\s*NC'
+    r'|Name\s+OEM'
+    r'|Name\s+SIEM'
+    r'|Name\s+of\s+PM'
+    r')\]',
+    re.IGNORECASE,
+)
+_PRICING_REQ_ID_RE = re.compile(r'^\d+\.\d+$')
+_TECHNICAL_REQ_ID_RE = re.compile(r'^TR-\d+$', re.IGNORECASE)
+_COMPLIANCE_REQ_ID_RE = re.compile(r'^CM-\d+$', re.IGNORECASE)
+_KPI_REQ_ID_RE = re.compile(r'^KPI-\d+$', re.IGNORECASE)
+_UNRESOLVED_CELL_RE = re.compile(
+    r'\[(?:Vendor\s+to\s+fill|Proposing\s+Company|Name\s+OEM|Name\s+SIEM|Name\s+of\s+PM)[^\]]*\]'
+    r'|TBD',
+    re.IGNORECASE,
+)
 
 
 class RequirementWritingAgent(BaseAgent):
@@ -299,7 +332,10 @@ class RequirementWritingAgent(BaseAgent):
                         src_indices = req.get("source_chunk_indices", [])
                         for si in src_indices:
                             tbl_chunk = table_chunks_by_index.get(si)
-                            if tbl_chunk:
+                            if tbl_chunk and self._is_vendor_fill_table(
+                                tbl_chunk.get("text", ""),
+                                tbl_chunk.get("table_type", "unknown"),
+                            ):
                                 original_table_text = tbl_chunk.get("text", "")
                                 logger.info(
                                     f"[TABLE-TRACE][C2-WRITE] Found original table "
@@ -324,9 +360,12 @@ class RequirementWritingAgent(BaseAgent):
                     if req:
                         src_indices = req.get("source_chunk_indices", [])
                         for si in src_indices:
-                            if si in table_chunks_by_index:
+                            tbl_chunk = table_chunks_by_index.get(si)
+                            if tbl_chunk and self._is_vendor_fill_table(
+                                tbl_chunk.get("text", ""),
+                                tbl_chunk.get("table_type", "unknown"),
+                            ):
                                 table_mode = True
-                                tbl_chunk = table_chunks_by_index[si]
                                 original_table_text = tbl_chunk.get("text", "")
                                 logger.info(
                                     f"[TABLE-TRACE][C2-WRITE] Auto-detected table_mode "
@@ -363,7 +402,15 @@ class RequirementWritingAgent(BaseAgent):
                     req = req_map.get(rid)
                     if req:
                         tci = req.get("source_table_chunk_index", -1)
-                        if tci >= 0 and tci in table_chunks_by_index:
+                        tbl_chunk = table_chunks_by_index.get(tci)
+                        if (
+                            tci >= 0
+                            and tbl_chunk
+                            and self._is_vendor_fill_table(
+                                tbl_chunk.get("text", ""),
+                                tbl_chunk.get("table_type", "unknown"),
+                            )
+                        ):
                             table_groups.setdefault(tci, []).append(rid)
                         else:
                             ungrouped.append(rid)
@@ -378,7 +425,11 @@ class RequirementWritingAgent(BaseAgent):
                         req = req_map.get(rid)
                         if req:
                             for si in req.get("source_chunk_indices", []):
-                                if si in table_chunks_by_index:
+                                tbl_chunk = table_chunks_by_index.get(si)
+                                if tbl_chunk and self._is_vendor_fill_table(
+                                    tbl_chunk.get("text", ""),
+                                    tbl_chunk.get("table_type", "unknown"),
+                                ):
                                     first_tci = si
                                     break
                         if first_tci is not None:
@@ -386,6 +437,19 @@ class RequirementWritingAgent(BaseAgent):
                     if first_tci is not None:
                         table_groups[first_tci] = req_ids
                         ungrouped = []
+
+                filtered_groups: dict[int, list[str]] = {}
+                for tci, group_rids in table_groups.items():
+                    if self._table_group_matches_section(group_rids, section):
+                        filtered_groups[tci] = group_rids
+                    else:
+                        logger.info(
+                            f"[TABLE-TRACE][C2-WRITE] Skipping table chunk {tci} for "
+                            f"{section_id} because its req IDs {group_rids[:6]} do not "
+                            f"fit section '{title}'"
+                        )
+                        ungrouped.extend(group_rids)
+                table_groups = filtered_groups
 
                 logger.info(
                     f"[TABLE-TRACE][C2-WRITE] Per-table processing for {section_id}: "
@@ -395,17 +459,26 @@ class RequirementWritingAgent(BaseAgent):
                 all_table_contents: list[str] = []
                 all_table_addressed: list[str] = []
                 total_table_wc = 0
+                full_table_section = title.lower() in {
+                    "pricing schedule matrix",
+                    "appendix forms & declarations",
+                }
 
                 for tci, group_rids in sorted(table_groups.items()):
                     tbl_chunk = table_chunks_by_index[tci]
                     tbl_text = tbl_chunk.get("text", "")
+                    if not full_table_section:
+                        tbl_text = self._extract_relevant_table_text(
+                            tbl_text,
+                            group_rids,
+                        )
 
-                    # Extract and log headers for this specific table (must have at least 2 pipes)
-                    pipe_lines = [l for l in tbl_text.split("\n") if l.count("|") >= 2]
-                    if pipe_lines:
+                    # Extract only the actual header row(s), not the source data rows.
+                    header_lines = self._extract_table_header_lines(tbl_text)
+                    if header_lines:
                         logger.info(
                             f"[TABLE-TRACE][C2-WRITE] these headers are extracted: "
-                            f"{pipe_lines[0].strip()}"
+                            f"{header_lines[0].strip()}"
                         )
                     else:
                         logger.warning(
@@ -434,7 +507,7 @@ class RequirementWritingAgent(BaseAgent):
                         title=title,
                         section_type=section_type,
                         batch_size=_TABLE_BATCH_SIZE,
-                        original_headers=pipe_lines,
+                        original_headers=header_lines,
                     )
 
                     logger.info(
@@ -444,6 +517,45 @@ class RequirementWritingAgent(BaseAgent):
                     all_table_contents.append(filled_content)
                     all_table_addressed.extend(addrs)
                     total_table_wc += wc
+
+                lower_title = title.lower()
+                appendix_like_section = any(
+                    kw in lower_title for kw in ("appendix", "declaration", "forms")
+                )
+                if appendix_like_section:
+                    for tci, tbl_chunk in sorted(table_chunks_by_index.items()):
+                        if tci in table_groups:
+                            continue
+                        tbl_text = tbl_chunk.get("text", "")
+                        if not self._is_vendor_fill_table(
+                            tbl_text,
+                            tbl_chunk.get("table_type", "unknown"),
+                        ):
+                            continue
+                        if self._extract_table_row_id(tbl_text):
+                            continue
+
+                        header_lines = self._extract_table_header_lines(tbl_text)
+                        filled_content, addrs, wc = self._fill_single_table(
+                            table_text=tbl_text,
+                            req_ids=[],
+                            req_map=req_map,
+                            section=section,
+                            capabilities=capabilities,
+                            rfp_instructions=rfp_instructions,
+                            rfp_metadata_block=rfp_metadata_block,
+                            prev_ctx=prev_ctx,
+                            next_ctx=next_ctx,
+                            section_feedback=section_feedback,
+                            section_id=section_id,
+                            title=title,
+                            section_type=section_type,
+                            batch_size=_TABLE_BATCH_SIZE,
+                            original_headers=header_lines,
+                        )
+                        all_table_contents.append(filled_content)
+                        all_table_addressed.extend(addrs)
+                        total_table_wc += wc
 
                 # Handle ungrouped requirements as normal prose
                 if ungrouped:
@@ -476,6 +588,7 @@ class RequirementWritingAgent(BaseAgent):
                     total_table_wc += prose_wc
 
                 content = "\n\n".join(c for c in all_table_contents if c.strip())
+                content = self._normalize_markdown_table_output(content)
                 addressed = list(dict.fromkeys(all_table_addressed))
                 word_count = total_table_wc
                 logger.info(
@@ -587,8 +700,12 @@ class RequirementWritingAgent(BaseAgent):
                 )
 
         # ── 10. Build coverage matrix ───────────────────
+        section_content_by_id = {
+            sr.section_id: sr.content
+            for sr in section_responses
+        }
         coverage_matrix = self._build_coverage_matrix(
-            req_map, all_addressed, c1_assignments,
+            req_map, all_addressed, c1_assignments, section_content_by_id,
         )
 
         # ── 9. Update state ─────────────────────────────
@@ -619,6 +736,146 @@ class RequirementWritingAgent(BaseAgent):
         if isinstance(obj, dict):
             return obj.get(attr, default)
         return getattr(obj, attr, default)
+
+    @staticmethod
+    def _extract_pipe_table_lines(table_text: str) -> list[str]:
+        """Return normalized pipe-delimited lines from a table chunk."""
+        return [
+            line.strip()
+            for line in table_text.splitlines()
+            if line.count("|") >= 2 and line.strip()
+        ]
+
+    @classmethod
+    def _extract_table_header_lines(cls, table_text: str) -> list[str]:
+        """Extract only the actual header row(s), not all source rows."""
+        pipe_lines = cls._extract_pipe_table_lines(table_text)
+        if not pipe_lines:
+            return []
+
+        header_lines = [pipe_lines[0]]
+        if len(pipe_lines) > 1:
+            normalized = pipe_lines[1].replace(" ", "")
+            if normalized and set(normalized) <= {"|", "-", ":"}:
+                header_lines.append(pipe_lines[1])
+        return header_lines
+
+    @staticmethod
+    def _extract_table_row_id(line: str) -> str:
+        """Extract the first requirement or pricing ID from a table row."""
+        match = re.search(
+            r'\b(?:TR-\d{3}|CM-\d{2}|KPI-\d{2}|REQ-\d{4}|\d+\.\d{2})\b',
+            line,
+            re.IGNORECASE,
+        )
+        return match.group(0).upper() if match else ""
+
+    @classmethod
+    def _extract_relevant_table_text(
+        cls,
+        table_text: str,
+        req_ids: list[str],
+    ) -> str:
+        """Keep only header lines and the rows relevant to this table group."""
+        target_ids = {str(rid).strip().upper() for rid in req_ids if str(rid).strip()}
+        if not target_ids:
+            return table_text
+
+        pipe_lines = cls._extract_pipe_table_lines(table_text)
+        header_lines = cls._extract_table_header_lines(table_text)
+        if not pipe_lines:
+            return table_text
+
+        filtered_lines = list(header_lines)
+        seen_rows: set[str] = set()
+        for line in pipe_lines[len(header_lines):]:
+            row_id = cls._extract_table_row_id(line)
+            if row_id and row_id in target_ids and row_id not in seen_rows:
+                filtered_lines.append(line)
+                seen_rows.add(row_id)
+
+        if len(filtered_lines) > len(header_lines):
+            return "\n".join(filtered_lines)
+        return table_text
+
+    @staticmethod
+    def _normalize_markdown_table_output(content: str) -> str:
+        """Normalize generated table rows so markdown renders consistently."""
+        normalized_lines: list[str] = []
+        for line in content.splitlines():
+            stripped = line.strip()
+            if "|" in stripped:
+                if not stripped.startswith("|"):
+                    stripped = f"| {stripped}"
+                if not stripped.endswith("|"):
+                    stripped = f"{stripped} |"
+                normalized_lines.append(stripped)
+            else:
+                normalized_lines.append(line)
+        return "\n".join(normalized_lines).strip()
+
+    @classmethod
+    def _is_vendor_fill_table(
+        cls,
+        table_text: str,
+        table_type: str = "unknown",
+    ) -> bool:
+        """Detect whether a table is genuinely intended for vendor input."""
+        pipe_lines = cls._extract_pipe_table_lines(table_text)
+        header_line = pipe_lines[0] if pipe_lines else ""
+        header_has_fill_signal = bool(_TABLE_FILL_HEADER_RE.search(header_line))
+        placeholder_hits = len(_TABLE_FILL_PLACEHOLDER_RE.findall(table_text))
+
+        if header_has_fill_signal:
+            return True
+        if placeholder_hits >= 2:
+            return True
+        if table_type == "fill_in_table" and placeholder_hits >= 1:
+            return True
+        return False
+
+    @classmethod
+    def _table_group_matches_section(cls, group_rids: list[str], section: Any) -> bool:
+        """Keep clearly misplaced table groups out of unrelated sections."""
+        if not group_rids:
+            return False
+
+        section_text = " ".join(
+            [
+                cls._get_attr(section, "title", ""),
+                cls._get_attr(section, "description", ""),
+                cls._get_attr(section, "content_guidance", ""),
+            ]
+        ).lower()
+        rid_values = [str(rid).strip().upper() for rid in group_rids if str(rid).strip()]
+
+        is_pricing_group = rid_values and all(_PRICING_REQ_ID_RE.match(rid) for rid in rid_values)
+        is_compliance_group = rid_values and all(_COMPLIANCE_REQ_ID_RE.match(rid) for rid in rid_values)
+        is_technical_group = rid_values and all(
+            _TECHNICAL_REQ_ID_RE.match(rid) or _KPI_REQ_ID_RE.match(rid)
+            for rid in rid_values
+        )
+
+        pricing_section = any(
+            kw in section_text for kw in ("pricing", "commercial", "cost", "rate card", "opex", "financial")
+        )
+        compliance_section = any(
+            kw in section_text for kw in ("compliance", "qualification", "certification", "declaration", "submission form")
+        )
+        matrix_section = any(
+            kw in section_text for kw in ("matrix", "appendix", "checklist", "questionnaire")
+        )
+        technical_section = any(
+            kw in section_text for kw in ("technical", "architecture", "solution", "interconnect", "soc", "support", "operations")
+        )
+
+        if is_pricing_group:
+            return pricing_section
+        if is_compliance_group:
+            return compliance_section or matrix_section
+        if is_technical_group:
+            return technical_section or matrix_section
+        return True
 
     def _fetch_section_capabilities(
         self,
@@ -691,9 +948,12 @@ class RequirementWritingAgent(BaseAgent):
         all_batch_addressed: list[str] = []
         total_word_count = 0
         table_header: str | None = None
+        table_header_line = ""
+        expected_col_count = 0
 
         if original_headers:
             header_block = "\n".join(original_headers)
+            table_header_line = original_headers[0].strip()
             
             # Count the columns in the actual column row (last header line)
             last_line = original_headers[-1]
@@ -709,6 +969,7 @@ class RequirementWritingAgent(BaseAgent):
 
             if col_count < 1:
                 col_count = 1
+            expected_col_count = col_count
                 
             # Create a markdown separator
             separator = "|" + "|".join(["---"] * col_count) + "|"
@@ -800,8 +1061,27 @@ class RequirementWritingAgent(BaseAgent):
                             start_idx = 1
                             
                         for line in table_lines[start_idx:]:
+                            normalized_line = line.strip()
                             if "---" in line:
                                 continue
+                            if table_header_line and normalized_line == table_header_line:
+                                continue
+
+                            if expected_col_count:
+                                line_pipes = normalized_line.count("|")
+                                if normalized_line.startswith("|") and normalized_line.endswith("|"):
+                                    col_count = line_pipes - 1
+                                elif not normalized_line.startswith("|") and not normalized_line.endswith("|"):
+                                    col_count = line_pipes + 1
+                                else:
+                                    col_count = line_pipes
+                                if col_count != expected_col_count:
+                                    logger.info(
+                                        f"[TABLE-TRACE][C2-WRITE] Dropping malformed row in {section_id}: "
+                                        f"expected {expected_col_count} cols, got {col_count}"
+                                    )
+                                    continue
+
                             data_lines.append(line)
                             
                         if data_lines:
@@ -809,7 +1089,9 @@ class RequirementWritingAgent(BaseAgent):
                 else:
                     all_content_parts.append(batch_content.strip())
 
-        content = "\n".join(all_content_parts)
+        content = self._normalize_markdown_table_output(
+            "\n".join(all_content_parts)
+        )
         addressed = list(dict.fromkeys(all_batch_addressed))
         return content, addressed, total_word_count
 
@@ -868,6 +1150,11 @@ class RequirementWritingAgent(BaseAgent):
                     "You MUST preserve the EXACT same column structure and headers.\n"
                     "Fill in ONLY the columns that are meant for vendor responses "
                     "(e.g. Compliance, Vendor Response, Remarks, Status, Yes/No columns).\n"
+                    "Replace placeholder cells such as [Vendor to fill], [Name OEM], "
+                    "[Name SIEM], [Name of PM], and [C / PC / NC] with concrete values "
+                    "in the returned table.\n"
+                    "Keep each completed table cell concise and single-line where possible. "
+                    "Vendor Remarks must stay brief and should not become paragraph-length.\n"
                     "Keep the original requirement text, IDs, and descriptions unchanged.\n"
                     "Return the content as a populated markdown table matching the original layout.\n\n"
                     f"### ORIGINAL RFP TABLE:\n```\n{original_table_text[:6000]}\n```\n\n"
@@ -1138,6 +1425,7 @@ class RequirementWritingAgent(BaseAgent):
         req_map: dict[str, dict[str, Any]],
         all_addressed: dict[str, list[str]],
         c1_assignments: dict[str, list[str]] | None = None,
+        section_content_by_id: dict[str, str] | None = None,
     ) -> list[CoverageEntry]:
         """
         Build the coverage matrix comparing requirements to sections that address them.
@@ -1149,6 +1437,8 @@ class RequirementWritingAgent(BaseAgent):
         """
         if c1_assignments is None:
             c1_assignments = {}
+        if section_content_by_id is None:
+            section_content_by_id = {}
 
         matrix: list[CoverageEntry] = []
 
@@ -1157,12 +1447,21 @@ class RequirementWritingAgent(BaseAgent):
             c1_section_ids = c1_assignments.get(req_id, [])
 
             if section_ids:
-                # Fully addressed — LLM confirmed addressing it
+                addressed_section = section_ids[0]
+                coverage_quality = "full"
+                section_content = section_content_by_id.get(addressed_section, "")
+                if not self._is_requirement_fully_rendered(
+                    req_id,
+                    req_map.get(req_id, {}),
+                    section_content,
+                ):
+                    coverage_quality = "partial"
+
                 matrix.append(
                     CoverageEntry(
                         requirement_id=req_id,
-                        addressed_in_section=section_ids[0],
-                        coverage_quality="full",
+                        addressed_in_section=addressed_section,
+                        coverage_quality=coverage_quality,
                     )
                 )
             elif c1_section_ids:
@@ -1185,3 +1484,28 @@ class RequirementWritingAgent(BaseAgent):
                 )
 
         return matrix
+
+    @staticmethod
+    def _is_requirement_fully_rendered(
+        req_id: str,
+        req: dict[str, Any],
+        section_content: str,
+    ) -> bool:
+        """Downgrade claimed coverage when the rendered row is missing or unresolved."""
+        if not section_content:
+            return False
+
+        source_table_chunk_index = req.get("source_table_chunk_index", -1)
+        is_table_backed = source_table_chunk_index >= 0 or bool(
+            _PRICING_REQ_ID_RE.match(req_id)
+            or _TECHNICAL_REQ_ID_RE.match(req_id)
+            or _KPI_REQ_ID_RE.match(req_id)
+            or _COMPLIANCE_REQ_ID_RE.match(req_id)
+        )
+        if not is_table_backed:
+            return True
+
+        for line in section_content.splitlines():
+            if req_id in line:
+                return not bool(_UNRESOLVED_CELL_RE.search(line))
+        return False

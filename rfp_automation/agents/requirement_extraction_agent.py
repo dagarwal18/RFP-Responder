@@ -380,6 +380,27 @@ class RequirementsExtractionAgent(BaseAgent):
         r'\b[A-Z]{2,5}[-_]\d{2,4}\b'
     )
 
+    def _table_has_fill_signals(self, table_text: str) -> bool:
+        """Verify a table actually contains vendor-fill markers."""
+        pipe_lines = [
+            line.strip()
+            for line in table_text.splitlines()
+            if line.count("|") >= 2 and line.strip()
+        ]
+        header_text = " ".join(pipe_lines[:2])
+        if self._FILL_IN_HEADER_RE.search(header_text):
+            return True
+
+        if len(self._BLANK_CELL_RE.findall(table_text)) >= 2:
+            return True
+
+        explicit_placeholders = re.findall(
+            r'\[(?:Vendor\s+to\s+fill[^\]]*|C\s*/\s*PC\s*/\s*NC|Name\s+OEM|Name\s+SIEM|Name\s+of\s+PM)\]',
+            table_text,
+            flags=re.IGNORECASE,
+        )
+        return len(explicit_placeholders) >= 1
+
     def _classify_table_purpose(
         self, table_text: str, section_name: str,
         vlm_table_type: str = "",
@@ -393,6 +414,13 @@ class RequirementsExtractionAgent(BaseAgent):
         """
         # ── Priority 1: VLM classification ────────────────
         if vlm_table_type == "fill_in_table":
+            if not self._table_has_fill_signals(table_text):
+                logger.info(
+                    f"[TABLE-TRACE][B1-CLASSIFY] VLM said fill_in_table but no "
+                    f"vendor-fill signals were found → informational "
+                    f"(section='{section_name}')"
+                )
+                return "informational"
             logger.info(
                 f"[TABLE-TRACE][B1-CLASSIFY] VLM classified as fill_in_table "
                 f"→ vendor_fill_in (section='{section_name}')"
@@ -502,6 +530,12 @@ class RequirementsExtractionAgent(BaseAgent):
             parsed = self._parse_requirements_json(
                 raw_response, section_name, start_id=9000
             )
+            parsed = self._recover_missing_table_rows(
+                table_text=table_text,
+                section_name=section_name,
+                parsed=parsed,
+                chunk_indices=chunk_indices,
+            )
 
             for req in parsed:
                 req.source_chunk_indices = chunk_indices
@@ -520,6 +554,74 @@ class RequirementsExtractionAgent(BaseAgent):
             return []
 
     # ── Section grouping ─────────────────────────────────────
+
+    def _recover_missing_table_rows(
+        self,
+        table_text: str,
+        section_name: str,
+        parsed: list[Requirement],
+        chunk_indices: list[int],
+    ) -> list[Requirement]:
+        """Recover structured table rows that the LLM skipped."""
+        seen_ids = {req.requirement_id.upper() for req in parsed}
+        recovered: list[Requirement] = []
+
+        for raw_line in table_text.splitlines():
+            if "|" not in raw_line:
+                continue
+            cells = [cell.strip() for cell in raw_line.split("|")]
+            cells = [cell for cell in cells if cell]
+            if len(cells) < 2:
+                continue
+
+            row_id = cells[0].upper()
+            if not re.match(
+                r"^(TR-\d{3}|CM-\d{2}|KPI-\d{2}|REQ-\d{4}|\d+\.\d{2})$",
+                row_id,
+                re.IGNORECASE,
+            ):
+                continue
+            if row_id in seen_ids:
+                continue
+
+            description = cells[2] if row_id.startswith("TR-") and len(cells) >= 3 else cells[1]
+            if len(description) < 8:
+                continue
+
+            category = "TECHNICAL"
+            classification = "FUNCTIONAL"
+            if re.match(r"^\d+\.\d{2}$", row_id):
+                category = "COMMERCIAL"
+            elif row_id.startswith("CM-"):
+                category = "COMPLIANCE"
+                classification = "NON_FUNCTIONAL"
+            elif row_id.startswith("KPI-"):
+                category = "OPERATIONAL"
+                classification = "NON_FUNCTIONAL"
+
+            recovered.append(
+                Requirement(
+                    requirement_id=row_id,
+                    text=description,
+                    type=RequirementType.MANDATORY,
+                    classification=self._normalize_classification(classification),
+                    category=self._normalize_category(category),
+                    impact=ImpactLevel.MEDIUM,
+                    source_section=section_name,
+                    keywords=[row_id],
+                    source_chunk_indices=chunk_indices,
+                )
+            )
+            seen_ids.add(row_id)
+
+        if recovered:
+            logger.info(
+                f"[B1] Recovered {len(recovered)} skipped table row(s) from "
+                f"'{section_name}'"
+            )
+            parsed.extend(recovered)
+
+        return parsed
 
     @staticmethod
     def _group_by_section(
