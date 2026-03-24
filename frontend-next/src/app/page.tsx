@@ -7,6 +7,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiFetch, fetchRuns, uploadRfp, formatSize, formatTime, WS_BASE } from '@/lib/api';
 import { STAGES, type Run, type LogEntry } from '@/lib/types';
 import { Upload, Play, RefreshCw, Loader2 } from 'lucide-react';
+import CheckpointsPanel from '@/components/checkpoints-panel';
+import AgentOutputs from '@/components/agent-outputs';
 
 type StepState = 'pending' | 'active' | 'complete' | 'failed';
 
@@ -57,10 +59,77 @@ export default function PipelinePage() {
     }
   }, [addLog]);
 
+  const [selectedRunStatus, setSelectedRunStatus] = useState<any>(null);
+
+  const connectWS = useCallback((rfpId: string) => {
+    setRunning(true);
+    const ws = new WebSocket(`${WS_BASE}/api/rfp/ws/${rfpId}`);
+    wsRef.current = ws;
+
+    ws.onmessage = (evt) => {
+      try {
+        const msg = JSON.parse(evt.data);
+        if (msg.agent) {
+          const idx = STAGES.findIndex(s => s.key === msg.agent);
+          if (idx >= 0) {
+            setAgents(prev => {
+              const next = [...prev];
+              for (let i = 0; i < idx; i++) {
+                next[i] = { ...next[i], state: 'complete' };
+              }
+              next[idx] = {
+                ...next[idx],
+                state: msg.status === 'done' ? 'complete' : msg.status === 'error' ? 'failed' : 'active',
+                summary: msg.summary || `${msg.status === 'done' ? 'Completed' : msg.status === 'error' ? 'Failed' : 'Processing'}…`,
+              };
+              return next;
+            });
+            addLog(`${STAGES[idx].label}: ${msg.status}`, msg.status === 'error' ? 'error' : 'success');
+          }
+        }
+        if (msg.type === 'done') { setRunning(false); addLog('Pipeline complete!', 'success'); loadRuns(); }
+        if (msg.type === 'error') { setRunning(false); addLog(`Failed: ${msg.detail}`, 'error'); }
+      } catch { /* ignore */ }
+    };
+    ws.onerror = () => { addLog('WebSocket error', 'error'); setRunning(false); };
+    ws.onclose = () => { setRunning(false); };
+  }, [addLog, loadRuns]);
+
+  const viewRun = useCallback(async (rfpId: string) => {
+    setSelectedRun(rfpId);
+    try {
+      const status = await apiFetch<any>(`/api/rfp/${rfpId}/status`);
+      setSelectedRunStatus(status);
+      addLog(`Viewing run ${rfpId}: ${status.status}`, 'info');
+
+      // Update stepper based on status
+      const currentAgent = status.current_agent || '';
+      const isFailed = status.status === 'FAILED';
+      let hitCurrent = false;
+
+      setAgents(prev => prev.map(a => {
+        if (a.key === currentAgent) {
+          hitCurrent = true;
+          return { ...a, state: isFailed ? 'failed' : 'active', summary: '' };
+        } else if (!hitCurrent && currentAgent) {
+          return { ...a, state: 'complete', summary: '' };
+        }
+        return { ...a, state: 'pending', summary: '' };
+      }));
+
+      if (status.status === 'RUNNING') {
+        connectWS(rfpId);
+      }
+    } catch (e: any) {
+      addLog(`Failed to load run: ${e.message}`, 'error');
+    }
+  }, [addLog, connectWS]);
+
   const runPipeline = useCallback(async () => {
     if (!file) return;
     setRunning(true);
     setAgents(prev => prev.map(a => ({ ...a, state: 'pending', summary: '' })));
+    setSelectedRunStatus(null);
     addLog('Uploading RFP and starting pipeline…', 'info');
 
     try {
@@ -70,41 +139,18 @@ export default function PipelinePage() {
       addLog(`Pipeline started: ${data.run_id}`, 'success');
       setSelectedRun(data.run_id);
 
-      const ws = new WebSocket(`${WS_BASE}/ws/pipeline/${data.run_id}`);
-      wsRef.current = ws;
-
-      ws.onmessage = (evt) => {
-        try {
-          const msg = JSON.parse(evt.data);
-          if (msg.agent) {
-            const idx = STAGES.findIndex(s => s.key === msg.agent);
-            if (idx >= 0) {
-              setAgents(prev => {
-                const next = [...prev];
-                for (let i = 0; i < idx; i++) {
-                  next[i] = { ...next[i], state: 'complete' };
-                }
-                next[idx] = {
-                  ...next[idx],
-                  state: msg.status === 'done' ? 'complete' : msg.status === 'error' ? 'failed' : 'active',
-                  summary: msg.summary || `${msg.status === 'done' ? 'Completed' : msg.status === 'error' ? 'Failed' : 'Processing'}…`,
-                };
-                return next;
-              });
-              addLog(`${STAGES[idx].label}: ${msg.status}`, msg.status === 'error' ? 'error' : 'success');
-            }
-          }
-          if (msg.type === 'done') { setRunning(false); addLog('Pipeline complete!', 'success'); loadRuns(); }
-          if (msg.type === 'error') { setRunning(false); addLog(`Failed: ${msg.detail}`, 'error'); }
-        } catch { /* ignore */ }
-      };
-      ws.onerror = () => { addLog('WebSocket error', 'error'); setRunning(false); };
-      ws.onclose = () => { setRunning(false); };
+      if (data.status === 'COMPLETED' || data.status === 'SUBMITTED' || data.status === 'REJECTED') {
+         viewRun(data.run_id);
+         setRunning(false);
+         loadRuns();
+      } else {
+         connectWS(data.run_id);
+      }
     } catch (e) {
       addLog(`Error: ${e instanceof Error ? e.message : 'Unknown'}`, 'error');
       setRunning(false);
     }
-  }, [file, addLog, loadRuns]);
+  }, [file, addLog, loadRuns, connectWS, viewRun]);
 
   const timeAgo = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -183,6 +229,14 @@ export default function PipelinePage() {
               </div>
             </div>
 
+            {/* Run Details (Checkpoints & Outputs) */}
+            {selectedRun && selectedRunStatus && (
+              <div className="flex flex-col border-b border-border">
+                 <CheckpointsPanel rfpId={selectedRun} onRerun={(id) => { viewRun(id); loadRuns(); }} />
+                 <AgentOutputs outputs={selectedRunStatus.agent_outputs || {}} />
+              </div>
+            )}
+
             {/* Recent Runs List */}
             <div className="p-8">
               <div className="flex items-center justify-between mb-6">
@@ -195,7 +249,7 @@ export default function PipelinePage() {
                   <div className="text-[13px] text-muted-foreground py-6">No historical runs associated with this workspace.</div>
                 ) : (
                   runs.slice(0, 10).map(run => (
-                    <div key={run.run_id} onClick={() => setSelectedRun(run.run_id)} className={`flex items-center justify-between py-4 border-b border-border cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear ${selectedRun === run.run_id ? 'bg-muted/10' : ''}`}>
+                    <div key={run.run_id} onClick={() => viewRun(run.run_id)} className={`flex items-center justify-between py-4 border-b border-border cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear ${selectedRun === run.run_id ? 'bg-muted/10' : ''}`}>
                       <div className="pl-4">
                         <p className="text-[13px] font-medium text-foreground">{run.filename?.replace('.pdf', '') || `Execution ${run.run_id.slice(0, 8)}`}</p>
                         <p className="text-[12px] text-muted-foreground mt-1.5">{timeAgo(run.created_at)}</p>
