@@ -79,6 +79,13 @@ const AGENT_COMPLETE_TEXT: Record<string, string> = {
   F1_FINAL_READINESS: 'Final submission package compiled',
 };
 
+const COMPLETE_TERMINAL_STATUSES = [
+  'AWAITING_HUMAN_VALIDATION',
+  'REJECTED',
+  'SUBMITTED',
+  'COMPLETED',
+];
+
 function resolveStageKeys(agentName: string | null | undefined): string[] {
   const raw = String(agentName || '').trim();
   if (!raw) return [];
@@ -208,7 +215,7 @@ function PipelineTimeline({ agents }: { agents: AgentStep[] }) {
                     </span>
                   )}
                 </div>
-                <p className={`text-[13px] mt-2 ${agent.state === 'complete' ? 'text-success' : agent.state === 'failed' ? 'text-error' : 'text-muted-foreground'}`}>
+                <p className={`text-[13px] mt-2 ${agent.state === 'failed' ? 'text-error' : 'text-muted-foreground'}`}>
                   {agent.summary
                     || (agent.state === 'complete' ? (AGENT_COMPLETE_TEXT[agent.key] || 'Completed')
                       : agent.state === 'active' ? (AGENT_ACTIVE_TEXT[agent.key] || 'Processing...')
@@ -265,17 +272,24 @@ export default function PipelinePage() {
   const applyRunStatusToStepper = useCallback((status: any) => {
     const currentAgents = resolveStageKeys(status?.current_agent);
     const runStatus = String(status?.status || '').toUpperCase();
-    const TERMINAL = ['SUBMITTED', 'COMPLETED', 'AWAITING_HUMAN_VALIDATION', 'REJECTED'];
-    const isFinal = TERMINAL.includes(runStatus);
+    const isCompleteTerminal = COMPLETE_TERMINAL_STATUSES.includes(runStatus);
     const isFailed = runStatus === 'FAILED';
 
     setAgents((prev) => {
-      // If pipeline is in a terminal state and there's no current_agent,
-      // mark everything complete (or failed).
-      if (currentAgents.length === 0 && (isFinal || isFailed)) {
+      if (isCompleteTerminal) {
         return prev.map((agent) => ({
           ...agent,
-          state: isFailed ? 'failed' : 'complete',
+          state: 'complete',
+          summary: '',
+        }));
+      }
+
+      // If pipeline is in a failed terminal state and there's no current_agent,
+      // mark everything failed so the timeline stops showing an in-progress state.
+      if (currentAgents.length === 0 && isFailed) {
+        return prev.map((agent) => ({
+          ...agent,
+          state: 'failed',
           summary: '',
         }));
       }
@@ -286,7 +300,7 @@ export default function PipelinePage() {
           hitCurrent = true;
           return {
             ...agent,
-            state: isFailed ? 'failed' : isFinal ? 'complete' : 'active',
+            state: isFailed ? 'failed' : 'active',
             summary: '',
           };
         }
@@ -345,7 +359,16 @@ export default function PipelinePage() {
             addLog(`${STAGES[idx].label}: ${msg.status}`, msg.status === 'error' ? 'error' : 'success');
           }
         }
-        if (msg.type === 'done') { setRunning(false); addLog('Pipeline complete!', 'success'); loadRuns(); }
+        if (msg.type === 'done') {
+          setRunning(false);
+          addLog('Pipeline complete!', 'success');
+          loadRuns();
+          fetchRunStatus(rfpId).then((status) => {
+            setSelectedRun(rfpId);
+            setSelectedRunStatus(status);
+            applyRunStatusToStepper(status);
+          }).catch(() => { });
+        }
         if (msg.type === 'error') { setRunning(false); addLog(`Failed: ${msg.detail}`, 'error'); }
       } catch { /* ignore */ }
     };
@@ -359,21 +382,7 @@ export default function PipelinePage() {
       const status = await apiFetch<any>(`/api/rfp/${rfpId}/status`);
       setSelectedRunStatus(status);
       addLog(`Viewing run ${rfpId}: ${status.status}`, 'info');
-
-      // Update stepper based on status
-      const currentAgent = status.current_agent || '';
-      const isFailed = status.status === 'FAILED';
-      let hitCurrent = false;
-
-      setAgents(prev => prev.map(a => {
-        if (a.key === currentAgent) {
-          hitCurrent = true;
-          return { ...a, state: isFailed ? 'failed' : 'active', summary: '' };
-        } else if (!hitCurrent && currentAgent) {
-          return { ...a, state: 'complete', summary: '' };
-        }
-        return { ...a, state: 'pending', summary: '' };
-      }));
+      applyRunStatusToStepper(status);
 
       if (status.status === 'RUNNING') {
         connectWS(rfpId);
@@ -381,7 +390,7 @@ export default function PipelinePage() {
     } catch (e: any) {
       addLog(`Failed to load run: ${e.message}`, 'error');
     }
-  }, [addLog, connectWS]);
+  }, [addLog, applyRunStatusToStepper, connectWS]);
 
   void connectWS;
   void viewRun;
@@ -594,7 +603,7 @@ export default function PipelinePage() {
                 {runs.length === 0 ? (
                   <div className="text-[13px] text-muted-foreground py-6">No historical runs associated with this workspace.</div>
                 ) : (
-                  runs.slice(0, 10).map(run => (
+                  runs.slice(0, 3).map(run => (
                     <div key={run.run_id} onClick={() => openRun(run.run_id)} className={`flex items-center justify-between py-4 border-b border-border cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear ${selectedRun === run.run_id ? 'bg-muted/10' : ''}`}>
                       <div className="pl-4">
                         <p className="text-[13px] font-medium text-foreground">{run.filename?.replace('.pdf', '') || `Execution ${run.run_id.slice(0, 8)}`}</p>

@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
   Tooltip,
@@ -17,6 +16,7 @@ import {
   Library,
   ScrollText,
   Building2,
+  History,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -49,6 +49,7 @@ const navItems = [
   {
     group: 'MANAGE',
     items: [
+      { href: '/history', label: 'History', icon: History },
       { href: '/knowledge-base', label: 'Knowledge Base', icon: Library },
       { href: '/policies', label: 'Policies', icon: ScrollText },
       { href: '/company-profile', label: 'Company Profile', icon: Building2 },
@@ -58,12 +59,10 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('sidebar-collapsed');
-    if (saved === 'true') setCollapsed(true);
-  }, []);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('sidebar-collapsed') === 'true';
+  });
 
   const toggle = useCallback(() => {
     setCollapsed((prev) => {
@@ -75,87 +74,97 @@ export default function Sidebar() {
   return (
     <aside
       className={`
-        sticky top-0 h-screen flex flex-col bg-sidebar border-r border-sidebar-border
-        transition-all duration-100 ease-linear z-50 shrink-0
-        ${collapsed ? 'w-16' : 'w-[240px]'}
+        sticky top-0 h-screen shrink-0 border-r border-sidebar-border/80 bg-sidebar/92
+        transition-all duration-150 ease-linear z-50
+        ${collapsed ? 'w-[76px]' : 'w-[256px]'}
       `}
     >
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-14 border-b border-sidebar-border shrink-0">
-        <BrandLogo className="w-[22px] h-[22px] text-foreground shrink-0" />
-        {!collapsed && (
-          <span className="text-[13px] font-bold text-foreground tracking-[0.1em] whitespace-nowrap uppercase">
-            RFP Responder
-          </span>
-        )}
-      </div>
-
-      {/* Nav */}
-      <TooltipProvider delay={0}>
-        <nav className="flex-1 overflow-y-auto py-6 flex flex-col gap-6">
-          {navItems.map((group) => (
-            <div key={group.group}>
-              {!collapsed && (
-                <p className="px-5 mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  {group.group}
-                </p>
-              )}
-              <div className="flex flex-col">
-                {group.items.map((item) => {
-                  const isActive = pathname === item.href;
-                  const Icon = item.icon;
-                  const linkClasses = `
-                    flex items-center gap-3 transition-colors duration-100 ease-linear cursor-pointer border-l-[3px]
-                    ${collapsed ? 'justify-center px-0 py-3' : 'px-5 py-2.5'}
-                    ${
-                      isActive
-                        ? 'text-foreground border-primary bg-sidebar-accent/50'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/30 border-transparent'
-                    }
-                  `;
-
-                  if (collapsed) {
-                    return (
-                      <Tooltip key={item.href}>
-                        <TooltipTrigger render={<Link href={item.href} className={linkClasses} />}>
-                          <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? 'text-primary' : ''}`} strokeWidth={1.75} />
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="text-xs rounded-none border-border">
-                          {item.label}
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  }
-
-                  return (
-                    <Link key={item.href} href={item.href} className={linkClasses}>
-                      <span className={`text-[13px] font-medium whitespace-nowrap ${isActive ? 'text-primary' : ''}`}>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
+      <div className="flex h-full flex-col px-3 py-3">
+        <div className="flex h-14 shrink-0 items-center gap-3 rounded-lg border border-sidebar-border/70 bg-card/70 px-4">
+          <BrandLogo className="h-[22px] w-[22px] shrink-0 text-foreground" />
+          {!collapsed && (
+            <div className="min-w-0">
+              <span className="block truncate text-[13px] font-bold tracking-[0.08em] text-foreground uppercase">
+                RFP Responder
+              </span>
+              <span className="block text-[11px] text-muted-foreground">Workspace</span>
             </div>
-          ))}
-        </nav>
-      </TooltipProvider>
+          )}
+        </div>
 
-      <Separator className="bg-sidebar-border" />
+        <TooltipProvider delay={0}>
+          <nav className="flex flex-1 flex-col gap-6 overflow-y-auto py-5">
+            {navItems.map((group) => (
+              <div key={group.group} className="space-y-2">
+                {!collapsed && (
+                  <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {group.group}
+                  </p>
+                )}
+                <div className="space-y-1">
+                  {group.items.map((item) => {
+                    const isActive = pathname === item.href;
+                    const Icon = item.icon;
+                    const linkClasses = `
+                      flex items-center gap-3 rounded-lg border transition-all duration-150 ease-linear
+                      ${collapsed ? 'justify-center px-0 py-3' : 'px-3.5 py-3'}
+                      ${
+                        isActive
+                          ? 'border-border/90 bg-secondary text-foreground'
+                          : 'border-transparent text-muted-foreground hover:border-sidebar-border/70 hover:bg-card/70 hover:text-foreground'
+                      }
+                    `;
 
-      {/* Collapse toggle */}
-      <button
-        onClick={toggle}
-        className="flex items-center justify-center gap-2 h-11 
-                   text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
-      >
-        {collapsed ? (
-          <PanelLeftOpen className="w-4 h-4" strokeWidth={1.75} />
-        ) : (
-          <>
-            <PanelLeftClose className="w-4 h-4" strokeWidth={1.75} />
-            <span className="text-xs">Collapse</span>
-          </>
-        )}
-      </button>
+                    if (collapsed) {
+                      return (
+                        <Tooltip key={item.href}>
+                          <TooltipTrigger render={<Link href={item.href} className={linkClasses} />}>
+                            <Icon
+                              className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-foreground' : ''}`}
+                              strokeWidth={1.75}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="rounded-md border-border text-xs">
+                            {item.label}
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    }
+
+                    return (
+                      <Link key={item.href} href={item.href} className={linkClasses}>
+                        <Icon
+                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-foreground' : ''}`}
+                          strokeWidth={1.75}
+                        />
+                        <span className="truncate text-[13px] font-medium">
+                          {item.label}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </TooltipProvider>
+
+        <Separator className="bg-sidebar-border/70" />
+
+        <button
+          onClick={toggle}
+          className="mt-3 flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border/70 hover:bg-card/70 hover:text-foreground cursor-pointer"
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="h-4 w-4" strokeWidth={1.75} />
+          ) : (
+            <>
+              <PanelLeftClose className="h-4 w-4" strokeWidth={1.75} />
+              <span className="text-xs font-medium">Collapse</span>
+            </>
+          )}
+        </button>
+      </div>
     </aside>
   );
 }
