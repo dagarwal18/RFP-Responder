@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useId } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Topbar from '@/components/topbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,13 +64,50 @@ interface ReviewData {
 
 function Mermaid({ chart }: { chart: string }) {
   const [svg, setSvg] = useState('');
+  const [error, setError] = useState('');
+  const renderId = useId().replace(/:/g, '-');
   useEffect(() => {
-    mermaid.initialize({ startOnLoad: false, theme: 'default' });
-    try {
-      mermaid.render('mermaid-' + Math.random().toString(36).substr(2, 9), chart).then(r => setSvg(r.svg)).catch();
-    } catch(e) {}
-  }, [chart]);
-  return <div dangerouslySetInnerHTML={{ __html: svg }} className="my-4 flex justify-center bg-white p-4 rounded text-black" />;
+    let cancelled = false;
+
+    async function renderChart() {
+      const source = chart.trim();
+      if (!source) {
+        setSvg('');
+        setError('Empty Mermaid diagram');
+        return;
+      }
+
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'default',
+        securityLevel: 'loose',
+      });
+
+      try {
+        const result = await mermaid.render(`mermaid-${renderId}`, source);
+        if (!cancelled) {
+          setSvg(result.svg);
+          setError('');
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSvg('');
+          setError(err instanceof Error ? err.message : 'Mermaid render failed');
+        }
+      }
+    }
+
+    void renderChart();
+    return () => {
+      cancelled = true;
+    };
+  }, [chart, renderId]);
+
+  if (error) {
+    return <pre className="my-4 overflow-x-auto rounded bg-muted p-4 text-[11px] text-foreground">{chart}</pre>;
+  }
+
+  return <div dangerouslySetInnerHTML={{ __html: svg }} className="my-4 flex justify-center overflow-x-auto rounded bg-white p-4 text-black" />;
 }
 
 function MarkdownRenderer({ content }: { content: string }) {

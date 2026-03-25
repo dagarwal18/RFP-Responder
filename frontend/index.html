@@ -22,7 +22,7 @@
     const originalCode = renderer.code;
     renderer.code = function({ text, lang }) {
       if (lang === 'mermaid') {
-        return `<pre class="mermaid">${text}</pre>`;
+        return `<div class="mermaid">${text}</div>`;
       }
       // Default code block rendering
       return `<pre><code class="language-${lang || ''}">${text}</code></pre>`;
@@ -33,7 +33,7 @@
     function renderMermaidDiagrams(container) {
       try {
         const target = container || document;
-        const nodes = target.querySelectorAll('pre.mermaid:not([data-processed="true"])');
+        const nodes = target.querySelectorAll('.mermaid:not([data-processed="true"])');
         if (nodes.length > 0) {
           mermaid.run({ nodes: Array.from(nodes) });
         }

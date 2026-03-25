@@ -340,6 +340,8 @@ class ReviewService:
                     content = f"*Content pending from {section_type} agent.*"
                     seen_types.add(section_type)
 
+            content = ReviewService._sanitize_response_text(content)
+
             paragraphs: list[ReviewParagraph] = []
             for paragraph_index, paragraph_text in enumerate(
                 ReviewService._split_paragraphs(content),
@@ -448,9 +450,83 @@ class ReviewService:
         return cleaned
 
     @staticmethod
+    def _sanitize_response_text(text: str) -> str:
+        """Remove internal workflow references while preserving tables and Mermaid blocks."""
+        text = (text or "").strip()
+        if not text:
+            return ""
+
+        mermaid_blocks: list[str] = []
+
+        def _preserve_mermaid(match: re.Match[str]) -> str:
+            mermaid_blocks.append(match.group(0))
+            return f"__MERMAID_BLOCK_{len(mermaid_blocks) - 1}__"
+
+        text = re.sub(
+            r"```mermaid\s*\n.*?```",
+            _preserve_mermaid,
+            text,
+            flags=re.DOTALL,
+        )
+
+        table_blocks: list[str] = []
+        lines = text.splitlines()
+        rewritten_lines: list[str] = []
+        idx = 0
+        while idx < len(lines):
+            if lines[idx].count("|") >= 1:
+                block: list[str] = []
+                while idx < len(lines) and lines[idx].count("|") >= 1:
+                    block.append(lines[idx])
+                    idx += 1
+                if len(block) >= 2:
+                    table_blocks.append("\n".join(block))
+                    rewritten_lines.append(f"__TABLE_BLOCK_{len(table_blocks) - 1}__")
+                    continue
+                rewritten_lines.extend(block)
+                continue
+
+            rewritten_lines.append(lines[idx])
+            idx += 1
+        text = "\n".join(rewritten_lines)
+
+        text = re.sub(r"(?m)^\[Section:[^\n]*$", "", text)
+        text = re.sub(r"\[KB-[A-F0-9_]+(?:_block_\d+)?\]", "", text)
+        text = re.sub(r"\bKB-[A-F0-9_]+(?:_block_\d+)?\b", "", text)
+        text = re.sub(r"\bREQ-\d{4}\b", "", text)
+        text = re.sub(r"\(\s*,\s*", "(", text)
+        text = re.sub(r",\s*\)", ")", text)
+        text = re.sub(r"\[\s*,\s*", "[", text)
+        text = re.sub(r",\s*\]", "]", text)
+        text = re.sub(r"\(\s*\)", "", text)
+        text = re.sub(r"\[\s*\]", "", text)
+
+        for pattern in (
+            r"\bTo address,\s*",
+            r"\bRegarding,\s*",
+            r"\bIncluding,\s*",
+            r"\bpowered by,\s*",
+        ):
+            text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+
+        text = re.sub(r"\(\s*\)", "", text)
+        text = re.sub(r"[ \t]+([,.;:])", r"\1", text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
+        text = re.sub(r"[ ]{2,}", " ", text).strip()
+
+        for i, block in enumerate(table_blocks):
+            text = text.replace(f"__TABLE_BLOCK_{i}__", block)
+        for i, block in enumerate(mermaid_blocks):
+            text = text.replace(f"__MERMAID_BLOCK_{i}__", block)
+
+        return text.strip()
+
+    @staticmethod
     def _split_paragraphs(text: str) -> list[str]:
         text = (text or "").strip()
         if not text:
             return []
+        if "```mermaid" in text or re.search(r"(?m)^\|.+\|\s*$", text):
+            return [text]
         parts = [part.strip() for part in _BLANK_SPLIT_RE.split(text) if part.strip()]
         return parts or [text]

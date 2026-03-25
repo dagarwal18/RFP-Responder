@@ -45,8 +45,8 @@ def test_upload_rfp_cache_miss_runs_pipeline():
         file_hash = hashlib.sha256(file_content).hexdigest()
         assert file_hash not in _document_cache
 
-def test_upload_rfp_cache_hit_returns_cached_result():
-    """Test that uploading a file with a matching hash clones the previous result."""
+def test_upload_rfp_duplicate_hash_still_starts_fresh_run():
+    """Duplicate uploads should no longer clone a previous run."""
     file_content = b"Cached RFP Content"
     file_hash = hashlib.sha256(file_content).hexdigest()
     
@@ -70,22 +70,19 @@ def test_upload_rfp_cache_hit_returns_cached_result():
         
         assert response.status_code == 200
         data = response.json()
-        
-        # It should instantly be COMPLETED
-        assert data["status"] == "COMPLETED"
+
+        assert data["status"] == "RUNNING"
         new_rfp_id = data["rfp_id"]
-        assert new_rfp_id != old_rfp_id  # Should have a new unique ID
-        assert "Cache hit" in data["message"]
-        
-        # Verify thread was NEVER started
-        mock_thread.assert_not_called()
-        
-        # Verify the new run cloned the data
+        assert new_rfp_id != old_rfp_id
+        assert "Pipeline started" in data["message"]
+
+        mock_thread.return_value.start.assert_called_once()
+
         assert new_rfp_id in _runs
         new_run = _runs[new_rfp_id]
-        assert new_run["status"] == "COMPLETED"
-        assert new_run["result"] == {"fake_data": 123}
-        assert new_run["filename"] == "test.pdf"  # Updates to the new filename
+        assert new_run["status"] == "RUNNING"
+        assert new_run["result"] is None
+        assert new_run["filename"] == "test.pdf"
         
 def test_upload_rfp_ignores_failed_cache():
     """If the cached run was FAILED, it should run normally again."""

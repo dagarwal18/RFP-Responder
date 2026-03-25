@@ -478,6 +478,11 @@ def run_pipeline_from(
 
     compiled = build_graph(entry_point=start_from)
 
+    checkpoint_state = _reset_downstream_state_for_rerun(
+        checkpoint_state,
+        start_from,
+    )
+
     # Mark which agent to start from (agents before this will be skipped)
     checkpoint_state["_rerun_start_from"] = start_from
 
@@ -517,4 +522,131 @@ def run_pipeline_from(
     stop_log_capture()
 
     return last_state
+
+
+def _reset_downstream_state_for_rerun(
+    checkpoint_state: dict[str, Any],
+    start_from: str,
+) -> dict[str, Any]:
+    """Clear stale downstream outputs before re-executing from a checkpoint."""
+    default_state = RFPGraphState().model_dump()
+    cleared = dict(checkpoint_state)
+
+    downstream_fields_by_node = {
+        "a2_structuring": (
+            "structuring_result",
+            "go_no_go_result",
+            "requirements",
+            "requirements_validation",
+            "architecture_plan",
+            "writing_result",
+            "assembled_proposal",
+            "technical_validation",
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "a3_go_no_go": (
+            "go_no_go_result",
+            "requirements",
+            "requirements_validation",
+            "architecture_plan",
+            "writing_result",
+            "assembled_proposal",
+            "technical_validation",
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "b1_requirements_extraction": (
+            "requirements",
+            "requirements_validation",
+            "architecture_plan",
+            "writing_result",
+            "assembled_proposal",
+            "technical_validation",
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "b2_requirements_validation": (
+            "requirements_validation",
+            "architecture_plan",
+            "writing_result",
+            "assembled_proposal",
+            "technical_validation",
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "c1_architecture_planning": (
+            "architecture_plan",
+            "writing_result",
+            "assembled_proposal",
+            "technical_validation",
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "c2_requirement_writing": (
+            "writing_result",
+            "assembled_proposal",
+            "technical_validation",
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "c3_narrative_assembly": (
+            "assembled_proposal",
+            "technical_validation",
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "d1_technical_validation": (
+            "technical_validation",
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "commercial_legal_parallel": (
+            "commercial_result",
+            "legal_result",
+            "commercial_legal_gate",
+            "approval_package",
+            "submission_record",
+        ),
+        "h1_human_validation_prepare": (
+            "approval_package",
+            "submission_record",
+        ),
+        "f1_final_readiness": (
+            "approval_package",
+            "submission_record",
+        ),
+    }
+
+    for field in downstream_fields_by_node.get(start_from, ()):
+        cleared[field] = default_state[field]
+
+    cleared["status"] = PipelineStatus.RECEIVED.value
+    cleared["current_agent"] = ""
+    cleared["error_message"] = ""
+    return cleared
 

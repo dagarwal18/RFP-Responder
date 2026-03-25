@@ -26,6 +26,8 @@ from rfp_automation.models.enums import (
     RequirementCategory,
     ImpactLevel,
 )
+from rfp_automation.models.state import RFPGraphState
+from rfp_automation.orchestration.graph import _reset_downstream_state_for_rerun
 from rfp_automation.utils.mermaid_utils import _validate_mermaid_syntax
 
 
@@ -291,6 +293,139 @@ class TestWordCountValidation:
                 logger.warning("LOW WORD COUNT")
 
         assert not any("LOW WORD COUNT" in record.message for record in caplog.records)
+
+
+class TestContextualDiagramPolicies:
+    def test_forbidden_sections_drop_mermaid_blocks(self):
+        content = (
+            "Pricing narrative.\n\n"
+            "```mermaid\nflowchart TD\n    A --> B\n    B --> C\n```\n"
+        )
+        result = RequirementWritingAgent._finalize_section_content(
+            content=content,
+            section_title="Pricing Schedule Matrix",
+            section_description="",
+            content_guidance="",
+        )
+
+        assert "```mermaid" not in result
+
+    def test_architecture_sections_get_network_specific_diagram(self):
+        result = RequirementWritingAgent._finalize_section_content(
+            content="We connect 300 branch sites to the Mumbai DC and Azure workloads.",
+            section_title="Technical Implementation — Network & Edge Architecture",
+            section_description="Primary SD-WAN topology and edge design.",
+            content_guidance="Provide the proposed technical architecture.",
+        )
+
+        assert "```mermaid" in result
+        assert "Cloud SD-WAN Orchestrator" in result
+        assert "Mumbai Tier-III Data Centre" in result
+
+    def test_cloud_interconnect_sections_replace_non_contextual_mermaid(self):
+        content = (
+            "Cloud connectivity narrative.\n\n"
+            "```mermaid\nflowchart TD\n    A --> B\n    B --> C\n```\n"
+        )
+        result = RequirementWritingAgent._finalize_section_content(
+            content=content,
+            section_title="Technical Implementation — Cloud Interconnect",
+            section_description="Azure and AWS private connectivity.",
+            content_guidance="Describe ExpressRoute and Direct Connect.",
+        )
+
+        assert "sequenceDiagram" in result
+        assert "Azure ExpressRoute" in result
+        assert "AWS Direct Connect" in result
+        assert "flowchart TD" not in result
+
+    def test_project_management_sections_get_gantt_diagram(self):
+        result = RequirementWritingAgent._finalize_section_content(
+            content=(
+                "Phase 1: Design and Readiness\n"
+                "Phase 2: Pilot Deployment\n"
+                "Phase 3: Regional Rollout\n"
+                "Phase 4: National Cutover\n"
+            ),
+            section_title="Implementation & Project Management",
+            section_description="Delivery plan for phased rollout.",
+            content_guidance="Show the implementation timeline as a gantt chart.",
+        )
+
+        assert "```mermaid" in result
+        assert "gantt" in result
+        assert _validate_mermaid_syntax(result.split("```mermaid", 1)[1].split("```", 1)[0].strip()) is None
+
+    def test_prompt_requirement_format_hides_internal_ids(self):
+        line = RequirementWritingAgent._format_requirement_for_prompt(
+            "REQ-0017",
+            {
+                "type": "MANDATORY",
+                "text": "The solution must support zero-touch provisioning for all branch devices.",
+            },
+        )
+
+        assert line.startswith("- Requirement [MANDATORY]")
+        assert "REQ-0017" in line
+        assert "do not cite" in line
+
+    def test_prompt_requirement_format_keeps_client_row_ids(self):
+        line = RequirementWritingAgent._format_requirement_for_prompt(
+            "KPI-04",
+            {
+                "type": "MANDATORY",
+                "text": "Cloud interconnect latency must remain below 10 ms round trip.",
+            },
+        )
+
+        assert line.startswith("- KPI-04 [MANDATORY]")
+
+
+class TestRerunStateReset:
+    def test_reset_downstream_outputs_before_c2_rerun(self):
+        state = RFPGraphState().model_dump()
+        state["writing_result"] = {
+            "section_responses": [{"section_id": "SEC-01", "title": "Example", "content": "Old", "requirements_addressed": [], "word_count": 1}],
+            "coverage_matrix": [],
+        }
+        state["assembled_proposal"] = {
+            "executive_summary": "Old summary",
+            "full_narrative": "Old narrative",
+            "word_count": 12,
+            "sections_included": 1,
+            "has_placeholders": False,
+            "section_order": ["SEC-01"],
+            "coverage_appendix": "",
+        }
+        state["technical_validation"] = {
+            "decision": "REJECT",
+            "checks": [],
+            "critical_failures": 1,
+            "warnings": 0,
+            "feedback_for_revision": "Old feedback",
+            "retry_count": 1,
+        }
+        state["review_package"] = {
+            "review_id": "REV-1",
+            "status": "PENDING",
+            "source_sections": [],
+            "response_sections": [],
+            "comments": [],
+            "decision": {"decision": None, "reviewer": "", "summary": "", "submitted_at": None, "rerun_from": ""},
+            "validation_summary": "",
+            "commercial_summary": "",
+            "legal_summary": "",
+            "total_comments": 0,
+            "open_comment_count": 0,
+        }
+
+        reset = _reset_downstream_state_for_rerun(state, "c2_requirement_writing")
+        defaults = RFPGraphState().model_dump()
+
+        assert reset["writing_result"] == defaults["writing_result"]
+        assert reset["assembled_proposal"] == defaults["assembled_proposal"]
+        assert reset["technical_validation"] == defaults["technical_validation"]
+        assert reset["review_package"] == state["review_package"]
 
 
 # ═══════════════════════════════════════════════════════════

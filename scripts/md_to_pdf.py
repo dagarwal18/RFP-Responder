@@ -415,9 +415,9 @@ def _scrub_markdown(md_text: str) -> str:
             data_rows = block[2:]
             if current_cols >= 8 or max(len(line) for line in block) > 700:
                 sanitized_blocks.append(["```text", *block, "```"])
-            elif len(data_rows) > 8:
-                for start in range(0, len(data_rows), 8):
-                    sanitized_blocks.append(block[:2] + data_rows[start : start + 8])
+            elif len(data_rows) > 25:
+                for start in range(0, len(data_rows), 25):
+                    sanitized_blocks.append(block[:2] + data_rows[start : start + 25])
             else:
                 sanitized_blocks.append(block)
             current = []
@@ -475,6 +475,19 @@ def _scrub_markdown(md_text: str) -> str:
             idx += 1
         return "\n".join(rewritten)
 
+    def _ensure_spacing_after_tables(text: str) -> str:
+        lines = text.splitlines()
+        rewritten: list[str] = []
+        for line in lines:
+            stripped = line.strip()
+            is_heading = bool(re.match(r"^#{1,6}\s+", stripped))
+            prev_line = rewritten[-1].strip() if rewritten else ""
+            prev_is_table = bool(rewritten and _count_table_columns(rewritten[-1]) >= 2)
+            if is_heading and rewritten and rewritten[-1] != "" and prev_is_table:
+                rewritten.append("")
+            rewritten.append(line)
+        return "\n".join(rewritten)
+
     # Remove any leftover mermaid code blocks (replace with placeholder note)
     md_text = re.sub(
         r"```mermaid\s*.*?```",
@@ -500,6 +513,7 @@ def _scrub_markdown(md_text: str) -> str:
 
     # Normalize malformed table blocks before markdown conversion.
     md_text = _normalize_pipe_tables(md_text)
+    md_text = _ensure_spacing_after_tables(md_text)
 
     return md_text
 

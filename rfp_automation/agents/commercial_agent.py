@@ -123,7 +123,11 @@ class CommercialAgent(BaseAgent):
         payment_schedule = llm_result.get("payment_schedule", [])
         assumptions = llm_result.get("assumptions", [])
         exclusions = llm_result.get("exclusions", [])
-        missing_data_flags = llm_result.get("missing_data_flags", [])
+        missing_data_flags = [
+            re.sub(r"^(?:[-*•]\s*)?(?:⚠\s*)?", "", str(flag)).strip()
+            for flag in llm_result.get("missing_data_flags", [])
+            if str(flag).strip()
+        ]
 
         # Normalize list→string for narrative fields
         for key in ("executive_summary", "commercial_narrative"):
@@ -142,7 +146,7 @@ class CommercialAgent(BaseAgent):
                 f"## Executive Pricing Summary\n\n{exec_summary}"
             )
         if missing_data_flags:
-            flags_text = "\n".join(f"- ⚠ {flag}" for flag in missing_data_flags)
+            flags_text = "\n".join(f"- {flag}" for flag in missing_data_flags)
             narrative_parts.append(
                 f"## Data Gaps — Requires Manual Review\n\n"
                 f"The following pricing information was not available in the "

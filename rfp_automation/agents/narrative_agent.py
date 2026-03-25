@@ -373,6 +373,59 @@ class NarrativeAssemblyAgent(BaseAgent):
 
         return "\n\n".join(p for p in paragraphs if p.strip()).strip()
 
+    @staticmethod
+    def _strip_internal_refs_outside_structured_blocks(text: str) -> str:
+        """Remove internal workflow citations while preserving tables and diagrams."""
+        if not text:
+            return text
+
+        text = re.sub(r"(?m)^\[Section:[^\n]*$", "", text)
+        text = re.sub(r"\[KB-[A-F0-9_]+(?:_block_\d+)?\]", "", text)
+        text = re.sub(r"\bKB-[A-F0-9_]+(?:_block_\d+)?\b", "", text)
+        text = re.sub(r"\bREQ-\d{4}\b", "", text)
+        text = re.sub(r"\(\s*,\s*", "(", text)
+        text = re.sub(r",\s*\)", ")", text)
+        text = re.sub(r"\[\s*,\s*", "[", text)
+        text = re.sub(r",\s*\]", "]", text)
+        text = re.sub(r"\(\s*\)", "", text)
+        text = re.sub(r"\[\s*\]", "", text)
+
+        orphan_phrases = (
+            r"\bTo address,\s*",
+            r"\bRegarding,\s*",
+            r"\bIncluding,\s*",
+            r"\bpowered by,\s*",
+        )
+        for pattern in orphan_phrases:
+            text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+
+        text = re.sub(r"\(\s*\)", "", text)
+        text = re.sub(r"[ \t]+([,.;:])", r"\1", text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
+        text = re.sub(r"[ ]{2,}", " ", text)
+        return text.strip()
+
+    @staticmethod
+    def _renumber_embedded_headings(
+        content: str,
+        prefix: str,
+        level: int,
+    ) -> str:
+        """Flatten embedded headings under a numbered section prefix."""
+        if not content:
+            return content
+
+        counter = 0
+        rewritten: list[str] = []
+        for line in content.splitlines():
+            match = re.match(r"^\s*#{2,6}\s+(.+?)\s*$", line)
+            if not match:
+                rewritten.append(line)
+                continue
+            counter += 1
+            rewritten.append(f"{'#' * level} {prefix}.{counter} {match.group(1).strip()}")
+        return "\n".join(rewritten).strip()
+
     def _clean_known_placeholders(self, text: str, rfp_metadata: Any) -> str:
         """Replace resolvable placeholder patterns with actual data from
         rfp_metadata and company profile so they don't get flagged as unresolved."""
@@ -502,7 +555,7 @@ class NarrativeAssemblyAgent(BaseAgent):
             text = pattern.sub(value, text)
 
         # ── Strip leaked KB block references ──
-        text = re.sub(r"\[KB-[A-F0-9_]+(?:_block_\d+)?\]", "", text)
+        text = self._strip_internal_refs_outside_structured_blocks(text)
 
         # ── Catch-all: mark remaining generic LLM placeholders for review ──
         # Matches [number], [amount], [benchmark], [case study 1], etc.
@@ -699,10 +752,6 @@ class NarrativeAssemblyAgent(BaseAgent):
                     parts.append(content)
 
         # ── Coverage Appendix ───────────────────────────
-        if coverage_appendix:
-            parts.append("\n---\n\n## Appendix: Requirement Coverage Matrix\n")
-            parts.append(coverage_appendix)
-
         return "\n\n".join(parts)
 
     @staticmethod
@@ -780,7 +829,6 @@ class NarrativeAssemblyAgent(BaseAgent):
                 for sub_title, _ in merged:
                     toc_lines.append(f"    - {sub_title}")
             num += 1
-        toc_lines.append(f"{num}. Appendix: Requirement Coverage Matrix")
         return "\n".join(toc_lines)
 
     @staticmethod
@@ -830,10 +878,10 @@ class NarrativeAssemblyAgent(BaseAgent):
                 section_display = section_id or "—"
 
             indicator = {
-                "full": "✅ Full",
-                "partial": "⚠️ Partial",
-                "missing": "❌ Missing",
-            }.get(quality, quality)
+                "full": "Full",
+                "partial": "Partial",
+                "missing": "Missing",
+            }.get(quality, quality.title() if quality else "Unknown")
 
             lines.append(f"| {req_id} | {section_display} | {indicator} |")
 

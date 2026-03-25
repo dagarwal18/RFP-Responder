@@ -1745,7 +1745,7 @@ class TestNarrativeAssemblyAgent:
         appendix = result["assembled_proposal"]["coverage_appendix"]
         assert "REQ-001" in appendix
         assert "REQ-002" in appendix
-        assert "✅ Full" in appendix
+        assert "Full" in appendix
         assert "Requirement ID" in appendix  # table header
         assert "Coverage Summary" in appendix  # summary stats
 

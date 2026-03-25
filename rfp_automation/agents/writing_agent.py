@@ -79,11 +79,14 @@ _PRICING_REQ_ID_RE = re.compile(r'^\d+\.\d+$')
 _TECHNICAL_REQ_ID_RE = re.compile(r'^TR-\d+$', re.IGNORECASE)
 _COMPLIANCE_REQ_ID_RE = re.compile(r'^CM-\d+$', re.IGNORECASE)
 _KPI_REQ_ID_RE = re.compile(r'^KPI-\d+$', re.IGNORECASE)
+_INTERNAL_REQ_ID_RE = re.compile(r'^REQ-\d{4}$', re.IGNORECASE)
+_CLIENT_ROW_ID_RE = re.compile(r'\b(?:TR|KPI|CM)-\d+\b', re.IGNORECASE)
 _UNRESOLVED_CELL_RE = re.compile(
     r'\[(?:Vendor\s+to\s+fill|Proposing\s+Company|Name\s+OEM|Name\s+SIEM|Name\s+of\s+PM)[^\]]*\]'
     r'|TBD',
     re.IGNORECASE,
 )
+_MERMAID_BLOCK_RE = re.compile(r"```mermaid\s*\n(.*?)```", re.DOTALL)
 _TABLE_ONLY_SECTION_TITLES = {
     "technical implementation",
     "technical implementation — technical compliance matrix",
@@ -91,6 +94,22 @@ _TABLE_ONLY_SECTION_TITLES = {
     "pricing schedule matrix",
     "appendix forms & declarations",
 }
+
+_FORBIDDEN_DIAGRAM_TITLE_TOKENS = (
+    "cover letter",
+    "executive summary",
+    "table of contents",
+    "pricing schedule matrix",
+    "pricing & commercial terms",
+    "company profile",
+    "case studies",
+    "client references",
+    "appendix",
+    "appendices",
+    "submission forms",
+    "forms & declarations",
+    "compliance matrix",
+)
 
 
 class RequirementWritingAgent(BaseAgent):
@@ -267,19 +286,7 @@ class RequirementWritingAgent(BaseAgent):
 
             # ── 7b. Resolve requirements for this section ─
             req_ids = self._get_attr(section, "requirement_ids", [])
-            req_texts = []
-            for rid in req_ids:
-                req = req_map.get(rid)
-                if req:
-                    req_type = req.get("type", "MANDATORY")
-                    req_text = req.get("text", "")[:300]
-                    req_texts.append(f"- {rid} [{req_type}]: {req_text}")
-                else:
-                    req_texts.append(f"- {rid}: [requirement details not found]")
-
-            requirements_block = (
-                "\n".join(req_texts) if req_texts else "No specific requirements assigned."
-            )
+            requirements_block = self._build_requirements_block(req_ids, req_map)
 
             # ── 7c. Fetch capabilities from MCP ─────────
             capabilities = self._fetch_section_capabilities(
@@ -347,7 +354,9 @@ class RequirementWritingAgent(BaseAgent):
                                 tbl_chunk.get("text", ""),
                                 tbl_chunk.get("table_type", "unknown"),
                             ):
-                                original_table_text = tbl_chunk.get("text", "")
+                                original_table_text = self._clean_source_table_text(
+                                    tbl_chunk.get("text", "")
+                                )
                                 logger.info(
                                     f"[TABLE-TRACE][C2-WRITE] Found original table "
                                     f"for section {section_id} from chunk_index={si}, "
@@ -509,7 +518,10 @@ class RequirementWritingAgent(BaseAgent):
                     )
 
                     caption = self._table_caption(title, header_lines)
-                    if caption and multi_table_section:
+                    show_group_caption = caption and multi_table_section and not (
+                        full_table_section and "technical compliance matrix" in title.lower()
+                    )
+                    if show_group_caption:
                         filled_content = f"### {caption}\n\n{filled_content}".strip()
                     all_table_contents.append(filled_content)
                     all_table_addressed.extend(addrs)
@@ -536,7 +548,12 @@ class RequirementWritingAgent(BaseAgent):
                         caption = self._table_caption(title, header_lines)
                         if not caption:
                             continue
-                        filled_content = self._normalize_markdown_table_output(tbl_text)
+                        filled_content = self._normalize_markdown_table_output(
+                            self._clean_source_table_text(tbl_text)
+                        )
+                        filled_content = self._clean_table_section_artifacts(
+                            filled_content
+                        )
                         filled_content = self._sanitize_markdown_tables(filled_content)
                         addrs = []
                         wc = len(filled_content.split())
@@ -583,6 +600,7 @@ class RequirementWritingAgent(BaseAgent):
                 content = "\n\n".join(c for c in all_table_contents if c.strip())
                 content = self._normalize_markdown_table_output(content)
                 content = self._sanitize_markdown_tables(content)
+                content = self._clean_table_section_artifacts(content)
                 addressed = list(dict.fromkeys(all_table_addressed))
                 word_count = total_table_wc
                 logger.info(
@@ -646,6 +664,13 @@ class RequirementWritingAgent(BaseAgent):
                     content = self._strip_markdown_tables(content)
                 addressed = list(dict.fromkeys(chunk_addressed_list))
                 word_count = total_word_count
+
+            content = self._finalize_section_content(
+                content=content,
+                section_title=title,
+                section_description=self._get_attr(section, "description", ""),
+                content_guidance=self._get_attr(section, "content_guidance", ""),
+            )
 
             # ── 7f2. Log filled tables ───────────────────
             if table_mode and original_table_text and content:
@@ -809,6 +834,63 @@ class RequirementWritingAgent(BaseAgent):
             return max(1, pipes + 1)
         return max(1, pipes)
 
+    @staticmethod
+    def _split_table_cells(line: str) -> list[str]:
+        stripped = line.strip().strip("|")
+        if not stripped:
+            return []
+        return [cell.strip() for cell in stripped.split("|")]
+
+    @classmethod
+    def _clean_source_table_text(cls, table_text: str) -> str:
+        """Remove source-chunk metadata before a table is merged or re-rendered."""
+        if not table_text.strip():
+            return table_text
+
+        cleaned = _MERMAID_BLOCK_RE.sub("", table_text)
+        lines: list[str] = []
+        in_fence = False
+
+        for raw_line in cleaned.splitlines():
+            stripped = raw_line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            if stripped.startswith("[Section:") or stripped.startswith("RFP Ref:"):
+                continue
+            if stripped in {"]", "["}:
+                continue
+            lines.append(raw_line)
+
+        return cls._collapse_blank_lines("\n".join(lines))
+
+    @classmethod
+    def _clean_table_section_artifacts(cls, content: str) -> str:
+        """Keep table-only sections free of leaked metadata and misplaced Mermaid."""
+        if not content.strip():
+            return content
+
+        cleaned = _MERMAID_BLOCK_RE.sub("", content)
+        lines: list[str] = []
+        in_fence = False
+
+        for raw_line in cleaned.splitlines():
+            stripped = raw_line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            if stripped.startswith("[Section:") or stripped.startswith("RFP Ref:"):
+                continue
+            if stripped in {"]", "["}:
+                continue
+            lines.append(raw_line)
+
+        return cls._collapse_blank_lines("\n".join(lines))
+
     @classmethod
     def _extract_table_data_lines(cls, table_text: str) -> list[str]:
         pipe_lines = cls._extract_pipe_table_lines(table_text)
@@ -838,8 +920,8 @@ class RequirementWritingAgent(BaseAgent):
             return False
         if right_chunk.get("chunk_index", -1) != left_chunk.get("chunk_index", -1) + 1:
             return False
-        left_text = left_chunk.get("text", "")
-        right_text = right_chunk.get("text", "")
+        left_text = cls._clean_source_table_text(left_chunk.get("text", ""))
+        right_text = cls._clean_source_table_text(right_chunk.get("text", ""))
         if not (
             cls._is_vendor_fill_table(left_text, left_chunk.get("table_type", "unknown"))
             and cls._is_vendor_fill_table(right_text, right_chunk.get("table_type", "unknown"))
@@ -919,10 +1001,13 @@ class RequirementWritingAgent(BaseAgent):
     ) -> tuple[str, list[str]]:
         header_candidates: list[list[str]] = []
         row_lines: list[str] = []
+        family = ""
 
         for tci in chunk_indices:
             tbl_chunk = table_chunks_by_index.get(tci, {})
-            tbl_text = tbl_chunk.get("text", "")
+            tbl_text = cls._clean_source_table_text(tbl_chunk.get("text", ""))
+            if not family:
+                family = cls._table_family(tbl_text)
             header_lines = cls._extract_table_header_lines(tbl_text)
             if header_lines:
                 header_candidates.append(header_lines)
@@ -936,19 +1021,62 @@ class RequirementWritingAgent(BaseAgent):
             )
             return merged_text, []
 
-        chosen_headers = max(
-            header_candidates,
-            key=lambda headers: (
-                cls._count_table_columns(headers[-1]),
-                -chunk_indices[header_candidates.index(headers)],
-            ),
-        )
+        if family == "compliance":
+            chosen_headers = header_candidates[0]
+        elif family == "technical":
+            chosen_headers = next(
+                (
+                    headers
+                    for headers in header_candidates
+                    if cls._count_table_columns(headers[-1]) >= 6
+                ),
+                header_candidates[0],
+            )
+        else:
+            chosen_headers = max(
+                header_candidates,
+                key=lambda headers: (
+                    cls._count_table_columns(headers[-1]),
+                    -chunk_indices[header_candidates.index(headers)],
+                ),
+            )
         expected_col_count = cls._count_table_columns(chosen_headers[-1])
         merged_lines: list[str] = list(chosen_headers)
         seen_keys: set[str] = set()
 
         for line in row_lines:
-            normalized = cls._coerce_table_line_to_columns(line, expected_col_count)
+            cells = cls._split_table_cells(line)
+            if family == "technical" and expected_col_count >= 6:
+                if len(cells) == 4:
+                    row_id, label, compliance_state, vendor_response = cells
+                    priority = "Mandatory" if _TECHNICAL_REQ_ID_RE.match(row_id) else ""
+                    cells = [
+                        row_id,
+                        label,
+                        label or row_id,
+                        priority,
+                        compliance_state,
+                        vendor_response,
+                    ]
+                elif len(cells) == 5:
+                    row_id, label, description, compliance_state, vendor_response = cells
+                    priority = "Mandatory" if _TECHNICAL_REQ_ID_RE.match(row_id) else ""
+                    cells = [
+                        row_id,
+                        label,
+                        description or label,
+                        priority,
+                        compliance_state,
+                        vendor_response,
+                    ]
+                elif len(cells) >= 6 and not cells[2].strip() and cells[1].strip():
+                    cells[2] = cells[1].strip()
+
+            normalized_source = f"| {' | '.join(cells)} |" if cells else line.strip()
+            normalized = cls._coerce_table_line_to_columns(
+                normalized_source,
+                expected_col_count,
+            )
             row_id = cls._extract_table_row_id(normalized)
             key = row_id or normalized.strip()
             if key in seen_keys:
@@ -1342,16 +1470,7 @@ class RequirementWritingAgent(BaseAgent):
             batch_rids = ordered_req_ids[batch_idx : batch_idx + batch_size]
             batch_num = batch_idx // batch_size + 1
 
-            batch_req_texts = []
-            for rid in batch_rids:
-                req = req_map.get(rid)
-                if req:
-                    req_type = req.get("type", "MANDATORY")
-                    req_text = req.get("text", "")[:300]
-                    batch_req_texts.append(f"- {rid} [{req_type}]: {req_text}")
-                else:
-                    batch_req_texts.append(f"- {rid}: [requirement details not found]")
-            batch_requirements_block = "\n".join(batch_req_texts)
+            batch_requirements_block = self._build_requirements_block(batch_rids, req_map)
             batch_table_text = (
                 self._extract_relevant_table_text(table_text, batch_rids)
                 if batch_rids
@@ -1457,6 +1576,380 @@ class RequirementWritingAgent(BaseAgent):
         content = self._sanitize_markdown_tables(content)
         addressed = list(dict.fromkeys(all_batch_addressed))
         return content, addressed, total_word_count
+
+    @classmethod
+    def _build_requirements_block(
+        cls,
+        req_ids: list[str],
+        req_map: dict[str, dict[str, Any]],
+    ) -> str:
+        if not req_ids:
+            return "No specific requirements assigned."
+
+        return "\n".join(
+            cls._format_requirement_for_prompt(rid, req_map.get(rid))
+            for rid in req_ids
+        )
+
+    @classmethod
+    def _format_requirement_for_prompt(
+        cls,
+        requirement_id: str,
+        requirement: dict[str, Any] | None,
+    ) -> str:
+        if not requirement:
+            return f"- Requirement: [details unavailable] (Internal ID: {requirement_id}; do not cite)"
+
+        req_type = requirement.get("type", "MANDATORY")
+        req_text = (requirement.get("text", "") or "").strip()
+        req_text = re.sub(r"\s+", " ", req_text)[:300] or "[requirement details unavailable]"
+        client_ref = cls._extract_client_reference(requirement_id, req_text)
+
+        if _INTERNAL_REQ_ID_RE.match(requirement_id):
+            if client_ref:
+                return (
+                    f"- Requirement [{req_type}] — {req_text} "
+                    f"(RFP row: {client_ref}; internal tracking ID {requirement_id} — do not cite the internal ID)"
+                )
+            return (
+                f"- Requirement [{req_type}] — {req_text} "
+                f"(Internal tracking ID {requirement_id} — do not cite in client-facing prose)"
+            )
+
+        return f"- {requirement_id} [{req_type}] — {req_text}"
+
+    @staticmethod
+    def _extract_client_reference(requirement_id: str, requirement_text: str) -> str:
+        if requirement_id and not _INTERNAL_REQ_ID_RE.match(requirement_id):
+            return requirement_id
+
+        match = _CLIENT_ROW_ID_RE.search(requirement_text or "")
+        return match.group(0) if match else ""
+
+    @classmethod
+    def _finalize_section_content(
+        cls,
+        content: str,
+        section_title: str,
+        section_description: str,
+        content_guidance: str,
+    ) -> str:
+        """Apply deterministic cleanup after the LLM returns section content."""
+        if not content.strip():
+            return content.strip()
+
+        content = cls._repair_or_add_contextual_diagrams(
+            content=content,
+            section_title=section_title,
+            section_description=section_description,
+            content_guidance=content_guidance,
+        )
+        content = cls._ensure_markdown_block_spacing(content)
+        return content.strip()
+
+    @classmethod
+    def _ensure_markdown_block_spacing(cls, content: str) -> str:
+        """Keep headings outside table and fenced-code blocks."""
+        if not content.strip():
+            return content
+
+        lines = content.splitlines()
+        rewritten: list[str] = []
+        for line in lines:
+            stripped = line.strip()
+            is_heading = bool(re.match(r"^#{1,6}\s+", stripped))
+            prev_line = rewritten[-1].strip() if rewritten else ""
+            prev_is_table = bool(rewritten and cls._count_table_columns(rewritten[-1]) >= 2)
+            prev_is_fence = prev_line == "```"
+
+            if is_heading and rewritten and rewritten[-1] != "" and (prev_is_table or prev_is_fence):
+                rewritten.append("")
+
+            rewritten.append(line)
+
+        return "\n".join(rewritten).strip()
+
+    @classmethod
+    def _repair_or_add_contextual_diagrams(
+        cls,
+        content: str,
+        section_title: str,
+        section_description: str,
+        content_guidance: str,
+    ) -> str:
+        """Restrict Mermaid output to sections that explicitly warrant diagrams."""
+        diagram_kind = cls._resolve_diagram_kind(
+            section_title=section_title,
+            section_description=section_description,
+            content_guidance=content_guidance,
+        )
+        is_forbidden = cls._is_forbidden_diagram_section(section_title)
+
+        try:
+            from rfp_automation.utils.mermaid_utils import _validate_mermaid_syntax
+        except Exception:
+            _validate_mermaid_syntax = None
+
+        if is_forbidden:
+            return cls._strip_mermaid_blocks(content)
+
+        if not diagram_kind:
+            if "```mermaid" not in content:
+                return content.strip()
+
+            def _keep_valid_or_drop(match: re.Match[str]) -> str:
+                block_code = match.group(1).strip()
+                if _validate_mermaid_syntax and _validate_mermaid_syntax(block_code) is None:
+                    return match.group(0)
+                return ""
+
+            return cls._collapse_blank_lines(
+                _MERMAID_BLOCK_RE.sub(_keep_valid_or_drop, content)
+            )
+
+        canonical = cls._build_contextual_mermaid(
+            diagram_kind=diagram_kind,
+            section_title=section_title,
+            content=content,
+        )
+        if not canonical:
+            return cls._strip_mermaid_blocks(content)
+
+        matches = list(_MERMAID_BLOCK_RE.finditer(content))
+        if not matches:
+            return cls._collapse_blank_lines(content.rstrip() + "\n\n" + canonical)
+
+        rewritten = content
+        inserted = False
+        for match in matches:
+            replacement = canonical if not inserted else ""
+            rewritten = rewritten.replace(match.group(0), replacement, 1)
+            inserted = True
+
+        return cls._collapse_blank_lines(rewritten)
+
+    @staticmethod
+    def _collapse_blank_lines(content: str) -> str:
+        return re.sub(r"\n{3,}", "\n\n", content).strip()
+
+    @classmethod
+    def _strip_mermaid_blocks(cls, content: str) -> str:
+        return cls._collapse_blank_lines(_MERMAID_BLOCK_RE.sub("", content))
+
+    @classmethod
+    def _is_forbidden_diagram_section(cls, section_title: str) -> bool:
+        lowered_title = (section_title or "").lower()
+        if cls._is_table_only_section(section_title):
+            return True
+        return any(token in lowered_title for token in _FORBIDDEN_DIAGRAM_TITLE_TOKENS)
+
+    @staticmethod
+    def _resolve_diagram_kind(
+        section_title: str,
+        section_description: str,
+        content_guidance: str,
+    ) -> str:
+        lowered_title = (section_title or "").lower()
+        lowered_context = " ".join(
+            part.lower()
+            for part in (section_title, section_description, content_guidance)
+            if part
+        )
+
+        if any(
+            token in lowered_title
+            for token in (
+                "network & edge architecture",
+                "technical architecture",
+                "solution architecture",
+                "deployment topology",
+                "topology",
+            )
+        ):
+            return "network_architecture"
+        if any(token in lowered_title for token in ("cloud interconnect", "expressroute", "direct connect")):
+            return "cloud_interconnect"
+        if any(
+            token in lowered_title
+            for token in ("managed security operations", "security operations", "soc", "siem", "incident response")
+        ):
+            return "security_operations"
+        if any(
+            token in lowered_title
+            for token in (
+                "implementation & project management",
+                "project management",
+                "migration timeline",
+                "timeline",
+                "gantt",
+            )
+        ):
+            return "implementation_gantt"
+        if any(
+            token in lowered_title
+            for token in ("implementation plan", "migration plan", "timeline", "gantt", "project phases", "rollout")
+        ):
+            return "implementation_flow"
+        if any(token in lowered_context for token in ("timeline", "project plan", "delivery phases")):
+            return "implementation_gantt"
+        if any(token in lowered_context for token in ("process flow", "workflow", "operating model")):
+            return "process_flow"
+        return ""
+
+    @classmethod
+    def _build_contextual_mermaid(
+        cls,
+        diagram_kind: str,
+        section_title: str,
+        content: str,
+    ) -> str:
+        lowered = " ".join(part.lower() for part in (section_title, content) if part)
+
+        if diagram_kind == "cloud_interconnect":
+            return "\n".join([
+                "```mermaid",
+                "sequenceDiagram",
+                "    title Cloud Interconnect Routing",
+                "    participant Branch as Apex Branch Sites",
+                "    participant SDWAN as SD-WAN Edge",
+                "    participant DC as Mumbai DC",
+                "    participant Azure as Azure ExpressRoute",
+                "    participant AWS as AWS Direct Connect",
+                "    Branch->>SDWAN: Branch application traffic",
+                "    SDWAN->>DC: Encrypted transport to Mumbai",
+                "    DC->>Azure: Private peering for Azure-hosted workloads",
+                "    DC->>AWS: Private peering for AWS-hosted workloads",
+                "    Azure-->>Branch: ERP / collaboration response traffic",
+                "    AWS-->>Branch: IoT / analytics response traffic",
+                "```",
+            ])
+
+        if diagram_kind == "implementation_gantt":
+            from datetime import date, timedelta
+
+            phase_steps = cls._extract_phase_steps(content)
+            if len(phase_steps) < 4:
+                phase_steps = [
+                    "Design and Readiness",
+                    "Pilot Deployment",
+                    "Regional Rollout",
+                    "National Cutover",
+                    "Operational Handover",
+                ]
+
+            durations = [28, 42, 70, 84, 28]
+            cursor = date(2025, 11, 1)
+            lines = [
+                "```mermaid",
+                "gantt",
+                "    title Apex Implementation Timeline",
+                "    dateFormat YYYY-MM-DD",
+                "    axisFormat %b %Y",
+                "    section Delivery",
+            ]
+            for idx, label in enumerate(phase_steps[:5], start=1):
+                span_days = durations[idx - 1] if idx <= len(durations) else 30
+                end_date = cursor + timedelta(days=span_days - 1)
+                lines.append(
+                    f"    {label} : task_{idx}, {cursor.isoformat()}, {end_date.isoformat()}"
+                )
+                cursor = end_date + timedelta(days=1)
+            lines.append("```")
+            return "\n".join(lines)
+
+        if diagram_kind == "security_operations":
+            itsm_line = (
+                '    SOC --> ITSM["ServiceNow / Incident Queue"]'
+                if "servicenow" in lowered
+                else '    SOC --> Response["Containment and RCA Workflow"]'
+            )
+            return "\n".join([
+                "```mermaid",
+                "flowchart LR",
+                '    Telemetry["Branch, DC, and Cloud Telemetry"] --> SIEM["India-hosted SIEM"]',
+                '    ThreatIntel["Commercial Threat Feeds"] --> SIEM',
+                '    SIEM --> SOC["24x7 SOC Analysts"]',
+                itsm_line,
+                '    SOC --> Reporting["SLA Reporting and RCA"]',
+                "```",
+            ])
+
+        if diagram_kind == "implementation_flow":
+            phase_steps = cls._extract_phase_steps(content)
+            if len(phase_steps) < 3:
+                phase_steps = [
+                    "Design and Readiness",
+                    "Pilot Deployment",
+                    "Scaled Rollout",
+                    "Steady-State Handover",
+                ]
+            node_ids = [f"S{idx}" for idx in range(1, len(phase_steps) + 1)]
+            lines = ["```mermaid", "flowchart LR"]
+            for node_id, label in zip(node_ids, phase_steps):
+                lines.append(f'    {node_id}["{label}"]')
+            for left, right in zip(node_ids, node_ids[1:]):
+                lines.append(f"    {left} --> {right}")
+            lines.append("```")
+            return "\n".join(lines)
+
+        if diagram_kind == "process_flow":
+            phase_steps = cls._extract_phase_steps(content)
+            if len(phase_steps) < 3:
+                phase_steps = ["Discover", "Design", "Deploy", "Operate"]
+            node_ids = [f"P{idx}" for idx in range(1, len(phase_steps) + 1)]
+            lines = ["```mermaid", "flowchart LR"]
+            for node_id, label in zip(node_ids, phase_steps):
+                lines.append(f'    {node_id}["{label}"]')
+            for left, right in zip(node_ids, node_ids[1:]):
+                lines.append(f"    {left} --> {right}")
+            lines.append("```")
+            return "\n".join(lines)
+
+        lines = [
+            "```mermaid",
+            "flowchart TD",
+            '    Branch["Apex Branch Sites"] --> Edge["Dual-link SD-WAN Edge"]',
+        ]
+        lines.append('    Edge --> Hub["Regional Hub / Tier-1 Sites"]')
+        lines.append('    Edge --> Orchestrator["Cloud SD-WAN Orchestrator"]')
+        lines.append('    Hub --> DC["Mumbai Tier-III Data Centre"]')
+        if "azure" in lowered:
+            lines.append('    DC --> Azure["Azure ExpressRoute"]')
+        if "aws" in lowered:
+            lines.append('    DC --> AWS["AWS Direct Connect"]')
+        if any(token in lowered for token in ("soc", "siem", "security")):
+            lines.append('    Edge --> SOC["Managed SOC / SIEM"]')
+        if any(token in lowered for token in ("iot", "emm", "private apn", "esim")):
+            lines.append('    Edge --> IoT["IoT / EMM Platform"]')
+        lines.append("```")
+        return "\n".join(lines)
+
+    @staticmethod
+    def _extract_phase_steps(content: str) -> list[str]:
+        steps: list[str] = []
+        seen: set[str] = set()
+
+        for line in content.splitlines():
+            stripped = line.strip().lstrip("-* ").strip()
+            match = re.match(
+                r"^(?:Phase\s*\d+\s*:\s*)?(?P<label>[A-Za-z][A-Za-z0-9 /&,-]+?)(?:\s*\(.*\))?$",
+                stripped,
+                re.IGNORECASE,
+            )
+            if not match:
+                continue
+            label = match.group("label").strip(" .")
+            if len(label.split()) < 2:
+                continue
+            key = label.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            steps.append(label)
+            if len(steps) == 6:
+                break
+
+        return steps
 
     def _build_prompt(
         self,

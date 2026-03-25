@@ -193,6 +193,21 @@ def test_final_markdown_contains_only_proposal_body():
     assert "Human Validation" not in markdown
 
 
+def test_final_readiness_backfills_blank_technical_description_cells():
+    section_body = (
+        "| Req. ID | Category | Description | Priority | Vendor Response | Vendor Remarks |\n"
+        "|---|---|---|---|---|---|\n"
+        "| TR-005 | SD-WAN — OEM Hardware |  | Mandatory | Cisco | OEM identified |\n"
+    )
+
+    normalized = FinalReadinessAgent._dedupe_markdown_table_rows(
+        section_body,
+        r"\bTR-\d{3}\b",
+    )
+
+    assert "| TR-005 | SD-WAN — OEM Hardware | SD-WAN — OEM Hardware | Mandatory | Cisco | OEM identified |" in normalized
+
+
 def test_extract_relevant_table_text_keeps_only_requested_rows():
     agent = RequirementWritingAgent()
     table_text = (
@@ -296,6 +311,64 @@ def test_logical_table_groups_merge_consecutive_multipage_chunks():
     assert groups[3]["chunk_indices"] == [195]
 
 
+def test_merge_logical_table_chunks_normalizes_compliance_header_variants():
+    agent = RequirementWritingAgent()
+    merged, headers = agent._merge_logical_table_chunks(
+        [191, 194],
+        {
+            191: {
+                "chunk_index": 191,
+                "text": (
+                    "Ref. | Requirement | Status (C/PC/NC) | Evidence Reference | Vendor Comments\n"
+                    "CM-01 | ISO 27001 | [C/PC/NC] | [Appendix B] | [Vendor to fill]\n"
+                ),
+            },
+            194: {
+                "chunk_index": 194,
+                "text": (
+                    "CM-ID | Requirement | Compliance | Reference | Vendor Response\n"
+                    "CM-05 | AWS Direct Connect | [C/PC/NC] | [Appendix B] | [Vendor to fill]\n"
+                ),
+            },
+        },
+    )
+
+    normalized = agent._normalize_markdown_table_output(merged)
+
+    assert headers == ["Ref. | Requirement | Status (C/PC/NC) | Evidence Reference | Vendor Comments"]
+    assert "CM-ID | Requirement | Compliance | Reference | Vendor Response" not in normalized
+    assert "| CM-01 | ISO 27001 | [C/PC/NC] | [Appendix B] | [Vendor to fill] |" in normalized
+    assert "| CM-05 | AWS Direct Connect | [C/PC/NC] | [Appendix B] | [Vendor to fill] |" in normalized
+
+
+def test_merge_logical_table_chunks_backfills_short_technical_rows():
+    agent = RequirementWritingAgent()
+    merged, headers = agent._merge_logical_table_chunks(
+        [170, 173],
+        {
+            170: {
+                "chunk_index": 170,
+                "text": (
+                    "Req. ID | Category | Description | Priority | Vendor Response | Vendor Remarks\n"
+                    "TR-001 | SD-WAN — Architecture | Full architecture requirement | Mandatory | [C / PC / NC] | [Vendor to fill]\n"
+                ),
+            },
+            173: {
+                "chunk_index": 173,
+                "text": (
+                    "Requirement ID | Requirement Description | Compliance Status | Vendor Response\n"
+                    "TR-005 | SD-WAN — OEM Hardware | [C / PC / NC] | [Vendor to fill — Name OEM]\n"
+                ),
+            },
+        },
+    )
+
+    normalized = agent._normalize_markdown_table_output(merged)
+
+    assert headers == ["Req. ID | Category | Description | Priority | Vendor Response | Vendor Remarks"]
+    assert "| TR-005 | SD-WAN — OEM Hardware | SD-WAN — OEM Hardware | Mandatory | [C / PC / NC] | [Vendor to fill — Name OEM] |" in normalized
+
+
 def test_fill_single_table_appends_rows_once_and_in_order(monkeypatch):
     agent = RequirementWritingAgent()
     responses = iter([
@@ -392,7 +465,7 @@ def test_inject_table_width_hints_adds_colgroup_for_six_column_tables():
     assert rewritten.count("<col width=") == 6
 
 
-def test_scrub_markdown_splits_large_tables_into_renderable_chunks():
+def test_scrub_markdown_keeps_tables_with_25_or_fewer_rows_together():
     rows = "\n".join(
         f"{idx}.01 | Item {idx} | Service | Per month | 100 | 10"
         for idx in range(1, 11)
@@ -404,7 +477,7 @@ def test_scrub_markdown_splits_large_tables_into_renderable_chunks():
 
     scrubbed = _scrub_markdown(md_text)
 
-    assert scrubbed.count("| Item ID | Description | Service Type | Pricing Model | NRC | MRC |") == 2
+    assert scrubbed.count("| Item ID | Description | Service Type | Pricing Model | NRC | MRC |") == 1
 
 
 def test_sanitize_mermaid_code_repairs_gantt_ranges():

@@ -228,7 +228,29 @@ class FinalReadinessAgent(BaseAgent):
         full_narr = FinalReadinessAgent._collapse_technical_parent_sections(full_narr)
         full_narr = FinalReadinessAgent._strip_invalid_mermaid_blocks(full_narr)
         full_narr = FinalReadinessAgent._canonicalize_known_table_sections(full_narr)
+        full_narr = ReviewService._sanitize_response_text(full_narr)
+        full_narr = FinalReadinessAgent._ensure_heading_spacing(full_narr)
         return full_narr
+
+    @staticmethod
+    def _ensure_heading_spacing(full_narr: str) -> str:
+        """Insert blank lines before headings that follow tables or code fences."""
+        lines = full_narr.splitlines()
+        rewritten: list[str] = []
+
+        for line in lines:
+            stripped = line.strip()
+            is_heading = stripped.startswith("#")
+            prev_line = rewritten[-1].strip() if rewritten else ""
+            prev_is_table = "|" in prev_line and prev_line.count("|") >= 2
+            prev_is_fence = prev_line == "```"
+
+            if is_heading and rewritten and rewritten[-1] != "" and (prev_is_table or prev_is_fence):
+                rewritten.append("")
+
+            rewritten.append(line)
+
+        return "\n".join(rewritten).strip()
 
     @staticmethod
     def _collapse_technical_parent_sections(full_narr: str) -> str:
@@ -343,6 +365,71 @@ class FinalReadinessAgent(BaseAgent):
         )
 
     @staticmethod
+    def _split_table_cells(line: str) -> list[str]:
+        stripped = line.strip().strip("|")
+        if not stripped:
+            return []
+        return [cell.strip() for cell in stripped.split("|")]
+
+    @staticmethod
+    def _count_table_columns(line: str) -> int:
+        stripped = line.strip()
+        pipes = stripped.count("|")
+        if stripped.startswith("|") and stripped.endswith("|"):
+            return max(1, pipes - 1)
+        if not stripped.startswith("|") and not stripped.endswith("|"):
+            return max(1, pipes + 1)
+        return max(1, pipes)
+
+    @classmethod
+    def _coerce_table_row(cls, cells: list[str], expected_col_count: int) -> str:
+        if not expected_col_count or not cells:
+            return "| " + " | ".join(cells) + " |" if cells else ""
+
+        if len(cells) > expected_col_count:
+            cells = cells[: expected_col_count - 1] + [" | ".join(cells[expected_col_count - 1 :])]
+        elif len(cells) < expected_col_count:
+            cells = cells + [""] * (expected_col_count - len(cells))
+
+        return f"| {' | '.join(cells)} |"
+
+    @classmethod
+    def _normalize_table_row(
+        cls,
+        row: str,
+        row_id_re: str,
+        header_line: str,
+    ) -> str:
+        cells = cls._split_table_cells(row)
+        expected_cols = cls._count_table_columns(header_line)
+
+        if row_id_re == r"\bTR-\d{3}\b" and expected_cols >= 6:
+            if len(cells) == 4:
+                row_id, label, compliance_state, vendor_response = cells
+                cells = [
+                    row_id,
+                    label,
+                    label or row_id,
+                    "Mandatory",
+                    compliance_state,
+                    vendor_response,
+                ]
+            elif len(cells) == 5:
+                row_id, label, description, compliance_state, vendor_response = cells
+                cells = [
+                    row_id,
+                    label,
+                    description or label,
+                    "Mandatory",
+                    compliance_state,
+                    vendor_response,
+                ]
+            elif len(cells) >= 6 and not cells[2].strip() and cells[1].strip():
+                cells[2] = cells[1].strip()
+
+        return cls._coerce_table_row(cells, expected_cols) if cells else row.strip()
+
+    @staticmethod
     def _dedupe_markdown_table_rows(section_body: str, row_id_re: str) -> str:
         import re
 
@@ -350,7 +437,7 @@ class FinalReadinessAgent(BaseAgent):
         header_line = ""
         separator_line = ""
         row_order: list[str] = []
-        best_rows: dict[str, tuple[int, str]] = {}
+        best_rows: dict[str, tuple[tuple[int, int], str]] = {}
         prelude: list[str] = []
 
         placeholder_re = re.compile(r"\[[^\]]+\]|vendor to fill|tbd", re.IGNORECASE)
@@ -358,6 +445,8 @@ class FinalReadinessAgent(BaseAgent):
         for line in lines:
             stripped = line.strip()
             if not stripped:
+                continue
+            if stripped.startswith("[Section:") or stripped.startswith("RFP Ref:"):
                 continue
             if "|" not in stripped:
                 if not header_line:
@@ -373,23 +462,28 @@ class FinalReadinessAgent(BaseAgent):
             match = re.search(row_id_re, stripped, re.IGNORECASE)
             if not match:
                 continue
+            normalized_row = FinalReadinessAgent._normalize_table_row(
+                stripped,
+                row_id_re,
+                header_line,
+            )
             row_id = match.group(0).upper()
             if row_id not in row_order:
                 row_order.append(row_id)
 
             score = (
-                -len(placeholder_re.findall(stripped)),
-                len(stripped),
+                -len(placeholder_re.findall(normalized_row)),
+                len(normalized_row),
             )
             current = best_rows.get(row_id)
-            if current is None or score > (current[0], len(current[1])):
-                best_rows[row_id] = (score[0], stripped)
+            if current is None or score > current[0]:
+                best_rows[row_id] = (score, normalized_row)
 
         if not header_line or not row_order:
             return section_body
 
         if not separator_line:
-            col_count = max(header_line.count("|") - 1, 1)
+            col_count = FinalReadinessAgent._count_table_columns(header_line)
             separator_line = "|" + "|".join(["---"] * col_count) + "|"
 
         rows = [best_rows[row_id][1] for row_id in row_order if row_id in best_rows]
