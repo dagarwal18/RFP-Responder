@@ -74,7 +74,7 @@ export default function CheckpointsPanel({ rfpId, onRerun }: { rfpId: string; on
         {CHECKPOINT_AGENT_ORDER.map((agentKey) => {
           const isCached = cachedSet.has(agentKey);
           return (
-            <span key={agentKey} className={`px-2.5 py-1 flex items-center gap-1.5 text-[10px] font-semibold rounded-full border transition-colors ${isCached ? 'border-primary/30 bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground opacity-60'}`}>
+            <span key={agentKey} className={`px-2.5 py-1 flex items-center gap-1.5 text-[10px] font-semibold rounded-full border transition-colors ${isCached ? 'border-border bg-secondary text-foreground' : 'border-border bg-secondary text-muted-foreground opacity-60'}`}>
               {isCached ? <Check className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full border border-current" />}
               {CHECKPOINT_LABELS[agentKey] || agentKey}
             </span>

@@ -22,16 +22,17 @@ export default function Topbar({ title }: { title: string }) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-8 shrink-0
-                        bg-background border-b border-border">
-      <h1 className="text-[13px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+    <header
+      className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-border/70 bg-background/92 px-4 backdrop-blur-xl sm:px-6 lg:px-10"
+    >
+      <h1 className="text-[12px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {title}
       </h1>
-      <div className="flex items-center gap-4 text-[12px] text-muted-foreground ml-auto">
+      <div className="ml-auto flex items-center gap-4 text-[12px] text-muted-foreground">
         <ThemeToggle />
-        <div className="flex items-center gap-2.5 border-l border-border pl-5">
+        <div className="flex items-center gap-2.5 rounded-full border border-border/70 bg-card/90 px-3 py-1.5 shadow-[0_4px_12px_rgba(15,23,42,0.03)] dark:shadow-none">
           <span
-            className={`w-1.5 h-1.5 rounded-none ${
+            className={`h-1.5 w-1.5 rounded-full ${
               status === 'online'
                 ? 'bg-success'
                 : status === 'offline'
