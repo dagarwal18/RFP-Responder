@@ -3,6 +3,73 @@ const WS_BASE = API_BASE.replace(/^http/, 'ws');
 
 export { API_BASE, WS_BASE };
 
+export const CHECKPOINT_AGENT_ORDER = [
+  'a1_intake',
+  'a2_structuring',
+  'a3_go_no_go',
+  'b1_requirements_extraction',
+  'b2_requirements_validation',
+  'c1_architecture_planning',
+  'c2_requirement_writing',
+  'c3_narrative_assembly',
+  'd1_technical_validation',
+  'commercial_legal_parallel',
+  'h1_human_validation_prepare',
+  'f1_final_readiness',
+] as const;
+
+export const CHECKPOINT_LABELS: Record<string, string> = {
+  a1_intake: 'A1 Intake',
+  a2_structuring: 'A2 Structuring',
+  a3_go_no_go: 'A3 Go / No-Go',
+  b1_requirements_extraction: 'B1 Requirements Extract',
+  b2_requirements_validation: 'B2 Requirements Validation',
+  c1_architecture_planning: 'C1 Architecture Planning',
+  c2_requirement_writing: 'C2 Requirement Writing',
+  c3_narrative_assembly: 'C3 Narrative Assembly',
+  d1_technical_validation: 'D1 Technical Validation',
+  commercial_legal_parallel: 'E1 + E2 Commercial / Legal',
+  h1_human_validation_prepare: 'H1 Human Validation',
+  f1_final_readiness: 'F1 Final Readiness',
+};
+
+const RUN_STAGE_ALIASES: Record<string, string> = {
+  A1_INTAKE: 'A1_INTAKE',
+  a1_intake: 'A1_INTAKE',
+  A2_STRUCTURING: 'A2_STRUCTURING',
+  a2_structuring: 'A2_STRUCTURING',
+  A3_GO_NO_GO: 'A3_GO_NO_GO',
+  a3_go_no_go: 'A3_GO_NO_GO',
+  B1_REQUIREMENTS_EXTRACTION: 'B1_REQUIREMENTS_EXTRACTION',
+  b1_requirements_extraction: 'B1_REQUIREMENTS_EXTRACTION',
+  B2_REQUIREMENTS_VALIDATION: 'B2_REQUIREMENTS_VALIDATION',
+  b2_requirements_validation: 'B2_REQUIREMENTS_VALIDATION',
+  C1_ARCHITECTURE_PLANNING: 'C1_ARCHITECTURE_PLANNING',
+  c1_architecture_planning: 'C1_ARCHITECTURE_PLANNING',
+  C2_REQUIREMENT_WRITING: 'C2_REQUIREMENT_WRITING',
+  c2_requirement_writing: 'C2_REQUIREMENT_WRITING',
+  C3_NARRATIVE_ASSEMBLY: 'C3_NARRATIVE_ASSEMBLY',
+  c3_narrative_assembly: 'C3_NARRATIVE_ASSEMBLY',
+  D1_TECHNICAL_VALIDATION: 'D1_TECHNICAL_VALIDATION',
+  d1_technical_validation: 'D1_TECHNICAL_VALIDATION',
+  E1_COMMERCIAL: 'E1_COMMERCIAL',
+  e1_commercial: 'E1_COMMERCIAL',
+  E2_LEGAL: 'E2_LEGAL',
+  e2_legal: 'E2_LEGAL',
+  COMMERCIAL_LEGAL_PARALLEL: 'E1_COMMERCIAL',
+  commercial_legal_parallel: 'E1_COMMERCIAL',
+  H1_HUMAN_VALIDATION: 'H1_HUMAN_VALIDATION',
+  H1_HUMAN_VALIDATION_PREPARE: 'H1_HUMAN_VALIDATION',
+  h1_human_validation_prepare: 'H1_HUMAN_VALIDATION',
+  F1_FINAL_READINESS: 'F1_FINAL_READINESS',
+  f1_final_readiness: 'F1_FINAL_READINESS',
+};
+
+export function normalizeStageKey(value: string | null | undefined): string {
+  if (!value) return '';
+  return RUN_STAGE_ALIASES[String(value).trim()] || String(value).trim();
+}
+
 /* ── Core fetch helper ─────────────────────────────────── */
 
 export async function apiFetch<T = unknown>(path: string, opts: RequestInit = {}): Promise<T> {
@@ -53,6 +120,11 @@ export async function fetchRuns() {
   return { runs: arr.map(normalizeRun) };
 }
 
+/** /api/rfp/{rfp_id}/status */
+export async function fetchRunStatus(rfpId: string) {
+  return apiFetch<any>(`/api/rfp/${rfpId}/status`);
+}
+
 /** /api/rfp/upload → { run_id: string, ... } */
 export async function uploadRfp(form: FormData) {
   const res = await fetch(`${API_BASE}/api/rfp/upload`, {
@@ -84,6 +156,30 @@ export async function rerunPipeline(rfpId: string, startFrom: string) {
 /** /api/rfp/{rfp_id}/checkpoints DELETE */
 export async function clearCheckpoints(rfpId: string) {
   return apiFetch<any>(`/api/rfp/${rfpId}/checkpoints`, { method: 'DELETE' });
+}
+
+export async function fetchReviewPackage(rfpId: string) {
+  return apiFetch<any>(`/api/rfp/${rfpId}/review`);
+}
+
+export async function saveReviewComments(rfpId: string, comments: unknown[]) {
+  return apiFetch<any>(`/api/rfp/${rfpId}/review/comments`, {
+    method: 'PUT',
+    body: JSON.stringify({ comments }),
+  });
+}
+
+export async function submitReviewDecision(rfpId: string, body: {
+  decision: string;
+  reviewer?: string;
+  summary?: string;
+  rerun_from?: string;
+  comments?: unknown[];
+}) {
+  return apiFetch<any>(`/api/rfp/${rfpId}/review/decision`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
 }
 
 /** /api/knowledge/status → { vectors, namespaces, configs } */
@@ -138,6 +234,50 @@ export async function fetchPolicies() {
   };
 }
 
+export async function createPolicy(body: {
+  text: string;
+  category: string;
+  severity: string;
+  source_section?: string;
+}) {
+  return apiFetch<any>('/api/knowledge/policies', {
+    method: 'POST',
+    body: JSON.stringify({
+      policy_text: body.text,
+      category: body.category,
+      severity: body.severity,
+      source_section: body.source_section || '',
+      rule_type: 'requirement',
+    }),
+  });
+}
+
+export async function updatePolicy(policyId: string, body: {
+  text: string;
+  category: string;
+  severity: string;
+  source_section?: string;
+}) {
+  return apiFetch<any>(`/api/knowledge/policies/${policyId}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      policy_text: body.text,
+      category: body.category,
+      severity: body.severity,
+      source_section: body.source_section || '',
+      rule_type: 'requirement',
+    }),
+  });
+}
+
+export async function deletePolicy(policyId: string) {
+  return apiFetch<any>(`/api/knowledge/policies/${policyId}`, { method: 'DELETE' });
+}
+
+export async function deleteAllPolicies() {
+  return apiFetch<any>('/api/knowledge/policies', { method: 'DELETE' });
+}
+
 /** /api/knowledge/company-profile → CompanyProfile */
 export async function fetchCompanyProfile() {
   const raw = await apiFetch<any>('/api/knowledge/company-profile');
@@ -148,6 +288,23 @@ export async function fetchCompanyProfile() {
     headquarters: p.headquarters ?? '',
     website: p.website ?? '',
   };
+}
+
+export async function saveCompanyProfile(profile: {
+  name: string;
+  description: string;
+  headquarters: string;
+  website: string;
+}) {
+  return apiFetch<any>('/api/knowledge/company-profile', {
+    method: 'PUT',
+    body: JSON.stringify({
+      company_name: profile.name,
+      company_description: profile.description,
+      headquarters: profile.headquarters,
+      website: profile.website,
+    }),
+  });
 }
 
 /* ── Utilities (unchanged) ───────────────────────────── */
