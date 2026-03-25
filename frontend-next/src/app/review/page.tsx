@@ -65,11 +65,20 @@ interface ReviewData {
 function Mermaid({ chart }: { chart: string }) {
   const [svg, setSvg] = useState('');
   useEffect(() => {
-    mermaid.initialize({ startOnLoad: false, theme: 'default' });
-    try {
-      mermaid.render('mermaid-' + Math.random().toString(36).substr(2, 9), chart).then(r => setSvg(r.svg)).catch();
-    } catch(e) {}
+    mermaid.initialize({ startOnLoad: false, theme: 'default', suppressErrorRendering: true });
+    (async () => {
+      try {
+        // Validate syntax first to avoid DOM error popups
+        await mermaid.parse(chart);
+        const { svg: rendered } = await mermaid.render('mermaid-' + Math.random().toString(36).substr(2, 9), chart);
+        setSvg(rendered);
+      } catch {
+        // Silently ignore invalid mermaid — just don't render it
+        setSvg('');
+      }
+    })();
   }, [chart]);
+  if (!svg) return null;
   return <div dangerouslySetInnerHTML={{ __html: svg }} className="my-4 flex justify-center bg-white p-4 rounded text-black" />;
 }
 
@@ -121,9 +130,27 @@ function ReviewContent() {
       }
       
       if (rfpIdToLoad) {
-        const d = await fetchReviewPackage(rfpIdToLoad);
-        setReview(d);
-        setComments(d.review_package?.comments || []);
+        // Retry logic: the review page may load before the backend
+        // has finished storing the review_package (race condition
+        // between WebSocket redirect and pipeline thread completion).
+        const MAX_RETRIES = 5;
+        const RETRY_DELAY = 1500;
+        let lastError: unknown;
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+          try {
+            const d = await fetchReviewPackage(rfpIdToLoad);
+            setReview(d);
+            setComments(d.review_package?.comments || []);
+            lastError = null;
+            break;
+          } catch (err) {
+            lastError = err;
+            if (attempt < MAX_RETRIES - 1) {
+              await new Promise(res => setTimeout(res, RETRY_DELAY));
+            }
+          }
+        }
+        if (lastError) console.error(lastError);
       }
     } catch (e) {
       console.error(e);

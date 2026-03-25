@@ -5,74 +5,74 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Industrial Hard Theme */
+/* Industrial Hard Theme — Enhanced Contrast */
 :root {
   --radius: 0px;
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 9%;
-  --primary: 15 98% 50%;
+  --background: 30 10% 98%;
+  --foreground: 20 10% 8%;
+  --card: 30 8% 96%;
+  --card-foreground: 20 10% 8%;
+  --popover: 30 8% 96%;
+  --popover-foreground: 20 10% 8%;
+  --primary: 24 95% 53%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 95%;
-  --muted-foreground: 0 0% 25%;
-  --accent: 0 0% 96%;
-  --accent-foreground: 0 0% 9%;
-  --destructive: 0 84.2% 60.2%;
-  --border: 0 0% 82%;
-  --input: 0 0% 82%;
-  --ring: 15 98% 50%;
-  --chart-1: 15 98% 50%;
-  --chart-2: 142.1 76.2% 36.3%;
-  --chart-3: 217.2 91.2% 59.8%;
-  --chart-4: 47.9 95.8% 53.1%;
-  --chart-5: 0 72.2% 50.6%;
-  --sidebar: 0 0% 98%;
-  --sidebar-foreground: 0 0% 9%;
-  --sidebar-primary: 15 98% 50%;
+  --secondary: 30 8% 92%;
+  --secondary-foreground: 20 10% 8%;
+  --muted: 30 6% 93%;
+  --muted-foreground: 20 6% 35%;
+  --accent: 24 40% 93%;
+  --accent-foreground: 20 10% 8%;
+  --destructive: 0 84% 60%;
+  --border: 24 8% 78%;
+  --input: 24 8% 78%;
+  --ring: 24 95% 53%;
+  --chart-1: 24 95% 53%;
+  --chart-2: 142 76% 36%;
+  --chart-3: 217 91% 60%;
+  --chart-4: 47 96% 53%;
+  --chart-5: 0 72% 51%;
+  --sidebar: 30 8% 96%;
+  --sidebar-foreground: 20 10% 8%;
+  --sidebar-primary: 24 95% 53%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 93%;
-  --sidebar-accent-foreground: 0 0% 9%;
-  --sidebar-border: 0 0% 82%;
-  --sidebar-ring: 15 98% 50%;
+  --sidebar-accent: 24 12% 90%;
+  --sidebar-accent-foreground: 20 10% 8%;
+  --sidebar-border: 24 8% 78%;
+  --sidebar-ring: 24 95% 53%;
 }
 
 .dark {
-  --background: 0 0% 4%;
-  --foreground: 0 0% 92%;
-  --card: 0 0% 7%;
-  --card-foreground: 0 0% 92%;
-  --popover: 0 0% 7%;
-  --popover-foreground: 0 0% 92%;
-  --primary: 15 98% 50%;
+  --background: 20 8% 5%;
+  --foreground: 30 10% 90%;
+  --card: 20 6% 8%;
+  --card-foreground: 30 10% 90%;
+  --popover: 20 6% 8%;
+  --popover-foreground: 30 10% 90%;
+  --primary: 24 95% 53%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 11%;
-  --secondary-foreground: 0 0% 92%;
-  --muted: 0 0% 11%;
-  --muted-foreground: 0 0% 44%;
-  --accent: 0 0% 11%;
-  --accent-foreground: 0 0% 92%;
-  --destructive: 0 62.8% 30.6%;
-  --border: 0 0% 11%;
-  --input: 0 0% 11%;
-  --ring: 15 98% 50%;
-  --chart-1: 15 98% 50%;
-  --chart-2: 142.1 76.2% 36.3%;
-  --chart-3: 217.2 91.2% 59.8%;
-  --chart-4: 47.9 95.8% 53.1%;
-  --chart-5: 0 72.2% 50.6%;
-  --sidebar: 0 0% 0%;
-  --sidebar-foreground: 0 0% 92%;
-  --sidebar-primary: 15 98% 50%;
+  --secondary: 20 6% 13%;
+  --secondary-foreground: 30 10% 90%;
+  --muted: 20 4% 14%;
+  --muted-foreground: 24 6% 58%;
+  --accent: 24 10% 14%;
+  --accent-foreground: 30 10% 90%;
+  --destructive: 0 63% 31%;
+  --border: 24 6% 18%;
+  --input: 24 6% 18%;
+  --ring: 24 95% 53%;
+  --chart-1: 24 95% 53%;
+  --chart-2: 142 76% 36%;
+  --chart-3: 217 91% 60%;
+  --chart-4: 47 96% 53%;
+  --chart-5: 0 72% 51%;
+  --sidebar: 20 6% 4%;
+  --sidebar-foreground: 30 10% 90%;
+  --sidebar-primary: 24 95% 53%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 11%;
-  --sidebar-accent-foreground: 0 0% 92%;
-  --sidebar-border: 0 0% 11%;
-  --sidebar-ring: 15 98% 50%;
+  --sidebar-accent: 24 8% 13%;
+  --sidebar-accent-foreground: 30 10% 90%;
+  --sidebar-border: 24 6% 18%;
+  --sidebar-ring: 24 95% 53%;
 }
 
 @theme inline {
@@ -108,7 +108,8 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
   --color-success: #22c55e;
-  --color-warning: #eab308;
+  --color-success-foreground: #ffffff;
+  --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #60a5fa;
   --radius-sm: 0px;
@@ -152,6 +153,16 @@
 
 .animate-pulse-dot {
   animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes progress-bar {
+  0% { width: 0%; margin-left: 0; }
+  50% { width: 40%; margin-left: 30%; }
+  100% { width: 0%; margin-left: 100%; }
+}
+
+.animate-progress-bar {
+  animation: progress-bar 1.8s ease-in-out infinite;
 }
 
 @layer base {
