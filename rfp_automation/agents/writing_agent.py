@@ -86,6 +86,8 @@ _UNRESOLVED_CELL_RE = re.compile(
 )
 _TABLE_ONLY_SECTION_TITLES = {
     "technical implementation",
+    "technical implementation — technical compliance matrix",
+    "technical solution — technical compliance matrix",
     "pricing schedule matrix",
     "appendix forms & declarations",
 }
@@ -135,7 +137,20 @@ class RequirementWritingAgent(BaseAgent):
                 d = {"text": str(req)}
             req_id = d.get("requirement_id", "")
             if req_id:
-                req_map[req_id] = d
+                existing = req_map.get(req_id)
+                if existing is None:
+                    req_map[req_id] = d
+                    continue
+
+                existing_table = int(existing.get("source_table_chunk_index", -1)) >= 0
+                new_table = int(d.get("source_table_chunk_index", -1)) >= 0
+                if new_table and not existing_table:
+                    req_map[req_id] = d
+                elif new_table == existing_table:
+                    existing_trace = len(existing.get("source_chunk_indices", []) or [])
+                    new_trace = len(d.get("source_chunk_indices", []) or [])
+                    if new_trace >= existing_trace:
+                        req_map[req_id] = d
 
         logger.debug(f"[C2] Requirement lookup: {len(req_map)} entries")
 
@@ -518,13 +533,14 @@ class RequirementWritingAgent(BaseAgent):
                             continue
 
                         header_lines = self._extract_table_header_lines(tbl_text)
+                        caption = self._table_caption(title, header_lines)
+                        if not caption:
+                            continue
                         filled_content = self._normalize_markdown_table_output(tbl_text)
                         filled_content = self._sanitize_markdown_tables(filled_content)
                         addrs = []
                         wc = len(filled_content.split())
-                        caption = self._table_caption(title, header_lines)
-                        if caption:
-                            filled_content = f"### {caption}\n\n{filled_content}".strip()
+                        filled_content = f"### {caption}\n\n{filled_content}".strip()
                         all_table_contents.append(filled_content)
                         all_table_addressed.extend(addrs)
                         total_table_wc += wc
@@ -1022,7 +1038,8 @@ class RequirementWritingAgent(BaseAgent):
             row_id = cls._extract_table_row_id(line)
             if row_id and row_id not in batch_rids and line not in ordered:
                 ordered.append(line)
-        ordered.extend(line for line in extras if line not in ordered)
+        if not batch_rids:
+            ordered.extend(line for line in extras if line not in ordered)
         return ordered
 
     @staticmethod
@@ -1696,6 +1713,19 @@ class RequirementWritingAgent(BaseAgent):
         content = re.sub(
             r'^###\s*(?:Content|JSON Output|Markdown Output)\s*$',
             '', content, flags=re.MULTILINE,
+        )
+
+        content = re.sub(
+            r'"\s*,\s*"requirements_addressed"\s*:\s*\[.*?\]\s*,\s*"word_count"\s*:\s*\d+\s*\}',
+            '',
+            content,
+            flags=re.DOTALL,
+        )
+        content = re.sub(
+            r'^\s*\}\s*$',
+            '',
+            content,
+            flags=re.MULTILINE,
         )
 
         # Collapse 3+ consecutive blank lines into 2

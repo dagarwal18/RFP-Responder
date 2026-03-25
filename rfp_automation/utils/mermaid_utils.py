@@ -168,6 +168,26 @@ def _validate_mermaid_syntax(block_code: str) -> str | None:
     if not any(first_line.startswith(s) for s in valid_starts):
         return f"Invalid diagram type: '{first_line[:50]}'"
 
+    remaining_lines = [
+        line.strip()
+        for line in stripped.splitlines()[1:]
+        if line.strip()
+    ]
+    if not remaining_lines:
+        return "Mermaid block has no body"
+
+    if first_line.startswith(("graph", "flowchart")):
+        if len(remaining_lines) < 2:
+            return "Graph/flowchart block is too short"
+        if not any(
+            token in line
+            for line in remaining_lines
+            for token in ("-->", "-.->", "==>", "---")
+        ):
+            return "Graph/flowchart block has no links"
+    elif first_line.startswith("sequenceDiagram") and len(remaining_lines) < 2:
+        return "Sequence diagram block is too short"
+
     # Check for placeholder text that will break the parser
     placeholder_patterns = [
         "⚠", "[TBD", "[TODO", "[Insert", "**⚠",

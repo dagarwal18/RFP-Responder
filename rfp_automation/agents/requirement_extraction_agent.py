@@ -240,13 +240,13 @@ class RequirementsExtractionAgent(BaseAgent):
             # Layer 2: LLM structuring/classification (Batched Extraction)
             # Qwen3-32B context window ≈ 32K tokens.  Output cap = 8192 tokens.
             # Groq free-tier TPM limit for Qwen = 6,000 tokens (~24K chars).
-            # We use small batches to stay well under the hard TPM ceiling.
-            MAX_CONTEXT_LEN = 4_000    # section context (conservative for TPM)
+            # Keep prompts comfortably below Groq's 6K TPM ceiling.
+            MAX_CONTEXT_LEN = 2_400
             section_context = truncate_at_boundary(raw_text, MAX_CONTEXT_LEN)
 
-            INPUT_BUDGET_CHARS = 12_000  # ~3K tokens keeps us under 6K TPM
+            INPUT_BUDGET_CHARS = 7_000
             overhead_chars = len(section_context) + 1600  # context + template
-            max_candidate_chars = max(2000, INPUT_BUDGET_CHARS - overhead_chars)
+            max_candidate_chars = max(1200, INPUT_BUDGET_CHARS - overhead_chars)
             
             before_section_reqs = len(all_requirements)
             
@@ -257,7 +257,8 @@ class RequirementsExtractionAgent(BaseAgent):
                 
                 # Fill batch up to limit
                 for j in range(i, len(candidates)):
-                    cand_str = f"[{candidates[j].sentence_index}] {candidates[j].text}\n"
+                    candidate_text = truncate_at_boundary(candidates[j].text, 220)
+                    cand_str = f"[{candidates[j].sentence_index}] {candidate_text}\n"
                     if current_batch_text and len(current_batch_text) + len(cand_str) > max_candidate_chars:
                         break
                     current_batch_text += cand_str
@@ -314,6 +315,14 @@ class RequirementsExtractionAgent(BaseAgent):
         )
 
         # ── 5b. Merge badly-split fragments ──────────────────
+        before_id_collapse = len(all_requirements)
+        all_requirements = self._collapse_duplicate_requirement_ids(all_requirements)
+        if before_id_collapse != len(all_requirements):
+            logger.info(
+                f"[B1] Requirement-ID collapse: {before_id_collapse} -> "
+                f"{len(all_requirements)} requirements"
+            )
+
         before_merge = len(all_requirements)
         all_requirements = self._merge_fragments(all_requirements)
         if before_merge != len(all_requirements):
@@ -493,6 +502,7 @@ class RequirementsExtractionAgent(BaseAgent):
         with instructions to preserve original requirement IDs.
         """
         # Build a specialized prompt for table extraction
+        prompt_table_text = truncate_at_boundary(table_text, 6_000)
         table_prompt = (
             "You are a DETERMINISTIC EXTRACTION ENGINE processing a structured "
             "requirements table from an RFP.\n\n"
@@ -510,7 +520,7 @@ class RequirementsExtractionAgent(BaseAgent):
             "'Proposals with more than four Non-Compliant...'). ONLY extract actual requirements.\n"
             "7. Return ONLY a valid JSON array — no markdown fencing, no extra text.\n\n"
             f"SECTION: {section_name}\n\n"
-            f"TABLE CONTENT:\n{table_text}\n\n"
+            f"TABLE CONTENT:\n{prompt_table_text}\n\n"
             "For each requirement found, return a JSON object:\n"
             "  - requirement_id  : the ORIGINAL ID from the table (e.g., \"TR-001\")\n"
             "  - text            : the requirement description from the table\n"
@@ -551,7 +561,18 @@ class RequirementsExtractionAgent(BaseAgent):
             logger.error(
                 f"[B1] Table extraction failed for '{section_name}': {exc}"
             )
-            return []
+            recovered = self._recover_missing_table_rows(
+                table_text=table_text,
+                section_name=section_name,
+                parsed=[],
+                chunk_indices=chunk_indices,
+            )
+            if recovered:
+                logger.warning(
+                    f"[B1] Table extraction fallback recovered {len(recovered)} "
+                    f"row(s) for '{section_name}'"
+                )
+            return recovered
 
     # ── Section grouping ─────────────────────────────────────
 
@@ -952,6 +973,40 @@ class RequirementsExtractionAgent(BaseAgent):
                 unique.append(req)
         return unique
 
+    @staticmethod
+    def _collapse_duplicate_requirement_ids(
+        requirements: list[Requirement],
+    ) -> list[Requirement]:
+        """Prefer table-backed copies when duplicate requirement IDs exist."""
+        if len(requirements) < 2:
+            return requirements
+
+        best_by_id: dict[str, Requirement] = {}
+        ordered_ids: list[str] = []
+
+        def _score(req: Requirement) -> tuple[int, int, int]:
+            return (
+                1 if req.source_table_chunk_index >= 0 else 0,
+                len(req.source_chunk_indices or []),
+                len(req.text or ""),
+            )
+
+        for req in requirements:
+            rid = (req.requirement_id or "").strip().upper()
+            if not rid:
+                continue
+
+            current = best_by_id.get(rid)
+            if current is None:
+                best_by_id[rid] = req
+                ordered_ids.append(rid)
+                continue
+
+            if _score(req) > _score(current):
+                best_by_id[rid] = req
+
+        return [best_by_id[rid] for rid in ordered_ids]
+
     # ── Fragment merging ─────────────────────────────────────
 
     @staticmethod
@@ -990,6 +1045,13 @@ class RequirementsExtractionAgent(BaseAgent):
                     merged.append(req)
                     continue
 
+                if (
+                    req.source_table_chunk_index >= 0
+                    or next_req.source_table_chunk_index >= 0
+                ):
+                    merged.append(req)
+                    continue
+
                 text_ends_incomplete = not _TERMINAL_PUNCT.search(req.text)
                 next_starts_continuation = _CONTINUATION_START.match(
                     next_req.text.strip()
@@ -1017,6 +1079,7 @@ class RequirementsExtractionAgent(BaseAgent):
                         source_section=req.source_section,
                         keywords=combined_keywords,
                         source_chunk_indices=combined_chunks,
+                        source_table_chunk_index=req.source_table_chunk_index,
                     )
                     merged.append(merged_req)
                     skip_next = True

@@ -9,6 +9,9 @@ from rfp_automation.agents.legal_agent import LegalAgent
 from rfp_automation.agents.narrative_agent import NarrativeAssemblyAgent
 from rfp_automation.agents.requirement_extraction_agent import RequirementsExtractionAgent
 from rfp_automation.agents.writing_agent import RequirementWritingAgent
+from rfp_automation.agents.final_readiness_agent import FinalReadinessAgent
+from rfp_automation.models.state import RFPGraphState
+from rfp_automation.models.schemas import AssembledProposal, CommercialResult, LegalResult
 from rfp_automation.models.schemas import ResponseSection
 from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
@@ -129,6 +132,67 @@ def test_architecture_normalizes_vendor_fill_sections():
     assert len(section_ids) == len(set(section_ids))
 
 
+def test_order_generated_rows_drops_unlabeled_extras_for_exact_table_batches():
+    agent = RequirementWritingAgent()
+
+    ordered = agent._order_generated_rows(
+        data_lines=[
+            "| TR-002 | Requirement B | Partial |",
+            "| Extra note without id | keep me? | no |",
+            "| TR-001 | Requirement A | Full |",
+        ],
+        batch_rids=["TR-001", "TR-002"],
+    )
+
+    assert ordered == [
+        "| TR-001 | Requirement A | Full |",
+        "| TR-002 | Requirement B | Partial |",
+    ]
+
+
+def test_final_markdown_contains_only_proposal_body():
+    state = RFPGraphState(
+        assembled_proposal=AssembledProposal(
+            full_narrative=(
+                "# Proposal Body\n\n"
+                "## Technical Implementation Framework\n\n"
+                "Overview text.\n\n"
+                "```mermaid\nflowchart TD\n\n\n```\n\n"
+                "## Technical Implementation\n\n"
+                "### Technical Compliance Matrix\n\n"
+                "| Req. ID | Description | Vendor Response |\n"
+                "|---|---|---|\n"
+                "| TR-001 | First row | C |\n\n"
+                "> **Note:** [PIPELINE_STUB: Commercial Terms]\n\n"
+                "> **Note:** [PIPELINE_STUB: Legal & Compliance]\n\n"
+                "## Appendix Forms & Declarations\n\n"
+                "### Compliance Matrix\n\n"
+                "| Ref. | Requirement | Status |\n"
+                "|---|---|---|\n"
+                "| CM-05 | Placeholder row | [Vendor to fill] |\n\n"
+                "| CM-05 | Final row | C |\n"
+            )
+        ),
+        commercial_result=CommercialResult(
+            commercial_narrative="Commercial narrative only."
+        ),
+        legal_result=LegalResult(
+            legal_narrative="Legal narrative only."
+        ),
+    )
+
+    markdown = FinalReadinessAgent._build_markdown(state, "2026-03-25T00:00:00Z")
+
+    assert markdown.startswith("# Proposal Body")
+    assert "## Technical Implementation Framework" not in markdown
+    assert markdown.count("## Technical Implementation") == 1
+    assert "```mermaid" not in markdown
+    assert markdown.count("CM-05") == 1
+    assert "| CM-05 | Final row | C |" in markdown
+    assert "Pricing Line Items" not in markdown
+    assert "Human Validation" not in markdown
+
+
 def test_extract_relevant_table_text_keeps_only_requested_rows():
     agent = RequirementWritingAgent()
     table_text = (
@@ -178,6 +242,27 @@ def test_requirement_extraction_recovers_skipped_table_row_ids():
         ),
         section_name="Pricing",
         parsed=[],
+        chunk_indices=[189],
+    )
+
+    assert [req.requirement_id for req in recovered] == ["4.04"]
+
+
+def test_table_extraction_falls_back_to_row_recovery_on_llm_error(monkeypatch):
+    agent = RequirementsExtractionAgent()
+
+    monkeypatch.setattr(
+        "rfp_automation.agents.requirement_extraction_agent.llm_deterministic_call",
+        lambda _prompt: (_ for _ in ()).throw(RuntimeError("rate limit")),
+    )
+
+    recovered = agent._extract_from_table(
+        table_text=(
+            "Item ID | Description | Service Type | Pricing Model | Vendor to fill | Vendor to fill\n"
+            "4.04 | eSIM Remote Provisioning Platform (per SIM, one-time migration) | IoT Mobility | Per SIM | [Vendor to fill] | -\n"
+        ),
+        section_name="Pricing",
+        template="",
         chunk_indices=[189],
     )
 

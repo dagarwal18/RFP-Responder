@@ -206,47 +206,18 @@ def commercial_legal_parallel(state: dict[str, Any]) -> dict[str, Any]:
         currency = _get(commercial_result, "currency", "INR")
         total_price = _get(commercial_result, "total_price", 0)
 
-        pricing_table = ""
-        if line_items:
-            pricing_table = (
-                "\n\n### Pricing Line Items\n\n"
-                "| Category | Label | Quantity | Unit Rate | Total |\n"
-                "|---|---|---|---|---|\n"
-            )
-            for item in line_items:
-                ur = f"{currency} {_get(item, 'unit_rate', 0):,.2f}"
-                tot = f"{currency} {_get(item, 'total', 0):,.2f}"
-                pricing_table += (
-                    f"| {_get(item, 'category', '')} "
-                    f"| {_get(item, 'label', '')} "
-                    f"| {_get(item, 'quantity', '')} {_get(item, 'unit', '')} "
-                    f"| {ur} | {tot} |\n"
-                )
-            pricing_table += f"**Total Expected Price:** {currency} {total_price:,.2f}\n"
-
         # -- Extract legal fields --
         legal_narrative = (
             _get(legal_result, "legal_narrative", "")
             or _get(legal_result, "risk_register_summary", "")
         )
-        clause_risks = _get(legal_result, "clause_risks", [])
-        legal_table = ""
-        if clause_risks:
-            legal_table = "\n\n### Legal & Compliance Exceptions\n\n"
-            for risk in clause_risks:
-                rl = _get(_get(risk, "risk_level", "low"), "name", None) or _get(risk, "risk_level", "LOW")
-                legal_table += (
-                    f"- **Clause {_get(risk, 'clause_id', '?')} ({rl})**: "
-                    f"{_get(risk, 'concern', '')}\n"
-                    f"   *Recommendation*: {_get(risk, 'recommendation', '')}\n"
-                )
 
         def _stub_replacer(match):
             title = match.group(1).lower()
             if "commercial" in title or "pricing" in title:
-                return f"\n{(comm_narrative or '').strip()}\n{pricing_table}\n"
+                return f"\n{(comm_narrative or '').strip()}\n"
             elif "legal" in title or "contract" in title:
-                return f"\n{(legal_narrative or '').strip()}\n{legal_table}\n"
+                return f"\n{(legal_narrative or '').strip()}\n"
             return match.group(0)
 
         # Replace [PIPELINE_STUB: ...] markers
@@ -259,9 +230,9 @@ def commercial_legal_parallel(state: dict[str, Any]) -> dict[str, Any]:
         def _raw_stub_replacer(match):
             marker = match.group(0).lower()
             if "commercial" in marker or "pricing" in marker:
-                return f"\n{(comm_narrative or '').strip()}\n{pricing_table}\n"
+                return f"\n{(comm_narrative or '').strip()}\n"
             elif "legal" in marker or "contract" in marker:
-                return f"\n{(legal_narrative or '').strip()}\n{legal_table}\n"
+                return f"\n{(legal_narrative or '').strip()}\n"
             return match.group(0)
 
         updated_narr = _re.sub(

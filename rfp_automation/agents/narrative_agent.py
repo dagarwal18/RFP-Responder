@@ -350,6 +350,29 @@ class NarrativeAssemblyAgent(BaseAgent):
             break  # first non-empty line isn't a matching heading
         return content
 
+    @staticmethod
+    def _strip_terminal_conclusion(content: str) -> str:
+        """Remove generic per-section conclusion headings/paragraphs."""
+        if not content:
+            return content
+
+        content = re.sub(
+            r"\n+#{2,6}\s+Conclusion\s*\n[\s\S]*$",
+            "",
+            content,
+            flags=re.IGNORECASE,
+        )
+
+        paragraphs = re.split(r"\n\s*\n", content.strip())
+        if not paragraphs:
+            return content.strip()
+
+        last = paragraphs[-1].strip()
+        if re.match(r"^(?:In conclusion|In summary|To conclude|Overall,)\b", last, re.IGNORECASE):
+            paragraphs = paragraphs[:-1]
+
+        return "\n\n".join(p for p in paragraphs if p.strip()).strip()
+
     def _clean_known_placeholders(self, text: str, rfp_metadata: Any) -> str:
         """Replace resolvable placeholder patterns with actual data from
         rfp_metadata and company profile so they don't get flagged as unresolved."""
@@ -656,6 +679,7 @@ class NarrativeAssemblyAgent(BaseAgent):
                         if self._is_stub_content(content):
                             parts.append(f"\n> **Note:** [PIPELINE_STUB: {sub_title}]\n")
                         elif content:
+                            content = self._strip_terminal_conclusion(content)
                             parts.append(content)
             else:
                 # Standalone section
@@ -667,6 +691,7 @@ class NarrativeAssemblyAgent(BaseAgent):
 
                 # Strip duplicate heading from C2 content
                 content = self._strip_content_heading(content, title)
+                content = self._strip_terminal_conclusion(content)
 
                 if self._is_stub_content(content):
                     parts.append(f"\n> **Note:** [PIPELINE_STUB: {title}]\n")

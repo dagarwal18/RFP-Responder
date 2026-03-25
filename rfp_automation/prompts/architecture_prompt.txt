@@ -54,7 +54,7 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
    - Leave `mapped_capabilities` empty (these will be handled by their dedicated agents)
    - Provide a clear description of what the section should contain
 
-6. Assign a priority (1 = first section in the document) to each section based on the DOCUMENT ORDER that a reader should follow. This must reflect the logical reading order of a professional proposal: Cover Letter (1), Executive Summary (2), Table of Contents (3), then Technical Solution sections, then Company Profile, then Commercial, then Legal, then Appendices (last). Priority numbers MUST be sequential (1, 2, 3, ...) and MUST match the order you want the sections to appear in the final assembled document.
+6. Assign a priority (1 = first section in the document) to each section based on the DOCUMENT ORDER that a reader should follow. This must reflect the logical reading order of a professional proposal: Cover Letter (1), Executive Summary (2), Table of Contents (3), then the Technical Implementation section and its subsections, then Company Profile, then Commercial, then Legal, then Appendices (last). Priority numbers MUST be sequential (1, 2, 3, ...) and MUST match the order you want the sections to appear in the final assembled document.
 
 7. Provide a `description` for EVERY section explaining what it must contain.
 
@@ -67,9 +67,8 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
 BEFORE generating sections, analyze the RFP structure and submission instructions above.
 Design an ideal proposal structure based on the RFP's content areas. Group your sections by logical domain rather than simply replicating the RFP's own headings.
 
-CRITICAL RULE: NEVER group all technical requirements into a single massive umbrella section like "Technical Solution Overview" or "Response to Requirements".
-You MUST explicitly create granular, distinct sections for each major technical or operational domain.
-For example, instead of one "Technical Solution Overview", create separate sections such as "SD-WAN Core Architecture", "Cloud Interconnects & Data Center", "Managed Security Services (SOC)", "IoT & Mobility", "Commercial Terms", and "Operational Support & SLAs". Each granular section should only contain requirements relevant to its specific domain.
+CRITICAL RULE: Do NOT emit multiple disconnected top-level technical sections. The proposal should have one parent technical section such as "Technical Implementation", with granular technical domains represented as subsections inside it (for example: SD-WAN Core Architecture, Technical Compliance Matrix, Cloud Interconnects & Data Center, Managed Security Services (SOC), and IoT & Mobility).
+You MUST explicitly preserve those granular technical domains, but they should sit under the single parent technical section rather than becoming separate top-level sections.
 
 This rule takes HIGHEST PRIORITY — proposal structure must be purposeful, granular, and driven by logical domains based on the RFP context. You must absolutely avoid blindly replicating the RFP's table of contents or dumping requirements into catch-all sections.
 

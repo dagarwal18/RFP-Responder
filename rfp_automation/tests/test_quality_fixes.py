@@ -18,6 +18,7 @@ import pytest
 from rfp_automation.agents.requirement_extraction_agent import (
     RequirementsExtractionAgent,
 )
+from rfp_automation.agents.writing_agent import RequirementWritingAgent
 from rfp_automation.models.schemas import Requirement
 from rfp_automation.models.enums import (
     RequirementType,
@@ -25,6 +26,7 @@ from rfp_automation.models.enums import (
     RequirementCategory,
     ImpactLevel,
 )
+from rfp_automation.utils.mermaid_utils import _validate_mermaid_syntax
 
 
 # ═══════════════════════════════════════════════════════════
@@ -173,6 +175,68 @@ class TestFragmentMerging:
         # "minimum" starts with lowercase → merge again
         assert len(result) <= 2  # at least first pair merges
 
+    def test_does_not_merge_table_backed_rows(self):
+        """Table rows should never be merged into each other."""
+        reqs = [
+            Requirement(
+                requirement_id="4.03",
+                text="Private APN Setup and Monthly Management",
+                type=RequirementType.MANDATORY,
+                classification=RequirementClassification.FUNCTIONAL,
+                category=RequirementCategory.TECHNICAL,
+                impact=ImpactLevel.MEDIUM,
+                source_section="Pricing",
+                source_table_chunk_index=188,
+            ),
+            Requirement(
+                requirement_id="4.04",
+                text="eSIM Remote Provisioning Platform (per SIM, one-time migration)",
+                type=RequirementType.MANDATORY,
+                classification=RequirementClassification.FUNCTIONAL,
+                category=RequirementCategory.TECHNICAL,
+                impact=ImpactLevel.MEDIUM,
+                source_section="Pricing",
+                source_table_chunk_index=189,
+            ),
+        ]
+
+        result = RequirementsExtractionAgent._merge_fragments(reqs)
+
+        assert [req.requirement_id for req in result] == ["4.03", "4.04"]
+
+    def test_duplicate_requirement_ids_prefer_table_backed_copy(self):
+        """If the same ID appears twice, the table-backed copy should win."""
+        prose_req = Requirement(
+            requirement_id="CM-06",
+            text="India Legal Entity duplicate from prose",
+            type=RequirementType.MANDATORY,
+            classification=RequirementClassification.FUNCTIONAL,
+            category=RequirementCategory.TECHNICAL,
+            impact=ImpactLevel.MEDIUM,
+            source_section="Appendix",
+            source_chunk_indices=[220, 221],
+            source_table_chunk_index=-1,
+        )
+        table_req = Requirement(
+            requirement_id="CM-06",
+            text="India Legal Entity",
+            type=RequirementType.MANDATORY,
+            classification=RequirementClassification.FUNCTIONAL,
+            category=RequirementCategory.TECHNICAL,
+            impact=ImpactLevel.MEDIUM,
+            source_section="Appendix",
+            source_chunk_indices=[195],
+            source_table_chunk_index=195,
+        )
+
+        collapsed = RequirementsExtractionAgent._collapse_duplicate_requirement_ids(
+            [prose_req, table_req]
+        )
+
+        assert len(collapsed) == 1
+        assert collapsed[0].source_table_chunk_index == 195
+        assert collapsed[0].text == "India Legal Entity"
+
 
 # ═══════════════════════════════════════════════════════════
 # C2 Word Count Validation Tests
@@ -303,6 +367,15 @@ class TestMermaidSanitization:
         assert "[IoT Gateway]" in result
         assert "[Edge Processing]" in result
 
+    def test_validate_mermaid_rejects_empty_graph_body(self):
+        assert _validate_mermaid_syntax("graph LR") == "Mermaid block has no body"
+
+    def test_validate_mermaid_rejects_body_without_links(self):
+        error = _validate_mermaid_syntax(
+            "graph LR\n    A[Only Node]\n    B[Second Node]"
+        )
+        assert error == "Graph/flowchart block has no links"
+
 
 # ═══════════════════════════════════════════════════════════
 # C2 Echo Block Stripping Tests
@@ -353,6 +426,17 @@ class TestC2EchoBlockStripping:
         result = RequirementWritingAgent._strip_echo_blocks(content)
         assert "```mermaid" in result
         assert "flowchart TD" in result
+
+    def test_strips_inline_json_metadata_suffix(self):
+        content = (
+            "Technical narrative paragraph.\n"
+            '", "requirements_addressed": ["REQ-0001"], "word_count": 50 }\n'
+            "}\n"
+        )
+        result = RequirementWritingAgent._strip_echo_blocks(content)
+        assert "requirements_addressed" not in result
+        assert '"word_count"' not in result
+        assert result.strip() == "Technical narrative paragraph."
 
 
 # ═══════════════════════════════════════════════════════════

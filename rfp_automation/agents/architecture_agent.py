@@ -48,16 +48,16 @@ _TABLE_TECH_REQ_ID_RE = re.compile(r"^TR-\d{3}$", re.IGNORECASE)
 _TABLE_PRICING_REQ_ID_RE = re.compile(r"^\d+\.\d{2}$")
 _TABLE_APPENDIX_REQ_ID_RE = re.compile(r"^CM-\d{2}$", re.IGNORECASE)
 _MERGED_TECH_SECTION_TITLE = "Technical Implementation"
-_TECHNICAL_NARRATIVE_TITLE = "Technical Solution Narrative"
+_TECHNICAL_NARRATIVE_TITLE = "Technical Implementation Narrative"
 _PRICING_MATRIX_TITLE = "Pricing Schedule Matrix"
 _APPENDIX_TABLES_TITLE = "Appendix Forms & Declarations"
 _SECTION_TITLE_NORMALIZATION: tuple[tuple[re.Pattern[str], str], ...] = (
-    (re.compile(r"^technical implementation$", re.IGNORECASE), "Technical Solution — Technical Compliance Matrix"),
-    (re.compile(r"^technical solution narrative$", re.IGNORECASE), "Technical Solution — Solution Narrative"),
-    (re.compile(r"sd-wan|network & edge", re.IGNORECASE), "Technical Solution — Network & Edge Architecture"),
-    (re.compile(r"cloud interconnect", re.IGNORECASE), "Technical Solution — Cloud Interconnect"),
-    (re.compile(r"managed security operations|soc", re.IGNORECASE), "Technical Solution — Managed Security Operations"),
-    (re.compile(r"iot|mobility", re.IGNORECASE), "Technical Solution — IoT & Mobility"),
+    (re.compile(r"^technical implementation$", re.IGNORECASE), "Technical Implementation — Technical Compliance Matrix"),
+    (re.compile(r"^technical solution narrative$", re.IGNORECASE), "Technical Implementation — Solution Narrative"),
+    (re.compile(r"sd-wan|network & edge", re.IGNORECASE), "Technical Implementation — Network & Edge Architecture"),
+    (re.compile(r"cloud interconnect", re.IGNORECASE), "Technical Implementation — Cloud Interconnect"),
+    (re.compile(r"managed security operations|soc", re.IGNORECASE), "Technical Implementation — Managed Security Operations"),
+    (re.compile(r"iot|mobility", re.IGNORECASE), "Technical Implementation — IoT & Mobility"),
     (re.compile(r"^compliance & regulatory framework$", re.IGNORECASE), "Governance & Compliance — Compliance Framework"),
     (re.compile(r"^operational support & slas?$", re.IGNORECASE), "Service Management — Operations & SLA Commitments"),
     (re.compile(r"^implementation & migration plan$", re.IGNORECASE), "Delivery Approach — Implementation & Migration"),
@@ -98,7 +98,7 @@ class ArchitecturePlanningAgent(BaseAgent):
             req_id = d.get("requirement_id", "?")
             req_type = d.get("type", "?")
             req_class = d.get("classification", "?")
-            req_text = d.get("text", str(d))[:200]  # cap text at 200 chars
+            req_text = d.get("text", str(d))[:120]  # keep C1 under Groq TPM limits
             compact_req_lines.append(f"{req_id} | {req_type} | {req_class} | {req_text}")
 
         requirements_compact = "\n".join(compact_req_lines)
@@ -250,6 +250,7 @@ class ArchitecturePlanningAgent(BaseAgent):
                 if not isinstance(s, dict)
                 else s.get("section_id", "")
             )
+            summary = self._truncate_at_word(summary, 180)
             parts.append(
                 f"### {section_id}: {title} [Category: {category}]\n{summary}"
             )
@@ -395,20 +396,20 @@ class ArchitecturePlanningAgent(BaseAgent):
         # ── Budget calculation ───────────────────────────
         chars_per_token = 4  # conservative estimate
         settings = get_settings()
-        # Use llm_max_tokens as the per-request token budget (covers TPM limit).
-        # On Groq free tier (6K TPM), a single request can use up to 6K tokens.
-        # llm_max_tokens (8192) is a reasonable cap; we reserve output headroom.
-        total_token_budget = settings.llm_max_tokens  # 8192
-        output_reserve = 2000  # tokens for LLM JSON response
+        # Groq on-demand for qwen/qwen3-32b hard-fails once a single request
+        # gets near the 6K TPM ceiling, so stay comfortably below that.
+        total_token_budget = min(settings.llm_max_tokens, 5200)
+        output_reserve = 1200  # JSON response remains small in practice
         template_tokens = len(template) // chars_per_token + 200  # ~1,950 tokens
-        data_budget_tokens = total_token_budget - output_reserve - template_tokens
+        feedback_reserve = 250 if review_feedback else 0
+        data_budget_tokens = total_token_budget - output_reserve - template_tokens - feedback_reserve
         data_budget_chars = max(data_budget_tokens * chars_per_token, 4000)
 
-        # Proportional allocation: requirements 55%, sections 20%, capabilities 15%, submission 10%
-        budget_reqs = int(data_budget_chars * 0.55)
-        budget_sections = int(data_budget_chars * 0.20)
-        budget_caps = int(data_budget_chars * 0.15)
-        budget_sub = int(data_budget_chars * 0.10)
+        # Proportional allocation: requirements 50%, sections 22%, capabilities 13%, submission 15%
+        budget_reqs = int(data_budget_chars * 0.50)
+        budget_sections = int(data_budget_chars * 0.22)
+        budget_caps = int(data_budget_chars * 0.13)
+        budget_sub = int(data_budget_chars * 0.15)
 
         total_input = len(rfp_sections) + len(requirements) + len(capabilities) + len(submission_instructions)
         if total_input > data_budget_chars:
@@ -428,7 +429,7 @@ class ArchitecturePlanningAgent(BaseAgent):
         if review_feedback:
             prompt += (
                 "\n\n## Human Validation Feedback\n\n"
-                + self._truncate_at_word(review_feedback, 1500)
+                + self._truncate_at_word(review_feedback, 800)
                 + "\n\nRevise the proposal structure to address this feedback."
             )
         return prompt

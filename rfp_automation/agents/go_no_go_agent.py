@@ -1,8 +1,7 @@
 """
-A3 — Go / No-Go Agent
-Responsibility: Extract requirements from RFP, map them against pre-extracted
-                company policies, score strategic fit / feasibility / risk,
-                produce GO or NO_GO with detailed requirement mappings.
+A3 - Go / No-Go Agent
+Responsibility: Extract requirements from the RFP, map them against
+company policies/capabilities, score fit/risk, and produce GO or NO_GO.
 """
 
 from __future__ import annotations
@@ -10,49 +9,66 @@ from __future__ import annotations
 import json
 import logging
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
 from rfp_automation.agents.base_agent import BaseAgent
-from rfp_automation.models.enums import AgentName, PipelineStatus, GoNoGoDecision
-from rfp_automation.models.state import RFPGraphState
+from rfp_automation.config import get_settings
+from rfp_automation.models.enums import AgentName, GoNoGoDecision, PipelineStatus
 from rfp_automation.models.schemas import GoNoGoResult, RequirementMapping
+from rfp_automation.models.state import RFPGraphState
 from rfp_automation.mcp import MCPService
 from rfp_automation.services.llm_service import llm_text_call
 
 logger = logging.getLogger(__name__)
 
 _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "go_no_go_prompt.txt"
+_A3_TOTAL_TOKEN_BUDGET = 4_200
+_A3_OUTPUT_TOKEN_RESERVE = 900
+_A3_CHARS_PER_TOKEN = 3
+_A3_MIN_INPUT_CHARS = 3_600
+_A3_MAX_SECTIONS = 18
+_A3_MAX_POLICIES = 12
+_A3_MAX_CAPABILITIES = 5
+_COMMON_WORDS = {
+    "about", "across", "after", "all", "and", "any", "are", "authority", "available",
+    "basis", "between", "branch", "capability", "capabilities", "certification", "cloud",
+    "company", "compliance", "contract", "current", "customer", "customers", "data",
+    "delivery", "direct", "document", "edge", "ensure", "enterprise", "for", "from",
+    "have", "include", "including", "india", "infrastructure", "into", "limited",
+    "management", "managed", "must", "network", "operations", "platform", "programme",
+    "proposal", "provide", "required", "requirement", "requirements", "response",
+    "section", "security", "service", "services", "shall", "should", "sites", "solution",
+    "support", "system", "technical", "that", "the", "their", "this", "those", "vendor",
+    "with", "within", "workstream",
+}
 
 
 class GoNoGoAgent(BaseAgent):
     name = AgentName.A3_GO_NO_GO
 
     def _real_process(self, state: RFPGraphState) -> RFPGraphState:
-        # ── 1. Validate rfp_id ──────────────────────────
         rfp_id = state.rfp_metadata.rfp_id
         if not rfp_id:
-            raise ValueError("No rfp_id in state — A1 Intake must run first")
+            raise ValueError("No rfp_id in state - A1 Intake must run first")
 
         logger.info(f"[A3] Starting Go/No-Go analysis for {rfp_id}")
 
-        # ── 2. Gather RFP sections from structuring result ──
+        mcp = MCPService()
+
         sections = state.structuring_result.sections
         logger.debug(f"[A3] Structuring result has {len(sections)} sections")
         rfp_sections_text = self._format_sections(sections)
 
-        # If no structured sections, fall back to RFP store
         if not rfp_sections_text.strip():
-            logger.debug("[A3] No structured sections — falling back to MCP RFP store")
-            mcp = MCPService()
+            logger.debug("[A3] No structured sections - falling back to MCP RFP store")
             chunks = mcp.query_rfp_all_chunks(rfp_id, top_k=50)
             logger.debug(f"[A3] Retrieved {len(chunks)} chunks from MCP")
-            rfp_sections_text = "\n\n".join(
-                c.get("text", "") for c in chunks if c.get("text")
-            )
+            rfp_sections_text = self._format_chunk_fallback(chunks)
 
         if not rfp_sections_text.strip():
-            logger.warning("[A3] No RFP content available — defaulting to GO")
+            logger.warning("[A3] No RFP content available - defaulting to GO")
             state.go_no_go_result = GoNoGoResult(
                 decision=GoNoGoDecision.GO,
                 justification="No RFP content available for analysis. Defaulting to GO.",
@@ -60,80 +76,209 @@ class GoNoGoAgent(BaseAgent):
             state.status = PipelineStatus.EXTRACTING_REQUIREMENTS
             return state
 
-        # ── 3. Load pre-extracted company policies ──────
-        mcp = MCPService()
         policies = mcp.get_extracted_policies()
         logger.debug(f"[A3] Loaded {len(policies)} pre-extracted policies")
-        policies_text = json.dumps(policies, indent=2) if policies else "No company policies extracted yet."
+        policies_text = self._format_relevant_policies(policies, rfp_sections_text)
 
-        # ── 4. Load company capabilities for enrichment ─
-        capabilities = mcp.query_knowledge("company capabilities services", top_k=10)
+        capability_query = self._build_capability_query(rfp_sections_text)
+        capabilities = mcp.query_knowledge(capability_query, top_k=10)
         logger.debug(f"[A3] Loaded {len(capabilities)} capability chunks")
-        capabilities_text = "\n".join(
-            c.get("text", "") for c in capabilities if c.get("text")
-        )
-        if not capabilities_text.strip():
-            capabilities_text = "No capability data available."
+        capabilities_text = self._format_capabilities(capabilities)
 
-        # ── 5. Build prompt ─────────────────────────────
         prompt = self._build_prompt(rfp_sections_text, policies_text, capabilities_text)
         logger.debug(
-            f"[A3] Prompt built — {len(prompt)} chars "
+            f"[A3] Prompt built - {len(prompt)} chars "
             f"(RFP: {len(rfp_sections_text)} | Policies: {len(policies_text)} | Capabilities: {len(capabilities_text)})"
         )
 
-        # ── 6. Call LLM ─────────────────────────────────
-        logger.info("[A3] Calling LLM for Go/No-Go analysis…")
+        logger.info("[A3] Calling LLM for Go/No-Go analysis...")
         raw_response = llm_text_call(prompt, deterministic=True)
         logger.debug(f"[A3] Raw LLM response ({len(raw_response)} chars):\n{raw_response[:2000]}")
 
-        # ── 7. Parse response ───────────────────────────
         result = self._parse_response(raw_response)
 
-        # ── 8. Update state ─────────────────────────────
-
         state.go_no_go_result = result
+        state.status = PipelineStatus.EXTRACTING_REQUIREMENTS
 
         if result.decision == GoNoGoDecision.NO_GO:
-            # TEMPORARY BYPASS [TESTING ONLY]: Continue pipeline even on NO_GO
             logger.warning("[A3 TEST BYPASS] Continuing pipeline downstream despite NO_GO decision.")
-            state.status = PipelineStatus.EXTRACTING_REQUIREMENTS
-            logger.info(f"[A3] Decision: NO_GO — {result.justification}")
+            logger.info(f"[A3] Decision: NO_GO - {result.justification}")
         else:
-            state.status = PipelineStatus.EXTRACTING_REQUIREMENTS
-            logger.info(f"[A3] Decision: GO — {result.justification}")
+            logger.info(f"[A3] Decision: GO - {result.justification}")
 
-        # ── Detailed decision dump (INFO for visibility) ──
         self._log_mapping_table(result)
-
         return state
 
-    # ── Helpers ──────────────────────────────────────────
-
-    def _format_sections(self, sections: list) -> str:
-        """Format structuring result sections into readable text."""
+    def _format_sections(self, sections: list[Any]) -> str:
+        """Format the highest-signal structured sections into a compact prompt block."""
         if not sections:
             return ""
-        parts = []
-        for s in sections:
-            title = getattr(s, "title", str(s)) if not isinstance(s, dict) else s.get("title", "")
-            category = getattr(s, "category", "") if not isinstance(s, dict) else s.get("category", "")
-            summary = getattr(s, "content_summary", "") if not isinstance(s, dict) else s.get("content_summary", "")
-            parts.append(f"### {title} [{category}]\n{summary}")
-        return "\n\n".join(parts)
+
+        candidates: list[tuple[int, int, str]] = []
+        for idx, section in enumerate(sections):
+            if isinstance(section, dict):
+                section_id = section.get("section_id", "")
+                title = section.get("title", "")
+                category = section.get("category", "")
+                summary = section.get("content_summary", "")
+            else:
+                section_id = getattr(section, "section_id", "")
+                title = getattr(section, "title", "")
+                category = getattr(section, "category", "")
+                summary = getattr(section, "content_summary", "")
+
+            line = (
+                f"{section_id} | {self._truncate_at_word(title, 90)} [{category}] | "
+                f"{self._truncate_at_word(summary, 180)}"
+            ).strip(" |")
+            if not line:
+                continue
+            score = self._score_section(idx, title, category, summary)
+            candidates.append((score, idx, line))
+
+        selected = self._select_scored_lines(
+            candidates,
+            max_chars=3_400,
+            max_items=_A3_MAX_SECTIONS,
+        )
+        return "\n".join(selected)
+
+    def _format_chunk_fallback(self, chunks: list[dict[str, Any]]) -> str:
+        """Compact fallback when A2 produced no structured sections."""
+        if not chunks:
+            return ""
+        lines: list[str] = []
+        for idx, chunk in enumerate(chunks[:18], start=1):
+            text = self._truncate_at_word(chunk.get("text", ""), 220)
+            if text:
+                lines.append(f"Chunk {idx}: {text}")
+        return "\n".join(lines)
+
+    def _format_relevant_policies(
+        self,
+        policies: list[dict[str, Any]],
+        rfp_sections_text: str,
+    ) -> str:
+        """Pick a small, relevant subset of policies instead of dumping the full corpus."""
+        if not policies:
+            return "No company policies extracted yet."
+
+        keywords = self._extract_keywords(rfp_sections_text)
+        candidates: list[tuple[int, int, str]] = []
+        for idx, policy in enumerate(policies):
+            policy_id = policy.get("policy_id", "")
+            category = policy.get("category", "")
+            text = policy.get("policy_text", "") or policy.get("text", "")
+            if not text:
+                continue
+            formatted = (
+                f"{policy_id or f'POL-{idx + 1:04d}'} "
+                f"[{category or 'general'}] "
+                f"{self._truncate_at_word(text, 220)}"
+            )
+            score = self._score_policy(text, category, keywords)
+            candidates.append((score, idx, formatted))
+
+        selected = self._select_scored_lines(
+            candidates,
+            max_chars=2_200,
+            max_items=_A3_MAX_POLICIES,
+        )
+        return "\n".join(selected) if selected else "No company policies extracted yet."
+
+    def _build_capability_query(self, rfp_sections_text: str) -> str:
+        keywords = self._extract_keywords(rfp_sections_text)
+        suffix = " ".join(keywords[:8])
+        if not suffix:
+            return "company capabilities services"
+        return f"company capabilities services {suffix}"
+
+    def _format_capabilities(self, capabilities: list[dict[str, Any]]) -> str:
+        lines: list[str] = []
+        for idx, capability in enumerate(capabilities[:_A3_MAX_CAPABILITIES], start=1):
+            text = self._truncate_at_word(capability.get("text", ""), 180)
+            if text:
+                lines.append(f"Capability {idx}: {text}")
+        return "\n".join(lines) if lines else "No capability data available."
+
+    def _score_section(self, idx: int, title: str, category: str, summary: str) -> int:
+        text = f"{title} {summary}".lower()
+        category_l = (category or "").lower()
+        score = 0
+        if idx < 8:
+            score += 8
+        if category_l in {"technical", "compliance", "legal", "evaluation", "submission"}:
+            score += 10
+        if category_l in {"scope", "commercial"}:
+            score += 6
+        for needle in (
+            "mandatory", "must", "security", "compliance", "cert", "pricing",
+            "commercial", "sla", "submission", "deadline", "technical",
+            "network", "cloud", "soc", "data", "evaluation", "eligibility",
+        ):
+            if needle in text:
+                score += 2
+        return score
+
+    def _score_policy(self, text: str, category: str, keywords: list[str]) -> int:
+        haystack = f"{category} {text}".lower()
+        score = 0
+        for keyword in keywords:
+            if keyword in haystack:
+                score += 4
+        for needle in (
+            "iso", "soc", "security", "compliance", "privacy", "support",
+            "service", "availability", "india", "data", "cloud",
+        ):
+            if needle in haystack:
+                score += 1
+        return score
+
+    def _extract_keywords(self, text: str, limit: int = 20) -> list[str]:
+        words = re.findall(r"[a-zA-Z][a-zA-Z0-9\\-]{3,}", text.lower())
+        filtered = [word for word in words if word not in _COMMON_WORDS and not word.isdigit()]
+        counts = Counter(filtered)
+        return [word for word, _count in counts.most_common(limit)]
+
+    def _select_scored_lines(
+        self,
+        candidates: list[tuple[int, int, str]],
+        *,
+        max_chars: int,
+        max_items: int,
+    ) -> list[str]:
+        """Select highest-scoring entries while preserving source order."""
+        if not candidates:
+            return []
+
+        ranked = sorted(candidates, key=lambda item: (-item[0], item[1]))
+        selected: list[tuple[int, str]] = []
+        used_chars = 0
+
+        for _score, idx, line in ranked:
+            extra = len(line) + (1 if selected else 0)
+            if selected and (len(selected) >= max_items or used_chars + extra > max_chars):
+                continue
+            if not selected and extra > max_chars:
+                selected.append((idx, self._truncate_at_word(line, max_chars)))
+                break
+            selected.append((idx, line))
+            used_chars += extra
+            if len(selected) >= max_items:
+                break
+
+        selected.sort(key=lambda item: item[0])
+        return [line for _, line in selected]
 
     def _log_mapping_table(self, result: GoNoGoResult) -> None:
         """Log a formatted requirement-mapping table at INFO level."""
-        # ── Scores summary ──
         logger.info(
-            f"[A3] Scores → strategic_fit={result.strategic_fit_score:.1f}/10, "
+            f"[A3] Scores -> strategic_fit={result.strategic_fit_score:.1f}/10, "
             f"technical_feasibility={result.technical_feasibility_score:.1f}/10, "
             f"regulatory_risk={result.regulatory_risk_score:.1f}/10"
         )
-
-        # ── Counts ──
         logger.info(
-            f"[A3] Mappings → total={result.total_requirements}, "
+            f"[A3] Mappings -> total={result.total_requirements}, "
             f"aligned={result.aligned_count}, violated={result.violated_count}, "
             f"risk={result.risk_count}, no_match={result.no_match_count}"
         )
@@ -143,64 +288,79 @@ class GoNoGoAgent(BaseAgent):
         if result.red_flags:
             logger.info(f"[A3] Red flags: {result.red_flags}")
 
-        # ── Formatted table ──
         if not result.requirement_mappings:
             logger.info("[A3] No requirement mappings produced.")
             return
 
-        # Column widths
         id_w, status_w, conf_w = 14, 10, 6
         req_w, policy_w, reason_w = 40, 30, 30
 
-        sep = f"╠{'═'*id_w}╬{'═'*status_w}╬{'═'*conf_w}╬{'═'*req_w}╬{'═'*policy_w}╬{'═'*reason_w}╣"
-        top = f"╔{'═'*id_w}╦{'═'*status_w}╦{'═'*conf_w}╦{'═'*req_w}╦{'═'*policy_w}╦{'═'*reason_w}╗"
-        bot = f"╚{'═'*id_w}╩{'═'*status_w}╩{'═'*conf_w}╩{'═'*req_w}╩{'═'*policy_w}╩{'═'*reason_w}╝"
+        sep = f"+{'-' * id_w}+{'-' * status_w}+{'-' * conf_w}+{'-' * req_w}+{'-' * policy_w}+{'-' * reason_w}+"
 
         def pad(text: str, width: int) -> str:
-            return (text[:width-1] + "…" if len(text) >= width else text).ljust(width)
-
-        header = (
-            f"║{pad('Requirement ID', id_w)}║{pad('Status', status_w)}║{pad('Conf.', conf_w)}"
-            f"║{pad('Requirement Text', req_w)}║{pad('Matched Policy', policy_w)}║{pad('Reasoning', reason_w)}║"
-        )
+            return (text[: width - 1] + "...") if len(text) >= width else text.ljust(width)
 
         lines = [
-            f"[A3] ╔{'═' * (id_w + status_w + conf_w + req_w + policy_w + reason_w + 5)}╗",
-            f"[A3] ║  REQUIREMENT MAPPING RESULTS — {result.total_requirements} requirements{' ' * max(0, id_w + status_w + conf_w + req_w + policy_w + reason_w + 5 - 35 - len(str(result.total_requirements)))}║",
-            f"[A3] {top}",
-            f"[A3] {header}",
+            "[A3] Requirement mapping results",
+            f"[A3] {sep}",
+            (
+                f"[A3] |{pad('Requirement ID', id_w)}|{pad('Status', status_w)}|{pad('Conf.', conf_w)}|"
+                f"{pad('Requirement Text', req_w)}|{pad('Matched Policy', policy_w)}|{pad('Reasoning', reason_w)}|"
+            ),
             f"[A3] {sep}",
         ]
 
-        for m in result.requirement_mappings:
-            row = (
-                f"║{pad(m.requirement_id, id_w)}"
-                f"║{pad(m.mapping_status, status_w)}"
-                f"║{pad(f'{m.confidence:.2f}', conf_w)}"
-                f"║{pad(m.requirement_text, req_w)}"
-                f"║{pad(m.matched_policy or '—', policy_w)}"
-                f"║{pad(m.reasoning or '—', reason_w)}║"
+        for mapping in result.requirement_mappings:
+            lines.append(
+                f"[A3] |{pad(mapping.requirement_id, id_w)}|"
+                f"{pad(mapping.mapping_status, status_w)}|"
+                f"{pad(f'{mapping.confidence:.2f}', conf_w)}|"
+                f"{pad(mapping.requirement_text, req_w)}|"
+                f"{pad(mapping.matched_policy or '-', policy_w)}|"
+                f"{pad(mapping.reasoning or '-', reason_w)}|"
             )
-            lines.append(f"[A3] {row}")
 
-        lines.append(f"[A3] {bot}")
-
+        lines.append(f"[A3] {sep}")
         logger.info("\n".join(lines))
 
-    def _build_prompt(
-        self, rfp_sections: str, policies: str, capabilities: str
-    ) -> str:
+    def _build_prompt(self, rfp_sections: str, policies: str, capabilities: str) -> str:
         template = _PROMPT_PATH.read_text(encoding="utf-8")
+        settings = get_settings()
+        total_token_budget = min(settings.llm_max_tokens, _A3_TOTAL_TOKEN_BUDGET)
+        template_tokens = len(template) // _A3_CHARS_PER_TOKEN + 200
+        data_budget_tokens = total_token_budget - _A3_OUTPUT_TOKEN_RESERVE - template_tokens
+        data_budget_chars = max(data_budget_tokens * _A3_CHARS_PER_TOKEN, _A3_MIN_INPUT_CHARS)
+
+        budget_sections = int(data_budget_chars * 0.46)
+        budget_policies = int(data_budget_chars * 0.36)
+        budget_capabilities = int(data_budget_chars * 0.18)
+
+        total_input = len(rfp_sections) + len(policies) + len(capabilities)
+        if total_input > data_budget_chars:
+            logger.info(
+                f"[A3] Truncating prompt inputs ({total_input} chars, "
+                f"~{total_input // _A3_CHARS_PER_TOKEN} tokens) to fit budget "
+                f"({data_budget_chars} chars, ~{data_budget_tokens} tokens)"
+            )
+
         return (
             template
-            .replace("{rfp_sections}", rfp_sections[:9_000])
-            .replace("{company_policies}", policies[:6_000])
-            .replace("{capabilities}", capabilities[:4_000])
+            .replace("{rfp_sections}", self._truncate_at_word(rfp_sections, budget_sections))
+            .replace("{company_policies}", self._truncate_at_word(policies, budget_policies))
+            .replace("{capabilities}", self._truncate_at_word(capabilities, budget_capabilities))
         )
+
+    @staticmethod
+    def _truncate_at_word(text: str, max_chars: int) -> str:
+        if len(text) <= max_chars:
+            return text
+        cut = text.rfind(" ", 0, max_chars)
+        if cut <= 0:
+            cut = max_chars
+        return text[:cut]
 
     def _parse_response(self, raw: str) -> GoNoGoResult:
         """Parse the LLM JSON response into a GoNoGoResult."""
-        # Strip markdown fencing
         cleaned = raw.strip()
         cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
         cleaned = re.sub(r"\s*```$", "", cleaned)
@@ -209,7 +369,6 @@ class GoNoGoAgent(BaseAgent):
         try:
             data = json.loads(cleaned)
         except json.JSONDecodeError:
-            # Fallback: find first { ... } block
             match = re.search(r"\{.*\}", cleaned, re.DOTALL)
             if match:
                 try:
@@ -218,34 +377,33 @@ class GoNoGoAgent(BaseAgent):
                     pass
 
         if not data:
-            logger.error("[A3] Failed to parse LLM response — defaulting to GO")
+            logger.error("[A3] Failed to parse LLM response - defaulting to GO")
             return GoNoGoResult(
                 decision=GoNoGoDecision.GO,
                 justification="LLM response parsing failed. Defaulting to GO for manual review.",
             )
 
-        # Parse requirement mappings
         mappings: list[RequirementMapping] = []
-        for m in data.get("requirement_mappings", []):
-            if isinstance(m, dict):
-                mappings.append(RequirementMapping(
-                    requirement_id=m.get("requirement_id", ""),
-                    requirement_text=m.get("requirement_text", ""),
-                    source_section=m.get("source_section", ""),
-                    mapping_status=m.get("mapping_status", "NO_MATCH").upper(),
-                    matched_policy=m.get("matched_policy", ""),
-                    matched_policy_id=m.get("matched_policy_id", ""),
-                    confidence=float(m.get("confidence", 0.0)),
-                    reasoning=m.get("reasoning", ""),
-                ))
+        for mapping in data.get("requirement_mappings", []):
+            if isinstance(mapping, dict):
+                mappings.append(
+                    RequirementMapping(
+                        requirement_id=mapping.get("requirement_id", ""),
+                        requirement_text=mapping.get("requirement_text", ""),
+                        source_section=mapping.get("source_section", ""),
+                        mapping_status=mapping.get("mapping_status", "NO_MATCH").upper(),
+                        matched_policy=mapping.get("matched_policy", ""),
+                        matched_policy_id=mapping.get("matched_policy_id", ""),
+                        confidence=float(mapping.get("confidence", 0.0)),
+                        reasoning=mapping.get("reasoning", ""),
+                    )
+                )
 
-        # Compute counts
-        aligned = sum(1 for m in mappings if m.mapping_status == "ALIGNS")
-        violated = sum(1 for m in mappings if m.mapping_status == "VIOLATES")
-        risk = sum(1 for m in mappings if m.mapping_status == "RISK")
-        no_match = sum(1 for m in mappings if m.mapping_status == "NO_MATCH")
+        aligned = sum(1 for mapping in mappings if mapping.mapping_status == "ALIGNS")
+        violated = sum(1 for mapping in mappings if mapping.mapping_status == "VIOLATES")
+        risk = sum(1 for mapping in mappings if mapping.mapping_status == "RISK")
+        no_match = sum(1 for mapping in mappings if mapping.mapping_status == "NO_MATCH")
 
-        # Determine decision
         decision_str = data.get("decision", "GO").upper()
         decision = GoNoGoDecision.NO_GO if decision_str == "NO_GO" else GoNoGoDecision.GO
 

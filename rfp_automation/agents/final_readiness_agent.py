@@ -183,49 +183,17 @@ class FinalReadinessAgent(BaseAgent):
         meta = state.rfp_metadata
         commercial = state.commercial_result
         legal = state.legal_result
-        approval = state.approval_package
-        review = state.review_package
 
-        # Perform placeholder replacement on the narrative body itself
         full_narr = state.assembled_proposal.full_narrative or "No proposal narrative available."
         import re
-        
-        # Build HTML Table for Pricing to enforce proper PDF column widths
-        pricing_table = "\n\n### Pricing Line Items\n\n<table style='width:100%;'>\n"
-        pricing_table += "<thead><tr><th style='width:15%; text-align:left;'>Category</th><th style='width:35%; text-align:left;'>Label</th><th style='width:20%; text-align:left;'>Quantity</th><th style='width:15%; text-align:left;'>Unit Rate</th><th style='width:15%; text-align:left;'>Total</th></tr></thead>\n<tbody>\n"
-        for item in commercial.line_items:
-            unit_rate = f"{commercial.currency} {getattr(item, 'unit_rate', 0):,.2f}"
-            total = f"{commercial.currency} {getattr(item, 'total', 0):,.2f}"
-            pricing_table += f"<tr><td>{getattr(item, 'category', '')}</td><td>{getattr(item, 'label', '')}</td><td>{getattr(item, 'quantity', '')} {getattr(item, 'unit', '')}</td><td>{unit_rate}</td><td>{total}</td></tr>\n"
-        pricing_table += "</tbody></table>\n\n"
-        pricing_table += f"**Total Expected Price:** {commercial.currency} {commercial.total_price:,.2f}\n"
-
-        # Build Markdown Table for Legal Risks
-        legal_table = "\n\n### Legal & Compliance Exceptions\n\n"
-        if legal.clause_risks:
-            legal_table += "| Clause / Topic | Risk | Exception / Concern | Position |\n"
-            legal_table += "|---|---|---|---|\n"
-            for risk in legal.clause_risks:
-                risk_level = getattr(getattr(risk, "risk_level", "low"), "name", "LOW")
-                clause_text = " ".join(getattr(risk, "clause_text", "").split())
-                clause_label = clause_text[:90] + ("..." if len(clause_text) > 90 else "")
-                concern = " ".join(getattr(risk, "concern", "").split())
-                concern = concern[:140] + ("..." if len(concern) > 140 else "")
-                recommendation = str(getattr(risk, "recommendation", "")).strip().capitalize() or "Review"
-                legal_table += (
-                    f"| {clause_label or getattr(risk, 'clause_id', '?')} "
-                    f"| {risk_level} | {concern or 'See legal narrative.'} | {recommendation} |\n"
-                )
-        else:
-            legal_table += "No specific legal exceptions were extracted.\n"
 
         def _stub_replacer(match):
             title = match.group(1).lower()
             if "commercial" in title or "pricing" in title:
-                return f"\n{(commercial.commercial_narrative or '').strip()}\n{pricing_table}\n"
+                return f"\n{(commercial.commercial_narrative or '').strip()}\n"
             elif "legal" in title or "contract" in title:
                 legal_content = (legal.legal_narrative or legal.risk_register_summary or '').strip()
-                return f"\n{legal_content}\n{legal_table}\n"
+                return f"\n{legal_content}\n"
             return match.group(0)
 
         full_narr = re.sub(r">\s*\*\*Note:\*\*\s*\[PIPELINE_STUB:\s*(.*?)\]", _stub_replacer, full_narr)
@@ -234,10 +202,10 @@ class FinalReadinessAgent(BaseAgent):
         def _raw_stub_fallback(match):
             marker = match.group(0).lower()
             if "commercial" in marker or "pricing" in marker:
-                return f"\n{(commercial.commercial_narrative or '').strip()}\n{pricing_table}\n"
+                return f"\n{(commercial.commercial_narrative or '').strip()}\n"
             elif "legal" in marker or "contract" in marker:
                 legal_content = (legal.legal_narrative or legal.risk_register_summary or '').strip()
-                return f"\n{legal_content}\n{legal_table}\n"
+                return f"\n{legal_content}\n"
             return match.group(0)
 
         full_narr = re.sub(
@@ -251,39 +219,183 @@ class FinalReadinessAgent(BaseAgent):
             _stub_replacer, full_narr,
         )
 
-        # Commercial/Legal content is now part of full_narr (injected by
-        # commercial_legal_parallel before H1). We keep only the proposal
-        # body and human validation sections to avoid duplication.
-        sections = [
-            f"# {meta.rfp_title or 'Proposal Submission'}",
-            "",
-            f"- RFP ID: {meta.rfp_id or 'N/A'}",
-            f"- Client: {meta.client_name or 'N/A'}",
-            f"- Submitted At: {submitted_at}",
-            "",
-            full_narr,
-            "",
-            "## Human Validation",
-            "",
-            approval.decision_brief or "No human validation brief available.",
-        ]
+        # Proposal artifacts should contain only the proposal body.
+        full_narr = FinalReadinessAgent._cleanup_full_narrative(full_narr)
+        return full_narr.strip() + "\n"
 
-        if review.comments:
-            sections.extend(
-                [
-                    "",
-                    "## Review Comments",
-                    "",
-                ]
+    @staticmethod
+    def _cleanup_full_narrative(full_narr: str) -> str:
+        full_narr = FinalReadinessAgent._collapse_technical_parent_sections(full_narr)
+        full_narr = FinalReadinessAgent._strip_invalid_mermaid_blocks(full_narr)
+        full_narr = FinalReadinessAgent._canonicalize_known_table_sections(full_narr)
+        return full_narr
+
+    @staticmethod
+    def _collapse_technical_parent_sections(full_narr: str) -> str:
+        import re
+
+        framework_heading = "## Technical Implementation Framework"
+        parent_heading = "## Technical Implementation"
+
+        framework_idx = full_narr.find(framework_heading)
+        if framework_idx < 0:
+            return full_narr
+
+        rewritten = full_narr.replace(
+            framework_heading,
+            "## Technical Implementation\n\n### Framework",
+            1,
+        )
+        rewritten = re.sub(
+            r"(?m)^(\d+\.\s+)Technical Implementation Framework$",
+            r"\1Technical Implementation",
+            rewritten,
+        )
+
+        heading_matches = list(re.finditer(r"(?m)^## Technical Implementation\s*$", rewritten))
+        for match in reversed(heading_matches[1:]):
+            line_end = rewritten.find("\n", match.start())
+            if line_end < 0:
+                line_end = len(rewritten)
+            rewritten = rewritten[:match.start()].rstrip() + "\n\n" + rewritten[line_end:].lstrip()
+        return rewritten
+
+    @staticmethod
+    def _strip_invalid_mermaid_blocks(full_narr: str) -> str:
+        from rfp_automation.utils.mermaid_utils import (
+            extract_mermaid_blocks,
+            _validate_mermaid_syntax,
+        )
+
+        rewritten = full_narr
+        for block in reversed(extract_mermaid_blocks(full_narr)):
+            if _validate_mermaid_syntax(block.code) is None:
+                continue
+            rewritten = rewritten.replace(block.raw_match, "", 1)
+        return rewritten
+
+    @staticmethod
+    def _canonicalize_known_table_sections(full_narr: str) -> str:
+        rewritten = full_narr
+        rewritten = FinalReadinessAgent._canonicalize_table_section(
+            rewritten,
+            heading="### Technical Compliance Matrix",
+            row_id_re=r"\bTR-\d{3}\b",
+        )
+        rewritten = FinalReadinessAgent._canonicalize_table_section(
+            rewritten,
+            heading="## Pricing Schedule Matrix",
+            row_id_re=r"\b\d+\.\d{2}\b",
+        )
+        appendix_idx = rewritten.find("## Appendix Forms & Declarations")
+        if appendix_idx >= 0:
+            appendix_block = rewritten[appendix_idx:]
+            appendix_block = FinalReadinessAgent._canonicalize_table_section(
+                appendix_block,
+                heading="### Compliance Matrix",
+                row_id_re=r"\bCM-\d{2}\b",
             )
-            for comment in review.comments:
-                location = comment.anchor.section_title or comment.anchor.section_id or "General"
-                if comment.anchor.paragraph_id:
-                    location += f" / {comment.anchor.paragraph_id}"
-                sections.append(f"- [{comment.anchor.domain}] {location}: {comment.comment}")
+            rewritten = rewritten[:appendix_idx] + appendix_block
+        return rewritten
 
-        # Coverage appendix is already part of full_narrative from C3.
-        # Not duplicated here.
+    @staticmethod
+    def _canonicalize_table_section(
+        full_narr: str,
+        heading: str,
+        row_id_re: str,
+    ) -> str:
+        import re
 
-        return "\n".join(sections).strip() + "\n"
+        start = full_narr.find(heading)
+        if start < 0:
+            return full_narr
+
+        heading_level = len(heading.split(" ", 1)[0])
+        heading_end = full_narr.find("\n", start)
+        if heading_end < 0:
+            return full_narr
+
+        section_body_start = heading_end + 1
+        next_heading_match = re.search(
+            rf"(?m)^#{{1,{heading_level}}}\s+",
+            full_narr[section_body_start:],
+        )
+        section_end = (
+            section_body_start + next_heading_match.start()
+            if next_heading_match
+            else len(full_narr)
+        )
+
+        section_body = full_narr[section_body_start:section_end]
+        normalized_body = FinalReadinessAgent._dedupe_markdown_table_rows(
+            section_body,
+            row_id_re,
+        )
+        if not normalized_body.strip():
+            return full_narr
+
+        return (
+            full_narr[:section_body_start]
+            + "\n"
+            + normalized_body.strip()
+            + "\n"
+            + full_narr[section_end:]
+        )
+
+    @staticmethod
+    def _dedupe_markdown_table_rows(section_body: str, row_id_re: str) -> str:
+        import re
+
+        lines = section_body.splitlines()
+        header_line = ""
+        separator_line = ""
+        row_order: list[str] = []
+        best_rows: dict[str, tuple[int, str]] = {}
+        prelude: list[str] = []
+
+        placeholder_re = re.compile(r"\[[^\]]+\]|vendor to fill|tbd", re.IGNORECASE)
+
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if "|" not in stripped:
+                if not header_line:
+                    prelude.append(line)
+                continue
+            if not header_line:
+                header_line = stripped
+                continue
+            if not separator_line and set(stripped.replace("|", "").replace("-", "").replace(":", "").strip()) == set():
+                separator_line = stripped
+                continue
+
+            match = re.search(row_id_re, stripped, re.IGNORECASE)
+            if not match:
+                continue
+            row_id = match.group(0).upper()
+            if row_id not in row_order:
+                row_order.append(row_id)
+
+            score = (
+                -len(placeholder_re.findall(stripped)),
+                len(stripped),
+            )
+            current = best_rows.get(row_id)
+            if current is None or score > (current[0], len(current[1])):
+                best_rows[row_id] = (score[0], stripped)
+
+        if not header_line or not row_order:
+            return section_body
+
+        if not separator_line:
+            col_count = max(header_line.count("|") - 1, 1)
+            separator_line = "|" + "|".join(["---"] * col_count) + "|"
+
+        rows = [best_rows[row_id][1] for row_id in row_order if row_id in best_rows]
+        rebuilt = []
+        if prelude:
+            rebuilt.append("\n".join(prelude).strip())
+        rebuilt.extend([header_line, separator_line, *rows])
+        return "\n".join(part for part in rebuilt if part).strip()
 
