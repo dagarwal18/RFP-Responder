@@ -153,14 +153,16 @@ export default function Sidebar() {
 
         <button
           onClick={toggle}
-          className="mt-3 flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border/70 hover:bg-card/70 hover:text-foreground cursor-pointer"
+          className={`mt-3 flex h-11 shrink-0 items-center gap-2 rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border/70 hover:bg-card/70 hover:text-foreground cursor-pointer ${
+            collapsed ? 'justify-center' : 'justify-end pr-4 text-right'
+          }`}
         >
           {collapsed ? (
             <PanelLeftOpen className="h-4 w-4" strokeWidth={1.75} />
           ) : (
             <>
-              <PanelLeftClose className="h-4 w-4" strokeWidth={1.75} />
               <span className="text-xs font-medium">Collapse</span>
+              <PanelLeftClose className="h-4 w-4" strokeWidth={1.75} />
             </>
           )}
         </button>
