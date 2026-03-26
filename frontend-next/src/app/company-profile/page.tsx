@@ -104,71 +104,73 @@ export default function CompanyProfilePage() {
             className="border-none"
             contentClassName="px-0 py-6"
           >
-            <div className="grid gap-8">
-              <div className="grid gap-3 border-b border-border pb-8">
-                <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                  Company Name
-                </label>
-                {!isEditing ? (
-                  <p className="text-sm font-medium text-foreground">{profile.name || 'Not specified'}</p>
-                ) : (
-                  <Input
-                    value={profile.name}
-                    onChange={(event) => updateField('name', event.target.value)}
-                    placeholder="Acme Corporation"
-                    className="rounded-none border-border bg-transparent shadow-none"
-                  />
-                )}
-              </div>
-
-              <div className="grid gap-3 border-b border-border pb-8">
-                <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                  Description
-                </label>
-                {!isEditing ? (
-                  <p className="text-sm text-foreground whitespace-pre-wrap leading-7">{profile.description || 'Not specified'}</p>
-                ) : (
-                  <Textarea
-                    value={profile.description}
-                    onChange={(event) => updateField('description', event.target.value)}
-                    rows={4}
-                    placeholder="Describe your company, core offerings, and differentiators..."
-                    className="min-h-[140px] rounded-none border-border bg-transparent shadow-none resize-y"
-                  />
-                )}
-              </div>
-
-              <div className="grid gap-8 md:grid-cols-2">
-                <div className="grid gap-3 border-b border-border pb-8 md:border-b-0 md:border-r md:pr-8 md:pb-0">
-                  <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                    Headquarters
+            <div className="max-w-2xl">
+              <div className="grid gap-6">
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 block">
+                    Company Name
                   </label>
                   {!isEditing ? (
-                    <p className="text-sm font-medium text-foreground">{profile.headquarters || 'Not specified'}</p>
+                    <div className="text-sm font-medium text-foreground">{profile.name || 'Not specified'}</div>
                   ) : (
                     <Input
-                      value={profile.headquarters}
-                      onChange={(event) => updateField('headquarters', event.target.value)}
-                      placeholder="London, UK"
-                      className="rounded-none border-border bg-transparent shadow-none"
+                      value={profile.name}
+                      onChange={(event) => updateField('name', event.target.value)}
+                      placeholder="Acme Corporation"
+                      className="rounded-sm border-border bg-transparent shadow-none h-9 text-sm"
                     />
                   )}
                 </div>
 
-                <div className="grid gap-3">
-                  <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                    Website
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 block">
+                    Description
                   </label>
                   {!isEditing ? (
-                    <p className="text-sm font-medium text-primary">{profile.website || 'Not specified'}</p>
+                    <div className="text-sm text-foreground whitespace-pre-wrap leading-6">{profile.description || 'Not specified'}</div>
                   ) : (
-                    <Input
-                      value={profile.website}
-                      onChange={(event) => updateField('website', event.target.value)}
-                      placeholder="https://example.com"
-                      className="rounded-none border-border bg-transparent shadow-none"
+                    <Textarea
+                      value={profile.description}
+                      onChange={(event) => updateField('description', event.target.value)}
+                      rows={4}
+                      placeholder="Describe your company, core offerings, and differentiators..."
+                      className="min-h-[100px] rounded-sm border-border bg-transparent shadow-none resize-y text-sm"
                     />
                   )}
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 block">
+                      Headquarters
+                    </label>
+                    {!isEditing ? (
+                      <div className="text-sm font-medium text-foreground">{profile.headquarters || 'Not specified'}</div>
+                    ) : (
+                      <Input
+                        value={profile.headquarters}
+                        onChange={(event) => updateField('headquarters', event.target.value)}
+                        placeholder="London, UK"
+                        className="rounded-sm border-border bg-transparent shadow-none h-9 text-sm"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 block">
+                      Website
+                    </label>
+                    {!isEditing ? (
+                      <div className="text-sm font-medium text-primary">{profile.website || 'Not specified'}</div>
+                    ) : (
+                      <Input
+                        value={profile.website}
+                        onChange={(event) => updateField('website', event.target.value)}
+                        placeholder="https://example.com"
+                        className="rounded-sm border-border bg-transparent shadow-none h-9 text-sm"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
