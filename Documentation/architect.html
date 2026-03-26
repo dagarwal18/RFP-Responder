@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 20px;
+            color: #333;
+            margin: 15px 0 5px 0;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .diagram-container {
+            width: 100%;
+            max-width: 1400px;
+            height: calc(100vh - 50px);
+            display: flex;
+            justify-content: center;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            max-height: 900px;
+        }
+
+        .subgraph {
+            fill: rgba(0, 0, 0, 0.02);
+            stroke: #555;
+            stroke-width: 1.5px;
+            stroke-dasharray: 6, 4;
+            border-radius: 4px;
+        }
+
+        .subgraph-label {
+            font-size: 13px;
+            font-weight: bold;
+            fill: #333;
+        }
+
+        .node {
+            fill: #fff;
+            stroke: #333;
+            stroke-width: 1px;
+            rx: 3px;
+        }
+
+        .node-decision-inner {
+            fill: none;
+            stroke: #333;
+            stroke-width: 1px;
+            rx: 2px;
+        }
+
+        .node-external {
+            fill: #fff;
+            stroke: #111;
+            stroke-width: 1.5px;
+            rx: 3px;
+        }
+
+        .node-text {
+            font-size: 11px;
+            fill: #000;
+            text-anchor: middle;
+        }
+
+        .node-text-bold {
+            font-weight: 600;
+        }
+
+        .edge {
+            fill: none;
+            stroke: #444;
+            stroke-width: 1px;
+        }
+
+        .edge-label {
+            font-size: 10px;
+            font-style: italic;
+            fill: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>System Architecture</h1>
+
+    <div class="diagram-container">
+        <svg viewBox="0 0 1400 950" preserveAspectRatio="xMidYMin meet">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6"
+                    orient="auto-start-reverse">
+                    <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#444" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </marker>
+            </defs>
+
+            <g id="subgraphs">
+                <rect class="subgraph" x="20" y="70" width="180" height="200" />
+                <text class="subgraph-label" x="30" y="90">Frontend Layer</text>
+
+                <rect class="subgraph" x="230" y="70" width="850" height="860" />
+                <text class="subgraph-label" x="240" y="90">Backend — FastAPI</text>
+
+                <rect class="subgraph" x="245" y="200" width="605" height="715" />
+                <text class="subgraph-label" x="255" y="220">LangGraph State Machine</text>
+
+                <rect class="subgraph" x="870" y="200" width="190" height="460" />
+                <text class="subgraph-label" x="880" y="220">MCP Server (In-Process Module)</text>
+
+                <rect class="subgraph" x="870" y="680" width="190" height="235" />
+                <text class="subgraph-label" x="880" y="700">Storage Layer</text>
+
+                <rect class="subgraph" x="1110" y="70" width="270" height="300" />
+                <text class="subgraph-label" x="1120" y="90">External Services</text>
+            </g>
+
+            <g id="edges">
+                <path class="edge" marker-end="url(#arrow)" d="M 180 140 L 210 140 L 210 130 L 400 130" />
+                <path class="edge" marker-end="url(#arrow)" d="M 180 220 L 215 220 L 215 150 L 400 150" />
+                <path class="edge" marker-end="url(#arrow)" d="M 560 130 L 600 130" />
+                <path class="edge" marker-end="url(#arrow)" d="M 480 160 L 480 200" />
+                <path class="edge" marker-end="url(#arrow)"
+                    d="M 520 160 L 520 180 L 1070 180 L 1070 650 L 965 650 L 965 680" />
+                <path class="edge" marker-end="url(#arrow)" d="M 850 450 L 870 450" />
+                <path class="edge" marker-end="url(#arrow)" d="M 965 660 L 965 680" />
+                <path class="edge" marker-end="url(#arrow)" d="M 850 250 L 1100 250 L 1100 160 L 1130 160" />
+                <path class="edge" marker-end="url(#arrow)" d="M 1060 280 L 1130 280" />
+
+                <path class="edge" marker-end="url(#arrow)" d="M 325 300 L 325 330" />
+                <path class="edge" marker-end="url(#arrow)" d="M 325 390 L 325 430" />
+                <path class="edge" marker-end="url(#arrow)" d="M 390 360 L 405 360 L 405 515 L 325 515 L 325 530" />
+                <path class="edge" marker-end="url(#arrow)" d="M 390 460 L 410 460" />
+                <path class="edge" marker-end="url(#arrow)" d="M 260 460 L 245 460 L 245 650 L 260 650" />
+                <path class="edge" marker-end="url(#arrow)" d="M 475 490 L 475 530" />
+                <path class="edge" marker-end="url(#arrow)" d="M 475 590 L 475 620" />
+                <path class="edge" marker-end="url(#arrow)" d="M 475 680 L 475 710" />
+                <path class="edge" marker-end="url(#arrow)" d="M 540 740 L 560 740" />
+                <path class="edge" marker-end="url(#arrow)" d="M 625 710 L 625 680" />
+                <path class="edge" marker-end="url(#arrow)" d="M 625 620 L 625 590" />
+                <path class="edge" marker-end="url(#arrow)" d="M 560 650 L 550 650 L 550 740 L 540 740" />
+                <path class="edge" marker-end="url(#arrow)" d="M 690 560 L 710 560" />
+                <path class="edge" marker-end="url(#arrow)" d="M 690 460 L 700 460 L 700 560 L 710 560" />
+                <path class="edge" marker-end="url(#arrow)" d="M 775 590 L 775 620" />
+                <path class="edge" marker-end="url(#arrow)" d="M 775 530 L 775 490" />
+                <path class="edge" marker-end="url(#arrow)" d="M 775 680 L 775 710" />
+                <path class="edge" marker-end="url(#arrow)" d="M 710 650 L 690 650 L 690 800 L 475 800 L 475 770" />
+                <path class="edge" marker-end="url(#arrow)" d="M 840 650 L 850 650 L 850 840 L 840 840" />
+                <path class="edge" d="M 890 250 L 875 250 L 875 625" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 305 L 890 305" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 345 L 890 345" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 385 L 890 385" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 425 L 890 425" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 465 L 890 465" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 505 L 890 505" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 545 L 890 545" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 585 L 890 585" />
+                <path class="edge" marker-end="url(#arrow)" d="M 875 625 L 890 625" />
+
+            </g>
+
+            <g id="edge-labels">
+                <text class="edge-label" x="290" y="120">REST + WebSocket</text>
+                <text class="edge-label" x="290" y="215">REST + WebSocket</text>
+
+                <text class="edge-label" x="335" y="415">confidence ≥ 0.6</text>
+                <text class="edge-label" x="410" y="440">confidence &lt; 0.6</text>
+                <text class="edge-label" x="410" y="452">after 3 retries</text>
+
+                <text class="edge-label" x="400" y="455" text-anchor="end">GO</text>
+                <text class="edge-label" x="240" y="550" text-anchor="end">NO_GO</text>
+                <text class="edge-label" x="240" y="562" text-anchor="end">(continues)</text>
+
+                <text class="edge-label" x="635" y="605">PASS</text>
+                <text class="edge-label" x="545" y="690" text-anchor="end">REJECT</text>
+                <text class="edge-label" x="545" y="702" text-anchor="end">(→ C2, max 3)</text>
+
+                <text class="edge-label" x="785" y="605">PASS</text>
+                <text class="edge-label" x="785" y="510">BLOCK</text>
+                <text class="edge-label" x="785" y="695">APPROVE</text>
+
+                <text class="edge-label" x="580" y="790" text-anchor="middle">REQUEST_CHANGES</text>
+                <text class="edge-label" x="580" y="802" text-anchor="middle">(rerun from target)</text>
+
+                <text class="edge-label" x="855" y="750">REJECT</text>
+            </g>
+
+            <g id="nodes">
+                <rect class="node" x="40" y="110" width="140" height="60" />
+                <text class="node-text" x="110" y="136">
+                    <tspan class="node-text-bold" x="110" dy="0">Vanilla JS SPA</tspan>
+                    <tspan x="110" dy="14">(served at /)</tspan>
+                </text>
+
+                <rect class="node" x="40" y="190" width="140" height="60" />
+                <text class="node-text" x="110" y="216">
+                    <tspan class="node-text-bold" x="110" dy="0">Next.js Frontend</tspan>
+                    <tspan x="110" dy="14">(separate deployment)</tspan>
+                </text>
+
+                <rect class="node" x="400" y="100" width="160" height="60" />
+                <text class="node-text" x="480" y="126">
+                    <tspan class="node-text-bold" x="480" dy="0">FastAPI + uvicorn</tspan>
+                    <tspan x="480" dy="14">(REST + WebSocket)</tspan>
+                </text>
+
+                <rect class="node" x="600" y="100" width="160" height="60" />
+                <text class="node-text" x="680" y="126">
+                    <tspan class="node-text-bold" x="680" dy="0">PipelineProgress</tspan>
+                    <tspan x="680" dy="14">WebSocket Singleton</tspan>
+                </text>
+
+                <rect class="node" x="260" y="240" width="130" height="60" />
+                <text class="node-text" x="325" y="266">
+                    <tspan class="node-text-bold" x="325" dy="0">A1: Ingestion</tspan>
+                    <tspan x="325" dy="14">Parse PDF/DOCX</tspan>
+                </text>
+
+                <rect class="node" x="260" y="330" width="130" height="60" />
+                <rect class="node-decision-inner" x="263" y="333" width="124" height="54" />
+                <text class="node-text" x="325" y="348">
+                    <tspan class="node-text-bold" x="325" dy="0">A2: Structuring</tspan>
+                    <tspan x="325" dy="14">Section Map</tspan>
+                    <tspan x="325" dy="14">[retry ≤3]</tspan>
+                </text>
+
+                <rect class="node" x="260" y="430" width="130" height="60" />
+                <rect class="node-decision-inner" x="263" y="433" width="124" height="54" />
+                <text class="node-text" x="325" y="456">
+                    <tspan class="node-text-bold" x="325" dy="0">A3: Go/No-Go</tspan>
+                    <tspan x="325" dy="14">Policy Check</tspan>
+                </text>
+
+                <rect class="node" x="260" y="530" width="130" height="60" />
+                <text class="node-text" x="325" y="556">
+                    <tspan class="node-text-bold" x="325" dy="0">END: Escalate</tspan>
+                    <tspan x="325" dy="14">Structuring</tspan>
+                </text>
+
+                <rect class="node" x="260" y="620" width="130" height="60" />
+                <text class="node-text node-text-bold" x="325" y="654">END: No-Go</text>
+
+                <rect class="node" x="410" y="430" width="130" height="60" />
+                <text class="node-text" x="475" y="456">
+                    <tspan class="node-text-bold" x="475" dy="0">B1: Requirements</tspan>
+                    <tspan x="475" dy="14">Extract &amp; Classify</tspan>
+                </text>
+
+                <rect class="node" x="410" y="530" width="130" height="60" />
+                <text class="node-text" x="475" y="556">
+                    <tspan class="node-text-bold" x="475" dy="0">B2: Req Validation</tspan>
+                    <tspan x="475" dy="14">Dedup + Ambiguity</tspan>
+                </text>
+
+                <rect class="node" x="410" y="620" width="130" height="60" />
+                <text class="node-text" x="475" y="646">
+                    <tspan class="node-text-bold" x="475" dy="0">C1: Architecture Plan</tspan>
+                    <tspan x="475" dy="14">Capability Mapping</tspan>
+                </text>
+
+                <rect class="node" x="410" y="710" width="130" height="60" />
+                <text class="node-text" x="475" y="736">
+                    <tspan class="node-text-bold" x="475" dy="0">C2: Writing</tspan>
+                    <tspan x="475" dy="14">Per-Section Prose</tspan>
+                </text>
+
+                <rect class="node" x="560" y="710" width="130" height="60" />
+                <text class="node-text" x="625" y="736">
+                    <tspan class="node-text-bold" x="625" dy="0">C3: Assembly</tspan>
+                    <tspan x="625" dy="14">Full Narrative</tspan>
+                </text>
+
+                <rect class="node" x="560" y="620" width="130" height="60" />
+                <rect class="node-decision-inner" x="563" y="623" width="124" height="54" />
+                <text class="node-text" x="625" y="638">
+                    <tspan class="node-text-bold" x="625" dy="0">D1: Tech Validation</tspan>
+                    <tspan x="625" dy="14">Completeness Check</tspan>
+                    <tspan x="625" dy="14">[retry → C2]</tspan>
+                </text>
+
+                <rect class="node" x="560" y="530" width="130" height="60" />
+                <text class="node-text" x="625" y="556">
+                    <tspan class="node-text-bold" x="625" dy="0">E1: Commercial</tspan>
+                    <tspan x="625" dy="14">Pricing + Margin</tspan>
+                </text>
+
+                <rect class="node" x="560" y="430" width="130" height="60" />
+                <rect class="node-decision-inner" x="563" y="433" width="124" height="54" />
+                <text class="node-text" x="625" y="456">
+                    <tspan class="node-text-bold" x="625" dy="0">E2: Legal Review</tspan>
+                    <tspan x="625" dy="14">Risk Scoring</tspan>
+                </text>
+
+                <rect class="node" x="710" y="530" width="130" height="60" />
+                <text class="node-text" x="775" y="556">
+                    <tspan class="node-text-bold" x="775" dy="0">Commercial/Legal Gate</tspan>
+                    <tspan x="775" dy="14">Fan-in Node</tspan>
+                </text>
+
+                <rect class="node" x="710" y="430" width="130" height="60" />
+                <text class="node-text node-text-bold" x="775" y="464">END: Legal Block</text>
+
+                <rect class="node" x="710" y="620" width="130" height="60" />
+                <rect class="node-decision-inner" x="713" y="623" width="124" height="54" />
+                <text class="node-text" x="775" y="638">
+                    <tspan class="node-text-bold" x="775" dy="0">H1: Human Review</tspan>
+                    <tspan x="775" dy="14">Validation Gate</tspan>
+                    <tspan x="775" dy="14">[async pause]</tspan>
+                </text>
+
+                <rect class="node" x="710" y="710" width="130" height="60" />
+                <text class="node-text" x="775" y="736">
+                    <tspan class="node-text-bold" x="775" dy="0">F1: Final Readiness</tspan>
+                    <tspan x="775" dy="14">Submission + PDF</tspan>
+                </text>
+
+                <rect class="node" x="710" y="810" width="130" height="60" />
+                <text class="node-text node-text-bold" x="775" y="844">END: Rejected</text>
+
+                <rect class="node" x="890" y="230" width="150" height="40" />
+                <text class="node-text node-text-bold" x="965" y="254">MCPService</text>
+
+                <rect class="node" x="890" y="290" width="150" height="30" />
+                <text class="node-text" x="965" y="301">
+                    <tspan class="node-text-bold" x="965" dy="0">RFP Vector Store</tspan>
+                    <tspan x="965" dy="12">(Pinecone)</tspan>
+                </text>
+
+                <rect class="node" x="890" y="330" width="150" height="30" />
+                <text class="node-text" x="965" y="341">
+                    <tspan class="node-text-bold" x="965" dy="0">Knowledge Store</tspan>
+                    <tspan x="965" dy="12">(Pinecone + MongoDB)</tspan>
+                </text>
+
+                <rect class="node" x="890" y="370" width="150" height="30" />
+                <text class="node-text" x="965" y="381">
+                    <tspan class="node-text-bold" x="965" dy="0">BM25 Store</tspan>
+                    <tspan x="965" dy="12">(Keyword Retrieval)</tspan>
+                </text>
+
+                <rect class="node" x="890" y="410" width="150" height="30" />
+                <text class="node-text" x="965" y="421">
+                    <tspan class="node-text-bold" x="965" dy="0">Policy Rules</tspan>
+                    <tspan x="965" dy="12">(Disqualification)</tspan>
+                </text>
+
+                <rect class="node" x="890" y="450" width="150" height="30" />
+                <text class="node-text" x="965" y="461">
+                    <tspan class="node-text-bold" x="965" dy="0">Validation Rules</tspan>
+                    <tspan x="965" dy="12">(Prohibited Language)</tspan>
+                </text>
+
+                <rect class="node" x="890" y="490" width="150" height="30" />
+                <text class="node-text" x="965" y="501">
+                    <tspan class="node-text-bold" x="965" dy="0">Commercial Rules</tspan>
+                    <tspan x="965" dy="12">(Margin Validation)</tspan>
+                </text>
+
+                <rect class="node" x="890" y="530" width="150" height="30" />
+                <text class="node-text" x="965" y="541">
+                    <tspan class="node-text-bold" x="965" dy="0">Legal Rules</tspan>
+                    <tspan x="965" dy="12">(Clause Risk)</tspan>
+                </text>
+
+                <rect class="node" x="890" y="570" width="150" height="30" />
+                <text class="node-text" x="965" y="581">
+                    <tspan class="node-text-bold" x="965" dy="0">Embeddings</tspan>
+                    <tspan x="965" dy="12">BAAI/bge-m3</tspan>
+                </text>
+
+                <rect class="node" x="890" y="610" width="150" height="30" />
+                <text class="node-text" x="965" y="621">
+                    <tspan class="node-text-bold" x="965" dy="0">Knowledge Loader</tspan>
+                    <tspan x="965" dy="12">(JSON Seed Files)</tspan>
+                </text>
+
+                <path d="M 890 720 L 890 760 A 75 10 0 0 0 1040 760 L 1040 720 Z" fill="#fff" stroke="#333"
+                    stroke-width="1" />
+                <ellipse cx="965" cy="720" rx="75" ry="10" fill="#fff" stroke="#333" stroke-width="1" />
+                <text class="node-text" x="965" y="736">
+                    <tspan class="node-text-bold" x="965" dy="0">MongoDB</tspan>
+                    <tspan x="965" dy="12">(Config, Certs,</tspan>
+                    <tspan x="965" dy="12">Pricing, Legal)</tspan>
+                </text>
+
+                <path d="M 890 795 L 890 835 A 75 10 0 0 0 1040 835 L 1040 795 Z" fill="#fff" stroke="#333"
+                    stroke-width="1" />
+                <ellipse cx="965" cy="795" rx="75" ry="10" fill="#fff" stroke="#333" stroke-width="1" />
+                <text class="node-text" x="965" y="818">
+                    <tspan class="node-text-bold" x="965" dy="0">Pinecone Serverless</tspan>
+                    <tspan x="965" dy="12">(Vector DB, cosine)</tspan>
+                </text>
+
+                <path d="M 890 870 L 890 910 A 75 10 0 0 0 1040 910 L 1040 870 Z" fill="#fff" stroke="#333"
+                    stroke-width="1" />
+                <ellipse cx="965" cy="870" rx="75" ry="10" fill="#fff" stroke="#333" stroke-width="1" />
+                <text class="node-text" x="965" y="886">
+                    <tspan class="node-text-bold" x="965" dy="0">Local File Storage</tspan>
+                    <tspan x="965" dy="12">(Uploads, Checkpoints,</tspan>
+                    <tspan x="965" dy="12">PDF Outputs)</tspan>
+                </text>
+
+                <rect class="node-external" x="1130" y="110" width="230" height="100" />
+                <text class="node-text" x="1245" y="132">
+                    <tspan class="node-text-bold" x="1245" dy="0">Groq Cloud</tspan>
+                    <tspan x="1245" dy="14" fill="#aaa">━━━━━━━━━━━━━━━</tspan>
+                    <tspan x="1245" dy="16">qwen3-32b [A2,A3,B1,C1]</tspan>
+                    <tspan x="1245" dy="14">llama-4-scout [B2,C2,C3,D1,E1,E2]</tspan>
+                    <tspan x="1245" dy="14">KeyRotator + TPM throttle</tspan>
+                </text>
+
+                <rect class="node-external" x="1130" y="240" width="230" height="90" />
+                <text class="node-text" x="1245" y="265">
+                    <tspan class="node-text-bold" x="1245" dy="0">HuggingFace / Novita</tspan>
+                    <tspan x="1245" dy="14" fill="#aaa">━━━━━━━━━━━━━━━━━━━</tspan>
+                    <tspan x="1245" dy="16">BAAI/bge-m3 (Embeddings)</tspan>
+                    <tspan x="1245" dy="14">Qwen3-VL-8B (VLM / Tables)</tspan>
+                </text>
+
+            </g>
+        </svg>
+    </div>
+
+</body>
+
+</html>
