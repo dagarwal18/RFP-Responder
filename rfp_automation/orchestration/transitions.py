@@ -57,19 +57,14 @@ def route_after_go_no_go(state: dict[str, Any]) -> str:
 
 def route_after_validation(state: dict[str, Any]) -> str:
     """
-    REJECT and retries < max → loop back to C2 Requirement Writing.
-    REJECT and retries >= max → auto-pass to commercial_legal_parallel (testing only).
+    REJECT → loop back to C2 Requirement Writing.
     PASS → proceed to E1+E2 (commercial+legal parallel).
+    (Note: Max retries autobypass is now handled directly by the D1 Agent)
     """
-    settings = get_settings()
     result = state.get("technical_validation", {})
     decision = result.get("decision", "PASS")
-    retries = result.get("retry_count", 0)
 
     if decision == "REJECT":
-        if retries >= settings.max_validation_retries:
-            logger.warning("[ROUTING] Max validation retries reached. Auto-passing to next agent for testing purposes.")
-            return "commercial_legal_parallel"
         return "c2_requirement_writing"  # loop back to rewrite content
     return "commercial_legal_parallel"
 
