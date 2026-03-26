@@ -556,6 +556,17 @@ class ArchitecturePlanningAgent(BaseAgent):
                 }
                 if section_type not in valid_types:
                     section_type = "requirement_driven"
+                visual_relevance = str(item.get("visual_relevance", "auto") or "auto").lower()
+                if visual_relevance not in {"auto", "none", "optional", "required"}:
+                    visual_relevance = "auto"
+                visual_type_hint = str(item.get("visual_type_hint", "") or "").strip().lower()
+                raw_source_terms = item.get("visual_source_terms", [])
+                if isinstance(raw_source_terms, list):
+                    visual_source_terms = [str(term).strip() for term in raw_source_terms if str(term).strip()]
+                elif raw_source_terms:
+                    visual_source_terms = [str(raw_source_terms).strip()]
+                else:
+                    visual_source_terms = []
 
                 section = ResponseSection(
                     section_id=item.get("section_id", f"SEC-{i + 1:02d}"),
@@ -563,6 +574,10 @@ class ArchitecturePlanningAgent(BaseAgent):
                     section_type=section_type,
                     description=item.get("description", ""),
                     content_guidance=item.get("content_guidance", ""),
+                    visual_relevance=visual_relevance,
+                    visual_type_hint=visual_type_hint,
+                    visual_notes=item.get("visual_notes", ""),
+                    visual_source_terms=visual_source_terms,
                     requirement_ids=item.get(
                         "requirement_ids",
                         item.get("assigned_requirements", []),

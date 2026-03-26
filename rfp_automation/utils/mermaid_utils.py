@@ -11,10 +11,12 @@ Provides:
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import os
 import re
 import shutil
+import struct
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -23,10 +25,26 @@ logger = logging.getLogger(__name__)
 
 # ── Render settings ──────────────────────────────────────
 MERMAID_RENDER_ARGS = [
-    "--width", "1200",
+    "--width", "1400",
     "--backgroundColor", "white",
+    # Keep the CLI theme broadly compatible; diagram-level init blocks can
+    # still override styling with themeVariables for richer visuals.
     "--theme", "default",
 ]
+_LOCAL_RENDER_TIMEOUT = 120
+_PUPPETEER_CONFIG = {
+    "headless": True,
+    "timeout": 120000,
+    "protocolTimeout": 120000,
+    "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--allow-file-access-from-files",
+    ],
+}
+_FALLBACK_RENDERER = Path(__file__).resolve().with_name("mermaid_renderer_fallback.cjs")
 
 
 @dataclass
@@ -59,7 +77,8 @@ _GANTT_RANGE_RE = re.compile(
 def _sanitize_gantt_code(code: str) -> str:
     """Repair common invalid gantt syntax emitted by the writer."""
     lines = code.splitlines()
-    if not lines or lines[0].strip() != "gantt":
+    diagram_idx = _diagram_start_index(lines)
+    if diagram_idx is None or lines[diagram_idx].strip() != "gantt":
         return code
 
     sanitized: list[str] = []
@@ -68,7 +87,10 @@ def _sanitize_gantt_code(code: str) -> str:
 
     for idx, raw_line in enumerate(lines):
         stripped = raw_line.strip()
-        if idx == 0:
+        if idx < diagram_idx:
+            sanitized.append(raw_line.rstrip())
+            continue
+        if idx == diagram_idx:
             sanitized.append("gantt")
             continue
         if not stripped:
@@ -118,6 +140,15 @@ def _sanitize_mermaid_code(code: str) -> str:
     return _sanitize_gantt_code(code)
 
 
+def _diagram_start_index(lines: list[str]) -> int | None:
+    for idx, raw_line in enumerate(lines):
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("%%{"):
+            continue
+        return idx
+    return None
+
+
 # ═══════════════════════════════════════════════════════════
 #  Extract
 # ═══════════════════════════════════════════════════════════
@@ -146,6 +177,108 @@ def _find_mmdc() -> str | None:
     return shutil.which("mmdc")
 
 
+def _find_node() -> str | None:
+    return shutil.which("node")
+
+
+def _find_cached_mermaid_runtime() -> tuple[Path, Path] | None:
+    local_app_data = os.environ.get("LOCALAPPDATA", "")
+    if not local_app_data:
+        return None
+
+    npx_root = Path(local_app_data) / "npm-cache" / "_npx"
+    try:
+        root_exists = npx_root.exists()
+    except OSError:
+        return None
+    if not root_exists:
+        return None
+
+    candidates: list[tuple[float, Path, Path]] = []
+    try:
+        paths = list(npx_root.glob("*/node_modules/@mermaid-js/mermaid-cli/dist/index.html"))
+    except OSError:
+        return None
+
+    for html_path in paths:
+        package_root = html_path.parent.parent
+        node_modules_root = package_root.parent.parent
+        puppeteer_root = node_modules_root / "puppeteer"
+        try:
+            if not puppeteer_root.exists():
+                continue
+            mtime = html_path.stat().st_mtime
+        except OSError:
+            continue
+        candidates.append((mtime, html_path, puppeteer_root))
+
+    if not candidates:
+        return None
+
+    _, html_path, puppeteer_root = max(candidates, key=lambda item: item[0])
+    return html_path, puppeteer_root
+
+
+def _is_mermaid_timeout_error(message: str) -> bool:
+    lowered = (message or "").lower()
+    return any(
+        token in lowered
+        for token in (
+            "navigation timeout",
+            "timed out",
+            "timeouterror",
+            "timeouterror",
+        )
+    )
+
+
+def _render_with_local_browser(
+    *,
+    mmd_path: Path,
+    png_path: Path,
+    background_color: str,
+    width: int,
+    timeout: int,
+) -> Path | Exception:
+    node_path = _find_node()
+    runtime = _find_cached_mermaid_runtime()
+    if not node_path or not runtime or not _FALLBACK_RENDERER.exists():
+        return EnvironmentError("Local Mermaid browser fallback is unavailable")
+
+    mermaid_html_path, puppeteer_root = runtime
+    cmd = [
+        node_path,
+        str(_FALLBACK_RENDERER),
+        str(puppeteer_root),
+        str(mermaid_html_path),
+        str(mmd_path),
+        str(png_path),
+        background_color,
+        str(width),
+    ]
+
+    try:
+        subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=max(timeout, _LOCAL_RENDER_TIMEOUT),
+            shell=False,
+        )
+        if png_path.exists() and png_path.stat().st_size > 0:
+            logger.info("[Mermaid] Rendered via local browser fallback: %s", png_path.name)
+            return png_path
+        return Exception("Local browser fallback did not produce an image")
+    except subprocess.CalledProcessError as e:
+        message = e.stderr.strip() or e.stdout.strip() or str(e)
+        return Exception(f"local browser render failed: {message[:240]}")
+    except subprocess.TimeoutExpired:
+        return TimeoutError(
+            f"Local Mermaid browser fallback timed out after {max(timeout, _LOCAL_RENDER_TIMEOUT)}s"
+        )
+
+
 def _validate_mermaid_syntax(block_code: str) -> str | None:
     """Quick validation of Mermaid code before rendering.
 
@@ -156,6 +289,11 @@ def _validate_mermaid_syntax(block_code: str) -> str | None:
     if not stripped:
         return "Empty mermaid block"
 
+    lines = [line.strip() for line in stripped.splitlines() if line.strip()]
+    diagram_idx = _diagram_start_index(lines)
+    if diagram_idx is None:
+        return "Empty mermaid block"
+
     # Must start with a valid diagram type keyword
     valid_starts = (
         "graph ", "graph\n", "flowchart ", "flowchart\n",
@@ -164,13 +302,13 @@ def _validate_mermaid_syntax(block_code: str) -> str | None:
         "gitGraph", "mindmap", "timeline", "quadrantChart",
         "sankey", "xychart", "block-beta",
     )
-    first_line = stripped.split("\n")[0].strip()
+    first_line = lines[diagram_idx]
     if not any(first_line.startswith(s) for s in valid_starts):
         return f"Invalid diagram type: '{first_line[:50]}'"
 
     remaining_lines = [
         line.strip()
-        for line in stripped.splitlines()[1:]
+        for line in lines[diagram_idx + 1 :]
         if line.strip()
     ]
     if not remaining_lines:
@@ -237,22 +375,28 @@ def render_block(
     # Write temporary .mmd file
     mmd_path = output_dir / f"diagram_{digest}.mmd"
     mmd_path.write_text(block_code, encoding="utf-8")
+    puppeteer_config_path = output_dir / f"diagram_{digest}.puppeteer.json"
+    puppeteer_config_path.write_text(
+        json.dumps(_PUPPETEER_CONFIG, ensure_ascii=True),
+        encoding="utf-8",
+    )
 
     # Build command — prefer global mmdc, fallback to npx
     mmdc_path = _find_mmdc()
     if mmdc_path:
         cmd = [mmdc_path]
     else:
-        cmd = ["npx", "--yes", "@mermaid-js/mermaid-cli@10.8.0"]
+        cmd = ["npx.cmd" if os.name == "nt" else "npx", "--yes", "@mermaid-js/mermaid-cli@10.8.0"]
 
     cmd.extend([
         "-i", str(mmd_path.absolute()),
         "-o", str(png_path.absolute()),
+        "-p", str(puppeteer_config_path.absolute()),
         *MERMAID_RENDER_ARGS,
     ])
 
     try:
-        result = subprocess.run(
+        subprocess.run(
             cmd,
             check=True,
             capture_output=True,
@@ -263,9 +407,28 @@ def render_block(
         logger.info(f"[Mermaid] Rendered: {png_path.name}")
         return png_path
     except subprocess.CalledProcessError as e:
-        err = Exception(
-            f"mmdc failed (exit {e.returncode}): {e.stderr.strip()[:200]}"
-        )
+        stderr = e.stderr.strip()
+        if _is_mermaid_timeout_error(stderr):
+            fallback = _render_with_local_browser(
+                mmd_path=mmd_path,
+                png_path=png_path,
+                background_color="white",
+                width=1400,
+                timeout=timeout,
+            )
+            if isinstance(fallback, Path):
+                return fallback
+            if isinstance(fallback, Exception):
+                err = Exception(
+                    f"mmdc failed (exit {e.returncode}): {stderr[:160]} "
+                    f"[fallback unavailable: {fallback}]"
+                )
+            else:
+                err = Exception(f"mmdc failed (exit {e.returncode}): {stderr[:200]}")
+        else:
+            err = Exception(
+                f"mmdc failed (exit {e.returncode}): {stderr[:200]}"
+            )
         logger.warning(f"[Mermaid] Render failed for diagram_{digest}: {err}")
         return err
     except FileNotFoundError:
@@ -276,13 +439,33 @@ def render_block(
         logger.error(f"[Mermaid] {err}")
         return err
     except subprocess.TimeoutExpired:
-        err = TimeoutError(f"Mermaid render timed out after {timeout}s")
+        fallback = _render_with_local_browser(
+            mmd_path=mmd_path,
+            png_path=png_path,
+            background_color="white",
+            width=1400,
+            timeout=timeout,
+        )
+        if isinstance(fallback, Path):
+            return fallback
+        err = TimeoutError(
+            f"Mermaid render timed out after {timeout}s"
+            + (
+                f"; local browser fallback unavailable ({fallback})"
+                if isinstance(fallback, Exception)
+                else ""
+            )
+        )
         logger.warning(f"[Mermaid] {err}")
         return err
     finally:
         # Clean up temp .mmd file
         try:
             mmd_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        try:
+            puppeteer_config_path.unlink(missing_ok=True)
         except OSError:
             pass
 
@@ -313,7 +496,12 @@ def rewrite_markdown(
         if isinstance(result, Path):
             # Use absolute path so xhtml2pdf resolves it correctly
             abs_path = str(result.absolute()).replace("\\", "/")
-            replacement = f"![Diagram {block.index + 1}]({abs_path})"
+            alignment_class = _diagram_alignment_class(result)
+            replacement = (
+                f'\n<div class="diagram-block {alignment_class}">'
+                f'<img src="{abs_path}" alt="Diagram {block.index + 1}" />'
+                f"</div>\n"
+            )
         elif isinstance(result, Exception):
             # Graceful fallback: show the error as a blockquote
             replacement = (
@@ -328,6 +516,31 @@ def rewrite_markdown(
         markdown = markdown.replace(block.raw_match, replacement, 1)
 
     return markdown
+
+
+def _diagram_alignment_class(image_path: Path) -> str:
+    dimensions = _png_dimensions(image_path)
+    if not dimensions:
+        return "diagram-landscape"
+    width, height = dimensions
+    return "diagram-portrait" if height > width * 1.1 else "diagram-landscape"
+
+
+def _png_dimensions(image_path: Path) -> tuple[int, int] | None:
+    try:
+        with image_path.open("rb") as handle:
+            header = handle.read(24)
+    except OSError:
+        return None
+
+    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+        return None
+
+    try:
+        width, height = struct.unpack(">II", header[16:24])
+    except struct.error:
+        return None
+    return width, height
 
 
 # ═══════════════════════════════════════════════════════════

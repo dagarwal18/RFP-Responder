@@ -5,6 +5,17 @@ from rfp_automation.models.schemas import RFPMetadata
 from rfp_automation.services.review_service import ReviewService
 
 
+def _mock_company_profile(monkeypatch) -> None:
+    class MockKnowledgeStore:
+        def query_company_profile(self):
+            return {"company_name": "Vodafone Business"}
+
+    monkeypatch.setattr(
+        "rfp_automation.mcp.vector_store.knowledge_store.KnowledgeStore",
+        MockKnowledgeStore,
+    )
+
+
 def test_clean_known_placeholders_strips_internal_refs_but_preserves_tables(monkeypatch):
     class MockKnowledgeStore:
         def query_company_profile(self):
@@ -41,7 +52,8 @@ def test_clean_known_placeholders_strips_internal_refs_but_preserves_tables(monk
     assert "| TR-001 | Compliant |" in cleaned
 
 
-def test_assemble_document_numbers_headings_and_skips_coverage_appendix():
+def test_assemble_document_numbers_headings_and_skips_coverage_appendix(monkeypatch):
+    _mock_company_profile(monkeypatch)
     agent = NarrativeAssemblyAgent()
     groups = [
         SectionGroup(
@@ -80,16 +92,18 @@ def test_assemble_document_numbers_headings_and_skips_coverage_appendix():
         transitions={},
         coverage_appendix="Coverage appendix should stay internal.",
         rfp_metadata=RFPMetadata(client_name="Apex", rfp_title="Example RFP"),
+        architecture_sections=[],
     )
 
-    assert "## Technical Implementation" in assembled
-    assert "### Architecture" in assembled
-    assert "### Security" in assembled
-    assert "## Migration Plan" in assembled
+    assert "## 1. Technical Implementation" in assembled
+    assert "### 1.1 Architecture" in assembled
+    assert "### 1.2 Security" in assembled
+    assert "## 2. Migration Plan" in assembled
     assert "Appendix: Requirement Coverage Matrix" not in assembled
 
 
-def test_assemble_document_numbers_embedded_headings():
+def test_assemble_document_numbers_embedded_headings(monkeypatch):
+    _mock_company_profile(monkeypatch)
     agent = NarrativeAssemblyAgent()
     groups = [
         SectionGroup(
@@ -138,6 +152,7 @@ def test_assemble_document_numbers_embedded_headings():
         transitions={},
         coverage_appendix="",
         rfp_metadata=RFPMetadata(client_name="Apex", rfp_title="Example RFP"),
+        architecture_sections=[],
     )
 
     assert "## Executive Pricing Summary" in assembled

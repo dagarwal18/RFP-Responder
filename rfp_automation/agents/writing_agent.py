@@ -95,23 +95,6 @@ _TABLE_ONLY_SECTION_TITLES = {
     "appendix forms & declarations",
 }
 
-_FORBIDDEN_DIAGRAM_TITLE_TOKENS = (
-    "cover letter",
-    "executive summary",
-    "table of contents",
-    "pricing schedule matrix",
-    "pricing & commercial terms",
-    "company profile",
-    "case studies",
-    "client references",
-    "appendix",
-    "appendices",
-    "submission forms",
-    "forms & declarations",
-    "compliance matrix",
-)
-
-
 class RequirementWritingAgent(BaseAgent):
     name = AgentName.C2_REQUIREMENT_WRITING
 
@@ -897,6 +880,87 @@ class RequirementWritingAgent(BaseAgent):
         header_lines = cls._extract_table_header_lines(table_text)
         return pipe_lines[len(header_lines):]
 
+    @staticmethod
+    def _normalize_table_header_label(label: str) -> str:
+        return re.sub(r"[^a-z0-9]+", " ", (label or "").lower()).strip()
+
+    @classmethod
+    def _table_header_role(
+        cls,
+        header: str,
+        family: str,
+        index: int,
+        total: int,
+    ) -> str:
+        normalized = cls._normalize_table_header_label(header)
+        if not normalized:
+            return f"col_{index}"
+
+        if index == 0 or normalized.endswith(" id") or normalized in {
+            "ref",
+            "ref.",
+            "line #",
+            "line number",
+        }:
+            return "id"
+
+        if family == "technical":
+            if normalized in {"requirement", "category", "module"} or "category" in normalized or "module" in normalized:
+                return "category"
+            if "description" in normalized:
+                return "description"
+            if normalized in {"priority", "compliance", "compliance status", "status"}:
+                return "status"
+            if "c pc nc" in normalized or "yes no" in normalized:
+                return "choice"
+            if "vendor remarks" in normalized or "vendor comments" in normalized or normalized in {"remarks", "comments"}:
+                return "detail"
+            if "vendor response" in normalized:
+                if total >= 6 and index == total - 2:
+                    return "choice"
+                return "detail"
+            if "vendor to fill" in normalized:
+                return "detail"
+
+        if family == "pricing":
+            if "description" in normalized:
+                return "description"
+            if "category" in normalized or "service type" in normalized:
+                return "category"
+            if "unit" in normalized or "pricing model" in normalized:
+                return "unit"
+            if any(token in normalized for token in ("nrc", "mrc", "arc", "cost", "price", "vendor to fill")):
+                return "price"
+
+        if family == "compliance":
+            if "requirement" in normalized:
+                return "requirement"
+            if "status" in normalized or "compliance" in normalized:
+                return "status"
+            if "reference" in normalized or "evidence" in normalized:
+                return "reference"
+            if "vendor" in normalized or "comments" in normalized or "response" in normalized:
+                return "response"
+
+        return normalized
+
+    @classmethod
+    def _table_header_signature(cls, table_text: str) -> tuple[str, ...]:
+        header_lines = cls._extract_table_header_lines(table_text)
+        if not header_lines:
+            return ()
+
+        header_cells = cls._split_table_cells(header_lines[-1])
+        if not header_cells:
+            return ()
+
+        family = cls._table_family(table_text)
+        total = len(header_cells)
+        return tuple(
+            cls._table_header_role(cell, family, index, total)
+            for index, cell in enumerate(header_cells)
+        )
+
     @classmethod
     def _table_family(cls, table_text: str) -> str:
         for line in cls._extract_table_data_lines(table_text):
@@ -935,6 +999,14 @@ class RequirementWritingAgent(BaseAgent):
         right_hint = (right_chunk.get("section_hint") or "").strip().lower()
         if left_hint and right_hint and left_hint != right_hint:
             return False
+        left_signature = cls._table_header_signature(left_text)
+        right_signature = cls._table_header_signature(right_text)
+        if left_signature and right_signature:
+            return left_signature == right_signature
+        left_headers = cls._extract_table_header_lines(left_text)
+        right_headers = cls._extract_table_header_lines(right_text)
+        if left_headers and right_headers:
+            return cls._count_table_columns(left_headers[-1]) == cls._count_table_columns(right_headers[-1])
         return True
 
     @classmethod
@@ -1634,16 +1706,16 @@ class RequirementWritingAgent(BaseAgent):
         section_description: str,
         content_guidance: str,
     ) -> str:
-        """Apply deterministic cleanup after the LLM returns section content."""
+        """Apply deterministic cleanup after the LLM returns section content.
+
+        Mermaid is intentionally stripped here. Section visuals are generated in
+        a later document-level pass where we can enforce section-specific types,
+        document-wide de-duplication, and consistent styling.
+        """
         if not content.strip():
             return content.strip()
 
-        content = cls._repair_or_add_contextual_diagrams(
-            content=content,
-            section_title=section_title,
-            section_description=section_description,
-            content_guidance=content_guidance,
-        )
+        content = cls._strip_mermaid_blocks(content)
         content = cls._ensure_markdown_block_spacing(content)
         return content.strip()
 
@@ -1669,65 +1741,6 @@ class RequirementWritingAgent(BaseAgent):
 
         return "\n".join(rewritten).strip()
 
-    @classmethod
-    def _repair_or_add_contextual_diagrams(
-        cls,
-        content: str,
-        section_title: str,
-        section_description: str,
-        content_guidance: str,
-    ) -> str:
-        """Restrict Mermaid output to sections that explicitly warrant diagrams."""
-        diagram_kind = cls._resolve_diagram_kind(
-            section_title=section_title,
-            section_description=section_description,
-            content_guidance=content_guidance,
-        )
-        is_forbidden = cls._is_forbidden_diagram_section(section_title)
-
-        try:
-            from rfp_automation.utils.mermaid_utils import _validate_mermaid_syntax
-        except Exception:
-            _validate_mermaid_syntax = None
-
-        if is_forbidden:
-            return cls._strip_mermaid_blocks(content)
-
-        if not diagram_kind:
-            if "```mermaid" not in content:
-                return content.strip()
-
-            def _keep_valid_or_drop(match: re.Match[str]) -> str:
-                block_code = match.group(1).strip()
-                if _validate_mermaid_syntax and _validate_mermaid_syntax(block_code) is None:
-                    return match.group(0)
-                return ""
-
-            return cls._collapse_blank_lines(
-                _MERMAID_BLOCK_RE.sub(_keep_valid_or_drop, content)
-            )
-
-        canonical = cls._build_contextual_mermaid(
-            diagram_kind=diagram_kind,
-            section_title=section_title,
-            content=content,
-        )
-        if not canonical:
-            return cls._strip_mermaid_blocks(content)
-
-        matches = list(_MERMAID_BLOCK_RE.finditer(content))
-        if not matches:
-            return cls._collapse_blank_lines(content.rstrip() + "\n\n" + canonical)
-
-        rewritten = content
-        inserted = False
-        for match in matches:
-            replacement = canonical if not inserted else ""
-            rewritten = rewritten.replace(match.group(0), replacement, 1)
-            inserted = True
-
-        return cls._collapse_blank_lines(rewritten)
-
     @staticmethod
     def _collapse_blank_lines(content: str) -> str:
         return re.sub(r"\n{3,}", "\n\n", content).strip()
@@ -1735,221 +1748,6 @@ class RequirementWritingAgent(BaseAgent):
     @classmethod
     def _strip_mermaid_blocks(cls, content: str) -> str:
         return cls._collapse_blank_lines(_MERMAID_BLOCK_RE.sub("", content))
-
-    @classmethod
-    def _is_forbidden_diagram_section(cls, section_title: str) -> bool:
-        lowered_title = (section_title or "").lower()
-        if cls._is_table_only_section(section_title):
-            return True
-        return any(token in lowered_title for token in _FORBIDDEN_DIAGRAM_TITLE_TOKENS)
-
-    @staticmethod
-    def _resolve_diagram_kind(
-        section_title: str,
-        section_description: str,
-        content_guidance: str,
-    ) -> str:
-        lowered_title = (section_title or "").lower()
-        lowered_context = " ".join(
-            part.lower()
-            for part in (section_title, section_description, content_guidance)
-            if part
-        )
-
-        if any(
-            token in lowered_title
-            for token in (
-                "network & edge architecture",
-                "technical architecture",
-                "solution architecture",
-                "deployment topology",
-                "topology",
-            )
-        ):
-            return "network_architecture"
-        if any(token in lowered_title for token in ("cloud interconnect", "expressroute", "direct connect")):
-            return "cloud_interconnect"
-        if any(
-            token in lowered_title
-            for token in ("managed security operations", "security operations", "soc", "siem", "incident response")
-        ):
-            return "security_operations"
-        if any(
-            token in lowered_title
-            for token in (
-                "implementation & project management",
-                "project management",
-                "migration timeline",
-                "timeline",
-                "gantt",
-            )
-        ):
-            return "implementation_gantt"
-        if any(
-            token in lowered_title
-            for token in ("implementation plan", "migration plan", "timeline", "gantt", "project phases", "rollout")
-        ):
-            return "implementation_flow"
-        if any(token in lowered_context for token in ("timeline", "project plan", "delivery phases")):
-            return "implementation_gantt"
-        if any(token in lowered_context for token in ("process flow", "workflow", "operating model")):
-            return "process_flow"
-        return ""
-
-    @classmethod
-    def _build_contextual_mermaid(
-        cls,
-        diagram_kind: str,
-        section_title: str,
-        content: str,
-    ) -> str:
-        lowered = " ".join(part.lower() for part in (section_title, content) if part)
-
-        if diagram_kind == "cloud_interconnect":
-            return "\n".join([
-                "```mermaid",
-                "sequenceDiagram",
-                "    title Cloud Interconnect Routing",
-                "    participant Branch as Apex Branch Sites",
-                "    participant SDWAN as SD-WAN Edge",
-                "    participant DC as Mumbai DC",
-                "    participant Azure as Azure ExpressRoute",
-                "    participant AWS as AWS Direct Connect",
-                "    Branch->>SDWAN: Branch application traffic",
-                "    SDWAN->>DC: Encrypted transport to Mumbai",
-                "    DC->>Azure: Private peering for Azure-hosted workloads",
-                "    DC->>AWS: Private peering for AWS-hosted workloads",
-                "    Azure-->>Branch: ERP / collaboration response traffic",
-                "    AWS-->>Branch: IoT / analytics response traffic",
-                "```",
-            ])
-
-        if diagram_kind == "implementation_gantt":
-            from datetime import date, timedelta
-
-            phase_steps = cls._extract_phase_steps(content)
-            if len(phase_steps) < 4:
-                phase_steps = [
-                    "Design and Readiness",
-                    "Pilot Deployment",
-                    "Regional Rollout",
-                    "National Cutover",
-                    "Operational Handover",
-                ]
-
-            durations = [28, 42, 70, 84, 28]
-            cursor = date(2025, 11, 1)
-            lines = [
-                "```mermaid",
-                "gantt",
-                "    title Apex Implementation Timeline",
-                "    dateFormat YYYY-MM-DD",
-                "    axisFormat %b %Y",
-                "    section Delivery",
-            ]
-            for idx, label in enumerate(phase_steps[:5], start=1):
-                span_days = durations[idx - 1] if idx <= len(durations) else 30
-                end_date = cursor + timedelta(days=span_days - 1)
-                lines.append(
-                    f"    {label} : task_{idx}, {cursor.isoformat()}, {end_date.isoformat()}"
-                )
-                cursor = end_date + timedelta(days=1)
-            lines.append("```")
-            return "\n".join(lines)
-
-        if diagram_kind == "security_operations":
-            itsm_line = (
-                '    SOC --> ITSM["ServiceNow / Incident Queue"]'
-                if "servicenow" in lowered
-                else '    SOC --> Response["Containment and RCA Workflow"]'
-            )
-            return "\n".join([
-                "```mermaid",
-                "flowchart LR",
-                '    Telemetry["Branch, DC, and Cloud Telemetry"] --> SIEM["India-hosted SIEM"]',
-                '    ThreatIntel["Commercial Threat Feeds"] --> SIEM',
-                '    SIEM --> SOC["24x7 SOC Analysts"]',
-                itsm_line,
-                '    SOC --> Reporting["SLA Reporting and RCA"]',
-                "```",
-            ])
-
-        if diagram_kind == "implementation_flow":
-            phase_steps = cls._extract_phase_steps(content)
-            if len(phase_steps) < 3:
-                phase_steps = [
-                    "Design and Readiness",
-                    "Pilot Deployment",
-                    "Scaled Rollout",
-                    "Steady-State Handover",
-                ]
-            node_ids = [f"S{idx}" for idx in range(1, len(phase_steps) + 1)]
-            lines = ["```mermaid", "flowchart LR"]
-            for node_id, label in zip(node_ids, phase_steps):
-                lines.append(f'    {node_id}["{label}"]')
-            for left, right in zip(node_ids, node_ids[1:]):
-                lines.append(f"    {left} --> {right}")
-            lines.append("```")
-            return "\n".join(lines)
-
-        if diagram_kind == "process_flow":
-            phase_steps = cls._extract_phase_steps(content)
-            if len(phase_steps) < 3:
-                phase_steps = ["Discover", "Design", "Deploy", "Operate"]
-            node_ids = [f"P{idx}" for idx in range(1, len(phase_steps) + 1)]
-            lines = ["```mermaid", "flowchart LR"]
-            for node_id, label in zip(node_ids, phase_steps):
-                lines.append(f'    {node_id}["{label}"]')
-            for left, right in zip(node_ids, node_ids[1:]):
-                lines.append(f"    {left} --> {right}")
-            lines.append("```")
-            return "\n".join(lines)
-
-        lines = [
-            "```mermaid",
-            "flowchart TD",
-            '    Branch["Apex Branch Sites"] --> Edge["Dual-link SD-WAN Edge"]',
-        ]
-        lines.append('    Edge --> Hub["Regional Hub / Tier-1 Sites"]')
-        lines.append('    Edge --> Orchestrator["Cloud SD-WAN Orchestrator"]')
-        lines.append('    Hub --> DC["Mumbai Tier-III Data Centre"]')
-        if "azure" in lowered:
-            lines.append('    DC --> Azure["Azure ExpressRoute"]')
-        if "aws" in lowered:
-            lines.append('    DC --> AWS["AWS Direct Connect"]')
-        if any(token in lowered for token in ("soc", "siem", "security")):
-            lines.append('    Edge --> SOC["Managed SOC / SIEM"]')
-        if any(token in lowered for token in ("iot", "emm", "private apn", "esim")):
-            lines.append('    Edge --> IoT["IoT / EMM Platform"]')
-        lines.append("```")
-        return "\n".join(lines)
-
-    @staticmethod
-    def _extract_phase_steps(content: str) -> list[str]:
-        steps: list[str] = []
-        seen: set[str] = set()
-
-        for line in content.splitlines():
-            stripped = line.strip().lstrip("-* ").strip()
-            match = re.match(
-                r"^(?:Phase\s*\d+\s*:\s*)?(?P<label>[A-Za-z][A-Za-z0-9 /&,-]+?)(?:\s*\(.*\))?$",
-                stripped,
-                re.IGNORECASE,
-            )
-            if not match:
-                continue
-            label = match.group("label").strip(" .")
-            if len(label.split()) < 2:
-                continue
-            key = label.lower()
-            if key in seen:
-                continue
-            seen.add(key)
-            steps.append(label)
-            if len(steps) == 6:
-                break
-
-        return steps
 
     def _build_prompt(
         self,
