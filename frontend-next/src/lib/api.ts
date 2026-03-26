@@ -78,13 +78,14 @@ const CACHE_TTL = 30000; // 30 seconds
 export async function apiFetch<T = unknown>(path: string, opts: RequestInit = {}): Promise<T> {
   const method = opts.method || 'GET';
   const isGET = method === 'GET';
+  const skipCache = path.includes('/status') || path.includes('/checkpoints') || path.includes('/health');
 
-  if (isGET) {
+  if (isGET && !skipCache) {
     const cached = requestCache.get(path);
     if (cached && Date.now() < cached.expiry) {
       return cached.data;
     }
-  } else {
+  } else if (!isGET) {
     // Bust cache on any mutation
     requestCache.clear();
   }
@@ -106,7 +107,7 @@ export async function apiFetch<T = unknown>(path: string, opts: RequestInit = {}
   }
 
   const data = await res.json();
-  if (isGET) {
+  if (isGET && !skipCache) {
     requestCache.set(path, { data, expiry: Date.now() + CACHE_TTL });
   }
 
