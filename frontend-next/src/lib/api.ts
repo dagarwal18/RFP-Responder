@@ -72,7 +72,23 @@ export function normalizeStageKey(value: string | null | undefined): string {
 
 /* ── Core fetch helper ─────────────────────────────────── */
 
+const requestCache = new Map<string, { data: any; expiry: number }>();
+const CACHE_TTL = 30000; // 30 seconds
+
 export async function apiFetch<T = unknown>(path: string, opts: RequestInit = {}): Promise<T> {
+  const method = opts.method || 'GET';
+  const isGET = method === 'GET';
+
+  if (isGET) {
+    const cached = requestCache.get(path);
+    if (cached && Date.now() < cached.expiry) {
+      return cached.data;
+    }
+  } else {
+    // Bust cache on any mutation
+    requestCache.clear();
+  }
+
   const isFormData = opts.body instanceof FormData;
   const headers = new Headers(opts.headers || {});
   if (!isFormData && !headers.has('Content-Type')) {
@@ -89,7 +105,12 @@ export async function apiFetch<T = unknown>(path: string, opts: RequestInit = {}
     throw new Error(err.detail || res.statusText);
   }
 
-  return res.json();
+  const data = await res.json();
+  if (isGET) {
+    requestCache.set(path, { data, expiry: Date.now() + CACHE_TTL });
+  }
+
+  return data;
 }
 
 /* ── Backend → Frontend normalization helpers ────────────
