@@ -328,11 +328,16 @@ class FinalReadinessAgent(BaseAgent):
     ) -> str:
         import re
 
-        start = full_narr.find(heading)
-        if start < 0:
+        heading_level = len(heading.split(" ", 1)[0])
+        heading_text = heading.split(" ", 1)[1].strip()
+        heading_match = re.search(
+            rf"(?m)^#{{{heading_level}}}\s+(?:\d+(?:\.\d+)*\.?\s+)?{re.escape(heading_text)}\s*$",
+            full_narr,
+        )
+        if not heading_match:
             return full_narr
 
-        heading_level = len(heading.split(" ", 1)[0])
+        start = heading_match.start()
         heading_end = full_narr.find("\n", start)
         if heading_end < 0:
             return full_narr
@@ -381,6 +386,57 @@ class FinalReadinessAgent(BaseAgent):
             return max(1, pipes + 1)
         return max(1, pipes)
 
+    @staticmethod
+    def _trim_trailing_empty_cells(cells: list[str]) -> list[str]:
+        trimmed = list(cells)
+        while trimmed and not trimmed[-1].strip():
+            trimmed.pop()
+        return trimmed
+
+    @staticmethod
+    def _looks_like_priority(value: str) -> bool:
+        normalized = " ".join((value or "").strip().lower().split())
+        return normalized in {
+            "mandatory",
+            "optional",
+            "preferred",
+            "informational",
+            "required",
+        }
+
+    @staticmethod
+    def _looks_like_status(value: str) -> bool:
+        normalized = " ".join((value or "").strip().lower().split())
+        return normalized in {
+            "c",
+            "pc",
+            "nc",
+            "compliant",
+            "partially compliant",
+            "partial",
+            "non-compliant",
+            "non compliant",
+            "yes",
+            "no",
+            "pass",
+            "fail",
+        }
+
+    @classmethod
+    def _resolve_vendor_cells(cls, cells: list[str]) -> tuple[str, str]:
+        tail = cls._trim_trailing_empty_cells(cells)
+        if not tail:
+            return "", ""
+        if len(tail) == 1:
+            return tail[0], ""
+
+        response = tail[0]
+        remarks_parts = tail[1:]
+        if cls._looks_like_status(remarks_parts[0]) and not cls._looks_like_status(response):
+            return remarks_parts[0], " | ".join([response, *remarks_parts[1:]]).strip()
+
+        return response, " | ".join(remarks_parts).strip()
+
     @classmethod
     def _coerce_table_row(cls, cells: list[str], expected_col_count: int) -> str:
         if not expected_col_count or not cells:
@@ -400,10 +456,42 @@ class FinalReadinessAgent(BaseAgent):
         row_id_re: str,
         header_line: str,
     ) -> str:
-        cells = cls._split_table_cells(row)
+        cells = cls._trim_trailing_empty_cells(cls._split_table_cells(row))
         expected_cols = cls._count_table_columns(header_line)
 
         if row_id_re == r"\bTR-\d{3}\b" and expected_cols >= 6:
+            priority_index = next(
+                (
+                    idx
+                    for idx, cell in enumerate(cells[1:], start=1)
+                    if cls._looks_like_priority(cell)
+                ),
+                None,
+            )
+
+            if priority_index == 2 and len(cells) >= 5:
+                description = cells[1]
+                priority = cells[2]
+                vendor_response, vendor_remarks = cls._resolve_vendor_cells(cells[3:])
+                cells = [
+                    cells[0],
+                    "",
+                    description,
+                    priority,
+                    vendor_response,
+                    vendor_remarks,
+                ]
+            elif priority_index == 3 and len(cells) >= 4:
+                vendor_response, vendor_remarks = cls._resolve_vendor_cells(cells[4:])
+                cells = [
+                    cells[0],
+                    cells[1],
+                    cells[2] or cells[1],
+                    cells[3],
+                    vendor_response,
+                    vendor_remarks,
+                ]
+
             if len(cells) == 4:
                 row_id, label, compliance_state, vendor_response = cells
                 cells = [

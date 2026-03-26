@@ -275,6 +275,20 @@ function SummaryCard({
   );
 }
 
+const GLITCH_STYLES = `
+  @keyframes reviewGlitch {
+    0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+    20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); filter: hue-rotate(-90deg); }
+    40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); filter: invert(0.2); }
+    60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); filter: grayscale(1); }
+    80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); filter: invert(0); }
+    100% { clip-path: inset(0 0 0 0); transform: translate(0); filter: none; }
+  }
+  .animate-glitch {
+    animation: reviewGlitch 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+`;
+
 function ReviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -607,7 +621,7 @@ function ReviewContent() {
   if (loading) {
     return (
       <>
-        <Topbar title="Review Workspace" />
+        <Topbar title="Review Workspace" />\n      <style dangerouslySetInnerHTML={{ __html: GLITCH_STYLES }} />
         <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
           Loading review workspace...
         </div>
@@ -618,7 +632,7 @@ function ReviewContent() {
   if (!review || !rp) {
     return (
       <>
-        <Topbar title="Review Workspace" />
+        <Topbar title="Review Workspace" />\n      <style dangerouslySetInnerHTML={{ __html: GLITCH_STYLES }} />
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center text-sm text-muted-foreground">
           <FileSearch className="h-12 w-12 opacity-20" />
           <p>No proposal is currently available for human review.</p>
@@ -631,9 +645,10 @@ function ReviewContent() {
   return (
     <>
       <Topbar title="Review Workspace" />
+      <style dangerouslySetInnerHTML={{ __html: GLITCH_STYLES }} />\n      <style dangerouslySetInnerHTML={{ __html: GLITCH_STYLES }} />
 
       <div className="border-b border-border/70 bg-background/95">
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -685,7 +700,7 @@ function ReviewContent() {
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 py-6 pb-32 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-[1400px] flex-col gap-5 px-4 py-6 pb-32 sm:px-6 lg:px-8">
           <div className="space-y-1">
             <p className="text-sm font-semibold text-foreground">Response Sections</p>
             <p className="text-xs text-muted-foreground">
@@ -763,7 +778,7 @@ function ReviewContent() {
                     </div>
 
                     {isOpen && (
-                      <div className="border-t border-border/60 bg-secondary/[0.14] px-5 py-4">
+                      <div className="border-t border-border/60 bg-secondary/[0.14] px-5 py-4 animate-glitch">
                         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                           <div className="text-[11px] text-muted-foreground">
                             Scroll the full section below and use the plus controls for paragraph or section comments.

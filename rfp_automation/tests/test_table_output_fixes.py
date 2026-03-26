@@ -11,8 +11,17 @@ from rfp_automation.agents.requirement_extraction_agent import RequirementsExtra
 from rfp_automation.agents.writing_agent import RequirementWritingAgent
 from rfp_automation.agents.final_readiness_agent import FinalReadinessAgent
 from rfp_automation.models.state import RFPGraphState
-from rfp_automation.models.schemas import AssembledProposal, CommercialResult, LegalResult
-from rfp_automation.models.schemas import ResponseSection
+from rfp_automation.models.schemas import (
+    ArchitecturePlan,
+    AssembledProposal,
+    CommercialResult,
+    LegalResult,
+    ResponseSection,
+    SectionResponse,
+    WritingResult,
+)
+from rfp_automation.services.parsing_service import ParsingService
+from rfp_automation.services.review_service import ReviewService
 from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
 _MD_TO_PDF_PATH = Path(__file__).resolve().parents[2] / "scripts" / "md_to_pdf.py"
@@ -208,6 +217,89 @@ def test_final_readiness_backfills_blank_technical_description_cells():
     assert "| TR-005 | SD-WAN — OEM Hardware | SD-WAN — OEM Hardware | Mandatory | Cisco | OEM identified |" in normalized
 
 
+def test_final_readiness_swaps_status_and_vendor_remarks_when_c3_flips_them():
+    section_body = (
+        "| Req. ID | Category | Description | Priority | Vendor Response | Vendor Remarks |\n"
+        "|---|---|---|---|---|---|\n"
+        "| TR-013 | SOC Availability | Operate 24x7x365 SOC coverage. | Mandatory | Vodafone Business ensures always-on staffing. | Compliant |\n"
+    )
+
+    normalized = FinalReadinessAgent._dedupe_markdown_table_rows(
+        section_body,
+        r"\bTR-\d{3}\b",
+    )
+
+    assert "| TR-013 | SOC Availability | Operate 24x7x365 SOC coverage. | Mandatory | Compliant | Vodafone Business ensures always-on staffing. |" in normalized
+
+
+def test_final_readiness_handles_missing_technical_category_without_shifting_columns():
+    section_body = (
+        "| Req. ID | Category | Description | Priority | Vendor Response | Vendor Remarks |\n"
+        "|---|---|---|---|---|---|\n"
+        "| TR-019 | Private APN traffic must not transit public internet. | Mandatory | Direct private peering is provided. | Compliant | |\n"
+    )
+
+    normalized = FinalReadinessAgent._dedupe_markdown_table_rows(
+        section_body,
+        r"\bTR-\d{3}\b",
+    )
+
+    assert "| TR-019 |  | Private APN traffic must not transit public internet. | Mandatory | Compliant | Direct private peering is provided. |" in normalized
+
+
+def test_review_sections_prefer_assembled_content_with_mermaid_diagrams():
+    state = RFPGraphState(
+        architecture_plan=ArchitecturePlan(
+            sections=[
+                ResponseSection(
+                    section_id="SEC-01",
+                    title="Technical Implementation Narrative",
+                    priority=1,
+                )
+            ]
+        ),
+        writing_result=WritingResult(
+            section_responses=[
+                SectionResponse(
+                    section_id="SEC-01",
+                    title="Technical Implementation Narrative",
+                    content="Narrative without diagrams.",
+                )
+            ]
+        ),
+        assembled_proposal=AssembledProposal(
+            full_narrative=(
+                "## 1. Technical Implementation Narrative\n\n"
+                "```mermaid\n"
+                "flowchart TD\n"
+                "A-->B\n"
+                "```\n\n"
+                "Narrative with diagram.\n"
+            )
+        ),
+    )
+
+    sections = ReviewService._build_response_sections(state)
+
+    assert len(sections) == 1
+    assert "```mermaid" in sections[0].full_text
+    assert "Narrative with diagram." in sections[0].full_text
+
+
+def test_final_readiness_canonicalizes_numbered_table_headings():
+    markdown = (
+        "## 2. Technical Implementation\n\n"
+        "### 2.1 Technical Compliance Matrix\n\n"
+        "| Req. ID | Category | Description | Priority | Vendor Response | Vendor Remarks |\n"
+        "|---|---|---|---|---|---|\n"
+        "| TR-013 | SOC Availability | Operate 24x7x365 SOC coverage. | Mandatory | Vodafone Business ensures always-on staffing. | Compliant |\n"
+    )
+
+    normalized = FinalReadinessAgent._canonicalize_known_table_sections(markdown)
+
+    assert "| TR-013 | SOC Availability | Operate 24x7x365 SOC coverage. | Mandatory | Compliant | Vodafone Business ensures always-on staffing. |" in normalized
+
+
 def test_extract_relevant_table_text_keeps_only_requested_rows():
     agent = RequirementWritingAgent()
     table_text = (
@@ -309,6 +401,71 @@ def test_logical_table_groups_merge_consecutive_multipage_chunks():
     assert groups[1]["chunk_indices"] == [188, 189]
     assert groups[2]["chunk_indices"] == [194]
     assert groups[3]["chunk_indices"] == [195]
+
+
+def test_logical_table_groups_do_not_merge_incompatible_technical_headers():
+    agent = RequirementWritingAgent()
+    table_groups = {
+        174: ["TR-013", "TR-014"],
+        175: ["TR-019", "TR-020"],
+    }
+    table_chunks_by_index = {
+        174: {
+            "chunk_index": 174,
+            "table_type": "fill_in_table",
+            "section_hint": "RFP",
+            "text": (
+                "TR-ID | Requirement | Description | Compliance Status | Vendor Response\n"
+                "TR-013 | SOC Availability | Operate 24x7x365 SOC coverage. | Mandatory | [C / PC / NC] [Vendor to fill]\n"
+            ),
+        },
+        175: {
+            "chunk_index": 175,
+            "table_type": "fill_in_table",
+            "section_hint": "RFP",
+            "text": (
+                "TR ID | Requirement Description | Compliance Status | Vendor Response\n"
+                "TR-019 | Private APN traffic must not transit public internet. | Mandatory | [C / PC / NC]\n"
+            ),
+        },
+    }
+
+    groups = agent._build_logical_table_groups(table_groups, table_chunks_by_index)
+
+    assert [group["chunk_indices"] for group in groups] == [[174], [175]]
+
+
+def test_parsing_normalizes_split_technical_matrix_headers():
+    blocks = [
+        {
+            "block_id": "tbl-007",
+            "type": "table",
+            "table_type": "fill_in_table",
+            "page_number": 14,
+            "text": (
+                "TR-ID | Requirement | Description | Compliance Status | Vendor Response\n"
+                "TR-013 | SOC Availability | Operate 24x7x365 SOC coverage. | Mandatory | [C / PC / NC] [Vendor to fill]\n"
+            ),
+        },
+        {
+            "block_id": "tbl-008",
+            "type": "table",
+            "table_type": "fill_in_table",
+            "page_number": 15,
+            "text": (
+                "TR ID | Requirement Description | Compliance Status | Vendor Response\n"
+                "TR-019 | Private APN traffic must not transit public internet. | Mandatory | [C / PC / NC]\n"
+            ),
+        },
+    ]
+
+    ParsingService._normalize_split_fill_in_table_blocks(blocks)
+
+    assert blocks[1]["text"].splitlines()[0] == blocks[0]["text"].splitlines()[0]
+    assert (
+        "TR-019 |  | Private APN traffic must not transit public internet. | Mandatory | [C / PC / NC]"
+        in blocks[1]["text"]
+    )
 
 
 def test_merge_logical_table_chunks_normalizes_compliance_header_variants():
@@ -478,6 +635,20 @@ def test_scrub_markdown_keeps_tables_with_25_or_fewer_rows_together():
     scrubbed = _scrub_markdown(md_text)
 
     assert scrubbed.count("| Item ID | Description | Service Type | Pricing Model | NRC | MRC |") == 1
+
+
+def test_scrub_markdown_replaces_unsupported_table_symbols():
+    md_text = (
+        "Requirement | Response\n"
+        "TR-001 | ■ Compliant\n"
+        "TR-002 | ☑ Accepted\n"
+    )
+
+    scrubbed = _scrub_markdown(md_text)
+
+    assert "■" not in scrubbed
+    assert "☑" not in scrubbed
+    assert "[x] Accepted" in scrubbed
 
 
 def test_sanitize_mermaid_code_repairs_gantt_ranges():

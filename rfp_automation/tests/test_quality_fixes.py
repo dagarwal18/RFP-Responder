@@ -28,12 +28,17 @@ from rfp_automation.models.enums import (
 )
 from rfp_automation.models.state import RFPGraphState
 from rfp_automation.orchestration.graph import _reset_downstream_state_for_rerun
-from rfp_automation.utils.mermaid_utils import _validate_mermaid_syntax
+from rfp_automation.utils.diagram_planner import DiagramRegistry, build_diagram_block
+from rfp_automation.utils.mermaid_utils import (
+    _is_mermaid_timeout_error,
+    _validate_mermaid_syntax,
+    MERMAID_RENDER_ARGS,
+)
 
 
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 # B1 Fragment Merging Tests
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 
 
 class TestFragmentMerging:
@@ -58,7 +63,7 @@ class TestFragmentMerging:
         )
 
     def test_merges_split_pair_starting_with_comparator(self):
-        """REQ ends without punctuation + next starts with '<' → merge."""
+        """REQ ends without punctuation + next starts with '<' -> merge."""
         reqs = [
             self._make_req(
                 "Call setup time <2 seconds; voice latency",
@@ -77,12 +82,11 @@ class TestFragmentMerging:
         assert "Call setup time" in result[0].text
         assert "<150ms" in result[0].text
         assert "720p HD" in result[0].text
-        # Keywords should be combined and deduplicated
         assert "call setup" in result[0].keywords
         assert "video quality" in result[0].keywords
 
     def test_merges_split_pair_starting_with_lowercase(self):
-        """REQ ends without punctuation + next starts lowercase → merge."""
+        """REQ ends without punctuation + next starts lowercase -> merge."""
         reqs = [
             self._make_req(
                 "The vendor shall provide redundant network",
@@ -148,7 +152,7 @@ class TestFragmentMerging:
         assert result == []
 
     def test_chain_of_three_fragments(self):
-        """Three consecutive fragments — should merge first pair, leave third."""
+        """Three consecutive fragments should merge at least the first pair."""
         reqs = [
             self._make_req(
                 "Call setup time <2 seconds; voice latency",
@@ -164,18 +168,7 @@ class TestFragmentMerging:
             ),
         ]
         result = RequirementsExtractionAgent._merge_fragments(reqs)
-
-        # First two merge, then the merged result doesn't end with punctuation
-        # but third starts with lowercase 'm' so they might merge too.
-        # Actually: merged text ends with "video quality" (no punct),
-        # and "minimum" starts lowercase → second merge happens.
-        # Result: all three merge into one.
-        # But our implementation only does one pass, so first two merge,
-        # then the merged + third get checked.
-        # merged text = "...voice latency <150ms; video quality"
-        # next text = "minimum 720p HD resolution."
-        # "minimum" starts with lowercase → merge again
-        assert len(result) <= 2  # at least first pair merges
+        assert len(result) <= 2
 
     def test_does_not_merge_table_backed_rows(self):
         """Table rows should never be merged into each other."""
@@ -203,7 +196,6 @@ class TestFragmentMerging:
         ]
 
         result = RequirementsExtractionAgent._merge_fragments(reqs)
-
         assert [req.requirement_id for req in result] == ["4.03", "4.04"]
 
     def test_duplicate_requirement_ids_prefer_table_backed_copy(self):
@@ -240,9 +232,9 @@ class TestFragmentMerging:
         assert collapsed[0].text == "India Legal Entity"
 
 
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 # C2 Word Count Validation Tests
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 
 
 class TestWordCountValidation:
@@ -251,7 +243,6 @@ class TestWordCountValidation:
     def test_knowledge_driven_low_word_count_warning(self, caplog):
         """knowledge_driven section with < 400 words should log a warning."""
         with caplog.at_level(logging.WARNING, logger="rfp_automation.agents.writing_agent"):
-            # Simulate the validation logic from writing_agent
             section_type = "knowledge_driven"
             word_count = 230
             section_id = "SEC-02"
@@ -267,7 +258,7 @@ class TestWordCountValidation:
             logger = logging.getLogger("rfp_automation.agents.writing_agent")
             if word_count < threshold and word_count > 0:
                 logger.warning(
-                    f"[C2] ⚠ LOW WORD COUNT: Section {section_id} ({title}) "
+                    f"[C2] LOW WORD COUNT: Section {section_id} ({title}) "
                     f"has only {word_count} words (minimum for "
                     f"{section_type}: {threshold})"
                 )
@@ -310,51 +301,178 @@ class TestContextualDiagramPolicies:
 
         assert "```mermaid" not in result
 
-    def test_architecture_sections_get_network_specific_diagram(self):
+    def test_writer_strips_llm_mermaid_for_later_pipeline_rendering(self):
         result = RequirementWritingAgent._finalize_section_content(
-            content="We connect 300 branch sites to the Mumbai DC and Azure workloads.",
-            section_title="Technical Implementation — Network & Edge Architecture",
+            content=(
+                "We connect branch sites to the core platform.\n\n"
+                "```mermaid\nflowchart TD\n    A --> B\n    B --> C\n```\n"
+            ),
+            section_title="Technical Implementation - Network & Edge Architecture",
             section_description="Primary SD-WAN topology and edge design.",
             content_guidance="Provide the proposed technical architecture.",
         )
 
-        assert "```mermaid" in result
-        assert "Cloud SD-WAN Orchestrator" in result
-        assert "Mumbai Tier-III Data Centre" in result
+        assert "```mermaid" not in result
+        assert "branch sites" in result.lower()
 
-    def test_cloud_interconnect_sections_replace_non_contextual_mermaid(self):
-        content = (
-            "Cloud connectivity narrative.\n\n"
-            "```mermaid\nflowchart TD\n    A --> B\n    B --> C\n```\n"
-        )
-        result = RequirementWritingAgent._finalize_section_content(
-            content=content,
-            section_title="Technical Implementation — Cloud Interconnect",
-            section_description="Azure and AWS private connectivity.",
-            content_guidance="Describe ExpressRoute and Direct Connect.",
+    def test_planner_generates_sequence_for_integration_sections(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Cloud Interconnect",
+            section_description="Private connectivity between platforms.",
+            content_guidance="Describe the integration workflow and interface hand-offs.",
+            content=(
+                "The branch portal submits requests to the integration layer, which "
+                "validates policy and forwards updates to Azure services and the operations team."
+            ),
+            visual_relevance="required",
+            visual_type_hint="sequence",
+            registry=registry,
         )
 
-        assert "sequenceDiagram" in result
-        assert "Azure ExpressRoute" in result
-        assert "AWS Direct Connect" in result
-        assert "flowchart TD" not in result
+        assert "```mermaid" in block
+        assert "sequenceDiagram" in block
+        assert _validate_mermaid_syntax(
+            block.split("```mermaid", 1)[1].split("```", 1)[0].strip()
+        ) is None
 
     def test_project_management_sections_get_gantt_diagram(self):
-        result = RequirementWritingAgent._finalize_section_content(
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Implementation & Project Management",
+            section_description="Delivery plan for phased rollout.",
+            content_guidance="Show the implementation timeline as a gantt chart.",
             content=(
                 "Phase 1: Design and Readiness\n"
                 "Phase 2: Pilot Deployment\n"
                 "Phase 3: Regional Rollout\n"
                 "Phase 4: National Cutover\n"
             ),
-            section_title="Implementation & Project Management",
-            section_description="Delivery plan for phased rollout.",
-            content_guidance="Show the implementation timeline as a gantt chart.",
+            visual_relevance="required",
+            visual_type_hint="gantt",
+            registry=registry,
         )
 
-        assert "```mermaid" in result
-        assert "gantt" in result
-        assert _validate_mermaid_syntax(result.split("```mermaid", 1)[1].split("```", 1)[0].strip()) is None
+        assert "```mermaid" in block
+        assert "gantt" in block
+        assert "2025-11-01" not in block
+        assert _validate_mermaid_syntax(
+            block.split("```mermaid", 1)[1].split("```", 1)[0].strip()
+        ) is None
+
+    def test_implementation_approach_sections_can_auto_select_gantt(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Implementation Approach",
+            section_description="Phased delivery approach for onboarding and go-live.",
+            content_guidance="Describe the phased transition and deployment approach.",
+            content=(
+                "Phase 1: Mobilize the program team\n"
+                "Phase 2: Design the target solution\n"
+                "Phase 3: Pilot the deployment\n"
+                "Phase 4: Rollout production services\n"
+            ),
+            visual_relevance="auto",
+            registry=registry,
+        )
+
+        assert "```mermaid" in block
+        assert "gantt" in block
+
+    def test_delivery_steps_without_explicit_timeline_title_can_still_get_gantt(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Transition Approach",
+            section_description="Delivery model for service activation.",
+            content_guidance="Explain how the service moves from design to handover.",
+            content=(
+                "Mobilize delivery governance\n"
+                "Design target services\n"
+                "Build and deploy the platform\n"
+                "Pilot activation with selected sites\n"
+                "Cutover and stabilize operations\n"
+            ),
+            visual_relevance="auto",
+            registry=registry,
+        )
+
+        assert "```mermaid" in block
+        assert "gantt" in block
+        assert "Phase 1: Mobilize the" not in block
+
+    def test_planner_avoids_repeated_diagrams(self):
+        registry = DiagramRegistry()
+        first = build_diagram_block(
+            section_title="Operational Workflow",
+            section_description="Service lifecycle and hand-offs.",
+            content_guidance="Show the process workflow.",
+            content="Assess scope. Define solution. Deploy changes. Operate service.",
+            visual_relevance="required",
+            registry=registry,
+        )
+        second = build_diagram_block(
+            section_title="Operational Workflow",
+            section_description="Service lifecycle and hand-offs.",
+            content_guidance="Show the process workflow.",
+            content="Assess scope. Define solution. Deploy changes. Operate service.",
+            visual_relevance="required",
+            registry=registry,
+        )
+
+        assert first
+        assert second == ""
+
+    def test_planner_skips_case_studies_sections(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Case Studies",
+            section_description="Representative delivery examples and client references.",
+            content_guidance="Provide two relevant case studies with outcomes.",
+            content="Case Study 1: Delivered a managed service transformation for a retail network.",
+            visual_relevance="auto",
+            registry=registry,
+        )
+
+        assert block == ""
+
+    def test_planner_diversifies_diagram_types_across_flexible_sections(self):
+        registry = DiagramRegistry()
+        first = build_diagram_block(
+            section_title="Technical Solution Architecture",
+            section_description="Overall platform architecture and deployment topology.",
+            content_guidance="Describe the technical solution architecture and deployment model.",
+            content="User channels connect to the access layer, core platform, and assurance services.",
+            visual_relevance="required",
+            registry=registry,
+        )
+        second = build_diagram_block(
+            section_title="Platform Architecture",
+            section_description="Overall platform architecture and deployment topology.",
+            content_guidance="Describe the technical solution architecture and deployment model.",
+            content="Identity services connect to application services, integration services, and data services.",
+            visual_relevance="required",
+            registry=registry,
+        )
+        third = build_diagram_block(
+            section_title="Deployment Architecture",
+            section_description="Overall platform architecture and deployment topology.",
+            content_guidance="Describe the technical solution architecture and deployment model.",
+            content="Branch sites connect to the edge gateway, core platform, and operations team.",
+            visual_relevance="required",
+            registry=registry,
+        )
+
+        combined = "\n".join([first, second, third])
+        type_hits = [
+            diagram_type
+            for diagram_type in ("flowchart", "sequenceDiagram", "classDiagram", "stateDiagram-v2", "erDiagram")
+            if diagram_type in combined
+        ]
+
+        assert "flowchart" in first
+        assert "sequenceDiagram" in combined
+        assert len(type_hits) >= 3
+        assert len(registry.type_counts) >= 3
 
     def test_prompt_requirement_format_hides_internal_ids(self):
         line = RequirementWritingAgent._format_requirement_for_prompt(
@@ -428,16 +546,15 @@ class TestRerunStateReset:
         assert reset["review_package"] == state["review_package"]
 
 
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 # Mermaid Sanitization Tests
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 
 
 class TestMermaidSanitization:
-    """Tests for _sanitize_mermaid_code in mermaid_utils."""
+    """Tests for Mermaid sanitization and validation helpers."""
 
     def test_quotes_parentheses_in_square_brackets(self):
-        """A[Microsoft Sentinel (SIEM)] → A["Microsoft Sentinel (SIEM)"]"""
         from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
         code = "flowchart TD\n    E[Microsoft Sentinel (SIEM)]"
@@ -445,7 +562,6 @@ class TestMermaidSanitization:
         assert '["Microsoft Sentinel (SIEM)"]' in result
 
     def test_does_not_double_quote(self):
-        """Already quoted labels should not be re-quoted."""
         from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
         code = 'A["Already Quoted (v2)"]'
@@ -453,7 +569,6 @@ class TestMermaidSanitization:
         assert result == code
 
     def test_no_special_chars_unchanged(self):
-        """Labels without special chars should pass through unchanged."""
         from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
         code = "A[Simple Label]\n    B[Another Label]"
@@ -461,7 +576,6 @@ class TestMermaidSanitization:
         assert result == code
 
     def test_braces_in_label(self):
-        """Curly braces inside [] should also be quoted."""
         from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
         code = "A[Config {JSON}]"
@@ -469,7 +583,6 @@ class TestMermaidSanitization:
         assert '["Config {JSON}"]' in result
 
     def test_multiple_labels_sanitized(self):
-        """Multiple labels with parens on same diagram."""
         from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
         code = "A[SOC (24/7)] --> B[SIEM (v2)]"
@@ -478,15 +591,13 @@ class TestMermaidSanitization:
         assert '["SIEM (v2)"]' in result
 
     def test_preserves_mermaid_round_nodes(self):
-        """Round nodes like A(text) should NOT be affected (not in [])."""
         from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
         code = "A(Round Node)"
         result = _sanitize_mermaid_code(code)
-        assert result == code  # no [] → no match
+        assert result == code
 
     def test_full_diagram_parses_after_sanitization(self):
-        """The exact pattern from the teammate's error log should be fixed."""
         from rfp_automation.utils.mermaid_utils import _sanitize_mermaid_code
 
         code = (
@@ -498,7 +609,6 @@ class TestMermaidSanitization:
         )
         result = _sanitize_mermaid_code(code)
         assert '["Microsoft Sentinel (SIEM)"]' in result
-        # Other labels without parens are unchanged
         assert "[IoT Gateway]" in result
         assert "[Edge Processing]" in result
 
@@ -511,19 +621,131 @@ class TestMermaidSanitization:
         )
         assert error == "Graph/flowchart block has no links"
 
+    def test_validate_mermaid_allows_init_directive(self):
+        code = (
+            "%%{init: {'theme': 'base'}}%%\n"
+            "flowchart LR\n"
+            "    A --> B\n"
+            "    B --> C"
+        )
+        assert _validate_mermaid_syntax(code) is None
 
-# ═══════════════════════════════════════════════════════════
+    def test_cli_theme_remains_mmdc_compatible(self):
+        theme_index = MERMAID_RENDER_ARGS.index("--theme")
+        assert MERMAID_RENDER_ARGS[theme_index + 1] == "default"
+
+    def test_timeout_detection_matches_navigation_timeout(self):
+        assert _is_mermaid_timeout_error(
+            "TimeoutError: Navigation timeout of 30000 ms exceeded"
+        )
+
+    def test_state_diagram_uses_readable_labels(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Incident Lifecycle",
+            section_description="Operational lifecycle for incidents and escalations.",
+            content_guidance="Show the operational lifecycle and state transition flow.",
+            content=(
+                "Intake and qualification\n"
+                "Analysis and validation\n"
+                "Remediation and recovery\n"
+                "Closure and reporting\n"
+            ),
+            visual_relevance="required",
+            visual_type_hint="state",
+            registry=registry,
+        )
+
+        assert 'state "Intake and qualification" as' in block
+        assert "IntakeAndQualification" in block
+        assert "CaseStudiesDemonstrating" not in block
+
+    def test_state_diagram_rejects_sentence_fragments(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Operational Workflow",
+            section_description="Lifecycle and transition flow.",
+            content_guidance="Show the operational lifecycle and state transition flow.",
+            content=(
+                "Vodafone Business is pleased to submit this response.\n"
+                "Security Operations Centre manages service oversight.\n"
+                "To ensure high network resilience we maintain monitoring.\n"
+                "Tier-1 Hub Sites: >= 2 resilient routes.\n"
+            ),
+            visual_relevance="required",
+            visual_type_hint="state",
+            registry=registry,
+        )
+
+        assert block == ""
+
+    def test_workflow_sections_with_prose_do_not_emit_broken_journey_text(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Operations Workflow",
+            section_description="Operations workflow for managed service delivery.",
+            content_guidance="Show the workflow.",
+            content=(
+                "Vodafone Business is pleased to submit this response.\n"
+                "Security Operations Centre manages service oversight.\n"
+                "To ensure high network resilience we maintain monitoring.\n"
+                "Tier-1 Hub Sites: >= 2 resilient routes.\n"
+            ),
+            visual_relevance="required",
+            registry=registry,
+        )
+
+        assert "journey" not in block
+        assert "Vodafone Business is pleased" not in block
+        assert "Tier-1 Hub Sites: =" not in block
+
+    def test_gantt_labels_keep_whole_words(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Implementation Plan",
+            section_description="Implementation plan and rollout timeline.",
+            content_guidance="Show the implementation timeline as a gantt chart.",
+            content=(
+                "Mobilize project governance\n"
+                "Design target architecture\n"
+                "Build and configure service\n"
+                "Pilot with selected sites\n"
+                "Rollout production deployment\n"
+            ),
+            visual_relevance="required",
+            visual_type_hint="gantt",
+            registry=registry,
+        )
+
+        assert "Rollout production deployment" in block
+        assert "deploymen :" not in block
+
+    def test_data_sections_can_generate_er_diagrams(self):
+        registry = DiagramRegistry()
+        block = build_diagram_block(
+            section_title="Data Architecture",
+            section_description="Entity relationships and master data ownership.",
+            content_guidance="Describe the data model and repository interactions.",
+            content=(
+                "Customer records sync through the integration layer to the reporting repository "
+                "and master data services."
+            ),
+            visual_relevance="required",
+            registry=registry,
+        )
+
+        assert "erDiagram" in block
+
+
+# ===========================================================================
 # C2 Echo Block Stripping Tests
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 
 
 class TestC2EchoBlockStripping:
     """Tests that _strip_echo_blocks removes LLM format echoes."""
 
     def test_strips_json_echo_block(self):
-        """```json {"content": "..."} ``` blocks should be removed."""
-        from rfp_automation.agents.writing_agent import RequirementWritingAgent
-
         content = (
             "Our platform provides SSO.\n\n"
             "```json\n"
@@ -534,26 +756,18 @@ class TestC2EchoBlockStripping:
         result = RequirementWritingAgent._strip_echo_blocks(content)
         assert "```json" not in result
         assert '"content"' not in result
-        # Original prose is preserved
         assert "Our platform provides SSO." in result
 
     def test_strips_markdown_echo_block(self):
-        """```markdown ... ``` blocks should be removed."""
-        from rfp_automation.agents.writing_agent import RequirementWritingAgent
-
         content = (
             "### Security\nWe provide encryption.\n\n"
             "```markdown\n### Security\nWe provide encryption.\n```"
         )
         result = RequirementWritingAgent._strip_echo_blocks(content)
         assert "```markdown" not in result
-        # Content before the echo is preserved
         assert "We provide encryption." in result
 
     def test_preserves_mermaid_blocks(self):
-        """```mermaid blocks are intentional and should NOT be stripped."""
-        from rfp_automation.agents.writing_agent import RequirementWritingAgent
-
         content = (
             "### Architecture\n\n"
             "```mermaid\nflowchart TD\n    A --> B\n```\n"
@@ -574,9 +788,9 @@ class TestC2EchoBlockStripping:
         assert result.strip() == "Technical narrative paragraph."
 
 
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 # C3 Split Child Merging Tests
-# ═══════════════════════════════════════════════════════════
+# ===========================================================================
 
 
 class TestC3SplitChildMerging:
@@ -585,6 +799,7 @@ class TestC3SplitChildMerging:
     @staticmethod
     def _make_section_response(title: str, content: str):
         from rfp_automation.models.schemas import SectionResponse
+
         return SectionResponse(
             section_id="SEC-01",
             title=title,
@@ -592,24 +807,22 @@ class TestC3SplitChildMerging:
         )
 
     def test_merges_same_category_parts(self):
-        """Two children with same base category → merged into one entry."""
         from rfp_automation.agents.narrative_agent import NarrativeAssemblyAgent
 
         agent = NarrativeAssemblyAgent()
         children = [
             self._make_section_response(
-                "Compliance Matrix — Commercial Terms (Part 1)",
-                "Content A"
+                "Compliance Matrix - Commercial Terms (Part 1)",
+                "Content A",
             ),
             self._make_section_response(
-                "Compliance Matrix — Commercial Terms (Part 2)",
-                "Content B"
+                "Compliance Matrix - Commercial Terms (Part 2)",
+                "Content B",
             ),
         ]
 
         merged = agent._merge_split_children(children, "Compliance Matrix")
 
-        # Should produce ONE entry for "Commercial Terms"
         assert len(merged) == 1
         sub_title, contents = merged[0]
         assert sub_title == "Commercial Terms"
@@ -618,18 +831,17 @@ class TestC3SplitChildMerging:
         assert "Content B" in contents[1]
 
     def test_different_categories_stay_separate(self):
-        """Children with different categories stay as separate entries."""
         from rfp_automation.agents.narrative_agent import NarrativeAssemblyAgent
 
         agent = NarrativeAssemblyAgent()
         children = [
             self._make_section_response(
-                "Compliance Matrix — Commercial Terms (Part 1)",
-                "Commercial stuff"
+                "Compliance Matrix - Commercial Terms (Part 1)",
+                "Commercial stuff",
             ),
             self._make_section_response(
-                "Compliance Matrix — Regulatory Compliance (Part 1)",
-                "Regulatory stuff"
+                "Compliance Matrix - Regulatory Compliance (Part 1)",
+                "Regulatory stuff",
             ),
         ]
 
