@@ -390,8 +390,9 @@ class MCPService:
         return policies
 
     def get_certifications_from_policies(self) -> dict[str, bool]:
-        """Derive a cert map from extracted policies where category='certification'."""
-        cert_policies = self.get_extracted_policies(category="certification")
+        """Derive a cert map from extracted policies where category in ('certification', 'compliance')."""
+        policies = self.get_extracted_policies()
+        cert_policies = [p for p in policies if p.get("category") in ("certification", "compliance")]
         return {p.get("policy_text", ""): True for p in cert_policies if p.get("policy_text")}
 
     # ── Health check ─────────────────────────────────────

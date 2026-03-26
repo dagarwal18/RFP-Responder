@@ -232,9 +232,9 @@ export default function PoliciesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPolicies.map((policy) => (
+                    {filteredPolicies.map((policy, index) => (
                       <tr
-                        key={policy.id}
+                        key={`${policy.id}-${index}`}
                         className="border-b border-border/60 transition hover:bg-secondary/20"
                       >
                         <td className="px-5 py-4 text-sm leading-6 text-foreground/90">

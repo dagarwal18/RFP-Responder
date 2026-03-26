@@ -56,9 +56,9 @@ export function PageHeader({
           </p>
         ) : null}
         <div className="space-y-1">
-          <h1 className="text-[30px] font-semibold tracking-[-0.02em] text-foreground">{title}</h1>
+          <h1 className="text-sm font-bold tracking-[0.08em] text-foreground uppercase">{title}</h1>
           {description ? (
-            <p className="max-w-3xl text-[15px] leading-7 text-muted-foreground">{description}</p>
+            <p className="max-w-3xl text-[13px] leading-6 text-muted-foreground">{description}</p>
           ) : null}
         </div>
       </div>
@@ -99,7 +99,7 @@ export function PageSection({
     <section className={cn('app-section-card', className)}>
       <div className="flex flex-col gap-3 border-b border-border/70 px-5 py-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-1">
-          <h2 className="text-base font-semibold text-foreground">{title}</h2>
+          <h2 className="text-sm font-bold uppercase tracking-[0.08em] text-foreground">{title}</h2>
           {description ? (
             <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
           ) : null}

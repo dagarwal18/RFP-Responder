@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Topbar from '@/components/topbar';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import {
   WS_BASE,
 } from '@/lib/api';
 import { STAGES, type Run, type LogEntry } from '@/lib/types';
-import { Play, RefreshCw, Loader2 } from 'lucide-react';
+import { Play, RefreshCw, Loader2, X } from 'lucide-react';
 import CheckpointsPanel from '@/components/checkpoints-panel';
 import AgentOutputs from '@/components/agent-outputs';
 
@@ -197,7 +197,7 @@ function PipelineTimeline({ agents }: { agents: AgentStep[] }) {
         {agents.map((agent, idx) => {
           const pct = agent.state === 'active' ? getProgress(agent.key) : agent.state === 'complete' ? 100 : 0;
           return (
-            <div key={agent.key} className={`flex items-start gap-6 relative ${agent.state === 'active' || agent.state === 'complete' ? 'opacity-100' : 'opacity-40'} pb-7 last:pb-0`}>
+            <div key={agent.key} className="flex items-start gap-6 relative pb-7 last:pb-0">
               <div className="relative flex flex-col items-center mt-1">
                 <div className={`w-2 h-2 shrink-0 ${agent.state === 'active' ? 'bg-primary animate-pulse' : agent.state === 'complete' ? 'bg-success' : agent.state === 'failed' ? 'bg-error' : 'bg-muted'}`} />
                 {idx !== agents.length - 1 && (
@@ -240,7 +240,7 @@ function PipelineTimeline({ agents }: { agents: AgentStep[] }) {
 }
 
 
-export default function PipelinePage() {
+function PipelineWorkspace() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [file, setFile] = useState<File | null>(null);
@@ -565,9 +565,20 @@ export default function PipelinePage() {
                 <span className="text-[14px] font-medium text-foreground tracking-tight">Upload Document</span>
                 <span className="text-[13px] text-muted-foreground mt-1.5">Select an RFP PDF to initiate a new analysis pipeline.</span>
                 {file && (
-                  <div className="flex items-center gap-3 mt-4 text-[13px] text-muted-foreground border-l-2 border-primary pl-3 bg-secondary/50 py-2">
-                    <span className="font-medium text-foreground">{file.name}</span>
+                  <div className="flex items-center gap-3 mt-4 text-[13px] text-muted-foreground border-l-2 border-primary pl-3 bg-secondary/50 py-2 group/file">
+                    <span className="font-medium text-foreground max-w-[200px] truncate">{file.name}</span>
                     <span>{formatSize(file.size)}</span>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFile(null);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                      }}
+                      className="ml-auto mr-3 flex h-6 w-6 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      title="Remove file"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 )}
               </div>
@@ -592,33 +603,7 @@ export default function PipelinePage() {
               </div>
             )}
 
-            {/* Recent Runs List */}
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em]">Recent Executions</h2>
-                <RefreshCw className="w-3.5 h-3.5 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" onClick={loadRuns} />
-              </div>
 
-              <div className="flex flex-col border-t border-border w-full">
-                {runs.length === 0 ? (
-                  <div className="text-[13px] text-muted-foreground py-6">No historical runs associated with this workspace.</div>
-                ) : (
-                  runs.slice(0, 3).map(run => (
-                    <div key={run.run_id} onClick={() => openRun(run.run_id)} className={`flex items-center justify-between py-4 border-b border-border cursor-pointer hover:bg-muted/10 transition-colors duration-100 ease-linear ${selectedRun === run.run_id ? 'bg-muted/10' : ''}`}>
-                      <div className="pl-4">
-                        <p className="text-[13px] font-medium text-foreground">{run.filename?.replace('.pdf', '') || `Execution ${run.run_id.slice(0, 8)}`}</p>
-                        <p className="text-[12px] text-muted-foreground mt-1.5">{timeAgo(run.created_at)}</p>
-                      </div>
-                      <div className="pr-4">
-                        <span className={`text-[10px] uppercase tracking-wider font-semibold ${run.status === 'FAILED' ? 'text-error' : run.status === 'RUNNING' ? 'text-primary' : 'text-success'}`}>
-                          {run.status === 'INTAKE_COMPLETE' || run.status === 'SUBMITTED' ? 'COMPLETED' : run.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
 
           </div>
         </ScrollArea>
@@ -650,5 +635,17 @@ export default function PipelinePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PipelinePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-1 h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <PipelineWorkspace />
+    </Suspense>
   );
 }
