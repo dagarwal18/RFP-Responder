@@ -30,6 +30,11 @@ Current market solutions fail to address the holistic needs of complex RFP respo
 ### Product Specification Matchers (e.g., DataRobot Docs)
 *   **Rigidity:** Fails when confronted with unstructured or ambiguous text common in standard RFPs.
 
+### AI-Powered B2B Sales Automation (e.g., Salesforce Einstein, Conga)
+*   **Lead-Gen Focus:** Excel at lead identification and prioritization but unequipped for complex parsing or narrative drafting.
+*   **Lack of Depth:** Utility stops at the pipeline entry; cannot handle the "heavy lifting" of assembling a complete proposal response.
+
+
 ## 3. Our Differentiated Approach
 Our solution reimagines the workflow using an intelligent, end-to-end proposal operator built on a **14-node LangGraph state machine**.
 
