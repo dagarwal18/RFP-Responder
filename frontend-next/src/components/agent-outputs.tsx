@@ -221,20 +221,35 @@ function renderE1(output: RecordLike) {
 
 function renderE2(output: RecordLike) {
   const checks = Array.isArray(output.compliance_checks) ? output.compliance_checks : [];
+  const blockReasons = Array.isArray(output.block_reasons) ? output.block_reasons : [];
   return (
     <OutputAccordion title="E2 Legal & Compliance">
       <div className="flex flex-wrap gap-3">
         <StatCard label="Decision" value={String(output.decision || 'APPROVED').toUpperCase()} />
         <StatCard label="Checks" value={checks.length} />
       </div>
+      
+      {blockReasons.length > 0 && (
+        <div className="rounded-sm border border-rose-500/30 bg-rose-500/10 px-4 py-3 mt-3 text-xs">
+          <div className="font-semibold text-rose-500 mb-2 uppercase tracking-widest text-[10px]">Block Reasons</div>
+          <ul className="list-disc pl-4 text-rose-400 leading-5">
+            {blockReasons.map((reason: string, i: number) => (
+              <li key={i}>{reason}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {checks.length > 0 && (
-        <SimpleTable
-          headers={['Certification', 'Status']}
-          rows={checks.map((check: any) => [
-            <span key="cert" className="font-semibold text-foreground">{check.certification || '-'}</span>,
-            <Chip key="held">{check.held ? 'HELD' : 'MISSING'}</Chip>,
-          ])}
-        />
+        <div className="mt-3">
+          <SimpleTable
+            headers={['Certification', 'Status']}
+            rows={checks.map((check: any) => [
+              <span key="cert" className="font-semibold text-foreground">{check.certification || '-'}</span>,
+              <Chip key="held">{check.held ? 'HELD' : 'MISSING'}</Chip>,
+            ])}
+          />
+        </div>
       )}
     </OutputAccordion>
   );
