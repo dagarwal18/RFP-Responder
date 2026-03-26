@@ -332,16 +332,17 @@ class LegalAgent(BaseAgent):
         held_names_lower = {name.lower(): held for name, held in held_certs.items()}
 
         for cert in required_certs:
-            cert_lower = cert.lower()
+            cert_clean = re.sub(r'[^a-z0-9]', '', cert.lower())
             is_held = any(
-                cert_lower in k or k in cert_lower
+                cert_clean in re.sub(r'[^a-z0-9]', '', k) or re.sub(r'[^a-z0-9]', '', k) in cert_clean
                 for k in held_names_lower.keys()
             )
             gap_severity = "low"
             if not is_held:
                 # Look up severity from config
                 for config_cert, sev in severity_map.items():
-                    if config_cert.lower() in cert_lower or cert_lower in config_cert.lower():
+                    config_clean = re.sub(r'[^a-z0-9]', '', config_cert.lower())
+                    if config_clean in cert_clean or cert_clean in config_clean:
                         gap_severity = sev
                         break
                 else:

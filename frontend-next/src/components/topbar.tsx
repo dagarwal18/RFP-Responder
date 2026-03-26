@@ -4,15 +4,19 @@ import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { ThemeToggle } from '@/components/theme-toggle';
 
+let globalHealthStatus: 'connecting' | 'online' | 'offline' = 'connecting';
+
 export default function Topbar({ title }: { title: string }) {
-  const [status, setStatus] = useState<'connecting' | 'online' | 'offline'>('connecting');
+  const [status, setStatus] = useState<'connecting' | 'online' | 'offline'>(globalHealthStatus);
 
   useEffect(() => {
     const check = async () => {
       try {
         await apiFetch('/health');
+        globalHealthStatus = 'online';
         setStatus('online');
       } catch {
+        globalHealthStatus = 'offline';
         setStatus('offline');
       }
     };

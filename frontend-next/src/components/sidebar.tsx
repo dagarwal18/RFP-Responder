@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -59,10 +59,13 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('sidebar-collapsed') === 'true';
-  });
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+      setCollapsed(true);
+    }
+  }, []);
 
   const toggle = useCallback(() => {
     setCollapsed((prev) => {
@@ -79,25 +82,24 @@ export default function Sidebar() {
         ${collapsed ? 'w-[76px]' : 'w-[256px]'}
       `}
     >
-      <div className="flex h-full flex-col px-3 py-3">
-        <div className="flex h-14 shrink-0 items-center gap-3 rounded-lg border border-sidebar-border/70 bg-card/70 px-4">
-          <BrandLogo className="h-[22px] w-[22px] shrink-0 text-foreground" />
+      <div className="flex h-full flex-col">
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border/80 px-6">
+          <BrandLogo className="h-[22px] w-[22px] shrink-0 text-primary" />
           {!collapsed && (
             <div className="min-w-0">
-              <span className="block truncate text-[13px] font-bold tracking-[0.08em] text-foreground uppercase">
-                RFP Responder
+              <span className="block truncate text-[14px] font-bold tracking-wide text-foreground">
+                Respondr
               </span>
-              <span className="block text-[11px] text-muted-foreground">Workspace</span>
             </div>
           )}
         </div>
 
         <TooltipProvider delay={0}>
-          <nav className="flex flex-1 flex-col gap-6 overflow-y-auto py-5">
+          <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-5">
             {navItems.map((group) => (
               <div key={group.group} className="space-y-2">
                 {!collapsed && (
-                  <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
                     {group.group}
                   </p>
                 )}
@@ -106,12 +108,12 @@ export default function Sidebar() {
                     const isActive = pathname === item.href;
                     const Icon = item.icon;
                     const linkClasses = `
-                      flex items-center gap-3 rounded-lg border transition-all duration-150 ease-linear
+                      flex items-center gap-3 rounded-lg border border-transparent transition-all duration-150 ease-linear
                       ${collapsed ? 'justify-center px-0 py-3' : 'px-3.5 py-3'}
                       ${
                         isActive
-                          ? 'border-border/90 bg-secondary text-foreground'
-                          : 'border-transparent text-muted-foreground hover:border-sidebar-border/70 hover:bg-card/70 hover:text-foreground'
+                          ? 'text-foreground font-semibold hover:bg-secondary/50'
+                          : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
                       }
                     `;
 
@@ -133,10 +135,6 @@ export default function Sidebar() {
 
                     return (
                       <Link key={item.href} href={item.href} className={linkClasses}>
-                        <Icon
-                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-foreground' : ''}`}
-                          strokeWidth={1.75}
-                        />
                         <span className="truncate text-[13px] font-medium">
                           {item.label}
                         </span>
@@ -151,21 +149,23 @@ export default function Sidebar() {
 
         <Separator className="bg-sidebar-border/70" />
 
-        <button
-          onClick={toggle}
-          className={`mt-3 flex h-11 shrink-0 items-center gap-2 rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border/70 hover:bg-card/70 hover:text-foreground cursor-pointer ${
-            collapsed ? 'justify-center' : 'justify-end pr-4 text-right'
-          }`}
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="h-4 w-4" strokeWidth={1.75} />
-          ) : (
-            <>
-              <span className="text-xs font-medium">Collapse</span>
-              <PanelLeftClose className="h-4 w-4" strokeWidth={1.75} />
-            </>
-          )}
-        </button>
+        <div className="px-3">
+          <button
+            onClick={toggle}
+            className={`mt-3 flex h-11 w-full shrink-0 items-center gap-2 rounded-lg border border-transparent text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground cursor-pointer ${
+              collapsed ? 'justify-center' : 'justify-end pr-4 text-right'
+            }`}
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="h-4 w-4" strokeWidth={1.75} />
+            ) : (
+              <>
+                <span className="text-xs font-medium">Collapse</span>
+                <PanelLeftClose className="h-4 w-4" strokeWidth={1.75} />
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </aside>
   );

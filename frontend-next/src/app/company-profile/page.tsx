@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, Building2, CheckCircle2, RotateCcw, Save } from 'lucide-react';
+import { Pencil, Save, X } from 'lucide-react';
 
 import Topbar from '@/components/topbar';
 import { PageHeader, PageSection, PageShell } from '@/components/page-shell';
@@ -19,6 +19,7 @@ export default function CompanyProfilePage() {
     website: '',
   });
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -40,6 +41,7 @@ export default function CompanyProfilePage() {
     try {
       await saveCompanyProfile(profile);
       setStatus('saved');
+      setIsEditing(false);
       setTimeout(() => setStatus('idle'), 3000);
     } catch {
       setStatus('error');
@@ -52,6 +54,7 @@ export default function CompanyProfilePage() {
       const nextProfile = await fetchCompanyProfile();
       setProfile(nextProfile);
       setStatus('idle');
+      setIsEditing(false);
     } catch {}
   };
 
@@ -68,105 +71,108 @@ export default function CompanyProfilePage() {
           title="Company Profile"
           description="Maintain the company information used throughout proposal drafts and generated response content."
           actions={
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={reset}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Reset
+            !isEditing ? (
+              <Button onClick={() => setIsEditing(true)} className="h-8 rounded-none bg-primary text-primary-foreground text-[11px] uppercase tracking-wider font-bold hover:bg-primary/90">
+                <Pencil className="mr-2 h-3 w-3" />
+                Edit Profile
               </Button>
-              <Button onClick={save} disabled={status === 'saving'}>
-                <Save className="mr-2 h-4 w-4" />
-                {status === 'saving' ? 'Saving...' : 'Save Profile'}
-              </Button>
-            </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                {status === 'saved' && (
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-success">Saved Successfully</span>
+                )}
+                {status === 'error' && (
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-error">Save Failed</span>
+                )}
+                <Button variant="outline" onClick={reset} className="h-8 rounded-none border-border text-[11px] uppercase tracking-wider font-bold">
+                  <X className="mr-2 h-3 w-3" />
+                  Cancel
+                </Button>
+                <Button onClick={save} disabled={status === 'saving'} className="h-8 rounded-none bg-primary text-primary-foreground text-[11px] uppercase tracking-wider font-bold hover:bg-primary/90">
+                  <Save className="mr-2 h-3 w-3" />
+                  {status === 'saving' ? 'Saving...' : 'Save Profile'}
+                </Button>
+              </div>
+            )
           }
         />
 
-        <div className="py-6">
+        <div className="py-0">
           <PageSection
             title="Organization Details"
             description="These values are used when the app drafts proposals, summaries, and company-specific narrative sections."
+            className="border-none"
+            contentClassName="px-0 py-6"
           >
-            <div className="space-y-5">
-              <div className="rounded-2xl border border-border/70 bg-secondary/35 p-4">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-xl border border-border/70 bg-card/80 p-2.5">
-                    <Building2 className="h-4 w-4 text-primary" strokeWidth={1.75} />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">Profile usage</p>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      Keep this concise and accurate so generated sections sound grounded and reusable across bids.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-5">
-                <div className="space-y-2">
-                  <label className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="max-w-2xl">
+              <div className="grid gap-6">
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 block">
                     Company Name
                   </label>
-                  <Input
-                    value={profile.name}
-                    onChange={(event) => updateField('name', event.target.value)}
-                    placeholder="Acme Corporation"
-                    className="h-11 bg-secondary/40"
-                  />
+                  {!isEditing ? (
+                    <div className="text-sm font-medium text-foreground">{profile.name || 'Not specified'}</div>
+                  ) : (
+                    <Input
+                      value={profile.name}
+                      onChange={(event) => updateField('name', event.target.value)}
+                      placeholder="Acme Corporation"
+                      className="rounded-sm border-border bg-transparent shadow-none h-9 text-sm"
+                    />
+                  )}
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 block">
                     Description
                   </label>
-                  <Textarea
-                    value={profile.description}
-                    onChange={(event) => updateField('description', event.target.value)}
-                    rows={5}
-                    placeholder="Describe your company, core offerings, and differentiators..."
-                    className="min-h-[140px] bg-secondary/40"
-                  />
+                  {!isEditing ? (
+                    <div className="text-sm text-foreground whitespace-pre-wrap leading-6">{profile.description || 'Not specified'}</div>
+                  ) : (
+                    <Textarea
+                      value={profile.description}
+                      onChange={(event) => updateField('description', event.target.value)}
+                      rows={4}
+                      placeholder="Describe your company, core offerings, and differentiators..."
+                      className="min-h-[100px] rounded-sm border-border bg-transparent shadow-none resize-y text-sm"
+                    />
+                  )}
                 </div>
 
-                <div className="grid gap-5 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 block">
                       Headquarters
                     </label>
-                    <Input
-                      value={profile.headquarters}
-                      onChange={(event) => updateField('headquarters', event.target.value)}
-                      placeholder="London, UK"
-                      className="h-11 bg-secondary/40"
-                    />
+                    {!isEditing ? (
+                      <div className="text-sm font-medium text-foreground">{profile.headquarters || 'Not specified'}</div>
+                    ) : (
+                      <Input
+                        value={profile.headquarters}
+                        onChange={(event) => updateField('headquarters', event.target.value)}
+                        placeholder="London, UK"
+                        className="rounded-sm border-border bg-transparent shadow-none h-9 text-sm"
+                      />
+                    )}
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 block">
                       Website
                     </label>
-                    <Input
-                      value={profile.website}
-                      onChange={(event) => updateField('website', event.target.value)}
-                      placeholder="https://example.com"
-                      className="h-11 bg-secondary/40"
-                    />
+                    {!isEditing ? (
+                      <div className="text-sm font-medium text-primary">{profile.website || 'Not specified'}</div>
+                    ) : (
+                      <Input
+                        value={profile.website}
+                        onChange={(event) => updateField('website', event.target.value)}
+                        placeholder="https://example.com"
+                        className="rounded-sm border-border bg-transparent shadow-none h-9 text-sm"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
-
-              {status === 'saved' ? (
-                <div className="flex items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/12 dark:text-emerald-300">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Company profile saved successfully.
-                </div>
-              ) : null}
-
-              {status === 'error' ? (
-                <div className="flex items-center gap-2 rounded-2xl border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-400/25 dark:bg-rose-500/12 dark:text-rose-300">
-                  <AlertCircle className="h-4 w-4" />
-                  We could not save the profile. Please try again.
-                </div>
-              ) : null}
             </div>
           </PageSection>
         </div>
