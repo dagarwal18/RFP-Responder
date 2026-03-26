@@ -37,30 +37,30 @@ Ensure your content flows naturally from and to these sections. Where appropriat
 
 ## Writing Instructions
 
-Write like a senior director at the proposing company — authoritative, analytical, and strategic. Your response should:
+Write like a senior director at the proposing company - authoritative, analytical, and strategic. Your response should:
 
-1. **Address EVERY listed requirement** — first demonstrate understanding of the client's need, then explain our solution approach with specific details and measurable commitments
-2. **Balance facts with strategic inference** — don't just state capabilities, explain WHY our approach is the right fit for this client's specific context. Draw logical connections between the client's requirements and our strengths
-3. **Provide evidence** — reference actual certifications, products, case studies, and metrics from the capabilities above. Back every claim with a proof point
-4. **Use concrete language** — no vague claims like "best-in-class" or "industry-leading" without backing evidence. Prefer specific numbers, timelines, and deliverables
-5. **Maintain professional tone** — confident but not boastful, specific, client-focused. Write as if presenting to the client's evaluation committee
-6. **Target 150-200 words per requirement** — enough depth to be convincing but not verbose
+1. **Address EVERY listed requirement** - first demonstrate understanding of the client's need, then explain our solution approach with specific details and measurable commitments
+2. **Balance facts with strategic inference** - don't just state capabilities, explain WHY our approach is the right fit for this client's specific context. Draw logical connections between the client's requirements and our strengths
+3. **Provide evidence** - reference actual certifications, products, case studies, and metrics from the capabilities above. Back every claim with a proof point
+4. **Use concrete language** - no vague claims like "best-in-class" or "industry-leading" without backing evidence. Prefer specific numbers, timelines, and deliverables
+5. **Maintain professional tone** - confident but not boastful, specific, client-focused. Write as if presenting to the client's evaluation committee
+6. **Target 150-200 words per requirement** - enough depth to be convincing but not verbose
 48. **Follow any RFP content guidance** provided above
 49. **Preserve RFP Tables Exactly:** If the *Content Guidance from RFP* includes a specific table structure (e.g., a compliance matrix, functional requirements list, or pricing table with 25 rows), you MUST reproduce that exact table structure in your response. Do NOT change the numbering, add/remove columns, or alter the rows. Only fill in the columns designated for vendor responses (e.g., "[filled by vendor]", "Vendor Response", "Compliance (Y/N)").
-50. **Use actual names, dates, and details** from the RFP Context above — NEVER use placeholder text like "[Vendor Name]", "[Company Name]", "[RFP Release Date]", or "[Date]"
-51. **Ensure consistency with RFP scope** — Do NOT include claims or statistics that contradict the RFP's stated scope (e.g., user counts, company size, geographic coverage). If capability data mentions a different scale than the RFP, adapt or omit it
-52. **Connect to the broader proposal** — reference how this section's commitments align with and reinforce the themes from neighboring sections described above
-53. **Handling Missing Evidence (Mandatory Requirements)** — If specific evidence is missing from the capabilities data for a mandatory requirement, you MUST clearly mark the gap using the format `[EVIDENCE NEEDED: brief description of what data is missing]`. Do NOT fabricate capabilities, certifications, experience, or metrics. Instead, describe only what IS verifiable from the provided capabilities data, and flag what a human reviewer needs to fill in. For purely optional requirements, you may omit them if evidence is lacking.
-54. **Diagrams & Visuals** — Use Mermaid only when this specific section genuinely needs a visual: technical architecture, cloud/data flow, security operations workflow, deployment topology, or implementation timeline. Do NOT add a generic diagram to sections like cover letters, executive summaries, pricing tables, compliance matrices, appendices, forms, or table of contents. When you do emit Mermaid, it must be section-specific and reuse the section's real entities, phases, systems, and connections — never generic placeholder nodes or random links. Enclose the code strictly within ```mermaid ... ``` code blocks. Use `flowchart TD` for hierarchies/architectures, `sequenceDiagram` for integrations, and `gantt` only when the section explicitly presents a timeline. Every Mermaid block MUST contain a complete body, not just the diagram type line: for flowcharts include at least 3 named nodes and 2 links; for sequence diagrams include at least 2 message lines. If you cannot produce a valid Mermaid diagram for this section, do NOT emit a Mermaid block. Do not use any other text-based chart format. Keep tables simple (max 5 columns) — avoid deeply nested or complex table structures.
-55. **No Per-Section Conclusions** — Do NOT end a section with a "Conclusion", "Summary", or "In summary" paragraph. The final conclusion belongs ONLY in the Executive Summary. Each section should end by transitioning naturally into the next section's topic, or simply end after the last substantive point.
-56. **Charts Mandated by the RFP** — If the RFP's Content Guidance or submission instructions explicitly request charts, diagrams, or visual representations, you MUST include them using Mermaid code blocks. Do NOT omit visuals when the RFP requests them.
-57. **No Section Headers** — Do NOT include the section title as a Markdown header (e.g., `# Technical Architecture`) at the beginning of your response. Start directly with the narrative content.
+50. **Use actual names, dates, and details** from the RFP Context above - NEVER use placeholder text like "[Vendor Name]", "[Company Name]", "[RFP Release Date]", or "[Date]"
+51. **Ensure consistency with RFP scope** - Do NOT include claims or statistics that contradict the RFP's stated scope (e.g., user counts, company size, geographic coverage). If capability data mentions a different scale than the RFP, adapt or omit it
+52. **Connect to the broader proposal** - reference how this section's commitments align with and reinforce the themes from neighboring sections described above
+53. **Handling Missing Evidence (Mandatory Requirements)** - If specific evidence is missing from the capabilities data for a mandatory requirement, you MUST clearly mark the gap using the format `[EVIDENCE NEEDED: brief description of what data is missing]`. Do NOT fabricate capabilities, certifications, experience, or metrics. Instead, describe only what IS verifiable from the provided capabilities data, and flag what a human reviewer needs to fill in. For purely optional requirements, you may omit them if evidence is lacking.
+54. **Diagrams & Visuals** - Do NOT generate Mermaid, ASCII diagrams, or pseudo-chart markup in this response. The pipeline now generates visuals in a later section-aware pass. If the RFP requests a diagram, chart, workflow, topology, or timeline, describe the systems, entities, phases, dependencies, and interactions clearly in prose so the downstream visual planner can generate an accurate section-specific visual. For incidental narrative tables you introduce yourself, keep them simple and avoid deeply nested structures. Never simplify, drop, or re-shape an RFP-provided matrix or vendor-fill table.
+55. **No Per-Section Conclusions** - Do NOT end a section with a "Conclusion", "Summary", or "In summary" paragraph. The final conclusion belongs ONLY in the Executive Summary. Each section should end by transitioning naturally into the next section's topic, or simply end after the last substantive point.
+56. **Charts Mandated by the RFP** - If the RFP's Content Guidance or submission instructions explicitly request charts, diagrams, or visual representations, you MUST describe the required visual content explicitly in the narrative. Do NOT omit the underlying architecture, workflow, phase, or relationship details needed to build that visual later in the pipeline.
+57. **No Section Headers** - Do NOT include the section title as a Markdown header (e.g., `# Technical Architecture`) at the beginning of your response. Start directly with the narrative content.
 
 For boilerplate sections (cover letter, TOC, submission forms), write standard professional content appropriate to the section type. Keep boilerplate concise (100-200 words total). Use the actual client name, RFP title, dates, and proposing company name from the RFP Context.
 
 For knowledge-driven sections (company profile, case studies, certifications, team qualifications):
 - You MUST write at least 500 words. Sections under 500 words are UNACCEPTABLE.
-- These sections are scored heavily in evaluation — be substantive and detailed.
+- These sections are scored heavily in evaluation - be substantive and detailed.
 - Include specific details, metrics, certifications, partnerships, case study outcomes, and concrete examples from the capabilities provided.
 - If capabilities data is limited, cite the specific evidence you DO have and mark gaps with `[EVIDENCE NEEDED: ...]`. Do NOT elaborate or extrapolate beyond what the provided capabilities data supports.
 - Do NOT produce generic filler or unsupported claims.
@@ -70,7 +70,7 @@ For knowledge-driven sections (company profile, case studies, certifications, te
 
 {revision_feedback}
 
-If revision feedback is present above, it means your previous draft was REJECTED. You MUST address the specific issues raised above. 
+If revision feedback is present above, it means your previous draft was REJECTED. You MUST address the specific issues raised above.
 - Prioritize fixing these exact issues over general writing rules.
 - Do NOT simply repeat what you wrote in the previous draft.
 - Provide confident, explicit commitments, alternative solutions, or specific details to resolve the flags.
@@ -78,9 +78,9 @@ If revision feedback is present above, it means your previous draft was REJECTED
 ## Output Format
 
 Return a JSON object with these exact keys:
-- "content": string — the full prose content for this section (use \n for paragraph breaks)
-- "requirements_addressed": list of string — requirement IDs that are substantively addressed in the content (only include IDs you actually covered)
-- "word_count": integer — approximate word count of the content
+- "content": string - the full prose content for this section (use \n for paragraph breaks)
+- "requirements_addressed": list of string - requirement IDs that are substantively addressed in the content (only include IDs you actually covered)
+- "word_count": integer - approximate word count of the content
 
 Example:
 ```json

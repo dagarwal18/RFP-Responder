@@ -36,6 +36,7 @@ from rfp_automation.models.schemas import (
     ResponseSection,
 )
 from rfp_automation.services.llm_service import llm_text_call
+from rfp_automation.utils.diagram_planner import DiagramRegistry, build_diagram_block
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,9 @@ _TRANSITIONS_PROMPT = Path(__file__).resolve().parent.parent / "prompts" / "narr
 
 # Patterns for detecting C1-split sections
 _CATEGORY_SPLIT_DELIM = " — "                   # "Title — Sub-category"
+_CATEGORY_SPLIT_RE = re.compile(r"\s+[â€”-]\s+")
 _PART_SPLIT_PATTERN = re.compile(r"\s*\(Part\s+\d+\)\s*$")  # "Title (Part N)"
+_CATEGORY_SPLIT_RE = re.compile(r"\s+[\u2013\u2014-]\s+")
 
 # Section titles that C3 generates itself — suppress C2 duplicates
 _META_SECTION_TITLES_LOWER = {
@@ -185,6 +188,7 @@ class NarrativeAssemblyAgent(BaseAgent):
             transitions=transitions,
             coverage_appendix=coverage_appendix,
             rfp_metadata=state.rfp_metadata,
+            architecture_sections=architecture_sections,
         )
 
         # ── 9b. Clean resolvable placeholders ───────────
@@ -313,8 +317,9 @@ class NarrativeAssemblyAgent(BaseAgent):
     @staticmethod
     def _extract_parent_title(title: str) -> str | None:
         """Extract the parent title from a C1-split section title."""
-        if _CATEGORY_SPLIT_DELIM in title:
-            return title.split(_CATEGORY_SPLIT_DELIM, 1)[0].strip()
+        split = _CATEGORY_SPLIT_RE.split(title, maxsplit=1)
+        if len(split) == 2:
+            return split[0].strip()
         match = _PART_SPLIT_PATTERN.search(title)
         if match:
             return title[:match.start()].strip()
@@ -661,9 +666,15 @@ class NarrativeAssemblyAgent(BaseAgent):
         transitions: dict[int, str],
         coverage_appendix: str,
         rfp_metadata: Any,
+        architecture_sections: list[ResponseSection],
     ) -> str:
         """Assemble the complete proposal document."""
         parts: list[str] = []
+        section_meta = {
+            self._get_attr(section, "section_id", ""): section
+            for section in architecture_sections
+        }
+        diagram_registry = DiagramRegistry()
 
         # ── Title page ──────────────────────────────────
         client = self._get_attr(rfp_metadata, "client_name", "")
@@ -709,30 +720,53 @@ class NarrativeAssemblyAgent(BaseAgent):
 
         # ── Sections ────────────────────────────────────
         parts.append("---\n")
-        for i, group in enumerate(groups):
+        for i, group in enumerate(groups, start=1):
             # Transition before non-first groups
-            transition = transitions.get(i, "")
+            transition = transitions.get(i - 1, "")
             if transition:
                 parts.append(f"\n{transition}\n")
 
             if group.is_split and len(group.children) > 1:
                 # Grouped parent heading with sub-sections
-                parts.append(f"\n## {group.parent_title}\n")
+                parts.append(f"\n## {i}. {group.parent_title}\n")
 
                 # ── Merge children sharing the same base category ──
                 # E.g., "Commercial Terms (Part 1)" + "Commercial Terms (Part 2)"
                 # → single "### Commercial Terms" with combined content.
-                merged_children = self._merge_split_children(
+                merged_children = self._merge_split_child_sections(
                     group.children, group.parent_title
                 )
 
-                for sub_title, contents in merged_children:
-                    parts.append(f"\n### {sub_title}\n")
-                    for content in contents:
+                for sub_idx, (sub_title, child_bundle) in enumerate(merged_children, start=1):
+                    parts.append(f"\n### {i}.{sub_idx} {sub_title}\n")
+                    rendered_contents: list[str] = []
+                    has_stub = False
+                    for child in child_bundle:
+                        child_title = self._get_attr(child, "title", sub_title)
+                        content = self._get_attr(child, "content", "")
+                        content = self._strip_content_heading(content, child_title)
+                        content = self._strip_content_heading(content, sub_title)
+                        content = self._strip_terminal_conclusion(content)
                         if self._is_stub_content(content):
-                            parts.append(f"\n> **Note:** [PIPELINE_STUB: {sub_title}]\n")
-                        elif content:
-                            content = self._strip_terminal_conclusion(content)
+                            has_stub = True
+                            continue
+                        if content:
+                            rendered_contents.append(content)
+
+                    diagram_block = self._build_section_diagram(
+                        child_bundle,
+                        display_title=sub_title,
+                        parent_title=group.parent_title,
+                        section_meta=section_meta,
+                        registry=diagram_registry,
+                    )
+                    if diagram_block:
+                        parts.append(diagram_block)
+
+                    if not rendered_contents and has_stub:
+                        parts.append(f"\n> **Note:** [PIPELINE_STUB: {sub_title}]\n")
+                    else:
+                        for content in rendered_contents:
                             parts.append(content)
             else:
                 # Standalone section
@@ -740,7 +774,7 @@ class NarrativeAssemblyAgent(BaseAgent):
                 title = self._get_attr(child, "title", "Untitled")
                 content = self._get_attr(child, "content", "")
 
-                parts.append(f"\n## {title}\n")
+                parts.append(f"\n## {i}. {title}\n")
 
                 # Strip duplicate heading from C2 content
                 content = self._strip_content_heading(content, title)
@@ -749,6 +783,15 @@ class NarrativeAssemblyAgent(BaseAgent):
                 if self._is_stub_content(content):
                     parts.append(f"\n> **Note:** [PIPELINE_STUB: {title}]\n")
                 elif content:
+                    diagram_block = self._build_section_diagram(
+                        [child],
+                        display_title=title,
+                        parent_title="",
+                        section_meta=section_meta,
+                        registry=diagram_registry,
+                    )
+                    if diagram_block:
+                        parts.append(diagram_block)
                     parts.append(content)
 
         # ── Coverage Appendix ───────────────────────────
@@ -762,18 +805,33 @@ class NarrativeAssemblyAgent(BaseAgent):
               "Technical Solution (Part 2)" → "Part 2"
         If the derived title equals the parent, return "Overview".
         """
-        if _CATEGORY_SPLIT_DELIM in child_title:
-            sub = child_title.split(_CATEGORY_SPLIT_DELIM, 1)[1].strip()
+        normalized_title = (
+            (child_title or "")
+            .replace("â€”", " - ")
+            .replace("â€“", " - ")
+            .replace("—", " - ")
+            .replace("–", " - ")
+        )
+        split = _CATEGORY_SPLIT_RE.split(normalized_title, maxsplit=1)
+        if len(split) == 2:
+            sub = split[1].strip()
             return sub if sub.lower() != parent_title.lower() else "Overview"
 
-        match = _PART_SPLIT_PATTERN.search(child_title)
+        parent_prefix = (parent_title or "").strip()
+        if parent_prefix and normalized_title.lower().startswith(parent_prefix.lower()):
+            suffix = normalized_title[len(parent_prefix):]
+            suffix = re.sub(r"^[^A-Za-z0-9]+", "", suffix).strip()
+            if suffix:
+                return suffix
+
+        match = _PART_SPLIT_PATTERN.search(normalized_title)
         if match:
             return match.group(0).strip().strip("()")
 
         # Fallback: avoid duplicate of parent title
-        if child_title.strip().lower() == parent_title.strip().lower():
+        if normalized_title.strip().lower() == parent_title.strip().lower():
             return "Overview"
-        return child_title
+        return normalized_title.strip()
 
     def _merge_split_children(
         self,
@@ -815,6 +873,86 @@ class NarrativeAssemblyAgent(BaseAgent):
 
         return list(merged.items())
 
+    def _merge_split_child_sections(
+        self,
+        children: list[SectionResponse],
+        parent_title: str,
+    ) -> list[tuple[str, list[SectionResponse]]]:
+        """Group split children by base sub-title while preserving section metadata."""
+        from collections import OrderedDict
+
+        merged: OrderedDict[str, list[SectionResponse]] = OrderedDict()
+        for child in children:
+            child_title = self._get_attr(child, "title", "Untitled")
+            raw_sub = self._get_sub_title(child_title, parent_title)
+            base = _PART_SPLIT_PATTERN.sub("", raw_sub).strip() or raw_sub
+            merged.setdefault(base, [])
+            merged[base].append(child)
+        return list(merged.items())
+
+    def _build_section_diagram(
+        self,
+        children: list[SectionResponse],
+        display_title: str,
+        parent_title: str,
+        section_meta: dict[str, ResponseSection],
+        registry: DiagramRegistry,
+    ) -> str:
+        """Build one section-aware Mermaid block for the given assembled section."""
+        contents: list[str] = []
+        descriptions: list[str] = []
+        guidances: list[str] = []
+        notes: list[str] = []
+        source_terms: list[str] = []
+        visual_relevance = "auto"
+        visual_type_hint = ""
+
+        for child in children:
+            content = self._get_attr(child, "content", "")
+            child_title = self._get_attr(child, "title", display_title)
+            content = self._strip_content_heading(content, child_title)
+            content = self._strip_content_heading(content, display_title)
+            content = self._strip_terminal_conclusion(content)
+            if content and not self._is_stub_content(content):
+                contents.append(content)
+
+            section_id = self._get_attr(child, "section_id", "")
+            meta = section_meta.get(section_id)
+            if not meta:
+                continue
+            descriptions.append(self._get_attr(meta, "description", ""))
+            guidances.append(self._get_attr(meta, "content_guidance", ""))
+            notes.append(self._get_attr(meta, "visual_notes", ""))
+            for term in self._get_attr(meta, "visual_source_terms", []):
+                if term and term not in source_terms:
+                    source_terms.append(term)
+            meta_relevance = self._get_attr(meta, "visual_relevance", "auto") or "auto"
+            if meta_relevance == "required":
+                visual_relevance = "required"
+            elif meta_relevance == "none" and visual_relevance == "auto":
+                visual_relevance = "none"
+            elif meta_relevance == "optional" and visual_relevance == "auto":
+                visual_relevance = "optional"
+            if not visual_type_hint:
+                visual_type_hint = self._get_attr(meta, "visual_type_hint", "") or ""
+
+        combined_content = "\n\n".join(contents).strip()
+        if not combined_content:
+            return ""
+
+        return build_diagram_block(
+            section_title=display_title,
+            parent_title=parent_title,
+            section_description=" ".join(filter(None, descriptions)),
+            content_guidance=" ".join(filter(None, guidances)),
+            content=combined_content,
+            visual_relevance=visual_relevance,
+            visual_type_hint=visual_type_hint,
+            visual_notes=" ".join(filter(None, notes)),
+            visual_source_terms=source_terms,
+            registry=registry,
+        )
+
     def _build_table_of_contents(self, groups: list[SectionGroup]) -> str:
         """Generate a numbered table of contents."""
         toc_lines: list[str] = []
@@ -826,8 +964,8 @@ class NarrativeAssemblyAgent(BaseAgent):
                 merged = self._merge_split_children(
                     group.children, group.parent_title
                 )
-                for sub_title, _ in merged:
-                    toc_lines.append(f"    - {sub_title}")
+                for sub_num, (sub_title, _) in enumerate(merged, start=1):
+                    toc_lines.append(f"    {num}.{sub_num} {sub_title}")
             num += 1
         return "\n".join(toc_lines)
 

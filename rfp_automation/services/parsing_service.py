@@ -68,6 +68,7 @@ _EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 _PHONE_RE = re.compile(
     r"(?:Phone|Tel|Contact)[\s:]*([+\d][\d \t\-().]{7,})", re.IGNORECASE
 )
+_TECHNICAL_TABLE_ROW_ID_RE = re.compile(r"^TR-\d{3}$", re.IGNORECASE)
 
 
 class ParsingService:
@@ -322,6 +323,9 @@ class ParsingService:
                     "table_type": table_type,
                 })
         
+        ParsingService._normalize_split_fill_in_table_blocks(blocks)
+        ParsingService._annotate_split_fill_in_debug(extracted_tables_debug)
+
         # Write extracted tables structured output for verification
         if extracted_tables_debug:
             import json
@@ -336,6 +340,190 @@ class ParsingService:
                 logger.error(f"Failed to write extracted tables debug JSON: {e}")
 
         return blocks
+
+    @staticmethod
+    def _parse_pipe_table_text(table_text: str) -> tuple[list[str], list[list[str]]]:
+        lines = [
+            line.strip()
+            for line in table_text.splitlines()
+            if line.strip() and "|" in line
+        ]
+        if not lines:
+            return [], []
+
+        headers = [cell.strip() for cell in lines[0].split("|")]
+        rows = [
+            [cell.strip() for cell in line.split("|")]
+            for line in lines[1:]
+        ]
+        return headers, rows
+
+    @staticmethod
+    def _serialize_pipe_table_text(headers: list[str], rows: list[list[str]]) -> str:
+        lines: list[str] = []
+        if headers:
+            lines.append(" | ".join(headers))
+        for row in rows:
+            lines.append(" | ".join(str(cell).strip() for cell in row))
+        return "\n".join(line for line in lines if line.strip())
+
+    @staticmethod
+    def _looks_like_id_header(label: str) -> bool:
+        normalized = re.sub(r"[^a-z0-9]+", " ", label.lower()).strip()
+        return normalized in {
+            "tr id",
+            "trid",
+            "req id",
+            "requirement id",
+        } or normalized.endswith(" id")
+
+    @staticmethod
+    def _looks_like_requirement_header(label: str) -> bool:
+        normalized = re.sub(r"[^a-z0-9]+", " ", label.lower()).strip()
+        return "requirement" in normalized and "description" not in normalized
+
+    @staticmethod
+    def _looks_like_description_header(label: str) -> bool:
+        normalized = re.sub(r"[^a-z0-9]+", " ", label.lower()).strip()
+        return "description" in normalized
+
+    @classmethod
+    def _is_technical_fill_in_table(
+        cls,
+        headers: list[str],
+        rows: list[list[str]],
+    ) -> bool:
+        if not headers or not rows:
+            return False
+        first_cell = (rows[0][0] if rows and rows[0] else "").strip().upper()
+        return bool(_TECHNICAL_TABLE_ROW_ID_RE.match(first_cell))
+
+    @classmethod
+    def _normalize_technical_table_continuation(
+        cls,
+        headers: list[str],
+        rows: list[list[str]],
+        previous_headers: list[str] | None,
+        previous_page_number: int | None,
+        page_number: int,
+    ) -> tuple[list[str], list[list[str]], bool]:
+        if not previous_headers or previous_page_number is None:
+            return headers, rows, False
+        if page_number != previous_page_number + 1:
+            return headers, rows, False
+        if len(previous_headers) != 5 or len(headers) != 4:
+            return headers, rows, False
+        if not (
+            cls._looks_like_id_header(previous_headers[0])
+            and cls._looks_like_requirement_header(previous_headers[1])
+            and cls._looks_like_description_header(previous_headers[2])
+        ):
+            return headers, rows, False
+        if not (
+            cls._looks_like_id_header(headers[0])
+            and "requirement" in headers[1].lower()
+            and "description" in headers[1].lower()
+        ):
+            return headers, rows, False
+        if not rows or any(
+            len(row) != 4 or not _TECHNICAL_TABLE_ROW_ID_RE.match((row[0] or "").strip().upper())
+            for row in rows
+        ):
+            return headers, rows, False
+
+        normalized_rows = [
+            [row[0].strip(), "", row[1].strip(), row[2].strip(), row[3].strip()]
+            for row in rows
+        ]
+        return list(previous_headers), normalized_rows, True
+
+    @classmethod
+    def _normalize_split_fill_in_table_blocks(cls, blocks: list[dict[str, Any]]) -> None:
+        previous_headers: list[str] | None = None
+        previous_page_number: int | None = None
+
+        table_blocks = sorted(
+            (
+                block
+                for block in blocks
+                if block.get("type") == "table"
+                and block.get("table_type") == "fill_in_table"
+            ),
+            key=lambda block: (
+                int(block.get("page_number") or 0),
+                str(block.get("block_id") or ""),
+            ),
+        )
+
+        for block in table_blocks:
+            headers, rows = cls._parse_pipe_table_text(block.get("text", ""))
+            if not cls._is_technical_fill_in_table(headers, rows):
+                continue
+
+            page_number = int(block.get("page_number") or 0)
+            normalized_headers, normalized_rows, applied = cls._normalize_technical_table_continuation(
+                headers=headers,
+                rows=rows,
+                previous_headers=previous_headers,
+                previous_page_number=previous_page_number,
+                page_number=page_number,
+            )
+            if applied:
+                block["text"] = cls._serialize_pipe_table_text(
+                    normalized_headers,
+                    normalized_rows,
+                )
+
+            previous_headers = normalized_headers if applied else headers
+            previous_page_number = page_number
+
+    @classmethod
+    def _annotate_split_fill_in_debug(
+        cls,
+        extracted_tables_debug: list[dict[str, Any]],
+    ) -> None:
+        previous_headers: list[str] | None = None
+        previous_page_number: int | None = None
+
+        for entry in extracted_tables_debug:
+            if entry.get("table_type") != "fill_in_table":
+                continue
+
+            structured = entry.get("vlm_extraction")
+            if not isinstance(structured, dict):
+                continue
+
+            headers = [
+                str(cell).strip()
+                for cell in structured.get("headers", [])
+                if str(cell).strip()
+            ]
+            rows = [
+                [str(cell).strip() for cell in row]
+                for row in structured.get("rows", [])
+                if isinstance(row, list)
+            ]
+            if not cls._is_technical_fill_in_table(headers, rows):
+                continue
+
+            page_number = int(entry.get("page_number") or structured.get("page_number") or 0)
+            normalized_headers, normalized_rows, applied = cls._normalize_technical_table_continuation(
+                headers=headers,
+                rows=rows,
+                previous_headers=previous_headers,
+                previous_page_number=previous_page_number,
+                page_number=page_number,
+            )
+            if applied:
+                entry["normalization_applied"] = "technical_matrix_header_carry_forward"
+                entry["normalized_extraction"] = {
+                    **structured,
+                    "headers": normalized_headers,
+                    "rows": normalized_rows,
+                }
+
+            previous_headers = normalized_headers if applied else headers
+            previous_page_number = page_number
 
     # ── Metadata extraction ──────────────────────────────
 

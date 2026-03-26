@@ -58,9 +58,9 @@ _CSS = """
 }
 
 body {
-    font-family: Helvetica, Arial, sans-serif;
+    font-family: "Times New Roman", Times, serif;
     font-size: 10pt;
-    line-height: 1.45;
+    line-height: 1.5;
     color: #1a1a1a;
 }
 
@@ -129,7 +129,6 @@ h1 {
     font-size: 18pt;
     font-weight: bold;
     color: #0052CC;
-    border-bottom: 2px solid #0052CC;
     padding-bottom: 6pt;
     margin-top: 28pt;
     margin-bottom: 14pt;
@@ -137,21 +136,23 @@ h1 {
 }
 
 h2 {
-    font-size: 15pt;
+    font-size: 15.5pt;
     font-weight: bold;
-    color: #1a3a5c;
-    border-bottom: 1px solid #d0d7de;
-    padding-bottom: 4pt;
-    margin-top: 22pt;
-    margin-bottom: 10pt;
+    color: #163B65;
+    padding: 2pt 0 5pt 0;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
     page-break-after: avoid;
 }
 
 h3 {
-    font-size: 13pt;
+    font-size: 12.5pt;
     font-weight: bold;
-    color: #2d5f8a;
-    margin-top: 16pt;
+    color: #234E7A;
+    background-color: #F4F7FB;
+    border-left: 3px solid #5B88B2;
+    padding: 4pt 8pt;
+    margin-top: 18pt;
     margin-bottom: 8pt;
     page-break-after: avoid;
 }
@@ -188,12 +189,12 @@ table {
 }
 
 th {
-    background-color: #0052CC;
+    background-color: #C96A10;
     color: #ffffff;
     font-weight: bold;
     padding: 3pt 4pt;
     text-align: left;
-    border: 0.5px solid #004099;
+    border: 0.5px solid #9A4F09;
     word-wrap: break-word;
     overflow-wrap: break-word;
     white-space: normal;
@@ -201,7 +202,7 @@ th {
 
 td {
     padding: 3pt 4pt;
-    border: 0.5px solid #dddddd;
+    border: 0.5px solid #E6C9AD;
     vertical-align: top;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -213,7 +214,7 @@ tr {
 }
 
 tr:nth-child(even) td {
-    background-color: #f8f9fa;
+    background-color: #FFF8F1;
 }
 
 /* ── Lists ────────────────────────────────── */
@@ -226,6 +227,18 @@ ul, ol {
 li {
     margin-bottom: 4pt;
     line-height: 1.5;
+}
+
+/* ── Lists inside Tables ──────────────────── */
+
+table ul, table ol {
+    list-style-type: none;
+    margin: 4pt 0;
+    padding-left: 0;
+}
+
+table li {
+    margin-bottom: 2pt;
 }
 
 /* ── Code ─────────────────────────────────── */
@@ -263,9 +276,10 @@ blockquote {
 /* ── Horizontal rules ─────────────────────── */
 
 hr {
+    display: none;
+    height: 0;
     border: 0;
-    border-top: 0.5px solid #cccccc;
-    margin: 18pt 0;
+    margin: 0;
 }
 
 /* ── Paragraphs ───────────────────────────── */
@@ -278,11 +292,39 @@ p {
 
 /* ── Images (for Mermaid diagrams) ────────── */
 
+.diagram-block {
+    text-align: center;
+    margin: 16pt 0 20pt 0;
+    page-break-inside: avoid;
+}
+
+.diagram-block img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    padding: 8pt;
+    border: 1pt solid #cbd5e1;
+    background-color: #f8fafc;
+    page-break-inside: avoid;
+}
+
+.diagram-block.diagram-portrait img {
+    max-width: 62%;
+}
+
+.diagram-block.diagram-landscape img {
+    max-width: 100%;
+}
+
 img {
     max-width: 100%;
     height: auto;
     display: block;
-    margin: 14pt auto;
+    margin: 16pt auto 20pt auto;
+    padding: 8pt;
+    border: 1pt solid #cbd5e1;
+    background-color: #f8fafc;
     page-break-inside: avoid;
 }
 
@@ -356,8 +398,14 @@ def _scrub_markdown(md_text: str) -> str:
         return bool(re.match(r"^(?:[A-Z]{1,4}-?\d+|\d+(?:\.\d+)?)$", first_cell))
 
     def _normalize_table_line(line: str, expected_cols: int) -> str:
+        def _clean_cell(cell: str) -> str:
+            cleaned = cell.strip()
+            cleaned = re.sub(r"^[\?\u25A0-\u25FF\u2700-\u27BF\uf0a7\uf0b7\uf0fc\-\[\]xX ]+(?=[A-Za-z0-9])", "", cleaned)
+            cleaned = re.sub(r"^(?:Yes|No)\s+(?=(?:Yes|No)\b)", "", cleaned)
+            return cleaned.strip()
+
         stripped = line.strip().strip("|")
-        parts = [part.strip() for part in stripped.split("|")]
+        parts = [_clean_cell(part) for part in stripped.split("|")]
         if len(parts) < expected_cols:
             parts.extend([""] * (expected_cols - len(parts)))
         elif len(parts) > expected_cols:
@@ -487,6 +535,49 @@ def _scrub_markdown(md_text: str) -> str:
                 rewritten.append("")
             rewritten.append(line)
         return "\n".join(rewritten)
+
+    symbol_replacements = {
+        "\u25a0": "-",
+        "\u25a1": "-",
+        "\u25aa": "-",
+        "\u25ab": "-",
+        "\u25cf": "-",
+        "\u25cb": "-",
+        "\u2610": "[ ]",
+        "\u2611": "[x]",
+        "\u2612": "[x]",
+        "\u2713": "Yes",
+        "\u2714": "Yes",
+        "\u2715": "No",
+        "\u2717": "No",
+        "\u2718": "No",
+        "\uf0a7": "-",
+        "\uf0b7": "-",
+        "\uf0fc": "[x]",
+        "\u2022": "-",
+        "\u00a0": " ",
+        "â–¡": "-",
+        "â– ": "-",
+        "âœ“": "Yes",
+        "âœ”": "Yes",
+        "â˜": "[ ]",
+        "â˜‘": "[x]",
+        "₹": "INR ",
+        "\u20b9": "INR ",
+    }
+    for source, target in symbol_replacements.items():
+        md_text = md_text.replace(source, target)
+
+    def _scrub_table_symbols(text: str) -> str:
+        table_symbol_re = re.compile(r"[\u25A0-\u25FF\u2700-\u27BF\uf0a7\uf0b7\uf0fc]")
+        cleaned_lines: list[str] = []
+        for line in text.splitlines():
+            if _count_table_columns(line) >= 2:
+                line = table_symbol_re.sub("-", line)
+            cleaned_lines.append(line)
+        return "\n".join(cleaned_lines)
+
+    md_text = _scrub_table_symbols(md_text)
 
     # Remove any leftover mermaid code blocks (replace with placeholder note)
     md_text = re.sub(

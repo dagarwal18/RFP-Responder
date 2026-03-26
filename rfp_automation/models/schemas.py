@@ -147,6 +147,10 @@ class ResponseSection(BaseModel):
     # "requirement_driven" | "knowledge_driven" | "commercial" | "legal" | "boilerplate"
     description: str = ""  # What this section should contain
     content_guidance: str = ""  # Specific instructions from the RFP on what goes here
+    visual_relevance: str = "auto"  # auto | none | optional | required
+    visual_type_hint: str = ""  # architecture | sequence | gantt | state | journey | class | auto
+    visual_notes: str = ""  # What the visual should emphasize
+    visual_source_terms: list[str] = []  # Entities and phrases to reuse in visuals
     requirement_ids: list[str] = []
     mapped_capabilities: list[str] = []
     priority: int = 0

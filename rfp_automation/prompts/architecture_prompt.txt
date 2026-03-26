@@ -62,6 +62,19 @@ Format: REQUIREMENT_ID | TYPE (MANDATORY/OPTIONAL) | CLASSIFICATION (FUNCTIONAL/
 
 9. **Consolidate Requirement Matrices**: Do NOT create multiple separate "Requirement Matrix" or "Compliance Matrix" sections broken down by requirement class (e.g., separate sections for "Matrix — Security", "Matrix — Operations", "Matrix — Technical"). Instead, embed each group of requirements directly into the relevant logical section (e.g., security requirements go into the Security & Data Protection section as a compliance table within that section's content). Only create a standalone matrix section if the RFP explicitly demands a single unified compliance matrix appendix.
 
+10. For EVERY section, decide whether the final proposal should include a visual. Set:
+   - `visual_relevance`: `"none"`, `"optional"`, or `"required"`
+   - `visual_type_hint`: `"architecture"`, `"sequence"`, `"gantt"`, `"state"`, `"journey"`, `"class"`, or `"auto"`
+   - `visual_notes`: a short description of what the visual should show
+   - `visual_source_terms`: 3-8 terms, entities, platforms, workstreams, or phases that should appear in the visual if one is generated
+   Rules:
+   - Technical architecture, deployment topology, cloud interconnect, integration, workflow, operational lifecycle, and implementation timeline sections usually deserve a visual.
+   - Pricing tables, legal terms, declaration forms, appendices, cover letters, executive summaries, and table-of-contents sections should usually be `visual_relevance = "none"`.
+   - Use `gantt` only for schedule, rollout, migration, or phased implementation sections.
+   - Use `sequence` for integrations, interfaces, hand-offs, or data exchanges.
+   - Use `state` or `journey` for operational workflows, service lifecycle, escalation, onboarding, or support processes.
+   - Use `architecture` or `class` for technical solution structure, platform components, topology, or service decomposition.
+
 ## Structure Detection Rule
 
 BEFORE generating sections, analyze the RFP structure and submission instructions above.
@@ -84,6 +97,10 @@ Each section object must have:
 - `"section_type"`: string ("requirement_driven" | "knowledge_driven" | "commercial" | "legal" | "boilerplate")
 - `"description"`: string (what this section should contain — be specific)
 - `"content_guidance"`: string (any specific RFP instructions for this section, or empty string)
+- `"visual_relevance"`: string (`"none"` | `"optional"` | `"required"`)
+- `"visual_type_hint"`: string (`"architecture"` | `"sequence"` | `"gantt"` | `"state"` | `"journey"` | `"class"` | `"auto"`)
+- `"visual_notes"`: string (what the visual should emphasize, or empty string)
+- `"visual_source_terms"`: list of strings (entities, systems, phases, or terms to reuse in visuals)
 - `"requirement_ids"`: list of requirement IDs (only for requirement_driven sections, empty list otherwise)
 - `"mapped_capabilities"`: list of short capability descriptions (for requirement_driven and knowledge_driven sections)
 - `"priority"`: integer (1 = highest priority)
@@ -100,6 +117,10 @@ Example:
       "section_type": "boilerplate",
       "description": "Formal submission letter confirming compliance, proposal validity period, authorized signatory, and no conflict of interest declaration",
       "content_guidance": "Must confirm proposal validity for 120 days",
+      "visual_relevance": "none",
+      "visual_type_hint": "auto",
+      "visual_notes": "",
+      "visual_source_terms": [],
       "requirement_ids": [],
       "mapped_capabilities": [],
       "priority": 1,
@@ -111,6 +132,10 @@ Example:
       "section_type": "knowledge_driven",
       "description": "Company overview, years of experience, team size, relevant industry certifications, and partnership status",
       "content_guidance": "RFP requires minimum 5 years of experience in the domain",
+      "visual_relevance": "optional",
+      "visual_type_hint": "journey",
+      "visual_notes": "Show the qualification journey only if it materially helps readability",
+      "visual_source_terms": ["Company Overview", "Certifications", "Delivery Team", "Relevant Experience"],
       "requirement_ids": [],
       "mapped_capabilities": ["10+ years telecom experience", "Cisco Gold Partner", "ISO 27001 certified"],
       "priority": 2,
@@ -122,6 +147,10 @@ Example:
       "section_type": "requirement_driven",
       "description": "Detailed technical solution addressing all mandatory technical requirements including platform architecture, integration design, and deployment topology",
       "content_guidance": "Must include architecture diagram and compliance matrix",
+      "visual_relevance": "required",
+      "visual_type_hint": "architecture",
+      "visual_notes": "Show the main technical architecture and critical integration paths",
+      "visual_source_terms": ["Platform Architecture", "Integration Layer", "Deployment Topology"],
       "requirement_ids": ["REQ-0001", "REQ-0003", "REQ-0007"],
       "mapped_capabilities": ["Cloud PBX platform", "Active-active redundancy", "India DC hosting"],
       "priority": 3,
