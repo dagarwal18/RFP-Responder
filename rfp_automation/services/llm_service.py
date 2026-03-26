@@ -53,13 +53,19 @@ class KeyRotator:
     _instance: KeyRotator | None = None
     _lock = threading.Lock()
 
-    def __init__(self, keys: list[str], min_gap_seconds: float = 10.0) -> None:
+    def __init__(self, keys: list[str], min_gap_seconds: float = 2.0) -> None:
         self._keys = keys
         self._idx = 0
         self._min_gap = min_gap_seconds
-        # Track last-call timestamp per key index
-        self._last_call: dict[int, float] = {}
+        
+        # Track (timestamp, tokens) for each key's requests over the last 60s
+        self._key_history: dict[int, list[tuple[float, int]]] = {
+            i: [] for i in range(len(keys))
+        }
         self._rotate_lock = threading.Lock()
+        
+        # Groq Qwen3-32b free tier limit is 6000 TPM
+        self._tpm_limit = 5800  # Leave a small buffer
 
     @classmethod
     def get(cls) -> KeyRotator:
@@ -84,7 +90,7 @@ class KeyRotator:
             cls._instance = cls(keys)
             logger.info(
                 f"KeyRotator initialised with {len(keys)} key(s), "
-                f"min gap {cls._instance._min_gap}s/key"
+                f"enforcing {cls._instance._tpm_limit} TPM bucket per key."
             )
             return cls._instance
 
@@ -92,24 +98,58 @@ class KeyRotator:
     def num_keys(self) -> int:
         return len(self._keys)
 
-    def next_key(self) -> str:
-        """Return the next API key, blocking if needed to respect TPM."""
+    def next_key(self, estimated_tokens: int = 4500) -> str:
+        """
+        Return the next API key, blocking if needed to respect the 6000 TPM limit.
+        estimated_tokens is the expected input + output tokens.
+        """
         with self._rotate_lock:
             idx = self._idx % len(self._keys)
             self._idx += 1
-
-        # Throttle: wait if this key was used too recently
-        now = time.monotonic()
-        last = self._last_call.get(idx, 0.0)
-        wait = self._min_gap - (now - last)
-        if wait > 0:
-            logger.debug(
-                f"[KeyRotator] Key #{idx + 1} throttled — sleeping {wait:.1f}s"
-            )
-            time.sleep(wait)
-
-        self._last_call[idx] = time.monotonic()
-        return self._keys[idx]
+            
+            # 1. Clean up old requests (>60s ago) for this key
+            now = time.monotonic()
+            history = self._key_history[idx]
+            self._key_history[idx] = [
+                (ts, toks) for (ts, toks) in history 
+                if now - ts < 60.0
+            ]
+            history = self._key_history[idx]
+            
+            # 2. Check current bucket usage
+            current_tpm = sum(toks for ts, toks in history)
+            
+            # 3. If this new request pushes us over the limit, calculate wait
+            wait = 0.0
+            if current_tpm + estimated_tokens > self._tpm_limit and history:
+                # We need to wait until enough old requests expire to fit the new one
+                tokens_to_clear = (current_tpm + estimated_tokens) - self._tpm_limit
+                cleared = 0
+                for ts, toks in history:
+                    cleared += toks
+                    if cleared >= tokens_to_clear:
+                        # Wait until this specific request is >60s old
+                        wait = 60.0 - (now - ts)
+                        break
+            
+            # Also respect the absolute minimum gap between consecutive calls on same key
+            last_ts = history[-1][0] if history else 0.0
+            min_gap_wait = self._min_gap - (now - last_ts)
+            
+            total_wait = max(wait, min_gap_wait, 0.0)
+            
+            if total_wait > 0:
+                logger.debug(
+                    f"[KeyRotator] Key #{idx + 1} at {current_tpm} TPM. "
+                    f"Throttling for {total_wait:.1f}s to accommodate {estimated_tokens} tok."
+                )
+                time.sleep(total_wait)
+                now = time.monotonic()
+                
+            # Log this new request into the history
+            self._key_history[idx].append((now, estimated_tokens))
+            
+            return self._keys[idx]
 
 
 # ═══════════════════════════════════════════════════════════

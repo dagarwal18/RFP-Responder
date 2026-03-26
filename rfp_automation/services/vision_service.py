@@ -101,11 +101,21 @@ class TableDetector:
             from transformers import AutoImageProcessor, TableTransformerForObjectDetection
 
             logger.info("[TableDetector] Loading microsoft/table-transformer-detection ...")
+            
+            settings = get_settings()
+            hf_token = settings.huggingface_api_key
+            if not hf_token and settings.huggingface_api_keys:
+                keys = [k.strip() for k in settings.huggingface_api_keys.split(",") if k.strip()]
+                if keys:
+                    hf_token = keys[0]
+
             self._processor = AutoImageProcessor.from_pretrained(
-                "microsoft/table-transformer-detection"
+                "microsoft/table-transformer-detection",
+                token=hf_token
             )
             self._model = TableTransformerForObjectDetection.from_pretrained(
-                "microsoft/table-transformer-detection"
+                "microsoft/table-transformer-detection",
+                token=hf_token
             )
             logger.info("[TableDetector] Model loaded successfully")
         except Exception as e:
