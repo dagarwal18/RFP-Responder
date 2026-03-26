@@ -14,7 +14,7 @@ function StatCard({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="rounded-sm border border-border px-4 py-3 min-w-[120px]">
       <div className="text-lg font-semibold leading-none text-foreground">{value}</div>
-      <div className="mt-1 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{label}</div>
+      <div className="mt-2 text-[9px] uppercase tracking-[0.08em] text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -240,6 +240,47 @@ function renderE2(output: RecordLike) {
   );
 }
 
+function renderH1(output: RecordLike) {
+  const pkg = output;
+  const sourceSections = Array.isArray(pkg.source_sections) ? pkg.source_sections : [];
+  const responseSections = Array.isArray(pkg.response_sections) ? pkg.response_sections : [];
+  
+  return (
+    <OutputAccordion title="H1 Human Validation">
+      <div className="flex flex-wrap gap-3">
+        <StatCard label="Source Sections" value={formatNumber(sourceSections.length)} />
+        <StatCard label="Response Sections" value={formatNumber(responseSections.length)} />
+        <StatCard label="Open Comments" value={formatNumber(pkg.open_comment_count || 0)} />
+      </div>
+      {(pkg.decision && pkg.decision.decision) && (
+         <div className="rounded-sm border border-border px-4 py-3 text-xs">
+           <div className="font-semibold text-primary mb-2 uppercase tracking-widest text-[10px]">Decision Recorded</div>
+           <div className="text-muted-foreground leading-5">{pkg.decision.decision} by {pkg.decision.reviewer || 'Unknown reviewer'}</div>
+         </div>
+      )}
+    </OutputAccordion>
+  );
+}
+
+function renderF1(output: RecordLike) {
+  const approval = output;
+  const submission = output.submission_record || {};
+  return (
+    <OutputAccordion title="F1 Final Readiness">
+      <div className="flex flex-wrap gap-3">
+        <StatCard label="Approval" value={String(approval.approval_decision || 'PENDING').toUpperCase()} />
+      </div>
+
+      {submission.archive_path && (
+        <div className="rounded-sm border border-border px-4 py-3 text-xs mt-3 flex justify-between items-center">
+          <span className="font-semibold text-foreground uppercase tracking-widest text-[10px]">Document Availability</span>
+          <span className="text-muted-foreground font-medium">Pipeline artifacts saved. Access via History tab.</span>
+        </div>
+      )}
+    </OutputAccordion>
+  );
+}
+
 export default function AgentOutputs({ outputs }: { outputs: any }) {
   if (!outputs || Object.keys(outputs).length === 0) {
     return <div className="p-6 text-sm text-muted-foreground italic flex justify-center border-t border-border mt-6">No deliverable outputs available for this run.</div>;
@@ -308,6 +349,8 @@ export default function AgentOutputs({ outputs }: { outputs: any }) {
         {outputs.D1_TECHNICAL_VALIDATION && renderD1(outputs.D1_TECHNICAL_VALIDATION)}
         {outputs.E1_COMMERCIAL && renderE1(outputs.E1_COMMERCIAL)}
         {outputs.E2_LEGAL && renderE2(outputs.E2_LEGAL)}
+        {outputs.H1_HUMAN_VALIDATION && renderH1(outputs.H1_HUMAN_VALIDATION)}
+        {outputs.F1_FINAL_READINESS && renderF1(outputs.F1_FINAL_READINESS)}
 
         {Object.entries(outputs).filter(([key]) => ![
           'A1_INTAKE',
