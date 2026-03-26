@@ -72,7 +72,7 @@ export function normalizeStageKey(value: string | null | undefined): string {
 
 /* ── Core fetch helper ─────────────────────────────────── */
 
-const requestCache = new Map<string, { data: any; expiry: number }>();
+const requestCache = new Map<string, { data: unknown; expiry: number }>();
 const CACHE_TTL = 30000; // 30 seconds
 
 export async function apiFetch<T = unknown>(path: string, opts: RequestInit = {}): Promise<T> {
@@ -132,6 +132,7 @@ function normalizeRun(r: any) {
     status: r.status ?? 'UNKNOWN',
     created_at: r.started_at ?? r.created_at ?? '',
     review_status: r.review_status,
+    available_formats: Array.isArray(r.available_formats) ? r.available_formats : [],
   };
 }
 
@@ -181,8 +182,15 @@ export async function clearCheckpoints(rfpId: string) {
 }
 
 /** Build the full URL for downloading the generated document */
-export function getDownloadUrl(rfpId: string): string {
-  return `${API_BASE}/api/rfp/${rfpId}/download`;
+export function getDownloadUrl(
+  rfpId: string,
+  options: { format?: 'pdf' | 'docx' | 'md'; inline?: boolean } = {},
+): string {
+  const params = new URLSearchParams();
+  if (options.format) params.set('format', options.format);
+  if (options.inline) params.set('inline', 'true');
+  const query = params.toString();
+  return `${API_BASE}/api/rfp/${rfpId}/download${query ? `?${query}` : ''}`;
 }
 
 export async function fetchReviewPackage(rfpId: string) {

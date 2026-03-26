@@ -14,15 +14,17 @@ import { Download, ExternalLink } from 'lucide-react';
 interface DocumentPreviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  downloadUrl: string;
+  previewUrl: string;
   filename: string;
+  downloadUrls?: Partial<Record<'pdf' | 'docx' | 'md', string>>;
 }
 
 export default function DocumentPreviewModal({
   open,
   onOpenChange,
-  downloadUrl,
+  previewUrl,
   filename,
+  downloadUrls = {},
 }: DocumentPreviewModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -37,7 +39,7 @@ export default function DocumentPreviewModal({
 
         <div className="flex-1 min-h-0 rounded-lg overflow-hidden border border-border bg-muted/20">
           <iframe
-            src={downloadUrl}
+            src={previewUrl}
             title="Document Preview"
             className="w-full h-full"
             style={{ border: 'none' }}
@@ -47,17 +49,35 @@ export default function DocumentPreviewModal({
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => window.open(downloadUrl, '_blank')}
+            onClick={() => window.open(previewUrl, '_blank')}
           >
             <ExternalLink className="mr-2 h-4 w-4" />
             Open in New Tab
           </Button>
-          <a href={downloadUrl} download>
-            <Button>
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </Button>
-          </a>
+          {downloadUrls.pdf && (
+            <a href={downloadUrls.pdf} download>
+              <Button variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            </a>
+          )}
+          {downloadUrls.docx && (
+            <a href={downloadUrls.docx} download>
+              <Button>
+                <Download className="mr-2 h-4 w-4" />
+                Download DOCX
+              </Button>
+            </a>
+          )}
+          {!downloadUrls.docx && !downloadUrls.pdf && downloadUrls.md && (
+            <a href={downloadUrls.md} download>
+              <Button>
+                <Download className="mr-2 h-4 w-4" />
+                Download Markdown
+              </Button>
+            </a>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

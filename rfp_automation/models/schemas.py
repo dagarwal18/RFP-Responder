@@ -369,6 +369,10 @@ class SubmissionRecord(BaseModel):
     submitted_at: Optional[datetime] = None
     output_file_path: str = ""
     archive_path: str = ""
+    markdown_path: str = ""
+    pdf_path: str = ""
+    docx_path: str = ""
+    available_formats: list[str] = []
     file_hash: str = ""
 
 

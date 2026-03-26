@@ -126,9 +126,10 @@ class FinalReadinessAgent(BaseAgent):
             output_path = out_dir / "proposal.md"
             output_path.write_text(proposal_markdown, encoding="utf-8")
 
-            # Automatically convert to PDF using the md_to_pdf script
+            # Generate final export artifacts from the same markdown source.
             pdf_path = out_dir / "proposal.pdf"
-            pdf_generated = False
+            docx_path = out_dir / "proposal.docx"
+            generated_formats: list[str] = []
             try:
                 import subprocess
                 import sys
@@ -141,37 +142,71 @@ class FinalReadinessAgent(BaseAgent):
                 )[:120]
                 # Assuming the proposing company might be available or default to "Our Company"
                 # (For now we'll use a generic "Proposing Company" default if not defined)
-                subprocess.run(
-                    [
-                        sys.executable, "scripts/md_to_pdf.py", 
-                        str(output_path), str(pdf_path),
-                        "--rfp-title", rfp_title,
-                        "--client-name", client_name
-                    ],
-                    check=True,
-                    capture_output=True,
-                    text=True
-                )
-                pdf_generated = True
-                logger.info(f"[F1] Generated PDF: {pdf_path}")
+                export_jobs = [
+                    ("pdf", pdf_path, "scripts/md_to_pdf.py"),
+                    ("docx", docx_path, "scripts/md_to_docx.py"),
+                ]
+                for export_format, artifact_path, script_path in export_jobs:
+                    try:
+                        subprocess.run(
+                            [
+                                sys.executable,
+                                script_path,
+                                str(output_path),
+                                str(artifact_path),
+                                "--rfp-title",
+                                rfp_title,
+                                "--client-name",
+                                client_name,
+                            ],
+                            check=True,
+                            capture_output=True,
+                            text=True,
+                        )
+                        generated_formats.append(export_format)
+                        logger.info(
+                            f"[F1] Generated {export_format.upper()}: {artifact_path}"
+                        )
+                    except subprocess.CalledProcessError as e:
+                        logger.warning(
+                            f"[F1] Failed to generate {export_format.upper()}. "
+                            f"Exit code: {e.returncode}"
+                        )
+                        logger.warning(f"[F1] {export_format.upper()} stdout: {e.stdout}")
+                        logger.warning(f"[F1] {export_format.upper()} stderr: {e.stderr}")
             except subprocess.CalledProcessError as e:
-                logger.warning(f"[F1] Failed to generate PDF. Exit code: {e.returncode}")
-                logger.warning(f"[F1] PDF stdout: {e.stdout}")
-                logger.warning(f"[F1] PDF stderr: {e.stderr}")
+                logger.warning(f"[F1] Export bootstrap failed. Exit code: {e.returncode}")
+                logger.warning(f"[F1] Export stdout: {e.stdout}")
+                logger.warning(f"[F1] Export stderr: {e.stderr}")
             except Exception as e:
-                logger.warning(f"[F1] Failed to generate PDF: {e}")
+                logger.warning(f"[F1] Failed to generate exports: {e}")
 
             file_hash = hashlib.sha256(proposal_markdown.encode("utf-8")).hexdigest()
+            archive_path = str(
+                pdf_path
+                if "pdf" in generated_formats
+                else docx_path
+                if "docx" in generated_formats
+                else output_path
+            )
             state.submission_record = SubmissionRecord(
                 submitted_at=submitted_at,
                 output_file_path=str(output_path),
-                archive_path=str(pdf_path if pdf_generated else output_path),
+                archive_path=archive_path,
+                markdown_path=str(output_path),
+                pdf_path=str(pdf_path) if "pdf" in generated_formats else "",
+                docx_path=str(docx_path) if "docx" in generated_formats else "",
+                available_formats=(
+                    generated_formats[:] if generated_formats else ["md"]
+                ),
                 file_hash=file_hash,
             )
-            if pdf_generated:
+            if generated_formats:
                 state.status = PipelineStatus.SUBMITTED
             else:
-                state.error_message = "PDF generation failed during final readiness."
+                state.error_message = (
+                    "PDF and DOCX generation failed during final readiness."
+                )
                 state.status = PipelineStatus.FAILED
         else:
             state.status = PipelineStatus.REJECTED

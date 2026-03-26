@@ -38,6 +38,7 @@ export interface Run {
   status: RunStatus;
   created_at?: string;
   review_status?: string;
+  available_formats?: string[];
 }
 
 export interface KBStats {

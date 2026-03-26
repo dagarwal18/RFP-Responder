@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   Download,
   Eye,
+  FileText,
   Loader2,
   RefreshCw,
   RotateCcw,
@@ -81,6 +82,9 @@ export default function HistoryPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewFilename, setPreviewFilename] = useState('');
+  const [previewDownloadUrls, setPreviewDownloadUrls] = useState<
+    Partial<Record<'pdf' | 'docx' | 'md', string>>
+  >({});
 
   const loadRuns = useCallback(async () => {
     setLoading(true);
@@ -117,16 +121,27 @@ export default function HistoryPage() {
   ).length;
 
   const handlePreview = (run: Run) => {
-    setPreviewUrl(`${getDownloadUrl(run.run_id)}?inline=true`);
+    setPreviewUrl(getDownloadUrl(run.run_id, { format: 'pdf', inline: true }));
     setPreviewFilename(
       run.filename?.replace('.pdf', '') || `Execution ${run.run_id.slice(0, 8)}`,
     );
+    setPreviewDownloadUrls({
+      pdf: run.available_formats?.includes('pdf')
+        ? getDownloadUrl(run.run_id, { format: 'pdf' })
+        : undefined,
+      docx: run.available_formats?.includes('docx')
+        ? getDownloadUrl(run.run_id, { format: 'docx' })
+        : undefined,
+      md: run.available_formats?.includes('md')
+        ? getDownloadUrl(run.run_id, { format: 'md' })
+        : undefined,
+    });
     setPreviewOpen(true);
   };
 
-  const handleDownload = (run: Run) => {
+  const handleDownload = (run: Run, format: 'pdf' | 'docx' | 'md') => {
     const link = document.createElement('a');
-    link.href = getDownloadUrl(run.run_id);
+    link.href = getDownloadUrl(run.run_id, { format });
     link.download = '';
     document.body.appendChild(link);
     link.click();
@@ -191,6 +206,7 @@ export default function HistoryPage() {
               <div className="divide-y divide-border/70">
                 {runs.map((run) => {
                   const completed = isCompleted(run.status);
+                  const formats = run.available_formats || [];
                   return (
                     <div
                       key={run.run_id}
@@ -220,22 +236,49 @@ export default function HistoryPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         {completed && (
                           <>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              title="Preview document"
-                              onClick={() => handlePreview(run)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              title="Download response"
-                              onClick={() => handleDownload(run)}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
+                            {formats.includes('pdf') && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  title="Preview PDF"
+                                  onClick={() => handlePreview(run)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  title="Download PDF"
+                                  onClick={() => handleDownload(run, 'pdf')}
+                                >
+                                  <Download className="h-4 w-4" />
+                                  PDF
+                                </Button>
+                              </>
+                            )}
+                            {formats.includes('docx') && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Download DOCX"
+                                onClick={() => handleDownload(run, 'docx')}
+                              >
+                                <FileText className="h-4 w-4" />
+                                DOCX
+                              </Button>
+                            )}
+                            {!formats.includes('pdf') && !formats.includes('docx') && formats.includes('md') && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Download Markdown"
+                                onClick={() => handleDownload(run, 'md')}
+                              >
+                                <Download className="h-4 w-4" />
+                                MD
+                              </Button>
+                            )}
                           </>
                         )}
 
@@ -273,8 +316,9 @@ export default function HistoryPage() {
       <DocumentPreviewModal
         open={previewOpen}
         onOpenChange={setPreviewOpen}
-        downloadUrl={previewUrl}
+        previewUrl={previewUrl}
         filename={previewFilename}
+        downloadUrls={previewDownloadUrls}
       />
     </>
   );

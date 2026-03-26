@@ -1,5 +1,6 @@
 import hashlib
 import json
+from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
@@ -249,3 +250,69 @@ def test_approve_review_starts_from_final_readiness(review_run):
     assert data["rerun_from"] == "f1_final_readiness"
     mock_load.assert_called_once_with(review_run, "f1_final_readiness")
     mock_start.assert_called_once()
+
+
+def test_list_rfps_includes_available_formats(tmp_path: Path):
+    rfp_id = "RFP-FORMATS-001"
+    pdf_path = tmp_path / "proposal.pdf"
+    docx_path = tmp_path / "proposal.docx"
+    pdf_path.write_bytes(b"%PDF-1.4 test")
+    docx_path.write_bytes(b"PK\x03\x04")
+
+    _runs[rfp_id] = {
+        "rfp_id": rfp_id,
+        "filename": "response.pdf",
+        "status": "SUBMITTED",
+        "started_at": "2026-03-27T00:00:00Z",
+        "result": {
+            "submission_record": {
+                "archive_path": str(pdf_path),
+                "pdf_path": str(pdf_path),
+                "docx_path": str(docx_path),
+                "available_formats": ["pdf", "docx"],
+            }
+        },
+    }
+
+    response = client.get("/api/rfp/list")
+
+    assert response.status_code == 200
+    runs = response.json()
+    target = next(run for run in runs if run["rfp_id"] == rfp_id)
+    assert target["available_formats"] == ["pdf", "docx"]
+
+
+def test_download_document_respects_requested_format(tmp_path: Path):
+    rfp_id = "RFP-DOWNLOAD-001"
+    pdf_path = tmp_path / "proposal.pdf"
+    docx_path = tmp_path / "proposal.docx"
+    pdf_path.write_bytes(b"%PDF-1.4 test")
+    docx_path.write_bytes(b"PK\x03\x04")
+
+    _runs[rfp_id] = {
+        "rfp_id": rfp_id,
+        "filename": "source.pdf",
+        "status": "SUBMITTED",
+        "started_at": "2026-03-27T00:00:00Z",
+        "result": {
+            "submission_record": {
+                "archive_path": str(pdf_path),
+                "pdf_path": str(pdf_path),
+                "docx_path": str(docx_path),
+                "available_formats": ["pdf", "docx"],
+            }
+        },
+    }
+
+    docx_response = client.get(f"/api/rfp/{rfp_id}/download?format=docx")
+    pdf_response = client.get(f"/api/rfp/{rfp_id}/download?format=pdf")
+
+    assert docx_response.status_code == 200
+    assert docx_response.headers["content-type"].startswith(
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+    assert 'filename="source_response.docx"' in docx_response.headers["content-disposition"]
+
+    assert pdf_response.status_code == 200
+    assert pdf_response.headers["content-type"].startswith("application/pdf")
+    assert 'filename="source_response.pdf"' in pdf_response.headers["content-disposition"]

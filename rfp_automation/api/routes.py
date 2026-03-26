@@ -250,6 +250,70 @@ def _store_review_package(run: dict[str, Any], review_package: ReviewPackage) ->
     run["result"] = result
 
 
+def _submission_artifact_candidates(
+    rfp_id: str,
+    submission: dict[str, Any] | None,
+) -> dict[str, Path]:
+    base_dir = Path("storage") / "submissions" / rfp_id
+    candidates = {
+        "pdf": base_dir / "proposal.pdf",
+        "docx": base_dir / "proposal.docx",
+        "md": base_dir / "proposal.md",
+    }
+    if isinstance(submission, dict):
+        archive_path = (
+            Path(submission["archive_path"])
+            if submission.get("archive_path")
+            else None
+        )
+        field_map = {
+            "pdf": submission.get("pdf_path")
+            or (str(archive_path) if archive_path and archive_path.suffix.lower() == ".pdf" else ""),
+            "docx": submission.get("docx_path")
+            or (str(archive_path) if archive_path and archive_path.suffix.lower() == ".docx" else ""),
+            "md": submission.get("markdown_path")
+            or submission.get("output_file_path")
+            or (str(archive_path) if archive_path and archive_path.suffix.lower() == ".md" else ""),
+        }
+        for fmt, raw_path in field_map.items():
+            if raw_path:
+                candidates[fmt] = Path(raw_path)
+    return candidates
+
+
+def _resolve_submission_artifacts(
+    rfp_id: str,
+    submission: dict[str, Any] | None,
+) -> dict[str, str]:
+    resolved: dict[str, str] = {}
+    for fmt, candidate in _submission_artifact_candidates(rfp_id, submission).items():
+        if candidate.is_file():
+            resolved[fmt] = str(candidate)
+    return resolved
+
+
+def _detect_available_formats(
+    rfp_id: str,
+    submission: dict[str, Any] | None = None,
+) -> list[str]:
+    preferred_order = ["pdf", "docx", "md"]
+    resolved = _resolve_submission_artifacts(rfp_id, submission)
+
+    declared = []
+    if isinstance(submission, dict):
+        declared = [
+            str(fmt).lower()
+            for fmt in (submission.get("available_formats") or [])
+            if str(fmt).lower() in preferred_order
+        ]
+
+    combined = []
+    for fmt in [*declared, *preferred_order]:
+        if fmt in resolved and fmt not in combined:
+            combined.append(fmt)
+    return combined
+
+
 def _inject_review_package(
     checkpoint_state: dict[str, Any],
     review_package: ReviewPackage,
@@ -706,6 +770,14 @@ async def list_rfps():
             "filename": r.get("filename", ""),
             "status": r["status"],
             "started_at": r["started_at"],
+            "available_formats": _detect_available_formats(
+                r["rfp_id"],
+                (
+                    r.get("result", {}).get("submission_record")
+                    if isinstance(r.get("result"), dict)
+                    else None
+                ),
+            ),
         }
         for r in _runs.values()
     ]
@@ -857,29 +929,44 @@ async def rerun_from_agent(rfp_id: str, start_from: str):
 # ── Download Generated Document ──────────────────────────
 
 @rfp_router.get("/{rfp_id}/download")
-async def download_document(rfp_id: str, inline: bool = False):
+async def download_document(
+    rfp_id: str,
+    inline: bool = False,
+    format: str | None = None,
+):
     """
-    Download the generated proposal document (PDF) for a completed run.
-    Falls back to the markdown file if no PDF was generated.
+    Download the generated proposal document for a completed run.
+    Supported formats are PDF, DOCX, and Markdown.
     """
     run = _get_run_or_404(rfp_id)
     result_data = run.get("result")
+    submission = (
+        result_data.get("submission_record")
+        if isinstance(result_data, dict)
+        else None
+    )
+    available = _resolve_submission_artifacts(rfp_id, submission)
 
-    # Try archive_path from submission_record first
-    archive_path = None
-    if isinstance(result_data, dict):
-        submission = result_data.get("submission_record")
-        if isinstance(submission, dict):
-            archive_path = submission.get("archive_path")
+    requested_format = (format or "").strip().lower()
+    if requested_format and requested_format not in {"pdf", "docx", "md"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported format. Use one of: pdf, docx, md.",
+        )
 
-    # Fallback: look for proposal.pdf in the standard submissions directory
-    if not archive_path or not os.path.isfile(archive_path):
-        pdf_fallback = Path("storage") / "submissions" / rfp_id / "proposal.pdf"
-        md_fallback = Path("storage") / "submissions" / rfp_id / "proposal.md"
-        if pdf_fallback.is_file():
-            archive_path = str(pdf_fallback)
-        elif md_fallback.is_file():
-            archive_path = str(md_fallback)
+    if requested_format:
+        archive_path = available.get(requested_format)
+        if not archive_path:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No {requested_format.upper()} document found for {rfp_id}.",
+            )
+    else:
+        archive_path = (
+            available.get("pdf")
+            or available.get("docx")
+            or available.get("md")
+        )
 
     if not archive_path or not os.path.isfile(archive_path):
         raise HTTPException(
@@ -888,16 +975,20 @@ async def download_document(rfp_id: str, inline: bool = False):
                    f"The pipeline may not have reached the final readiness stage.",
         )
 
-    filename = run.get("filename", rfp_id).replace(".pdf", "")
-    ext = Path(archive_path).suffix  # .pdf or .md
-    download_name = f"{filename}_response{ext}"
+    base_name = Path(run.get("filename", rfp_id)).stem or rfp_id
+    ext = Path(archive_path).suffix.lower()
+    download_name = f"{base_name}_response{ext}"
 
-    media_type = "application/pdf" if ext == ".pdf" else "text/markdown"
+    media_types = {
+        ".pdf": "application/pdf",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".md": "text/markdown",
+    }
     return FileResponse(
         path=archive_path,
-        media_type=media_type,
+        media_type=media_types.get(ext, "application/octet-stream"),
         filename=download_name if not inline else None,
-        content_disposition_type="inline" if inline else "attachment"
+        content_disposition_type="inline" if inline else "attachment",
     )
 
 
