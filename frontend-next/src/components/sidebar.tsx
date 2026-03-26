@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -59,10 +59,13 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('sidebar-collapsed') === 'true';
-  });
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+      setCollapsed(true);
+    }
+  }, []);
 
   const toggle = useCallback(() => {
     setCollapsed((prev) => {
@@ -84,7 +87,7 @@ export default function Sidebar() {
           <BrandLogo className="h-[22px] w-[22px] shrink-0 text-primary" />
           {!collapsed && (
             <div className="min-w-0">
-              <span className="block truncate text-[13px] font-bold tracking-[0.08em] text-primary uppercase">
+              <span className="block truncate text-[14px] font-bold tracking-wide text-foreground">
                 Respondr
               </span>
             </div>
