@@ -61,7 +61,10 @@ copy .env.example .env
 # 4. Start the server (dashboard at http://localhost:8000)
 uvicorn rfp_automation.api:app --reload
 
-# 5. Or run directly on a file
+# 5. Or start the API-only backend (http://localhost:8001) for the Next.js frontend
+uvicorn rfp_automation.api:api_only_app --reload --port 8001
+
+# 6. Or run directly on a file
 python -m rfp_automation "example_docs/rfp/Telecom RFP Document.pdf"
 ```
 

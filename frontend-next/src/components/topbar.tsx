@@ -23,7 +23,7 @@ export default function Topbar({ title }: { title: string }) {
 
   return (
     <header
-      className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-border/70 bg-background/92 px-4 backdrop-blur-xl sm:px-6 lg:px-10"
+      className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-border/70 bg-background/92 px-6 sm:px-8 lg:px-10 backdrop-blur-xl"
     >
       <h1 className="text-[12px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {title}

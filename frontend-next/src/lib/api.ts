@@ -158,6 +158,11 @@ export async function clearCheckpoints(rfpId: string) {
   return apiFetch<any>(`/api/rfp/${rfpId}/checkpoints`, { method: 'DELETE' });
 }
 
+/** Build the full URL for downloading the generated document */
+export function getDownloadUrl(rfpId: string): string {
+  return `${API_BASE}/api/rfp/${rfpId}/download`;
+}
+
 export async function fetchReviewPackage(rfpId: string) {
   return apiFetch<any>(`/api/rfp/${rfpId}/review`);
 }

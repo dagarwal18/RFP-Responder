@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from rfp_automation.config import get_settings
@@ -303,7 +304,8 @@ def _run_pipeline_thread(rfp_id: str, local_path: str, file_hash: str) -> None:
             uploaded_file_path=local_path,
             initial_state={"tracking_rfp_id": rfp_id},
         )
-        status = str(result.get("status", "UNKNOWN"))
+        status_val = result.get("status", "UNKNOWN")
+        status = str(status_val.value if hasattr(status_val, "value") else status_val)
 
         # Use the real rfp_id extracted by intake if available
         real_rfp_id = ""
@@ -769,7 +771,8 @@ def _rerun_pipeline_thread(rfp_id: str, start_from: str, checkpoint_state: dict)
 
     try:
         result = run_pipeline_from(start_from, checkpoint_state)
-        status = str(result.get("status", "UNKNOWN"))
+        status_val = result.get("status", "UNKNOWN")
+        status = str(status_val.value if hasattr(status_val, "value") else status_val)
 
         audit = result.get("audit_trail", [])
         pipeline_log = _build_pipeline_log(audit)
@@ -850,6 +853,53 @@ async def rerun_from_agent(rfp_id: str, start_from: str):
         "start_from": start_from,
         "message": f"Pipeline re-running from {start_from}. Connect to /ws/{rfp_id} for progress.",
     }
+
+# ── Download Generated Document ──────────────────────────
+
+@rfp_router.get("/{rfp_id}/download")
+async def download_document(rfp_id: str, inline: bool = False):
+    """
+    Download the generated proposal document (PDF) for a completed run.
+    Falls back to the markdown file if no PDF was generated.
+    """
+    run = _get_run_or_404(rfp_id)
+    result_data = run.get("result")
+
+    # Try archive_path from submission_record first
+    archive_path = None
+    if isinstance(result_data, dict):
+        submission = result_data.get("submission_record")
+        if isinstance(submission, dict):
+            archive_path = submission.get("archive_path")
+
+    # Fallback: look for proposal.pdf in the standard submissions directory
+    if not archive_path or not os.path.isfile(archive_path):
+        pdf_fallback = Path("storage") / "submissions" / rfp_id / "proposal.pdf"
+        md_fallback = Path("storage") / "submissions" / rfp_id / "proposal.md"
+        if pdf_fallback.is_file():
+            archive_path = str(pdf_fallback)
+        elif md_fallback.is_file():
+            archive_path = str(md_fallback)
+
+    if not archive_path or not os.path.isfile(archive_path):
+        raise HTTPException(
+            status_code=404,
+            detail=f"No generated document found for {rfp_id}. "
+                   f"The pipeline may not have reached the final readiness stage.",
+        )
+
+    filename = run.get("filename", rfp_id).replace(".pdf", "")
+    ext = Path(archive_path).suffix  # .pdf or .md
+    download_name = f"{filename}_response{ext}"
+
+    media_type = "application/pdf" if ext == ".pdf" else "text/markdown"
+    return FileResponse(
+        path=archive_path,
+        media_type=media_type,
+        filename=download_name if not inline else None,
+        content_disposition_type="inline" if inline else "attachment"
+    )
+
 
 # ── Requirements (B1 output) ────────────────────────────
 
