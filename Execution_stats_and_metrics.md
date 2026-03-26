@@ -8,7 +8,7 @@ The following telemetry reflects a standard 31-page technical RFP containing exa
 
 | Pipeline Phase | Agent | Role | Execution Time |
 | :--- | :--- | :--- | :--- |
-| **Phase A** | `A1_Intake` | PDF parsing, OCR, and VLM table extraction | `15.50s` |
+| **Phase A** | `A1_Intake` | PDF parsing, OCR, and VLM table extraction | `480.00s` |
 | | `A2_Structuring` | Semantic 6-category document classification | `165.11s` |
 | | `A3_Go_No_Go` | Policy alignment and strategic fit mapping | `15.06s` |
 | **Phase B** | `B1_Req_Extraction`| Two-layer strict requirement extraction (177 detected) | `542.80s` |
@@ -23,7 +23,7 @@ The following telemetry reflects a standard 31-page technical RFP containing exa
 | **Phase H & F** | `H1_Human_Prep` | Review package orchestration for UI frontend | `0.10s` |
 | | `F1_Final_Readiness`| Markdown compilation, Mermaid-CLI rendering, PDF generation | `14.47s` |
 
-**Total Pure AI Computational Time:** **~1,540 seconds (~25.6 minutes)**  
+**Total Pure AI Computational Time:** **~2,005 seconds (~33.4 minutes)**  
 *(Note: Excludes asynchronous human review wait-time at the H1 gate).*
 
 ---
@@ -33,16 +33,16 @@ The following telemetry reflects a standard 31-page technical RFP containing exa
 When evaluating the RFP-Responder for real-world enterprise deployment, the core metric is not just "pages processed" but the **depth of cognitive reasoning applied per page**. 
 
 ### Throughput Metrics (Optimistic Evaluation)
-- **Document Processing Speed:** ~1.21 Pages / Minute
-- **Requirement Processing Speed:** ~8.70 Seconds / Requirement (End-to-end: from detection to final PDF prose)
-- **Estimated 100-Page RFP Time:** ~82 Minutes (1.3 hours)
-- **Estimated 500-Requirement RFQ Time:** ~72 Minutes (1.2 hours)
+- **Document Processing Speed:** ~0.93 Pages / Minute
+- **Requirement Processing Speed:** ~11.32 Seconds / Requirement (End-to-end: from detection to final PDF prose)
+- **Estimated 100-Page RFP Time:** ~107 Minutes (1.8 hours)
+- **Estimated 500-Requirement RFQ Time:** ~94 Minutes (1.6 hours)
 
 ### The "Cost of Human" Benchmark (ROI)
 A standard bid-management team (Solutions Architect + Bid Manager + Legal Counsel) spends an average of 30 minutes reading, cross-referencing, drafting, and reviewing a single complex enterprise requirement.
 - **Manual Time for 177 Requirements:** ~88.5 Hours
-- **AI Execution Time:** ~25.6 Minutes
-- **Efficiency Multiplier:** **~207x Speedup**
+- **AI Execution Time:** ~33.4 Minutes
+- **Efficiency Multiplier:** **~159x Speedup**
 
 ### Qualitative Evaluation Criteria Achieved
 
