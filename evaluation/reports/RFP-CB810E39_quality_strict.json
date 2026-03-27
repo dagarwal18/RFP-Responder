@@ -1,0 +1,78 @@
+{
+  "evaluated_at": "2026-03-27T08:07:01.864689+00:00",
+  "rfp_id": "RFP-CD576390",
+  "metrics": {
+    "requirement_coverage": {
+      "name": "Requirement Coverage",
+      "target_pct": 95.0,
+      "total_requirements": 177,
+      "full": 157,
+      "partial": 20,
+      "missing": 0,
+      "coverage_pct": 88.7,
+      "passes_target": false,
+      "critical_or_mandatory_missed": []
+    },
+    "source_groundedness": {
+      "name": "Source Groundedness",
+      "target_pct": 98.0,
+      "claims_total": 177,
+      "claims_with_valid_citations": 177,
+      "groundedness_pct": 100.0,
+      "hallucination_rate_pct": 0.0,
+      "passes_target": true,
+      "pricing_fabrication_risk": false,
+      "ungrounded_requirement_ids": []
+    },
+    "numeric_precision": {
+      "name": "Numeric and Table Precision",
+      "target_pct": 99.0,
+      "numeric_points": 29,
+      "errors": [
+        "Total mismatch (sum(line_items)=5750000.00, total_price=3815000.00)",
+        "Benchmark mismatch (expected_total=1250000.00, actual_total=3815000.00)"
+      ],
+      "error_count": 2,
+      "numeric_accuracy_pct": 93.1,
+      "passes_target": false,
+      "used_benchmark": true
+    },
+    "policy_compliance_safety": {
+      "name": "Policy and Compliance Safety",
+      "target_false_pass_rate_pct": 0.0,
+      "predicted_legal_decision": "BLOCKED",
+      "ground_truth_legal_decision": "BLOCKED",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "precision_pct": 100.0,
+      "recall_pct": 100.0,
+      "false_pass_rate_pct": 0.0,
+      "false_block_rate_pct": 0.0,
+      "compliance_score_pct": 100.0,
+      "passes_target": true,
+      "mode": "ground_truth"
+    },
+    "first_pass_approval": {
+      "name": "First-Pass Approval Rate",
+      "target_pct": 80.0,
+      "total_sections": 18,
+      "approved_on_first_pass": 9,
+      "first_pass_approval_rate_pct": 50.0,
+      "passes_target": false,
+      "evaluation_source": "ground_truth"
+    }
+  },
+  "aggregate": {
+    "response_quality_score_pct": 90.23,
+    "formula": "RQS = 0.30(Cov) + 0.25(Ground) + 0.20(Num) + 0.15(Comp) + 0.10(Approve)",
+    "component_values_pct": {
+      "Cov": 88.7,
+      "Ground": 100.0,
+      "Num": 93.1,
+      "Comp": 100.0,
+      "Approve": 50.0
+    }
+  }
+}
