@@ -1,0 +1,1784 @@
+{
+  "sc-0000": {
+    "chunk_id": "sc-0000",
+    "chunk_index": 0,
+    "content_type": "text",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0001": {
+    "chunk_id": "sc-0001",
+    "chunk_index": 1,
+    "content_type": "text",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS]\n\nAPEX INDUSTRIAL LOGISTICS ",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0002": {
+    "chunk_id": "sc-0002",
+    "chunk_index": 2,
+    "content_type": "text",
+    "section_hint": "LIMITED",
+    "text": "[Section: LIMITED]\n\nLIMITED",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0003": {
+    "chunk_id": "sc-0003",
+    "chunk_index": 3,
+    "content_type": "text",
+    "section_hint": "Supply Chain & Logistics Solutions  |  India",
+    "text": "[Section: Supply Chain & Logistics Solutions  |  India]\n\nSupply Chain & Logistics Solutions  |  India",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0004": {
+    "chunk_id": "sc-0004",
+    "chunk_index": 4,
+    "content_type": "text",
+    "section_hint": "REQUEST FOR PROPOSAL",
+    "text": "[Section: REQUEST FOR PROPOSAL]\n\nREQUEST FOR PROPOSAL",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0005": {
+    "chunk_id": "sc-0005",
+    "chunk_index": 5,
+    "content_type": "text",
+    "section_hint": "Managed Netw ork Transformation:\nSD-WAN, Cloud Interconnects & Managed Security Operations",
+    "text": "[Section: Managed Netw ork Transformation:\nSD-WAN, Cloud Interconnects & Managed Security Operations]\n\nManaged Netw ork Transformation:\nSD-WAN, Cloud Interconnects & Managed Security Operations",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0006": {
+    "chunk_id": "sc-0006",
+    "chunk_index": 6,
+    "content_type": "text",
+    "section_hint": "RFP Reference No.\nAILL-PROC-2025-0078",
+    "text": "[Section: RFP Reference No.\nAILL-PROC-2025-0078]\n\nRFP Reference No.\nAILL-PROC-2025-0078\n\nIssuing Authority\nGroup IT Infrastructure & \nProcurement",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0007": {
+    "chunk_id": "sc-0007",
+    "chunk_index": 7,
+    "content_type": "text",
+    "section_hint": "Issue Date\n10 October 2025",
+    "text": "[Section: Issue Date\n10 October 2025]\n\nIssue Date\n10 October 2025",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0008": {
+    "chunk_id": "sc-0008",
+    "chunk_index": 8,
+    "content_type": "text",
+    "section_hint": "Submission Deadline\n21 November 2025, 17:00 IST",
+    "text": "[Section: Submission Deadline\n21 November 2025, 17:00 IST]\n\nSubmission Deadline\n21 November 2025, 17:00 IST",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0009": {
+    "chunk_id": "sc-0009",
+    "chunk_index": 9,
+    "content_type": "text",
+    "section_hint": "Classification\nSTRICTLY CONFIDENTIAL",
+    "text": "[Section: Classification\nSTRICTLY CONFIDENTIAL]\n\nClassification\nSTRICTLY CONFIDENTIAL",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0010": {
+    "chunk_id": "sc-0010",
+    "chunk_index": 10,
+    "content_type": "text",
+    "section_hint": "STRICTLY CONFIDENTIAL \u2014 FOR ADDRESSEE VENDOR USE ONLY",
+    "text": "[Section: STRICTLY CONFIDENTIAL \u2014 FOR ADDRESSEE VENDOR USE ONLY]\n\nSTRICTLY CONFIDENTIAL \u2014 FOR ADDRESSEE VENDOR USE ONLY\n\nThis document contains commercially sensitive information belonging to Apex Industrial Logistics Limited.\n\nRedistribution, copying, or disclosure to any third party without prior written consent is strictly prohibited.",
+    "page_start": 1,
+    "page_end": 1
+  },
+  "sc-0011": {
+    "chunk_id": "sc-0011",
+    "chunk_index": 11,
+    "content_type": "text",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 2,
+    "page_end": 2
+  },
+  "sc-0012": {
+    "chunk_id": "sc-0012",
+    "chunk_index": 12,
+    "content_type": "text",
+    "section_hint": "Legal Disclaimer and Confidentiality Notice",
+    "text": "[Section: Legal Disclaimer and Confidentiality Notice]\n\nLegal Disclaimer and Confidentiality Notice \n\nThis Request for Proposal (RFP) document (Reference No.: AILL-PROC-2025-0078) is issued by Apex \nIndustrial Logistics Limited, a company incorporated under the Companies Act, 2013 and registered in India, \nwith its registered office at Plot 14, Logistics Park, Bhiwandi, Maharashtra \u2014 421 302, India (hereinafter \nreferred to as \"Apex\" or \"the Issuing Authority\").\n\nThis document is issued solely for the purpose of soliciting proposals from qualified Managed Service \nProviders (MSPs) and System Integrators for the managed network transformation programme described \nherein. It does not constitute a commitment, representation, or warranty by Apex to enter into any contractual \nrelationship. Apex reserves the absolute right, at its sole discretion, to:\n\n\u2022 \nAccept or reject any or all proposals received in response to this RFP, without assigning any reason \nand without incurring any liability to any responding vendor;\n\u2022 \nCancel, modify, or re-issue this RFP at any time without prior notice;\n\u2022 \nWaive any informality or irregularity in a proposal;\n\u2022 \nNegotiate with one or more vendors simultaneously;\n\u2022 \nAward a contract to a vendor whose proposal is not the lowest-cost submission;\n\u2022 \nConduct due diligence verification on all information submitted by responding vendors.\n\nAll information, data, network topology details, specifications, and documentation contained in this RFP are \nthe proprietary intellectual property of Apex and are provided in strict confidence under the Information \nTechnology Act, 2000 and the Digital Personal Data Protection Act, 2023. By accepting and retaining this RFP, \nthe recipient acknowledges and agrees to be bound by these confidentiality obligations.\n\nNOTE: The submission of a proposal in response to this RFP does not entitle any vendor to \nreimbursement of costs incurred in the preparation of said proposal. All proposal preparation \ncosts are borne exclusively by the responding vendor.",
+    "page_start": 2,
+    "page_end": 2
+  },
+  "sc-0013": {
+    "chunk_id": "sc-0013",
+    "chunk_index": 13,
+    "content_type": "text",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0014": {
+    "chunk_id": "sc-0014",
+    "chunk_index": 14,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction]\n\nSECTION 1 \u2014 Executive Summary and Introduction",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0015": {
+    "chunk_id": "sc-0015",
+    "chunk_index": 15,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.1  About Apex Industrial Logistics Limited",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.1  About Apex Industrial Logistics Limited]\n\n1.1  About Apex Industrial Logistics Limited \n\nApex Industrial Logistics Limited (hereinafter \"Apex\" or \"the Company\") is one of India's leading integrated \nlogistics and heavy supply chain operators. Founded in 1994 and headquartered in Bhiwandi, Maharashtra, \nApex operates a national network of three hundred (300) branch warehouses spanning twenty-eight (28) Indian \nstates and Union Territories, with a centralised Tier-III Data Centre located in Andheri East, Mumbai.\n\nApex employs approximately 15,000 personnel across its operational footprint and recorded consolidated \nannual revenue of approximately INR 5,500 Crore in Financial Year 2024\u201325. The Company's core business \nverticals encompass bulk freight forwarding, automated warehousing, cold-chain logistics, last-mile \ndistribution, and cross-border trade facilitation. Apex is a publicly listed entity on the National Stock Exchange \n(NSE: APEXIL) and is subject to SEBI listing obligations.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0016": {
+    "chunk_id": "sc-0016",
+    "chunk_index": 16,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers]\n\n1.2  Current Infrastructure Challenges and Business Drivers \n\nApex's current enterprise network infrastructure was architected over a decade ago and is now a material \nconstraint on operational agility, application performance, and security posture. The incumbent environment \npresents the following critical and unacceptable constraints:",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0017": {
+    "chunk_id": "sc-0017",
+    "chunk_index": 17,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Pain Point\nCurrent Impact on Operations",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Pain Point\nCurrent Impact on Operations]\n\nPain Point\nCurrent Impact on Operations",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0018": {
+    "chunk_id": "sc-0018",
+    "chunk_index": 18,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Legacy MPLS Network",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Legacy MPLS Network]\n\nLegacy MPLS Network\n\nAll 300 branch warehouses are connected via legacy Multiprotocol Label Switching \n(MPLS) circuits procured from a single incumbent carrier. Bandwidth tiers are rigid \n(2 Mbps to 10 Mbps per branch), costly to upgrade, and require 60\u201390-day lead \ntimes for any configuration change.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0019": {
+    "chunk_id": "sc-0019",
+    "chunk_index": 19,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Chronic Network \nOutages",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Chronic Network \nOutages]\n\nChronic Network \nOutages\n\nThe Company experienced an average of 4.3 unplanned network outages per \nmonth per region in FY2024\u201325, each lasting an average of 47 minutes. These \noutages directly halt warehouse management system (WMS) operations, fleet \ntracking updates, and ERP transaction processing, resulting in an estimated \nrevenue impact of INR 3.8 Crore per month.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0020": {
+    "chunk_id": "sc-0020",
+    "chunk_index": 20,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Single-Link \nDependency",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Single-Link \nDependency]\n\nSingle-Link \nDependency\n\nHub warehouse sites (Tier-1) currently operate on a single MPLS link with no \nactive failover path. Loss of connectivity at a hub site cascades to 8\u201315 dependent \nspoke sites reliant on the hub for WMS access and IoT aggregation.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0021": {
+    "chunk_id": "sc-0021",
+    "chunk_index": 21,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > No Cloud On-Ramp",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > No Cloud On-Ramp]\n\nNo Cloud On-Ramp\n\nApex is executing a cloud-first transformation programme (ERP on Microsoft \nAzure, data analytics on AWS). Currently, all cloud traffic is backhauled through \nthe Mumbai Data Centre, introducing latency of 180\u2013340 ms for branch-to-cloud \nworkloads and consuming disproportionate Data Centre bandwidth.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0022": {
+    "chunk_id": "sc-0022",
+    "chunk_index": 22,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Security Perimeter \nGaps",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Security Perimeter \nGaps]\n\nSecurity Perimeter \nGaps\n\nBranch sites lack next-generation firewall (NGFW) protection. A significant \nransomware incident in Q3 FY2024 resulted in operational downtime of 72 hours \nacross 14 warehouse sites and a forensic investigation cost of INR 1.1 Crore. Apex \ncurrently has no 24/7 Security Operations Centre (SOC) capability.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0023": {
+    "chunk_id": "sc-0023",
+    "chunk_index": 23,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > IoT Connectivity \nFragmentation",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > IoT Connectivity \nFragmentation]\n\nIoT Connectivity \nFragmentation\n\nApex operates a fleet of 2.5 million IoT-enabled tracking SIMs across its vehicle \nfleet and warehouse assets. SIM management is currently distributed across three \ndifferent Mobile Virtual Network Operators (MVNOs), resulting in fragmented \nvisibility, inconsistent data plans, and inability to enforce unified MDM policies.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0024": {
+    "chunk_id": "sc-0024",
+    "chunk_index": 24,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > IoT Connectivity \nFragmentation > 1.3  Programme Objectives",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > IoT Connectivity \nFragmentation > 1.3  Programme Objectives]\n\n1.3  Programme Objectives \n\nApex Industrial Logistics Limited hereby issues this Request for Proposal to solicit proposals from qualified \nManaged Service Providers and System Integrators for the complete overhaul of its enterprise network, cloud \nconnectivity, and security infrastructure. The primary objectives of this programme are:\n\n\u2022 \nDecommission all legacy MPLS circuits across 300 branch sites and replace with a fully managed \nSD-WAN overlay with active-active dual-link connectivity at hub sites.\n\u2022 \nEstablish direct, carrier-grade Cloud Interconnects to Microsoft Azure (primary) and Amazon Web \nServices (secondary) from the Mumbai Data Centre, eliminating cloud backhaul latency.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0025": {
+    "chunk_id": "sc-0025",
+    "chunk_index": 25,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > IoT Connectivity \nFragmentation > 1.3  Programme Objectives > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > IoT Connectivity \nFragmentation > 1.3  Programme Objectives > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\n\u2022 \nDeploy a 24/7 Managed Security Operations Centre (SOC) with comprehensive monitoring of all \nbranch-edge next-generation firewalls, threat intelligence feeds, and incident response capability.\n\u2022 \nConsolidate all 2.5 million fleet and asset IoT SIMs onto a single Enterprise Mobility platform with \nunified management, real-time visibility, and enforced MDM policy.\n\u2022 \nAchieve a minimum of 99.99% network availability (Four Nines) at all Tier-1 hub warehouse sites on \na monthly measurement basis.\n\u2022 \nDeliver the complete programme within 18 months of contract execution, migrating all 300 sites \nacross five defined phases.\n\u2022 \nEnsure full compliance with the Digital Personal Data Protection Act, 2023 (DPDP Act) for all data \nprocessed on or transmitted through the new network infrastructure.",
+    "page_start": 4,
+    "page_end": 4
+  },
+  "sc-0026": {
+    "chunk_id": "sc-0026",
+    "chunk_index": 26,
+    "content_type": "text",
+    "section_hint": "SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > IoT Connectivity \nFragmentation > 1.3  Programme Objectives > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 1 \u2014 Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > IoT Connectivity \nFragmentation > 1.3  Programme Objectives > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0027": {
+    "chunk_id": "sc-0027",
+    "chunk_index": 27,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details]\n\nSECTION 2 \u2014 Company Background and Organisation Details",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0028": {
+    "chunk_id": "sc-0028",
+    "chunk_index": 28,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile]\n\n2.1  Corporate Profile ",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0029": {
+    "chunk_id": "sc-0029",
+    "chunk_index": 29,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Attribute\nDetail",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Attribute\nDetail]\n\nAttribute\nDetail",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0030": {
+    "chunk_id": "sc-0030",
+    "chunk_index": 30,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Registered Name\nApex Industrial Logistics Limited",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Registered Name\nApex Industrial Logistics Limited]\n\nRegistered Name\nApex Industrial Logistics Limited",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0031": {
+    "chunk_id": "sc-0031",
+    "chunk_index": 31,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > CIN\nL74899MH1994PLC076432",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > CIN\nL74899MH1994PLC076432]\n\nCIN\nL74899MH1994PLC076432",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0032": {
+    "chunk_id": "sc-0032",
+    "chunk_index": 32,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Headquarters\nPlot 14, Logistics Park, Bhiwandi, Thane, Maharashtra \u2014 421 302, India",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Headquarters\nPlot 14, Logistics Park, Bhiwandi, Thane, Maharashtra \u2014 421 302, India]\n\nHeadquarters\nPlot 14, Logistics Park, Bhiwandi, Thane, Maharashtra \u2014 421 302, India\n\nData Centre\nPrimary Tier-III DC \u2014 NESCO IT Park, Goregaon East, Mumbai, \nMaharashtra",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0033": {
+    "chunk_id": "sc-0033",
+    "chunk_index": 33,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Annual Revenue (FY25)\nApprox. INR 5,500 Crore",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Annual Revenue (FY25)\nApprox. INR 5,500 Crore]\n\nAnnual Revenue (FY25)\nApprox. INR 5,500 Crore",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0034": {
+    "chunk_id": "sc-0034",
+    "chunk_index": 34,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Employees\nApprox. 15,000 (direct); 28,000 (including contract workforce)",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Employees\nApprox. 15,000 (direct); 28,000 (including contract workforce)]\n\nEmployees\nApprox. 15,000 (direct); 28,000 (including contract workforce)\n\nOperational Sites\n300 branch warehouses; 12 regional hub facilities; 1 primary Data Centre; 2 \nDisaster Recovery sites\n\nGeographic Presence\n28 Indian States and Union Territories; Cross-border operations in Nepal, \nBangladesh, and Sri Lanka",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0035": {
+    "chunk_id": "sc-0035",
+    "chunk_index": 35,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876)",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876)]\n\nStock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876)\n\nIT Governance\nCOBIT 2019 Framework; ISO/IEC 27001:2022 certified (STQC, Cert-In \naccredited)",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0036": {
+    "chunk_id": "sc-0036",
+    "chunk_index": 36,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.2  Technology Environment",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.2  Technology Environment]\n\n2.2  Technology Environment \n\nApex's current enterprise technology stack is as follows, provided for the purposes of integration planning:\n\n\u2022 \nERP Platform: SAP S/4HANA (hosted on Microsoft Azure \u2014 Central India region), migrated in \nFY2023.\n\u2022 \nWarehouse Management System (WMS): Manhattan Associates WMS \u2014 on-premises at Mumbai \nDC, with active Azure DR replication.\n\u2022 \nFleet & Asset Tracking: Proprietary IoT platform with 2.5 million active SIMs; data aggregation via \nMQTT brokers hosted on AWS (Mumbai region).\n\u2022 \nCollaboration: Microsoft 365 (Exchange Online, Teams, SharePoint) \u2014 Microsoft Azure hosted.\n\u2022 \nIT Service Management: ServiceNow (ITSM) \u2014 cloud-hosted; ITIL v4 aligned.\n\u2022 \nIdentity: Microsoft Entra ID (formerly Azure AD) with on-premises Active Directory synchronisation \nvia Entra Connect.\n\u2022 \nSecurity: Checkpoint firewalls at Mumbai DC (end-of-support 2026); no unified SIEM; no SOC.\n\u2022 \nNetwork: Tata Communications MPLS (primary); no SD-WAN; no cloud interconnect.",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0037": {
+    "chunk_id": "sc-0037",
+    "chunk_index": 37,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.3  Regulatory and Compliance Context",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.3  Regulatory and Compliance Context]\n\n2.3  Regulatory and Compliance Context \n\nApex's network and data infrastructure is subject to the following regulatory frameworks, all of which must be \naddressed in vendor proposals:\n\n\u2022 \nDigital Personal Data Protection Act, 2023 (DPDP Act): All personal data of employees, customers, \nand fleet drivers processed across the network must comply with DPDP Act provisions including \ndata localisation, consent management, and data principal rights.\n\u2022 \nSEBI Cybersecurity and Cyber Resilience Framework (CSCRF) 2024: As a listed entity, Apex is \nsubject to SEBI's CSCRF, mandating 24x7 SOC capability, annual VAPT, and Board-level \ncybersecurity governance.\n\u2022 \nReserve Bank of India (RBI) Payment Security Guidelines: Applicable to logistics payment and \nsettlement flows processed through the network.\n\u2022 \nISO/IEC 27001:2022: Apex holds certification and requires all MSP subcontractors to maintain \nequivalent or superior certification.",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0038": {
+    "chunk_id": "sc-0038",
+    "chunk_index": 38,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.3  Regulatory and Compliance Context > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.3  Regulatory and Compliance Context > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 6,
+    "page_end": 6
+  },
+  "sc-0039": {
+    "chunk_id": "sc-0039",
+    "chunk_index": 39,
+    "content_type": "text",
+    "section_hint": "SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.3  Regulatory and Compliance Context > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 2 \u2014 Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing\nNational Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.3  Regulatory and Compliance Context > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 7,
+    "page_end": 7
+  },
+  "sc-0040": {
+    "chunk_id": "sc-0040",
+    "chunk_index": 40,
+    "content_type": "text",
+    "section_hint": "SECTION 3 \u2014 Project Overview and Objectives",
+    "text": "[Section: SECTION 3 \u2014 Project Overview and Objectives]\n\nSECTION 3 \u2014 Project Overview and Objectives",
+    "page_start": 7,
+    "page_end": 7
+  },
+  "sc-0041": {
+    "chunk_id": "sc-0041",
+    "chunk_index": 41,
+    "content_type": "text",
+    "section_hint": "SECTION 3 \u2014 Project Overview and Objectives > 3.1  Programme Description",
+    "text": "[Section: SECTION 3 \u2014 Project Overview and Objectives > 3.1  Programme Description]\n\n3.1  Programme Description \n\nThe Apex Network Transformation Programme (hereinafter \"the Programme\") is a strategic, enterprise-wide \ninitiative to replace the Company's legacy MPLS network infrastructure with a modern, software-defined, cloud-\nnative managed network and security platform. The Programme encompasses four primary workstreams \nexecuted in parallel under a unified programme governance structure:\n\n\u2022 \nWorkstream 1 \u2014 Managed SD-WAN Deployment: Full replacement of MPLS circuits across all 300 \nbranch and hub sites with a managed SD-WAN overlay, incorporating active-active dual-link \nconfiguration at Tier-1 hub sites.\n\u2022 \nWorkstream 2 \u2014 Cloud Direct Interconnect: Establishment of dedicated, carrier-grade private \ninterconnects from Apex's Mumbai Data Centre directly to Microsoft Azure (ExpressRoute \nequivalent) and Amazon Web Services (AWS Direct Connect equivalent) at 10 Gbps each.\n\u2022 \nWorkstream 3 \u2014 Managed Security Operations Centre: Deployment and continuous 24x7x365 \nmonitoring of next-generation firewalls at all 300 branch edges by a certified SOC, including threat \nintelligence, SIEM correlation, and SLA-backed incident response.\n\u2022 \nWorkstream 4 \u2014 Enterprise IoT Mobility Platform: Consolidation of 2.5 million fleet and asset \ntracking SIMs onto a single enterprise mobility management platform with unified dashboard, eSIM \ncapability, and enforced MDM policy.",
+    "page_start": 7,
+    "page_end": 7
+  },
+  "sc-0042": {
+    "chunk_id": "sc-0042",
+    "chunk_index": 42,
+    "content_type": "text",
+    "section_hint": "SECTION 3 \u2014 Project Overview and Objectives > 3.2  Success Criteria",
+    "text": "[Section: SECTION 3 \u2014 Project Overview and Objectives > 3.2  Success Criteria]\n\n3.2  Success Criteria \n\nProposals will be evaluated against the following programme-level success criteria, which will be incorporated \nas contractual Key Performance Indicators (KPIs) in the resulting Master Services Agreement:\n\nKPI Reference\nSuccess Criterion\nTarget / Threshold\n\nKPI-01\nNetwork Availability \u2014 Tier-1 Hub Sites\n\u2265 99.99% monthly\n\nKPI-02\nNetwork Availability \u2014 Tier-2 Branch Sites\n\u2265 99.95% monthly\n\nKPI-03\nSD-WAN Failover Time (primary to secondary link)\n< 50 milliseconds\n\nKPI-04\nCloud Interconnect Latency (Mumbai DC to Azure \nCentral India)\n< 8 ms round-trip\n\nKPI-05\nSOC \u2014 P1 Security Incident Acknowledgement\n< 15 minutes\n\nKPI-06\nSOC \u2014 P1 Security Incident Containment\n< 4 hours\n\nKPI-07\nMigration Completion \u2014 All 300 Sites\nWithin 18 months of \ncontract execution\n\nKPI-08\nZero-Touch Provisioning \u2014 New Branch Site\n< 4 hours from hardware \ndelivery\n\nKPI-09\nMTTR \u2014 Network Incident (Branch Site)\n< 4 hours\n\nKPI-10\nIoT SIM Activation (eSIM / ICCID)\n< 2 hours from portal \nrequest",
+    "page_start": 7,
+    "page_end": 7
+  },
+  "sc-0043": {
+    "chunk_id": "sc-0043",
+    "chunk_index": 43,
+    "content_type": "text",
+    "section_hint": "SECTION 3 \u2014 Project Overview and Objectives > 3.3  Out of Scope",
+    "text": "[Section: SECTION 3 \u2014 Project Overview and Objectives > 3.3  Out of Scope]\n\n3.3  Out of Scope \n\nThe following items are explicitly excluded from the scope of this RFP. Vendors must not include pricing for \nout-of-scope items unless explicitly invited to do so in a separate commercial section:\n\n\u2022 \nPassive civil or structural works at warehouse sites (cabling beyond network equipment patch \npanels, rack installations beyond those required for SD-WAN CPE).\n\u2022 \nEnd-user computing (laptops, desktops, mobile handsets) not related to the IoT fleet tracking \nplatform.\n\u2022 \nSAP S/4HANA or WMS application management or licensing.",
+    "page_start": 7,
+    "page_end": 7
+  },
+  "sc-0044": {
+    "chunk_id": "sc-0044",
+    "chunk_index": 44,
+    "content_type": "text",
+    "section_hint": "SECTION 3 \u2014 Project Overview and Objectives > 3.3  Out of Scope > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 3 \u2014 Project Overview and Objectives > 3.3  Out of Scope > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\n\u2022 \nLegacy MPLS contract termination penalties \u2014 Apex will manage the incumbent carrier relationship \ndirectly.\n\u2022 \nPhysical security systems (CCTV, access control) not directly integrated into the SOC monitoring \nscope.",
+    "page_start": 8,
+    "page_end": 8
+  },
+  "sc-0045": {
+    "chunk_id": "sc-0045",
+    "chunk_index": 45,
+    "content_type": "text",
+    "section_hint": "SECTION 3 \u2014 Project Overview and Objectives > 3.3  Out of Scope > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 3 \u2014 Project Overview and Objectives > 3.3  Out of Scope > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0046": {
+    "chunk_id": "sc-0046",
+    "chunk_index": 46,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services]\n\nSECTION 4 \u2014 Scope of Work and Services",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0047": {
+    "chunk_id": "sc-0047",
+    "chunk_index": 47,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites]\n\n4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites \n\nThe vendor must design, deploy, and operate a fully managed Software-Defined Wide Area Network (SD-\nWAN) across all 300 Apex branch warehouse and hub sites. The following specifications are mandatory:",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0048": {
+    "chunk_id": "sc-0048",
+    "chunk_index": 48,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements]\n\n4.1.1  Site Classification and Link Requirements\n\nSite Tier\nSite Count\nPrimary Link\nSecondary Link\nLink Mode",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0049": {
+    "chunk_id": "sc-0049",
+    "chunk_index": 49,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Tier-1 Hub\n12 sites",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Tier-1 Hub\n12 sites]\n\nTier-1 Hub\n12 sites\n\nBroadband / \nDedicated Fibre \u2014 \n100 Mbps min\n\n4G/5G LTE \u2014 50 \nMbps min\nActive / Active\n\nTier-2 Branch\n228 sites\nBroadband Fibre \u2014 \n50 Mbps min\n\n4G LTE Backup \u2014 20 \nMbps min\nActive / Standby\n\nTier-3 Remote\n60 sites\n4G/5G LTE \u2014 20 \nMbps min\n\nVSAT (where \nterrestrial \nunavailable)",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0050": {
+    "chunk_id": "sc-0050",
+    "chunk_index": 50,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby]\n\nActive / Standby",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0051": {
+    "chunk_id": "sc-0051",
+    "chunk_index": 51,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.1.2  SD-WAN Platform Mandatory Capabilities",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.1.2  SD-WAN Platform Mandatory Capabilities]\n\n4.1.2  SD-WAN Platform Mandatory Capabilities\n\n\u2022 \nPolicy-based intelligent traffic steering with Application-Aware Routing for classified applications \nincluding SAP S/4HANA, Microsoft Teams, Manhattan WMS, and IoT MQTT traffic.\n\u2022 \nDynamic Path Selection with real-time link quality measurement (latency, jitter, packet loss) with sub-\n50 ms failover between primary and secondary links.\n\u2022 \nZero-Touch Provisioning (ZTP): All CPE devices must be provisioned remotely without on-site \nengineering resources. ZTP must enable a branch go-live within 4 hours of hardware delivery on-\nsite.\n\u2022 \nCentralised management via a vendor-provided cloud-managed controller with full Apex read-only \nportal access, displaying per-site topology, link health, and traffic analytics.\n\u2022 \nBGP and OSPF routing support with automated failover; static routing where dynamic protocols are \nnot feasible at Tier-3 sites.\n\u2022 \nQuality of Service (QoS) with a minimum of 8 traffic classes, including guaranteed bandwidth \nallocation for WMS and SAP traffic at all Tier-1 and Tier-2 sites.\n\u2022 \nIntegrated next-generation firewall (NGFW) capability at the SD-WAN edge CPE, including URL \nfiltering, IPS/IDS, and SSL inspection, with policy managed from the SOC (Workstream 3).\n\u2022 \nSupport for 1:N VPN hub-and-spoke and any-to-any mesh topologies to enable direct branch-to-\nbranch connectivity for IoT data aggregation.\n\u2022 \nVendor must explicitly state the OEM hardware partner(s) proposed for SD-WAN CPE (e.g., Cisco \nCatalyst SD-WAN / Meraki, Fortinet FortiGate SD-WAN, VMware VeloCloud, Palo Alto Prisma SD-\nWAN). Proposals specifying 'TBD' for hardware OEM will be deemed Non-Compliant.",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0052": {
+    "chunk_id": "sc-0052",
+    "chunk_index": 52,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects]\n\n4.2  Workstream 2: Cloud Direct Interconnects \n\nApex requires the establishment of two (2) dedicated, private, carrier-grade Cloud Interconnects from its \nprimary Mumbai Data Centre (NESCO IT Park, Goregaon East) as follows:\n\n\u2022 \nMicrosoft Azure ExpressRoute: Two (2) x 10 Gbps dedicated ExpressRoute circuits to the Microsoft \nAzure Central India region (pune1 / pune2 peering locations or equivalent Mumbai-region peering). \nCircuits must be configured in an active-active ECMP load-sharing arrangement with full BGP route \nredundancy. The interconnect must support both Azure Private Peering (for SAP and WMS \nworkloads) and Microsoft Peering (for Microsoft 365).\n\u2022 \nAmazon Web Services Direct Connect: One (1) x 10 Gbps Dedicated Connection to the AWS \nMumbai (ap-south-1) region via a Direct Connect Location in Mumbai (STT GDC Hua Wei Navi ",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0053": {
+    "chunk_id": "sc-0053",
+    "chunk_index": 53,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\nMumbai or Netmagic Mumbai equivalent). The connection must support AWS Transit Gateway \nattachment for multi-VPC routing.\n\u2022 \nThe vendor must provide, operate, and manage the last-mile fibre and cross-connect from the Apex \nDC MMR to the respective carrier-neutral facility. Apex will provide DC rack space and power.\n\u2022 \nBoth interconnects must be monitored 24x7 by the vendor's NOC, with SLA-backed performance \nreporting including availability, latency, jitter, and throughput delivered monthly.\n\u2022 \nThe vendor must hold active AWS Direct Connect Partner and Microsoft Azure ExpressRoute \nPartner designations and must provide evidence of these designations with the proposal.",
+    "page_start": 10,
+    "page_end": 10
+  },
+  "sc-0054": {
+    "chunk_id": "sc-0054",
+    "chunk_index": 54,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.3  Workstream 3: 24/7 Managed Security Operations Centre (SOC)",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.3  Workstream 3: 24/7 Managed Security Operations Centre (SOC)]\n\n4.3  Workstream 3: 24/7 Managed Security Operations Centre (SOC) \n\nApex requires a fully outsourced, 24x7x365 Managed SOC service to monitor, detect, investigate, and respond \nto cybersecurity threats across its entire network estate.",
+    "page_start": 10,
+    "page_end": 10
+  },
+  "sc-0055": {
+    "chunk_id": "sc-0055",
+    "chunk_index": 55,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.3  Workstream 3: 24/7 Managed Security Operations Centre (SOC) > 4.3.1  SOC Service Scope",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.3  Workstream 3: 24/7 Managed Security Operations Centre (SOC) > 4.3.1  SOC Service Scope]\n\n4.3.1  SOC Service Scope\n\n\u2022 \nContinuous monitoring of all 300 SD-WAN edge NGFW devices for security events, policy violations, \nand anomalous traffic patterns.\n\u2022 \nSecurity Information and Event Management (SIEM) \u2014 Vendor must operate a cloud-delivered \nSIEM platform (e.g., Microsoft Sentinel, Splunk, IBM QRadar, or equivalent) ingesting logs from all \nedge firewalls, the Mumbai DC, cloud interconnects, and endpoint detection agents.\n\u2022 \nThreat Intelligence integration: Vendor must subscribe to at least two (2) commercial Threat \nIntelligence feeds (e.g., Recorded Future, CrowdStrike Intelligence, Mandiant) and correlate IOCs \nagainst Apex's network traffic in near-real-time.\n\u2022 \nVulnerability Management: Monthly automated VAPT scans across all in-scope network devices and \nquarterly manual penetration testing of the network perimeter, with findings reported to Apex CISO \nwithin 5 business days.\n\u2022 \nIncident Response: The vendor must provide Tier-1, Tier-2, and Tier-3 analyst capability within the \nSOC, with defined escalation paths. P1 incidents must be acknowledged within 15 minutes and \ncontained within 4 hours. P1 is defined as any confirmed active threat affecting more than 5 sites or \nthe Mumbai DC.\n\u2022 \nRoot Cause Analysis (RCA): For all P1 and P2 security incidents, a formal RCA report must be \ndelivered to Apex within 72 hours of incident containment, conforming to ITIL v4 Problem \nManagement process.\n\u2022 \nMonthly SOC Operations Report: Delivered by the 5th business day of the following month, \ncontaining: event volumes, MTTD, MTTR, top threats, false-positive rate, and open vulnerability \nstatus.",
+    "page_start": 10,
+    "page_end": 10
+  },
+  "sc-0056": {
+    "chunk_id": "sc-0056",
+    "chunk_index": 56,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.3  Workstream 3: 24/7 Managed Security Operations Centre (SOC) > 4.3.2  Data Residency for SOC",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.3  Workstream 3: 24/7 Managed Security Operations Centre (SOC) > 4.3.2  Data Residency for SOC]\n\n4.3.2  Data Residency for SOC\n\n\u2022 \nAll SIEM data, log archives, and security event records relating to Apex network traffic must be \nstored exclusively within India-based data centres (Tier III or above). Storage outside India is \nprohibited without explicit written authorisation from Apex CISO, consistent with DPDP Act 2023 \nrequirements.\n\u2022 \nThe vendor must provide the name, location, and third-party audit certification of the data centre(s) \nused for SIEM log storage as part of the proposal.",
+    "page_start": 10,
+    "page_end": 10
+  },
+  "sc-0057": {
+    "chunk_id": "sc-0057",
+    "chunk_index": 57,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.4  Workstream 4: Enterprise IoT and Mobility Connectivity",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.4  Workstream 4: Enterprise IoT and Mobility Connectivity]\n\n4.4  Workstream 4: Enterprise IoT and Mobility Connectivity \n\nApex operates 2.5 million IoT SIMs across vehicle fleet trackers, warehouse asset tags, and cold-chain \ntemperature sensors. The vendor must provide:\n\n\u2022 \nA unified Enterprise Mobility Management (EMM) platform with a single dashboard enabling real-\ntime visibility of all 2.5 million SIMs, including active/inactive status, data consumption, location \n(where applicable), and MDM policy compliance.\n\u2022 \nNational Data Connectivity: Coverage across all 28 operational states with indoor and outdoor data \ncoverage. The vendor must provide a coverage heatmap for all Tier-1 and Tier-2 site locations as \npart of the proposal.\n\u2022 \neSIM / eUICC Support: The platform must support eSIM remote provisioning for new device \nadditions and SIM profile switching without physical SIM replacement.",
+    "page_start": 10,
+    "page_end": 10
+  },
+  "sc-0058": {
+    "chunk_id": "sc-0058",
+    "chunk_index": 58,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.4  Workstream 4: Enterprise IoT and Mobility Connectivity > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.4  Workstream 4: Enterprise IoT and Mobility Connectivity > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\n\u2022 \nCustom APN (cAPN): A dedicated private APN for Apex IoT SIM traffic, ensuring data does not \ntraverse the public internet and is routed directly to Apex's network via private peering or MPLS \nhandoff to the SD-WAN fabric.\n\u2022 \nData Plan Flexibility: Vendors must offer pooled data plans across SIM segments (fleet, assets, cold-\nchain) to enable efficient data allocation and prevent per-SIM overage charges.\n\u2022 \nAPI Integration: The EMM platform must expose RESTful APIs for integration with Apex's proprietary \nIoT fleet management platform for automated SIM activation, deactivation, and data consumption \nreporting.",
+    "page_start": 11,
+    "page_end": 11
+  },
+  "sc-0059": {
+    "chunk_id": "sc-0059",
+    "chunk_index": 59,
+    "content_type": "text",
+    "section_hint": "SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.4  Workstream 4: Enterprise IoT and Mobility Connectivity > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 4 \u2014 Scope of Work and Services > 4.1  Workstream 1: Managed SD-WAN \u2014 All 300 Sites > 4.1.1  Site Classification and Link Requirements > Active / Standby > 4.2  Workstream 2: Cloud Direct Interconnects > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 4.4  Workstream 4: Enterprise IoT and Mobility Connectivity > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0060": {
+    "chunk_id": "sc-0060",
+    "chunk_index": 60,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements]\n\nSECTION 5 \u2014 Technical and Functional Requirements",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0061": {
+    "chunk_id": "sc-0061",
+    "chunk_index": 61,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.1  Instructions for Completion",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.1  Instructions for Completion]\n\n5.1  Instructions for Completion \n\nThis section contains the definitive technical and functional requirements for the Network Transformation \nProgramme. Vendors MUST respond to EVERY requirement listed in the matrix below. The following response \ncodes apply:\n\n\u2022 \nCompliant (C): The vendor's proposed solution fully satisfies the stated requirement in its standard, \ngenerally available form without bespoke development, workarounds, or future roadmap \ncommitments.\n\u2022 \nPartially Compliant (PC): The proposed solution partially satisfies the requirement. The 'Vendor \nRemarks' column MUST contain a specific description of the gap, the proposed resolution, and the \nestimated timeline to achieve full compliance.\n\u2022 \nNon-Compliant (NC): The proposed solution does not satisfy the requirement. The 'Vendor Remarks' \ncolumn MUST contain a full explanation. Proposals with more than four (4) Non-Compliant \nresponses to Mandatory requirements will be disqualified.\n\nVENDOR INSTRUCTION: Do NOT alter, re-number, or re-sequence Requirement IDs. Do NOT \nmodify the column structure of the requirements table. Responses must be entered exclusively in \nthe 'Vendor Response' and 'Vendor Remarks' columns. Any modification to the table structure will \nrender the proposal non-evaluable.",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0062": {
+    "chunk_id": "sc-0062",
+    "chunk_index": 62,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix]\n\n5.2  Requirements Matrix \n\nReq. ID\nCategory\nDescription\nPriority\nVendor \nResponse",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0063": {
+    "chunk_id": "sc-0063",
+    "chunk_index": 63,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Vendor \nRemarks",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Vendor \nRemarks]\n\nVendor \nRemarks\n\nTR-001\nSD-WAN \u2014 \nArchitecture\n\nThe SD-WAN solution MUST be a \ncloud-managed, fully software-\ndefined overlay capable of \nsupporting all 300 Apex branch \nsites within a single management \ndomain without requiring a \nhardware controller at the Data \nCentre.",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0064": {
+    "chunk_id": "sc-0064",
+    "chunk_index": 64,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-002\nSD-WAN \u2014 ZTP\n\nZero-Touch Provisioning (ZTP) \nMUST be supported for all CPE \ndevices. A branch site MUST be \nfully operational within 4 hours of \nCPE delivery, without requiring an \non-site engineer from the vendor.",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0065": {
+    "chunk_id": "sc-0065",
+    "chunk_index": 65,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-003\nSD-WAN \u2014 \nFailover\n\nDynamic path failover from \nprimary to secondary link MUST \ncomplete in under 50 milliseconds \nas measured end-to-end from \npacket loss detection to traffic \nrerouting, without manual \nintervention.",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0066": {
+    "chunk_id": "sc-0066",
+    "chunk_index": 66,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-004\nSD-WAN \u2014 BGP\n\nThe solution MUST support BGP \nrouting with automated route \nadvertisement and withdrawal \nupon link failure, supporting \nintegration with Apex's Mumbai \nDC edge router (Cisco ASR 1002-\nHX) via eBGP peering.",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0067": {
+    "chunk_id": "sc-0067",
+    "chunk_index": 67,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0068": {
+    "chunk_id": "sc-0068",
+    "chunk_index": 68,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\nTR-005\nSD-WAN \u2014 OEM \nHardware\n\nVendor MUST specify the OEM \nhardware partner(s) for SD-WAN \nCPE (e.g., Cisco, Fortinet, \nVMware VeloCloud, Palo Alto). \nCPE must be provided as-a-\nService under OpEx pricing. \nVendor-owned hardware is \nmandatory; Apex will not \npurchase CPE outright.",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0069": {
+    "chunk_id": "sc-0069",
+    "chunk_index": 69,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill \u2014 Name \nOEM]\n\nTR-006\nSD-WAN \u2014 QoS\n\nThe solution MUST support a \nminimum of 8 QoS traffic classes \nwith guaranteed bandwidth \n(GBW) and maximum bandwidth \n(MBW) policies configurable per \napplication, per site. Guaranteed \nbandwidth for SAP S/4HANA and \nWMS traffic must be configurable \nindependently of other traffic \nclasses.",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0070": {
+    "chunk_id": "sc-0070",
+    "chunk_index": 70,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-007\nSD-WAN \u2014 \nSecurity\n\nIntegrated NGFW capability at the \nSD-WAN edge MUST include \nIPS/IDS, URL filtering (minimum \n60 URL categories), DNS \nsecurity, and SSL deep \ninspection. Vendor must specify \nthe OEM firewall solution (e.g., \nFortinet FortiGate, Palo Alto \nNetworks NGFW, Check Point).",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0071": {
+    "chunk_id": "sc-0071",
+    "chunk_index": 71,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill \u2014 Name \nFirewall \nOEM]\n\nTR-008\nSD-WAN \u2014 Portal\n\nA self-service portal with role-\nbased access control (RBAC) \nMUST be provided to Apex IT \nstaff with read-only visibility of \nnetwork topology, link health, \ntraffic statistics, and active alerts \nacross all 300 sites. No additional \nlicensing cost for portal access.",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0072": {
+    "chunk_id": "sc-0072",
+    "chunk_index": 72,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-009\nSD-WAN \u2014 \nProject Mgmt\n\nVendor MUST provide a detailed \n300-site migration project plan \nconforming to either PRINCE2 or \nPMBOK methodology. A \ndedicated Project Manager \n(minimum PMP or PRINCE2 \nPractitioner certified) must be \nnamed in the proposal and \ncommitted to the programme \nthrough completion.",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0073": {
+    "chunk_id": "sc-0073",
+    "chunk_index": 73,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-010\nCloud Interconnect \n\u2014 Azure\n\nVendor MUST hold an active \nMicrosoft Azure ExpressRoute \nPartner designation and provide \ntwo (2) x 10 Gbps circuits in \nactive-active configuration to the \nAzure Central India region. \nEvidence of Microsoft partner \ndesignation MUST be attached as \nAppendix B.",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0074": {
+    "chunk_id": "sc-0074",
+    "chunk_index": 74,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-011\nCloud Interconnect \n\u2014 AWS\n\nVendor MUST hold an active \nAWS Direct Connect Delivery \nPartner designation and provide \none (1) x 10 Gbps Dedicated \nConnection to the AWS ap-south-\n1 Mumbai region. Evidence of \nAWS partner designation MUST \nbe attached as Appendix B.",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0075": {
+    "chunk_id": "sc-0075",
+    "chunk_index": 75,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0076": {
+    "chunk_id": "sc-0076",
+    "chunk_index": 76,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\nTR-012\nCloud Interconnect \n\u2014 Latency\n\nThe Azure ExpressRoute \ninterconnect MUST achieve a \nmaximum round-trip latency of 8 \nms between the Apex Mumbai DC \nand the Azure Central India region \nunder steady-state traffic \nconditions. Vendor must provide \nbenchmark test evidence from \nequivalent deployments.",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0077": {
+    "chunk_id": "sc-0077",
+    "chunk_index": 77,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-013\nSOC \u2014 Availability\n\nThe Managed SOC service MUST \noperate 24 hours per day, 7 days \nper week, 365 days per year \n(including Indian public holidays) \nwith no scheduled maintenance \nwindows that reduce monitoring \ncoverage below Tier-1 analyst \nstaffing levels.",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0078": {
+    "chunk_id": "sc-0078",
+    "chunk_index": 78,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-014\nSOC \u2014 SIEM \nPlatform\n\nThe SIEM platform used by the \nSOC MUST ingest logs from all \n300 SD-WAN edge devices, the \nMumbai DC, and cloud \ninterconnects. The vendor must \nname the SIEM product proposed \n(e.g., Microsoft Sentinel, Splunk \nEnterprise Security, IBM QRadar, \nor equivalent). SIEM data MUST \nbe stored in India.",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0079": {
+    "chunk_id": "sc-0079",
+    "chunk_index": 79,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill \u2014 Name \nSIEM]\n\nTR-015\nSOC \u2014 Incident \nResponse SLAs\n\nP1 incidents MUST be \nacknowledged within 15 minutes \nand contained within 4 hours. P2 \nincidents MUST be acknowledged \nwithin 30 minutes and resolved \nwithin 8 hours. P3 incidents within \n2 hours acknowledgement and 24 \nhours resolution. All timings \nmeasured 24x7.",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0080": {
+    "chunk_id": "sc-0080",
+    "chunk_index": 80,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-016\nSOC \u2014 ITIL \nAlignment\n\nThe SOC MUST operate Incident \nManagement, Problem \nManagement, and Change \nManagement processes \nconforming to ITIL v4. Root Cause \nAnalysis (RCA) reports for P1 and \nP2 incidents MUST be delivered \nwithin 72 hours of incident \ncontainment. Vendor must provide \nsample RCA template with \nproposal.",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0081": {
+    "chunk_id": "sc-0081",
+    "chunk_index": 81,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-017\nSOC \u2014 Threat \nIntelligence\n\nVendor MUST demonstrate active \nsubscriptions to a minimum of two \n(2) commercial Threat Intelligence \nplatforms and provide evidence of \nintegration with the proposed \nSIEM, including IOC ingestion \nfrequency and automated \nblocking workflow.",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0082": {
+    "chunk_id": "sc-0082",
+    "chunk_index": 82,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-018\nCompliance \u2014 \nDPDP Act 2023\n\nVendor MUST provide a written \nData Privacy Impact Assessment \n(DPIA) framework for the \nproposed solution, demonstrating \nhow personal data of Apex \nemployees and customers \nprocessed across the network is \nhandled in compliance with the \nDigital Personal Data Protection ",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0083": {
+    "chunk_id": "sc-0083",
+    "chunk_index": 83,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0084": {
+    "chunk_id": "sc-0084",
+    "chunk_index": 84,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\nAct, 2023. Data localisation within \nIndia is mandatory.\n\nTR-019\nIoT \u2014 Private APN\n\nThe Enterprise Mobility platform \nMUST support a dedicated private \nAPN for Apex IoT SIM traffic with \nrouting directly into Apex's SD-\nWAN fabric via private peering. \nTraffic from IoT SIMs MUST NOT \ntransit the public internet.",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0085": {
+    "chunk_id": "sc-0085",
+    "chunk_index": 85,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-020\nIoT \u2014 eSIM\n\nThe EMM platform MUST support \nGSMA-compliant eSIM / eUICC \nremote provisioning for all 2.5 \nmillion SIMs at Apex's option. \nVendor must provide the GSMA \neSIM RSP (Remote SIM \nProvisioning) compliance \ncertificate with the proposal.",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0086": {
+    "chunk_id": "sc-0086",
+    "chunk_index": 86,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-021\nIoT \u2014 National \nCoverage\n\nThe vendor MUST provide \ndemonstrable 4G LTE network \ncoverage (own network or \nroaming agreement) covering a \nminimum of 98% of Apex's Tier-1 \nand Tier-2 site locations across all \n28 operational states. A geo-\nreferenced coverage report must \nbe submitted with the proposal.",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0087": {
+    "chunk_id": "sc-0087",
+    "chunk_index": 87,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-022\nIoT \u2014 API \nIntegration\n\nThe EMM platform MUST expose \na documented RESTful API \n(OpenAPI 3.0 specification) for \nSIM lifecycle management \n(activation, deactivation, \nsuspension, data plan change) \nand consumption reporting. API \ndocumentation must be provided \nas Appendix F.",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0088": {
+    "chunk_id": "sc-0088",
+    "chunk_index": 88,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-023\nGeneral \u2014 \nDisaster Recovery\n\nThe vendor's managed service \nplatform (SD-WAN controller, \nSOC SIEM, EMM platform) must \noperate from geo-redundant \ninfrastructure within India with an \nRPO of less than 15 minutes and \nan RTO of less than 60 minutes \nfor all Tier-1 managed services.",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0089": {
+    "chunk_id": "sc-0089",
+    "chunk_index": 89,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-024\n\nGeneral \u2014 \nServiceNow \nIntegration\n\nThe vendor's NOC and SOC \nticketing systems MUST integrate \nbi-directionally with Apex's \nServiceNow ITSM instance for \nautomated incident creation, \nstatus updates, and closure. \nVendor must describe the \nintegration mechanism (native \nconnector / REST API / email) \nand provide a sample integration \narchitecture.",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0090": {
+    "chunk_id": "sc-0090",
+    "chunk_index": 90,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]\n\nTR-025\nGeneral \u2014 \nReporting\n\nVendor MUST provide a unified \nexecutive dashboard and monthly \nmanaged service report covering \nnetwork availability, cloud \ninterconnect performance, SOC \nincident statistics, IoT SIM health, \nand SLA performance against all \nKPIs defined in Section 3.2. \n\n[Referenced Section 3.2]: [Section: SECTION 3 \u2014 Project Overview and Objectives > 3.2  Success Criteria]\n\n3.2  Success Criteria \n\nProposals will be evaluated against the following programme-level success criteria, which will be incorporated \nas contractual Key Performance Indicators (KPIs) in the resulting Master Services Agreement:\n\nKPI Reference\nSuccess Criterion\nTarget / Threshold\n\nKPI-01\nNetwork Availability \u2014 Tier-1 Hub Sites\n\u2265 99.99% monthly\n\nKPI-02\nNetwork Availability \u2014 Tier-2 Branch Sites\n\u2265 99.95% monthly\n\nKPI-03\nSD-WAN Failover Time (primary to secondary link)\n< 50 milliseconds\n\nKPI-04\nCloud Interconnect Latency (Mumbai DC to Azure \nCentral India)\n< 8 ms round-trip\n\nKPI-05\nSOC \u2014 P1 Security Incident Acknowledgement\n< 15 minutes\n\nKPI-06\nSOC \u2014 P1 Security Incident Containment\n< 4 hours\n\nKPI-07\nMigration Completion \u2014 All 300 Sites\nWithin 18 months of \ncontract execution\n\nKPI-08\nZero-Touch Provisioning \u2014 New Branch Site\n< 4 hours from hardware \ndelivery\n\nKPI-09\nMTTR \u2014 Network Incident (Branch Site)\n< 4 hours\n\nKPI-10\nIoT SIM Activation (eSIM / ICCID)\n< 2 hours from portal \nrequest",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0091": {
+    "chunk_id": "sc-0091",
+    "chunk_index": 91,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > Mandatory]\n\nMandatory\n\n[C / PC / \nNC]\n\n[Vendor to \nfill]",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0092": {
+    "chunk_id": "sc-0092",
+    "chunk_index": 92,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\nSample report format must be \nprovided with proposal.",
+    "page_start": 16,
+    "page_end": 16
+  },
+  "sc-0093": {
+    "chunk_id": "sc-0093",
+    "chunk_index": 93,
+    "content_type": "text",
+    "section_hint": "SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 5 \u2014 Technical and Functional Requirements > 5.2  Requirements Matrix > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 17,
+    "page_end": 17
+  },
+  "sc-0094": {
+    "chunk_id": "sc-0094",
+    "chunk_index": 94,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones]\n\nSECTION 6 \u2014 Project Timeline and Milestones",
+    "page_start": 17,
+    "page_end": 17
+  },
+  "sc-0095": {
+    "chunk_id": "sc-0095",
+    "chunk_index": 95,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones > 6.1  Procurement Timeline",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones > 6.1  Procurement Timeline]\n\n6.1  Procurement Timeline \n\nProcurement Milestone\nTarget Date\nNotes\n\nRFP Issue & Publication\n10 October 2025\nIssued via Apex procurement portal to \npre-qualified vendors\n\nVendor Registration Deadline\n17 October 2025\nRegistration via procurement portal \nonly. Email registration not accepted.\n\nPre-Bid Conference (Virtual)\n22 October 2025, 11:00 \nIST\n\nMicrosoft Teams. Invitation issued to \nall registered vendors. Attendance \nmandatory for pre-qualification.\n\nVendor Written Q&A Submission \nDeadline\n31 October 2025\nVia procurement portal Q&A module \nonly. Email queries not accepted.\n\nApex Q&A Response Publication\n10 November 2025\n\nPublished simultaneously to all \nregistered vendors. Responses form \nbinding amendments to this RFP.\n\nFinal Proposal Submission Deadline\n21 November 2025, \n17:00 IST\n\nVia procurement portal. Late \nsubmissions automatically \ndisqualified.\n\nTechnical Evaluation & Scoring\n21 Nov \u2014 05 Dec 2025\nInternal evaluation by Apex Technical \nEvaluation Committee\n\nShortlist Notification (Top 3 Vendors)\n08 December 2025\nWritten notification via procurement \nportal\n\nVendor Technical Demonstrations / PoC\n15\u201319 December 2025\nApex HQ, Bhiwandi. Scenario brief \nissued 5 business days prior.\n\nBest and Final Offer (BAFO)\n09 January 2026\nInvited shortlisted vendors only\n\nContract Award Notification\n23 January 2026\n\nFormal written notification. \nUnsuccessful vendors notified \nsimultaneously.\n\nContract Execution and Programme \nKick-Off\n03 February 2026\nProgramme kick-off meeting at Apex \nHQ, Bhiwandi",
+    "page_start": 17,
+    "page_end": 17
+  },
+  "sc-0096": {
+    "chunk_id": "sc-0096",
+    "chunk_index": 96,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones > 6.2  Five-Phase Delivery Migration Plan",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones > 6.2  Five-Phase Delivery Migration Plan]\n\n6.2  Five-Phase Delivery Migration Plan \n\nThe vendor must submit a detailed 5-phase migration plan covering all 300 sites within 18 months of contract \nexecution. The phased structure is defined as follows:\n\nPhase\nTitle\nScope\nSite Count\nTarget Duration\n\nPh-1\nFoundation & Pilot\n\nSD-WAN CPE design lock; \nMumbai DC cloud \ninterconnect build; 5 pilot \nhub sites; SOC onboarding \nand SIEM integration",
+    "page_start": 17,
+    "page_end": 17
+  },
+  "sc-0097": {
+    "chunk_id": "sc-0097",
+    "chunk_index": 97,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones > 5 pilot sites + DC\nMonths 1\u20133",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones > 5 pilot sites + DC\nMonths 1\u20133]\n\n5 pilot sites + DC\nMonths 1\u20133\n\nPh-2\nHub Rollout\n\nAll 12 Tier-1 hub sites \nmigrated; active-active dual-\nlink SD-WAN live; NGFW \npolicy baseline deployed",
+    "page_start": 17,
+    "page_end": 17
+  },
+  "sc-0098": {
+    "chunk_id": "sc-0098",
+    "chunk_index": 98,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136]\n\n12 sites\nMonths 4\u20136",
+    "page_start": 17,
+    "page_end": 17
+  },
+  "sc-0099": {
+    "chunk_id": "sc-0099",
+    "chunk_index": 99,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\nPh-3\nBranch Rollout \u2014 \nNorth & West\n\nFirst 100 Tier-2/Tier-3 \nbranch sites (North and \nWest India zones)",
+    "page_start": 18,
+    "page_end": 18
+  },
+  "sc-0100": {
+    "chunk_id": "sc-0100",
+    "chunk_index": 100,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 100 sites\nMonths 7\u201311",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 100 sites\nMonths 7\u201311]\n\n100 sites\nMonths 7\u201311\n\nPh-4\nBranch Rollout \u2014 \nSouth & East\n\nRemaining 128 Tier-2/Tier-3 \nbranch sites (South and \nEast India zones)",
+    "page_start": 18,
+    "page_end": 18
+  },
+  "sc-0101": {
+    "chunk_id": "sc-0101",
+    "chunk_index": 101,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 128 sites\nMonths 12\u201316",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 128 sites\nMonths 12\u201316]\n\n128 sites\nMonths 12\u201316\n\nPh-5\nSteady-State & \nHandover\n\nMPLS decommissioning \nconfirmation; IoT SIM \nmigration completion; SOC \nBAU handover; acceptance \ntesting; documentation \nfinalisation\n\nAll sites\nMonths 17\u201318",
+    "page_start": 18,
+    "page_end": 18
+  },
+  "sc-0102": {
+    "chunk_id": "sc-0102",
+    "chunk_index": 102,
+    "content_type": "text",
+    "section_hint": "SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 128 sites\nMonths 12\u201316 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 6 \u2014 Project Timeline and Milestones > 12 sites\nMonths 4\u20136 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 128 sites\nMonths 12\u201316 > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0103": {
+    "chunk_id": "sc-0103",
+    "chunk_index": 103,
+    "content_type": "text",
+    "section_hint": "SECTION 7 \u2014 Proposal Submission Instructions",
+    "text": "[Section: SECTION 7 \u2014 Proposal Submission Instructions]\n\nSECTION 7 \u2014 Proposal Submission Instructions",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0104": {
+    "chunk_id": "sc-0104",
+    "chunk_index": 104,
+    "content_type": "text",
+    "section_hint": "SECTION 7 \u2014 Proposal Submission Instructions > 7.1  Submission Channel",
+    "text": "[Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.1  Submission Channel]\n\n7.1  Submission Channel \n\nAll \nproposals \nmust \nbe \nsubmitted \nexclusively \nvia \nthe \nApex \nofficial \nprocurement \nportal \nat: \nhttps://procurement.apexlogistics.in/rfp/AILL-PROC-2025-0078\n\n\u2022 \nProposals submitted by email, courier, hand delivery, or any channel other than the procurement \nportal will be rejected without evaluation, regardless of the reason for non-portal submission.\n\u2022 \nProposals must be received by 17:00 IST on 21 November 2025. The portal will automatically close \nat this time. No late submissions will be accepted under any circumstances.\n\u2022 \nProposals must be uploaded as a single PDF/A (ISO 19005 compliant) package. Editable Word \ndocuments, spreadsheets, or ZIP archives as the primary submission are not accepted.\n\u2022 \nVendors will receive an automated acknowledgement of receipt within 30 minutes of successful \nsubmission. If no acknowledgement is received within this period, vendors must raise a portal \naccess query via rfp-queries@apexlogistics.in immediately.",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0105": {
+    "chunk_id": "sc-0105",
+    "chunk_index": 105,
+    "content_type": "text",
+    "section_hint": "SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements",
+    "text": "[Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements]\n\n7.2  Proposal Structure and Format Requirements \n\nProposals must be structured in strict compliance with the following requirements. Non-conforming proposals \nwill be returned without evaluation:",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0106": {
+    "chunk_id": "sc-0106",
+    "chunk_index": 106,
+    "content_type": "text",
+    "section_hint": "SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Requirement\nSpecification",
+    "text": "[Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Requirement\nSpecification]\n\nRequirement\nSpecification\n\nFormat\nSingle consolidated PDF/A (ISO 19005 compliant) containing the complete \nproposal, including all appendices and supporting documents.\n\nLanguage\nEnglish only. All technical specifications, SLA commitments, and commercial \nterms must be in English.\n\nPage Limit\nMain body (Sections 1\u201312): Maximum 120 pages (A4, minimum 11pt Arial, \n25mm margins). Appendices are not subject to a page limit.\n\nSection Order\nProposals must follow the identical section numbering as this RFP. Reordering \nof sections is not permitted.",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0107": {
+    "chunk_id": "sc-0107",
+    "chunk_index": 107,
+    "content_type": "text",
+    "section_hint": "SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Requirements Table",
+    "text": "[Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Requirements Table]\n\nRequirements Table\n\nThe requirements matrix (Section 5.2) must be reproduced in its entirety with \nVendor Response and Vendor Remarks columns completed. Requirement IDs \nmust not be altered.",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0108": {
+    "chunk_id": "sc-0108",
+    "chunk_index": 108,
+    "content_type": "text",
+    "section_hint": "SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Pricing",
+    "text": "[Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Pricing]\n\nPricing\n\nPricing must be included within the same consolidated document in a clearly \nmarked section titled \u201cCOMMERCIAL PROPOSAL \u2014 STRICTLY \nCONFIDENTIAL\u201d, placed at the end of the document.",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0109": {
+    "chunk_id": "sc-0109",
+    "chunk_index": 109,
+    "content_type": "text",
+    "section_hint": "SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Deviations",
+    "text": "[Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Deviations]\n\nDeviations\n\nAny deviations from this RFP's requirements or proposed contractual terms \nmust be compiled in a single 'Deviations Register' table as Appendix G. \nDeviations embedded in the main proposal text without corresponding \nAppendix G entry will be disregarded.",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0110": {
+    "chunk_id": "sc-0110",
+    "chunk_index": 110,
+    "content_type": "text",
+    "section_hint": "SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Deviations > 7.3  Appendix Structure",
+    "text": "[Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Deviations > 7.3  Appendix Structure]\n\n7.3  Appendix Structure ",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0111": {
+    "chunk_id": "sc-0111",
+    "chunk_index": 111,
+    "content_type": "text",
+    "section_hint": "Appendix\nContent Required",
+    "text": "[Section: Appendix\nContent Required]\n\nAppendix\nContent Required\n\nAppendix A\nVendor Financials \u2014 Audited annual financial statements for FY2022\u201323, FY2023\u201324, and \nFY2024\u201325",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0112": {
+    "chunk_id": "sc-0112",
+    "chunk_index": 112,
+    "content_type": "text",
+    "section_hint": "Appendix B",
+    "text": "[Section: Appendix B]\n\nAppendix B\n\nCertifications \u2014 ISO 27001:2022, ISO 20000-1:2018, SOC 2 Type II report, PCI-DSS AoC \n(if applicable), Microsoft Azure ExpressRoute Partner certificate, AWS Direct Connect \nPartner certificate\n\nAppendix C\nCase Studies \u2014 Minimum 2 detailed Tier-1 enterprise case studies in logistics or \nmanufacturing (format per Section 8.3)",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0113": {
+    "chunk_id": "sc-0113",
+    "chunk_index": 113,
+    "content_type": "text",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 20,
+    "page_end": 20
+  },
+  "sc-0114": {
+    "chunk_id": "sc-0114",
+    "chunk_index": 114,
+    "content_type": "text",
+    "section_hint": "Appendix D\nKey Personnel CVs \u2014 CVs for all named Key Personnel (max 4 pages each)",
+    "text": "[Section: Appendix D\nKey Personnel CVs \u2014 CVs for all named Key Personnel (max 4 pages each)]\n\nAppendix D\nKey Personnel CVs \u2014 CVs for all named Key Personnel (max 4 pages each)\n\nAppendix E\nDraft MSA and SLA Schedule \u2014 Vendor's proposed contract with SLA schedule. Deviations \nfrom Section 11 terms must be highlighted.\n\nAppendix F\nIoT EMM Platform API Documentation \u2014 OpenAPI 3.0 specification for IoT SIM \nmanagement APIs\n\nAppendix G\nDeviations Register \u2014 All proposed deviations from RFP requirements or contract terms in \ntabular format (Requirement ID | Proposed Deviation | Commercial Justification)\n\nAppendix H\nCompliance Matrix \u2014 Completed compliance matrix (template in Section 12, Appendix H \ntemplate)",
+    "page_start": 20,
+    "page_end": 20
+  },
+  "sc-0115": {
+    "chunk_id": "sc-0115",
+    "chunk_index": 115,
+    "content_type": "text",
+    "section_hint": "Appendix D\nKey Personnel CVs \u2014 CVs for all named Key Personnel (max 4 pages each) > 7.4  Clarifications and Q&A Process",
+    "text": "[Section: Appendix D\nKey Personnel CVs \u2014 CVs for all named Key Personnel (max 4 pages each) > 7.4  Clarifications and Q&A Process]\n\n7.4  Clarifications and Q&A Process \n\n\u2022 \nAll queries relating to this RFP must be submitted via the procurement portal Q&A module by 31 \nOctober 2025. Queries submitted after this deadline will not be answered.\n\u2022 \nQueries must be submitted in English. Queries in other languages will not be answered.\n\u2022 \nAether Networks' compiled responses will be published simultaneously to all registered vendors on \n10 November 2025. Responses published via the Q&A process form part of this RFP as binding \namendments.\n\u2022 \nDirect communication with any Apex employee outside the authorised procurement portal is strictly \nprohibited and will result in immediate disqualification.\n\nSOLE AUTHORISED CONTACT: Group IT Infrastructure & Procurement, Apex Industrial Logistics \nLimited. Email (portal access issues only): rfp-queries@apexlogistics.in. Procurement Portal: \nhttps://procurement.apexlogistics.in/rfp/AILL-PROC-2025-0078",
+    "page_start": 20,
+    "page_end": 20
+  },
+  "sc-0116": {
+    "chunk_id": "sc-0116",
+    "chunk_index": 116,
+    "content_type": "text",
+    "section_hint": "Appendix D\nKey Personnel CVs \u2014 CVs for all named Key Personnel (max 4 pages each) > 7.4  Clarifications and Q&A Process > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: Appendix D\nKey Personnel CVs \u2014 CVs for all named Key Personnel (max 4 pages each) > 7.4  Clarifications and Q&A Process > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0117": {
+    "chunk_id": "sc-0117",
+    "chunk_index": 117,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements]\n\nSECTION 8 \u2014 Vendor Qualifications and Requirements",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0118": {
+    "chunk_id": "sc-0118",
+    "chunk_index": 118,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8.1  Mandatory Pre-Qualification Criteria",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8.1  Mandatory Pre-Qualification Criteria]\n\n8.1  Mandatory Pre-Qualification Criteria \n\nVendors who do not meet ALL of the following criteria are ineligible to submit a proposal and will be \nadministratively disqualified at Stage 1 review. Evidence for each criterion must be provided in the form \nspecified.\n\n#\nCriterion\nDescription\nEvidence Required",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0119": {
+    "chunk_id": "sc-0119",
+    "chunk_index": 119,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 1\nAnnual Revenue",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 1\nAnnual Revenue]\n\n1\nAnnual Revenue\n\nVendor's consolidated annual revenue \nmust exceed INR 500 Crore (or USD 60M \nequivalent) in each of the last three \ncompleted financial years.\n\nAudited financial statements \nFY22\u201323, FY23\u201324, FY24\u2013\n25\n\n2\nISO 27001:2022 \nCertification\n\nVendor and all subcontractors with >20% of \ndelivery scope must hold a current, in-\nscope ISO/IEC 27001:2022 certification \nfrom an accredited body.\n\nCurrent certificates \u2014 \nAppendix B\n\n3\nISO 20000-1:2018 \nCertification\n\nVendor must hold ISO/IEC 20000-1:2018 \n(IT Service Management) certification \ndemonstrating ITIL-aligned service delivery \ncapability.\n\nCurrent certificates \u2014 \nAppendix B",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0120": {
+    "chunk_id": "sc-0120",
+    "chunk_index": 120,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 4\nSOC 2 Type II Report",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 4\nSOC 2 Type II Report]\n\n4\nSOC 2 Type II Report\n\nVendor must provide a SOC 2 Type II \nreport (not older than 12 months) covering \nSecurity, Availability, and Confidentiality \nTrust Service Criteria for all cloud-managed \nservice components.\n\nSOC 2 Type II Report \u2014 \nAppendix B",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0121": {
+    "chunk_id": "sc-0121",
+    "chunk_index": 121,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 5\nIndia Operations",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 5\nIndia Operations]\n\n5\nIndia Operations\n\nVendor must maintain a wholly owned or \nmajority-controlled legal entity registered in \nIndia, with a minimum 24x7 NOC and SOC \nstaffed by a minimum of 50 India-based \nFTEs.\n\nCIN certificate + India \nstaffing declaration\n\n6\nCloud Partner \nDesignations\n\nVendor must hold active Microsoft Azure \nExpressRoute Partner AND AWS Direct \nConnect Delivery Partner designations at \nthe time of proposal submission.\n\nPartner designation \ncertificates \u2014 Appendix B",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0122": {
+    "chunk_id": "sc-0122",
+    "chunk_index": 122,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 7\nComparable Deployments",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 7\nComparable Deployments]\n\n7\nComparable Deployments\n\nVendor must demonstrate a minimum of \ntwo (2) completed Managed SD-WAN \ndeployments covering 100+ sites each in \nIndia, within the last four years, in the \nlogistics, manufacturing, or BFSI sector.\n\nCase Studies \u2014 Appendix C \n(format per Section 8.3)",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0123": {
+    "chunk_id": "sc-0123",
+    "chunk_index": 123,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions]\n\n8\nNo Material Sanctions\n\nVendor, its subsidiaries, and key \nsubcontractors must not be subject to any \nmaterial economic sanction, debarment \nfrom Government of India procurement, or \nCBI/ED enforcement action.\n\nSelf-certification by \nauthorised signatory",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0124": {
+    "chunk_id": "sc-0124",
+    "chunk_index": 124,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements]\n\n8.2  Key Personnel Requirements \n\nVendors must nominate the following key personnel for this programme. CVs must be provided as Appendix \nD. Nominated individuals must remain committed to this programme through the programme go-live milestone. \nAny substitution of key personnel post-award requires prior written approval from Apex Programme Sponsor.\n\nRole\nMinimum Qualifications\nKey Responsibilities\n\nProgramme Director\n15+ years' experience; minimum 3 \nas Programme Director for network \n\nOverall delivery governance; executive \nescalation; contractual accountability; ",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0125": {
+    "chunk_id": "sc-0125",
+    "chunk_index": 125,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\ntransformation programmes; PMP \nor MSP Practitioner preferred.\n\nexecutive reporting to Apex CTO and \nCIO.",
+    "page_start": 22,
+    "page_end": 22
+  },
+  "sc-0126": {
+    "chunk_id": "sc-0126",
+    "chunk_index": 126,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > Chief Network Architect",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > Chief Network Architect]\n\nChief Network Architect\n\n10+ years in SD-WAN / MPLS / \ncloud networking; Cisco CCIE or \nequivalent; verifiable Azure/AWS \nnetworking certifications.\n\nEnd-to-end SD-WAN and cloud \ninterconnect architecture design, \ncompliance verification, and integration \ngovernance.",
+    "page_start": 22,
+    "page_end": 22
+  },
+  "sc-0127": {
+    "chunk_id": "sc-0127",
+    "chunk_index": 127,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > Head of Delivery (Project \nManager)",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > Head of Delivery (Project \nManager)]\n\nHead of Delivery (Project \nManager)\n\nPMP or PRINCE2 Practitioner \ncertification mandatory; 7+ years \nmanaging large multi-site network \nrollouts.\n\nDay-to-day delivery management; site \nmigration scheduling; milestone tracking; \nRAID log management.",
+    "page_start": 22,
+    "page_end": 22
+  },
+  "sc-0128": {
+    "chunk_id": "sc-0128",
+    "chunk_index": 128,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > SOC Operations Lead",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > SOC Operations Lead]\n\nSOC Operations Lead\n\nCISSP or CISM mandatory; 5+ \nyears SOC operations \nmanagement; demonstrable SIEM \nadministration experience.\n\nSOC operations governance; threat \ndetection tuning; incident response \nescalation; monthly reporting.",
+    "page_start": 22,
+    "page_end": 22
+  },
+  "sc-0129": {
+    "chunk_id": "sc-0129",
+    "chunk_index": 129,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > IoT / Mobility Lead",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > IoT / Mobility Lead]\n\nIoT / Mobility Lead\n\n5+ years IoT/EMM platform \nmanagement; GSMA eSIM \ncertification preferred; telco SIM \nmanagement background.\n\nIoT SIM platform migration; EMM policy \ndesign; private APN architecture; API \nintegration.",
+    "page_start": 22,
+    "page_end": 22
+  },
+  "sc-0130": {
+    "chunk_id": "sc-0130",
+    "chunk_index": 130,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > IoT / Mobility Lead > 8.3  Case Study Format Requirements",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > IoT / Mobility Lead > 8.3  Case Study Format Requirements]\n\n8.3  Case Study Format Requirements \n\nAll case studies submitted as Appendix C must follow this exact format. Non-conforming case studies will not \nbe evaluated:\n\n\u2022 \nClient Name: (May be anonymised as 'Major Logistics Operator \u2014 India' if NDA restrictions apply, \nprovided Apex may request a reference call to verify.)\n\u2022 \nIndustry Vertical: (Must be logistics, manufacturing, e-commerce, or BFSI.)\n\u2022 \nProgramme Scope: Number of sites, SD-WAN technology deployed, cloud interconnects delivered, \nSOC services provided.\n\u2022 \nContract Value: (INR range acceptable if exact figure is confidential.)\n\u2022 \nProgramme Duration: Start and go-live dates.\n\u2022 \nKey Outcomes: Network availability achieved, reduction in outages, latency improvements, security \nincidents detected/contained, cost savings.\n\u2022 \nReference Contact: Name, designation, and email address of the client contact willing to speak with \nApex (mandatory for shortlisted vendors).",
+    "page_start": 22,
+    "page_end": 22
+  },
+  "sc-0131": {
+    "chunk_id": "sc-0131",
+    "chunk_index": 131,
+    "content_type": "text",
+    "section_hint": "SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > IoT / Mobility Lead > 8.3  Case Study Format Requirements > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 8 \u2014 Vendor Qualifications and Requirements > 8\nNo Material Sanctions > 8.2  Key Personnel Requirements > IoT / Mobility Lead > 8.3  Case Study Format Requirements > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 23,
+    "page_end": 23
+  },
+  "sc-0132": {
+    "chunk_id": "sc-0132",
+    "chunk_index": 132,
+    "content_type": "text",
+    "section_hint": "SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology",
+    "text": "[Section: SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology]\n\nSECTION 9 \u2014 Evaluation Criteria and Scoring Methodology",
+    "page_start": 23,
+    "page_end": 23
+  },
+  "sc-0133": {
+    "chunk_id": "sc-0133",
+    "chunk_index": 133,
+    "content_type": "text",
+    "section_hint": "SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 9.1  Evaluation Methodology",
+    "text": "[Section: SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 9.1  Evaluation Methodology]\n\n9.1  Evaluation Methodology \n\nProposals will be evaluated by the Apex Technical Evaluation Committee (TEC) using a two-stage weighted \nscoring methodology:\n\n\u2022 \nStage 1 \u2014 Administrative and Pre-Qualification Review: Verification of mandatory pre-qualification \ncriteria (Section 8.1). Pass/Fail gate. Proposals failing Stage 1 are eliminated without scoring.\n\u2022 \nStage 2 \u2014 Technical, Commercial, Security, and Reference Scoring: Scored evaluation across four \ndimensions as defined in Section 9.2.\n\nVendors shortlisted following Stage 2 (top 3 by score) will be invited to deliver a live technical demonstration \nand proof of concept (PoC) at Apex HQ, Bhiwandi. The PoC scenario brief will be issued no later than 5 \nbusiness days prior. PoC outcome will be weighted at 20% of the final Stage 2 score.\n\n[Referenced Section 9.2]: [Section: SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 9.2  Weighted Scoring Model]\n\n9.2  Weighted Scoring Model \n\nEvaluation Dimension\nWeight\nSub-Criteria\n\nTechnical Capability & \nSolution Quality\n40%\n\n\u2022 \nRequirements matrix compliance (TR-001 to TR-025) \u2014 \n20%\n\u2022 \nSD-WAN solution architecture quality & OEM credentials \n\u2014 8%\n\u2022 \nCloud interconnect design & partner credentials \u2014 6%\n\u2022 \nMigration plan quality (phasing, ZTP, risk management) \n\u2014 6%\n\nCommercial \nCompetitiveness\n30%\n\n\u2022 \nTotal Cost of Ownership (TCO) over 36-month contract \nterm \u2014 18%\n\u2022 \nOpEx hardware-as-a-service pricing model quality \u2014 6%\n\u2022 \nCommercial flexibility (payment milestones, volume \ndiscounts) \u2014 6%\n\nSecurity, Compliance & \nSOC Quality\n20%\n\n\u2022 \nISO 27001, ISO 20000-1, SOC 2 Type II currency and \nscope \u2014 8%\n\u2022 \nSOC maturity: SIEM capability, analyst headcount, MTTD \n/ MTTR evidence \u2014 8%\n\u2022 \nDPDP Act compliance framework & data localisation \narchitecture \u2014 4%\n\nReferences & Track \nRecord\n10%\n\n\u2022 \nQuality and relevance of case studies (Section 8.3) \u2014 6%\n\u2022 \nVerified client reference calls (shortlisted vendors only) \u2014 \n4%\n\nTOTAL\n100%\nMinimum qualifying score to proceed to BAFO: 65 out of 100",
+    "page_start": 23,
+    "page_end": 23
+  },
+  "sc-0134": {
+    "chunk_id": "sc-0134",
+    "chunk_index": 134,
+    "content_type": "text",
+    "section_hint": "SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 9.2  Weighted Scoring Model",
+    "text": "[Section: SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 9.2  Weighted Scoring Model]\n\n9.2  Weighted Scoring Model \n\nEvaluation Dimension\nWeight\nSub-Criteria\n\nTechnical Capability & \nSolution Quality\n40%\n\n\u2022 \nRequirements matrix compliance (TR-001 to TR-025) \u2014 \n20%\n\u2022 \nSD-WAN solution architecture quality & OEM credentials \n\u2014 8%\n\u2022 \nCloud interconnect design & partner credentials \u2014 6%\n\u2022 \nMigration plan quality (phasing, ZTP, risk management) \n\u2014 6%\n\nCommercial \nCompetitiveness\n30%\n\n\u2022 \nTotal Cost of Ownership (TCO) over 36-month contract \nterm \u2014 18%\n\u2022 \nOpEx hardware-as-a-service pricing model quality \u2014 6%\n\u2022 \nCommercial flexibility (payment milestones, volume \ndiscounts) \u2014 6%\n\nSecurity, Compliance & \nSOC Quality\n20%\n\n\u2022 \nISO 27001, ISO 20000-1, SOC 2 Type II currency and \nscope \u2014 8%\n\u2022 \nSOC maturity: SIEM capability, analyst headcount, MTTD \n/ MTTR evidence \u2014 8%\n\u2022 \nDPDP Act compliance framework & data localisation \narchitecture \u2014 4%\n\nReferences & Track \nRecord\n10%\n\n\u2022 \nQuality and relevance of case studies (Section 8.3) \u2014 6%\n\u2022 \nVerified client reference calls (shortlisted vendors only) \u2014 \n4%\n\nTOTAL\n100%\nMinimum qualifying score to proceed to BAFO: 65 out of 100",
+    "page_start": 23,
+    "page_end": 23
+  },
+  "sc-0135": {
+    "chunk_id": "sc-0135",
+    "chunk_index": 135,
+    "content_type": "text",
+    "section_hint": "SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 9.3  Proposal Scoring Scale",
+    "text": "[Section: SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 9.3  Proposal Scoring Scale]\n\n9.3  Proposal Scoring Scale \n\nEach sub-criterion will be scored on the following scale by the Apex TEC:\n\nScore\nRating\nInterpretation",
+    "page_start": 23,
+    "page_end": 23
+  },
+  "sc-0136": {
+    "chunk_id": "sc-0136",
+    "chunk_index": 136,
+    "content_type": "text",
+    "section_hint": "SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 5\nExcellent",
+    "text": "[Section: SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 5\nExcellent]\n\n5\nExcellent\n\nExceeds requirement with \ndemonstrated evidence and \ninnovation\n\n4\nGood\nFully meets requirement with \nstrong evidence",
+    "page_start": 23,
+    "page_end": 23
+  },
+  "sc-0137": {
+    "chunk_id": "sc-0137",
+    "chunk_index": 137,
+    "content_type": "text",
+    "section_hint": "SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 5\nExcellent > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 5\nExcellent > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\n3\nAdequate\nMeets requirement with \nacceptable evidence\n\n2\nMarginal\nPartially meets requirement; \nmaterial gaps identified\n\n1\nPoor\nSignificant deficiencies; does not \nmeaningfully satisfy requirement\n\n0\nNon-Compliant\nNo response provided or \nrequirement explicitly not met",
+    "page_start": 24,
+    "page_end": 24
+  },
+  "sc-0138": {
+    "chunk_id": "sc-0138",
+    "chunk_index": 138,
+    "content_type": "text",
+    "section_hint": "SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 5\nExcellent > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 9 \u2014 Evaluation Criteria and Scoring Methodology > 5\nExcellent > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 25,
+    "page_end": 25
+  },
+  "sc-0139": {
+    "chunk_id": "sc-0139",
+    "chunk_index": 139,
+    "content_type": "text",
+    "section_hint": "SECTION 10 \u2014 Pricing and Cost Proposal Requirements",
+    "text": "[Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements]\n\nSECTION 10 \u2014 Pricing and Cost Proposal Requirements",
+    "page_start": 25,
+    "page_end": 25
+  },
+  "sc-0140": {
+    "chunk_id": "sc-0140",
+    "chunk_index": 140,
+    "content_type": "text",
+    "section_hint": "SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.1  Pricing Principles",
+    "text": "[Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.1  Pricing Principles]\n\n10.1  Pricing Principles \n\nThe following mandatory commercial conditions apply to all pricing submitted in response to this RFP. \nProposals not conforming to these conditions will be deemed commercially non-compliant:\n\n\u2022 \nPrice Validity: All unit prices and commercial rates must remain firm, fixed, and binding for a \nminimum period of 180 calendar days from the Final Proposal Submission Deadline.\n\u2022 \nCurrency: All pricing must be denominated in Indian Rupees (INR). Pricing denominated in foreign \ncurrencies without an INR equivalent will not be accepted.\n\u2022 \nTax Exclusivity: All prices must be stated exclusive of GST. GST will be assessed separately at the \napplicable rate.\n\u2022 \nItemised Pricing: Bundled lump-sum prices are not acceptable. Each line item must be individually \npriced to the granularity specified in Section 10.2.\n\u2022 \nOpEx Hardware Model: All SD-WAN CPE hardware, edge firewall hardware, and any other network \nequipment required for this programme must be provided under a Vendor-owned, OpEx (Hardware-\nas-a-Service) model. Apex will not purchase or capitalise network hardware. Vendors proposing \nCapEx hardware models will be scored negatively on commercial evaluation.\n\u2022 \nMost Favoured Nation: Apex requires a Most Favoured Nation (MFN) clause in the resulting \ncontract, guaranteeing that pricing offered to Apex is no less favourable than pricing offered to any \ncomparable Indian enterprise customer of the vendor.",
+    "page_start": 25,
+    "page_end": 25
+  },
+  "sc-0141": {
+    "chunk_id": "sc-0141",
+    "chunk_index": 141,
+    "content_type": "text",
+    "section_hint": "SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table",
+    "text": "[Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table]\n\n10.2  Pricing Response Table \n\nVENDOR INSTRUCTION: Complete the 'Vendor Unit Price (INR)' and 'Monthly Recurring / Annual' \ncolumns for all line items. Do not modify pre-populated fields. Add additional rows for any items \nnot listed below that form part of the proposed solution.\n\nLine #\nItem Description\nCategory\nUnit Type\nNRC (One-\nTime) INR\n\nMRC / \nAnnual \nINR\n\n1.01\nSD-WAN CPE Hardware (Tier-1 \nHub Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.02\nSD-WAN CPE Hardware (Tier-2 \nBranch Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.03\nSD-WAN CPE Hardware (Tier-3 \nRemote Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.04\n\nSD-WAN Managed Service (NOC \nmonitoring, config management, \nreporting) \u2014 All 300 sites\n\nSD-WAN\nPer site / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.05\nPrimary Broadband / Fibre Link \nProvisioning \u2014 Tier-1 (100 Mbps)\nConnectivity\nPer site / \nmonth\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n1.06\nPrimary Broadband / Fibre Link \nProvisioning \u2014 Tier-2 (50 Mbps)\nConnectivity\nPer site / \nmonth\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n1.07\n4G/5G LTE Backup / Primary Link \n(per site)\nConnectivity\nPer SIM / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.08\nSD-WAN Platform Installation & \nCommissioning (per site)\n\nProfessional \nServices\nPer site\n[Vendor to \nfill]\n\n\u2014\n\n2.01\n\nAzure ExpressRoute \u2014 10 Gbps x \n2 circuits (active-active, Mumbai \nDC)\n\nCloud \nInterconnect\nPer month\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]",
+    "page_start": 25,
+    "page_end": 25
+  },
+  "sc-0142": {
+    "chunk_id": "sc-0142",
+    "chunk_index": 142,
+    "content_type": "text",
+    "section_hint": "SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\n2.02\n\nAWS Direct Connect \u2014 10 Gbps x \n1 Dedicated Connection (ap-\nsouth-1)\n\nCloud \nInterconnect\nPer month\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n2.03\n\nLast-mile fibre and cross-connect \n(Mumbai DC to carrier-neutral \nfacility)\n\nCloud \nInterconnect\nPer month\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n2.04\nCloud Interconnect Design, Build & \nCommissioning (one-time)\n\nProfessional \nServices\nFixed\n[Vendor to \nfill]\n\n\u2014\n\n3.01\n\nManaged SOC Service \u2014 \n24x7x365 (all 300 branch edge \ndevices + DC)\n\nManaged SOC\nPer month\n\n\u2014\n[Vendor to \nfill]\n\n3.02\nSIEM Platform (cloud-hosted, India \nDC) \u2014 per log source\nManaged SOC\nPer source / \nmonth\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n3.03\nThreat Intelligence Feeds (min. 2 \ncommercial subscriptions)\nManaged SOC\nPer annum\n\u2014\n[Vendor to \nfill]\n\n3.04\nQuarterly Penetration Testing \n(network perimeter)\nManaged SOC\nPer \nassessment\n\n\u2014\n[Vendor to \nfill]\n\n3.05\nSOC Onboarding, SIEM Integration \n& Policy Baseline (one-time)\n\nProfessional \nServices\nFixed\n[Vendor to \nfill]\n\n\u2014\n\n4.01\nIoT SIM \u2014 Pooled Data Plan (per \nSIM / month, 2.5M SIM pool)\nIoT Mobility\nPer SIM / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n4.02\nEnterprise Mobility Management \n(EMM) Platform License\nIoT Mobility\nPer SIM / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n4.03\nPrivate APN Setup and Monthly \nManagement\nIoT Mobility\nFixed / \nmonth\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n4.04\neSIM Remote Provisioning Platform \n(per SIM, one-time migration)\nIoT Mobility\nPer SIM\n[Vendor to \nfill]\n\n\u2014\n\n5.01\nProgramme Management Office \n(PMO) \u2014 Full programme duration\n\nProfessional \nServices\nPer day\n\u2014\n[Vendor to \nfill]\n\n5.02\nTraining \u2014 Apex IT and NOC Staff \n(per cohort of 10)\nTraining\nPer cohort\n[Vendor to \nfill]\n\n\u2014\n\n5.03\n24x7 Managed Service Support \n(post-go-live, BAU)\nSupport\nPer annum\n\u2014\n[Vendor to \nfill]",
+    "page_start": 26,
+    "page_end": 26
+  },
+  "sc-0143": {
+    "chunk_id": "sc-0143",
+    "chunk_index": 143,
+    "content_type": "text",
+    "section_hint": "SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 10.3  Commercial Narrative",
+    "text": "[Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 10.3  Commercial Narrative]\n\n10.3  Commercial Narrative \n\nIn addition to the Pricing Response Table, vendors must provide a written commercial narrative (maximum 6 \npages) addressing:\n\n\u2022 \nTotal Cost of Ownership (TCO) over the 36-month contract term, segmented by Year 1 \n(implementation and stabilisation) and Years 2\u20133 (steady-state operations). TCO must include all \nNRC and MRC components.\n\u2022 \nPayment milestone schedule: Vendors must propose payment milestones linked to programme \ndelivery milestones (e.g., Phase 1 completion, Phase 3 completion, Phase 5 acceptance).\n\u2022 \nVolume discount tiers for IoT SIM counts (at 2.5M, 3M, and 4M SIMs).\n\u2022 \nCommercial treatment for out-of-scope site additions (new warehouse openings) and for early \ntermination of legacy MPLS circuits with carrier assistance.\n\u2022 \nHardware refresh commitment: Vendor must commit to a hardware refresh cycle for all SD-WAN \nCPE not exceeding 5 years from initial deployment, at no additional cost to Apex.",
+    "page_start": 26,
+    "page_end": 26
+  },
+  "sc-0144": {
+    "chunk_id": "sc-0144",
+    "chunk_index": 144,
+    "content_type": "text",
+    "section_hint": "SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 10.3  Commercial Narrative > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 10.3  Commercial Narrative > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 27,
+    "page_end": 27
+  },
+  "sc-0145": {
+    "chunk_id": "sc-0145",
+    "chunk_index": 145,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements]\n\nSECTION 11 \u2014 Terms and Conditions / Contractual Requirements\n\nThe following contractual terms will govern the Master Services Agreement (MSA) resulting from this \nprocurement. Vendors must explicitly acknowledge each clause in their proposal. Proposed deviations must \nbe submitted in the Deviations Register (Appendix G) with full commercial and legal justification.",
+    "page_start": 27,
+    "page_end": 27
+  },
+  "sc-0146": {
+    "chunk_id": "sc-0146",
+    "chunk_index": 146,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.1  Contract Term",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.1  Contract Term]\n\n11.1  Contract Term \n\nThe initial contract term is thirty-six (36) months from the date of contract execution, with two (2) optional \nrenewal periods of twelve (12) months each, exercisable at Apex's sole discretion with sixty (60) days' written \nnotice prior to the end of each contract term.\n\nDELIBERATE TRAP CLAUSE \u2014 LEGAL REVIEW REQUIRED: The 36-month minimum contract \nterm is included deliberately to test vendor legal pushback. Vendors are expected to negotiate a \nbreak clause at month 18 and a 24-month initial term option. Vendors accepting 36 months \nwithout deviation may be disadvantaged in final evaluation, as inflexibility on contract term is \nconsidered a commercial risk by Apex. Vendors must address this in Appendix G.\n\n[Referenced Appendix G]: [Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Deviations]\n\nDeviations\n\nAny deviations from this RFP's requirements or proposed contractual terms \nmust be compiled in a single 'Deviations Register' table as Appendix G. \nDeviations embedded in the main proposal text without corresponding \nAppendix G entry will be disregarded.",
+    "page_start": 27,
+    "page_end": 27
+  },
+  "sc-0147": {
+    "chunk_id": "sc-0147",
+    "chunk_index": 147,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.2  Payment Terms",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.2  Payment Terms]\n\n11.2  Payment Terms \n\nPayment terms for all monthly recurring charges (MRC) and one-time non-recurring charges (NRC) shall be \nas follows:\n\n\u2022 \nMonthly Recurring Charges: Payable within ninety (90) days of invoice date (Net-90 days from \ninvoice). Invoices must be submitted on the first business day of each calendar month for the \npreceding month's services.\n\u2022 \nOne-Time Non-Recurring Charges: Payable within ninety (90) days of invoice date, subject to Apex's \nacceptance of the relevant programme milestone.\n\nDELIBERATE TRAP CLAUSE \u2014 CASH FLOW RISK: Net-90 payment terms are commercially \naggressive and are included to test vendor risk assessment. Industry standard for managed \nservices is Net-30 to Net-45. Vendors who accept Net-90 without a late payment interest clause \nrisk significant cash flow exposure. Vendors must propose a deviation in Appendix G, specifying \nproposed standard payment terms and a late payment interest rate consistent with the MSME \nDevelopment Act, 2006 (where applicable) or contractual interest at the RBI repo rate plus 2%.\n\n[Referenced Appendix G]: [Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Deviations]\n\nDeviations\n\nAny deviations from this RFP's requirements or proposed contractual terms \nmust be compiled in a single 'Deviations Register' table as Appendix G. \nDeviations embedded in the main proposal text without corresponding \nAppendix G entry will be disregarded.",
+    "page_start": 27,
+    "page_end": 27
+  },
+  "sc-0148": {
+    "chunk_id": "sc-0148",
+    "chunk_index": 148,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability]\n\n11.3  Liability \n\n\u2022 \nGeneral Liability Cap: The vendor's total aggregate liability under the MSA for any and all claims in \nany 12-month period shall not exceed the total charges paid by Apex to the vendor in the preceding \ntwelve (12) months.\n\u2022 \nData Breach and Catastrophic Failure: Notwithstanding the general liability cap, in the event of: (a) a \nconfirmed data breach attributable to the vendor's negligence or wilful misconduct resulting in the \nexfiltration of personal data of more than 10,000 Apex data subjects; or (b) a complete network \noutage affecting more than 50 Tier-2 or Tier-3 sites simultaneously for a period exceeding 8 \ncontinuous hours; the vendor shall be subject to unlimited liability with no financial cap.\n\u2022 \nConsequential Loss: Subject to the unlimited liability carve-out above, neither party shall be liable to \nthe other for any indirect, special, or consequential losses.\n\nDELIBERATE TRAP CLAUSE \u2014 UNLIMITED LIABILITY: The 'unlimited liability' provision for data \nbreaches and catastrophic outages is included deliberately to test vendor legal diligence. No \ncommercially reasonable vendor should accept unlimited liability. Vendors must propose in \nAppendix G a negotiated super-cap (e.g., 3x annual contract value) with specific carve-outs for \ngross negligence and wilful misconduct, and cyber liability insurance coverage minimums \nconsistent with SEBI CSCRF requirements.\n\n[Referenced Appendix G]: [Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Deviations]\n\nDeviations\n\nAny deviations from this RFP's requirements or proposed contractual terms \nmust be compiled in a single 'Deviations Register' table as Appendix G. \nDeviations embedded in the main proposal text without corresponding \nAppendix G entry will be disregarded.",
+    "page_start": 27,
+    "page_end": 27
+  },
+  "sc-0149": {
+    "chunk_id": "sc-0149",
+    "chunk_index": 149,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 28,
+    "page_end": 28
+  },
+  "sc-0150": {
+    "chunk_id": "sc-0150",
+    "chunk_index": 150,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits]\n\n11.4  SLA Penalties and Service Credits \n\nThe following SLA penalty framework will be incorporated into the MSA. Vendors must explicitly acknowledge \nthis framework. Proposals seeking to materially modify these terms will be evaluated negatively on commercial \nscoring.\n\nPriority\nIncident Type\nDefinition\nPenalty\n\nP1\nCritical Network \nOutage\n\nComplete loss of SD-WAN \nconnectivity affecting more than 5 \nTier-1 or 10 Tier-2 sites \nsimultaneously, or complete loss of \nboth cloud interconnects \nsimultaneously, for any period \nexceeding 30 minutes.\n\n5% of total monthly invoice \nvalue per each 15-minute \nperiod (or part thereof) of \noutage duration, applied \nagainst Total Contract Value.\n\nP2\nSignificant \nDegradation\n\nNetwork performance degradation \n(latency >200ms, packet loss >2%) \naffecting more than 10 sites for a \nperiod exceeding 60 minutes, or SOC \nP1 incident acknowledgement \nbreaching the 15-minute SLA.\n\n2% of total monthly invoice \nvalue per each 30-minute \nperiod of sustained \ndegradation.",
+    "page_start": 28,
+    "page_end": 28
+  },
+  "sc-0151": {
+    "chunk_id": "sc-0151",
+    "chunk_index": 151,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits > P3\nNon-Critical Incident",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits > P3\nNon-Critical Incident]\n\nP3\nNon-Critical Incident\n\nSingle site outage exceeding 4-hour \nMTTR, or SLA reporting delay \nexceeding 30 minutes from incident \ndetection.\n\n0.5% of total monthly invoice \nvalue per incident.\n\n\u2022 \nSLA credit accumulation is capped at 25% of the total monthly invoice value per calendar month. \nAccumulated credits exceeding the cap carry over to the subsequent month.\n\u2022 \nRepeated P1 incidents (three or more within any rolling 90-day period) constitute a material breach, \nentitling Apex to terminate the MSA for cause with thirty (30) days' written notice without payment of \nany termination penalty.\n\nDELIBERATE TRAP CLAUSE \u2014 PENALTY APPLIED AGAINST TOTAL CONTRACT VALUE: The P1 \npenalty provision states credits are applied against the 'Total Contract Value'. This is \ncommercially punitive and atypical. Market standard for managed services is to cap penalties \nagainst the monthly invoice value of the affected site(s), not the Total Contract Value. Vendors \nmust flag this in Appendix G and propose a commercially reasonable alternative: e.g., penalties \napplied against the monthly MRC of the directly affected sites only, with a reasonable monthly \ncap.\n\n[Referenced Appendix G]: [Section: SECTION 7 \u2014 Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Deviations]\n\nDeviations\n\nAny deviations from this RFP's requirements or proposed contractual terms \nmust be compiled in a single 'Deviations Register' table as Appendix G. \nDeviations embedded in the main proposal text without corresponding \nAppendix G entry will be disregarded.",
+    "page_start": 28,
+    "page_end": 28
+  },
+  "sc-0152": {
+    "chunk_id": "sc-0152",
+    "chunk_index": 152,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits > P3\nNon-Critical Incident > 11.5  Intellectual Property",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits > P3\nNon-Critical Incident > 11.5  Intellectual Property]\n\n11.5  Intellectual Property \n\nAll deliverables, documentation, custom configuration scripts, runbooks, and management tools created \nspecifically for the Apex programme under this MSA shall be the intellectual property of Apex upon full \npayment. Pre-existing vendor IP incorporated into deliverables shall remain the vendor's IP, subject to a \nperpetual, royalty-free licence to Apex to use such IP for the purposes of operating the managed services.",
+    "page_start": 28,
+    "page_end": 28
+  },
+  "sc-0153": {
+    "chunk_id": "sc-0153",
+    "chunk_index": 153,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits > P3\nNon-Critical Incident > 11.6  Governing Law and Dispute Resolution",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits > P3\nNon-Critical Incident > 11.6  Governing Law and Dispute Resolution]\n\n11.6  Governing Law and Dispute Resolution \n\nThe MSA and all related agreements shall be governed by the laws of India. Any dispute shall first be subject \nto executive escalation (30 days), followed by mediation under the ICADR (Indian Council of Arbitration and \nDispute Resolution) rules (60 days), and finally arbitration under the Arbitration and Conciliation Act, 1996, \nseated in Mumbai, Maharashtra.",
+    "page_start": 28,
+    "page_end": 28
+  },
+  "sc-0154": {
+    "chunk_id": "sc-0154",
+    "chunk_index": 154,
+    "content_type": "text",
+    "section_hint": "SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits > P3\nNon-Critical Incident > 11.6  Governing Law and Dispute Resolution > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: SECTION 11 \u2014 Terms and Conditions / Contractual Requirements > 11.3  Liability > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY > 11.4  SLA Penalties and Service Credits > P3\nNon-Critical Incident > 11.6  Governing Law and Dispute Resolution > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED",
+    "page_start": 29,
+    "page_end": 29
+  },
+  "sc-0155": {
+    "chunk_id": "sc-0155",
+    "chunk_index": 155,
+    "content_type": "text",
+    "section_hint": "SECTION 12 \u2014 Appendices and Attachments",
+    "text": "[Section: SECTION 12 \u2014 Appendices and Attachments]\n\nSECTION 12 \u2014 Appendices and Attachments",
+    "page_start": 29,
+    "page_end": 29
+  },
+  "sc-0156": {
+    "chunk_id": "sc-0156",
+    "chunk_index": 156,
+    "content_type": "text",
+    "section_hint": "Appendix A \u2014 Site List Summary",
+    "text": "[Section: Appendix A \u2014 Site List Summary]\n\nAppendix A \u2014 Site List Summary \n\nThe following table provides a summary of Apex's 300 operational sites for network planning purposes. A \ndetailed site list including full addresses, current MPLS bandwidth, and site classification is available in the \nsecure data room, accessible to registered vendors upon execution of an NDA. Contact rfp-\nqueries@apexlogistics.in to request NDA access.\n\nRegion\nStates \nCovered\nTotal Sites\nTier-1 Hubs\nTier-2 Branch\nTier-3 Remote\n\nNorth India\n\nDelhi, UP, \nHaryana, \nPunjab, \nRajasthan, \nJ&K, \nHimachal\n\n82\n3\n63\n16\n\nWest India\n\nMaharashtra, \nGujarat, Goa, \nMP\n\n74\n3\n56\n15\n\nSouth India\n\nKarnataka, \nTamil Nadu, \nKerala, \nAndhra, \nTelangana\n\n68\n3\n52\n13\n\nEast India\n\nWest Bengal, \nOdisha, Bihar, \nJharkhand, \nNE States\n\n49\n2\n37\n10\n\nCentral India\n\nChhattisgarh, \nTelangana \n(Central), \nVidarbha\n\n27\n1\n20\n6\n\nTOTAL\n28 States / \nUTs\n300\n12\n228\n60",
+    "page_start": 29,
+    "page_end": 29
+  },
+  "sc-0157": {
+    "chunk_id": "sc-0157",
+    "chunk_index": 157,
+    "content_type": "text",
+    "section_hint": "Appendix B \u2014 Compliance Matrix Template",
+    "text": "[Section: Appendix B \u2014 Compliance Matrix Template]\n\nAppendix B \u2014 Compliance Matrix Template \n\nVendors must complete the following compliance matrix and submit it as Appendix H of their proposal. This \nmatrix summarises the vendor's compliance against key mandatory requirements and certifications:\n\nRef.\nRequirement\nStatus \n(C/PC/NC)",
+    "page_start": 29,
+    "page_end": 29
+  },
+  "sc-0158": {
+    "chunk_id": "sc-0158",
+    "chunk_index": 158,
+    "content_type": "text",
+    "section_hint": "Evidence \nReference",
+    "text": "[Section: Evidence \nReference]\n\nEvidence \nReference",
+    "page_start": 29,
+    "page_end": 29
+  },
+  "sc-0159": {
+    "chunk_id": "sc-0159",
+    "chunk_index": 159,
+    "content_type": "text",
+    "section_hint": "Vendor \nComments",
+    "text": "[Section: Vendor \nComments]\n\nVendor \nComments\n\nCM-01\nISO/IEC 27001:2022 \u2014 Vendor \norganisation\n\n[C/PC/NC]\n[Appendix B]\n[Vendor to fill]\n\nCM-02\nISO/IEC 20000-1:2018 \u2014 Vendor \norganisation\n\n[C/PC/NC]\n[Appendix B]\n[Vendor to fill]\n\nCM-03\nSOC 2 Type II \u2014 Cloud-managed \nservice components\n\n[C/PC/NC]\n[Appendix B]\n[Vendor to fill]\n\nCM-04\nMicrosoft Azure ExpressRoute Partner \nDesignation\n\n[C/PC/NC]\n[Appendix B]\n[Vendor to fill]",
+    "page_start": 29,
+    "page_end": 29
+  },
+  "sc-0160": {
+    "chunk_id": "sc-0160",
+    "chunk_index": 160,
+    "content_type": "text",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\nCM-05\nAWS Direct Connect Delivery Partner \nDesignation\n\n[C/PC/NC]\n[Appendix B]\n[Vendor to fill]\n\nCM-06\nIndia Legal Entity (CIN registration)\n[C/PC/NC]\n[Appendix B]\n[Vendor to fill]\n\nCM-07\nDPDP Act 2023 \u2014 Data localisation \nwithin India\n\n[C/PC/NC]\n[Section 5 / \nAppendix]\n\n[Vendor to fill]\n\nCM-08\nSD-WAN OEM Hardware Partner \nnamed\n\n[C/PC/NC]\n[Section 5, TR-\n005]\n\n[Name OEM]\n\nCM-09\nFirewall OEM named for SD-WAN edge \nNGFW\n\n[C/PC/NC]\n[Section 5, TR-\n007]\n\n[Name OEM]\n\nCM-10\nSIEM platform named for Managed SOC\n[C/PC/NC]\n[Section 5, TR-\n014]\n\n[Name SIEM]\n\nCM-11\nGSMA eSIM RSP compliance certificate\n[C/PC/NC]\n[Appendix B]\n[Vendor to fill]\n\nCM-12\nITIL v4 \u2014 SOC Incident and Problem \nManagement\n\n[C/PC/NC]\n[Section 5, TR-\n016]\n\n[Vendor to fill]\n\nCM-13\nPRINCE2 or PMP certified Project \nManager named\n\n[C/PC/NC]\n[Appendix D]\n[Name of PM]\n\nCM-14\nDeviations Register submitted as \nAppendix G\n\n[C/PC/NC]\n[Appendix G]\n[Vendor to fill]",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0161": {
+    "chunk_id": "sc-0161",
+    "chunk_index": 161,
+    "content_type": "text",
+    "section_hint": "Appendix C \u2014 Pricing Rate Card Layout",
+    "text": "[Section: Appendix C \u2014 Pricing Rate Card Layout]\n\nAppendix C \u2014 Pricing Rate Card Layout \n\nThe Pricing Rate Card must be submitted as a separate sealed commercial proposal PDF. The rate card must \nbe structured as follows, with all columns completed:\n\nLine #\nItem Description\nWorkstream\nUnit \nType\nNRC (INR)\nMRC (INR)\nAnnual \n(INR)\n\n[Line #]\n[Item description \u2014 see \nSection 10.2]\n\n[SD-WAN / \nCloud / SOC \n/ IoT / PS]\n\n[Per site \n/ per \ndevice / \nper SIM / \nfixed]\n\n[INR]\n[INR]\n[INR]\n\n...\n...\n...\n...\n...\n...\n...\n\nTOTAL\nTOTAL PROGRAMME TCO \n(36-month contract value)\nAll\nFixed\n[Total \nNRC]\n\n[Total MRC \nx 36]\n\n[Total \np.a.]\n\n[Referenced Section 10.2]: [Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table]\n\n10.2  Pricing Response Table \n\nVENDOR INSTRUCTION: Complete the 'Vendor Unit Price (INR)' and 'Monthly Recurring / Annual' \ncolumns for all line items. Do not modify pre-populated fields. Add additional rows for any items \nnot listed below that form part of the proposed solution.\n\nLine #\nItem Description\nCategory\nUnit Type\nNRC (One-\nTime) INR\n\nMRC / \nAnnual \nINR\n\n1.01\nSD-WAN CPE Hardware (Tier-1 \nHub Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.02\nSD-WAN CPE Hardware (Tier-2 \nBranch Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.03\nSD-WAN CPE Hardware (Tier-3 \nRemote Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.04\n\nSD-WAN Managed Service (NOC \nmonitoring, config management, \nreporting) \u2014 All 300 sites\n\nSD-WAN\nPer site / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.05\nPrimary Broadband / Fibre Link \nProvisioning \u2014 Tier-1 (100 Mbps)\nConnectivity\nPer site / \nmonth\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n1.06\nPrimary Broadband / Fibre Link \nProvisioning \u2014 Tier-2 (50 Mbps)\nConnectivity\nPer site / \nmonth\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n1.07\n4G/5G LTE Backup / Primary Link \n(per site)\nConnectivity\nPer SIM / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.08\nSD-WAN Platform Installation & \nCommissioning (per site)\n\nProfessional \nServices\nPer site\n[Vendor to \nfill]\n\n\u2014\n\n2.01\n\nAzure ExpressRoute \u2014 10 Gbps x \n2 circuits (active-active, Mumbai \nDC)\n\nCloud \nInterconnect\nPer month\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n[Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\n2.02\n\nAWS Direct Connect \u2014 10 Gbps x \n1 Dedicated Connection (ap-\nsouth-1)\n\nClou [...]",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0162": {
+    "chunk_id": "sc-0162",
+    "chunk_index": 162,
+    "content_type": "text",
+    "section_hint": "Appendix D \u2014 Reference Matrix Template",
+    "text": "[Section: Appendix D \u2014 Reference Matrix Template]\n\nAppendix D \u2014 Reference Matrix Template \n\nComplete the following for a minimum of two (2) qualifying reference deployments:\n\nClient Name\nIndustry\nSites \nDeployed",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0163": {
+    "chunk_id": "sc-0163",
+    "chunk_index": 163,
+    "content_type": "text",
+    "section_hint": "Go-Live \nDate",
+    "text": "[Section: Go-Live \nDate]\n\nGo-Live \nDate",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0164": {
+    "chunk_id": "sc-0164",
+    "chunk_index": 164,
+    "content_type": "text",
+    "section_hint": "Services \nProvided",
+    "text": "[Section: Services \nProvided]\n\nServices \nProvided",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0165": {
+    "chunk_id": "sc-0165",
+    "chunk_index": 165,
+    "content_type": "text",
+    "section_hint": "Outcome \nMetrics",
+    "text": "[Section: Outcome \nMetrics]\n\nOutcome \nMetrics",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0166": {
+    "chunk_id": "sc-0166",
+    "chunk_index": 166,
+    "content_type": "text",
+    "section_hint": "Reference \nContact",
+    "text": "[Section: Reference \nContact]\n\nReference \nContact\n\n[Vendor to fill]\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n[Vendor \nto fill]\n\n[SD-WAN / \nCloud IC / \nSOC / IoT]\n\n[Vendor to \nfill]\n\n[Name, Title, \nEmail]\n\n[Vendor to fill]\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n[Vendor \nto fill]\n\n[SD-WAN / \nCloud IC / \nSOC / IoT]\n\n[Vendor to \nfill]\n\n[Name, Title, \nEmail]",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0167": {
+    "chunk_id": "sc-0167",
+    "chunk_index": 167,
+    "content_type": "text",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\n\u2014 END OF REQUEST FOR PROPOSAL DOCUMENT \u2014\n\nRFP Reference: AILL-PROC-2025-0078  |  Issuer: Apex Industrial Logistics Limited  |  Issue Date: 10 October 2025\n\n\u00a9 2025 Apex Industrial Logistics Limited. All Rights Reserved. Unauthorised reproduction or distribution is prohibited.",
+    "page_start": 31,
+    "page_end": 31
+  },
+  "sc-0168": {
+    "chunk_id": "sc-0168",
+    "chunk_index": 168,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nPain Point | Current Impact on Operations\nLegacy MPLS Network | All 300 branch warehouses are connected via legacy Multiprotocol Label Switching (MPLS) circuits procured from a single incumbent carrier. Bandwidth tiers are rigid (2 Mbps to 10 Mbps per branch), costly to upgrade, and require 60\u201390-day lead times for any configuration change.\nChronic Network Outages | The Company experienced an average of 4.3 unplanned network outages per month per region in FY2024\u201325, each lasting an average of 47 minutes. These outages directly halt warehouse management system (WMS) operations, fleet tracking updates, and ERP transaction processing, resulting in an estimated revenue impact of INR 3.8 Crore per month.\nSingle-Link Dependency | Hub warehouse sites (Tier-1) currently operate on a single MPLS link with no active failover path. Loss of connectivity at a hub site cascades to 8\u201315 dependent spoke sites reliant on the hub for WMS access and IoT aggregation.\nNo Cloud On-Ramp | Apex is executing a cloud-first transformation programme (ERP on Microsoft Azure, data analytics on AWS). Currently, all cloud traffic is backhauled through the Mumbai Data Centre, introducing latency of 180\u2013340 ms for branch-to-cloud workloads and consuming disproportionate Data Centre bandwidth.\nSecurity Perimeter Gaps | Branch sites lack next-generation firewall (NGFW) protection. A significant ransomware incident in Q3 FY2024 resulted in operational downtime of 72 hours across 14 warehouse sites and a forensic investigation cost of INR 1.1 Crore. Apex currently has no 24/7 Security Operations Centre (SOC) capability.\nIoT Connectivity Fragmentation | Apex operates a fleet of 2.5 million IoT-enabled tracking SIMs across its vehicle fleet and warehouse assets. SIM Management is currently distributed across three different Mobile Virtual Network Operators (MVNOs), resulting in fragmented visibility, inconsistent data plans, and inability to enforce unified MDM policies.",
+    "page_start": 3,
+    "page_end": 3
+  },
+  "sc-0169": {
+    "chunk_id": "sc-0169",
+    "chunk_index": 169,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAttribute | Detail\nRegistered Name | Apex Industrial Logistics Limited\nCIN | L74899MH1994PLC076432\nHeadquarters | Plot 14, Logistics Park, Bhiwandi, Thane, Maharashtra \u2014 421 302, India\nData Centre | Primary Tier-III DC \u2014 NESCO IT Park, Goregaon East, Mumbai, Maharashtra\nAnnual Revenue (FY25) | Approx. INR 5,500 Crore\nEmployees | Approx. 15,000 (direct); 28,000 (including contract workforce)\nOperational Sites | 300 branch warehouses; 12 regional hub facilities; 1 primary Data Centre; 2 Disaster Recovery sites\nGeographic Presence | 28 Indian States and Union Territories; Cross-border operations in Nepal, Bangladesh, and Sri Lanka\nStock Exchange Listing | National Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876)\nIT Governance | COBIT 2019 Framework; ISO/IEC 27001:2022 certified (STQC, Cert-In accredited)",
+    "page_start": 5,
+    "page_end": 5
+  },
+  "sc-0170": {
+    "chunk_id": "sc-0170",
+    "chunk_index": 170,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nKPI Reference | Success Criterion | Target / Threshold\nKPI-01 | Network Availability \u2014 Tier-1 Hub Sites | \u2265 99.99% monthly\nKPI-02 | Network Availability \u2014 Tier-2 Branch Sites | \u2265 99.95% monthly\nKPI-03 | SD-WAN Failover Time (primary to secondary link) | < 50 milliseconds\nKPI-04 | Cloud Interconnect Latency (Mumbai DC to Azure Central India) | < 8 ms round-trip\nKPI-05 | SOC \u2014 P1 Security Incident Acknowledgement | < 15 minutes\nKPI-06 | SOC \u2014 P1 Security Incident Containment | < 4 hours\nKPI-07 | Migration Completion \u2014 All 300 Sites | Within 18 months of contract execution\nKPI-08 | Zero-Touch Provisioning \u2014 New Branch Site | < 4 hours from hardware delivery\nKPI-09 | MTTR \u2014 Network Incident (Branch Site) | < 4 hours\nKPI-10 | IoT SIM Activation (eSIM / ICCID) | < 2 hours from portal request",
+    "page_start": 7,
+    "page_end": 7
+  },
+  "sc-0171": {
+    "chunk_id": "sc-0171",
+    "chunk_index": 171,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nSite Tier | Site Count | Primary Link | Secondary Link | Link Mode\nTier-1 Hub | 12 sites | Broadband / Dedicated Fibre \u2014 100 Mbps min | 4G/5G LTE \u2014 50 Mbps min | Active / Active\nTier-2 Branch | 228 sites | Broadband Fibre \u2014 50 Mbps min | 4G LTE Backup \u2014 20 Mbps min | Active / Standby\nTier-3 Remote | 60 sites | 4G/5G LTE \u2014 20 Mbps min | VSAT (where terrestrial unavailable) | Active / Standby",
+    "page_start": 9,
+    "page_end": 9
+  },
+  "sc-0172": {
+    "chunk_id": "sc-0172",
+    "chunk_index": 172,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nReq. ID | Category | Description | Priority | Vendor Response | Vendor Remarks\nTR-001 | SD-WAN \u2014 Architecture | The SD-WAN solution MUST be a cloud-managed, fully software-defined overlay capable of supporting all 300 Apex branch sites within a single management domain without requiring a hardware controller at the Data Centre. | Mandatory | [C / PC / NC] | [Vendor to fill]\nTR-002 | SD-WAN \u2014 ZTP | Zero-Touch Provisioning (ZTP) MUST be supported for all CPE devices. A branch site MUST be fully operational within 4 hours of CPE delivery, without requiring an on-site engineer from the vendor. | Mandatory | [C / PC / NC] | [Vendor to fill]\nTR-003 | SD-WAN \u2014 Failover | Dynamic path failover from primary to secondary link MUST complete in under 50 milliseconds as measured end-to-end from packet loss detection to traffic rerouting, without manual intervention. | Mandatory | [C / PC / NC] | [Vendor to fill]\nTR-004 | SD-WAN \u2014 BGP | The solution MUST support BGP routing with automated route advertisement and withdrawal upon link failure, supporting integration with Apex's Mumbai DC edge router (Cisco ASR 1002-HX) via eBGP peering. | Mandatory | [C / PC / NC] | [Vendor to fill]",
+    "page_start": 12,
+    "page_end": 12
+  },
+  "sc-0173": {
+    "chunk_id": "sc-0173",
+    "chunk_index": 173,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nTR-ID | Requirement | Description | Compliance | Vendor Response\nTR-005 | SD-WAN \u2014 OEM Hardware | Vendor MUST specify the OEM hardware partner(s) for SD-WAN CPE (e.g., Cisco, Fortinet, VMware Velocloud, Palo Alto). CPE must be provided as-a-Service under OpEx pricing. Vendor-owned hardware is mandatory; Apex will not purchase CPE outright. | Mandatory | [C / PC / NC] [Vendor to fill \u2014 Name OEM]\nTR-006 | SD-WAN \u2014 QoS | The solution MUST support a minimum of 8 QoS traffic classes with guaranteed bandwidth (GBW) and maximum bandwidth (MBW) policies configurable per application, per site. Guaranteed bandwidth for SAP S/4HANA and WMS traffic must be configurable independently of other traffic classes. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-007 | SD-WAN \u2014 Security | Integrated NGFW capability at the SD-WAN edge MUST include IPS/IDS, URL filtering (minimum 60 URL categories), DNS security, and SSL deep inspection. Vendor must specify the OEM firewall solution (e.g., Fortinet FortiGate, Palo Alto Networks NGFW, Check Point). | Mandatory | [C / PC / NC] [Vendor to fill \u2014 Name Firewall OEM]\nTR-008 | SD-WAN \u2014 Portal | A self-service portal with role-based access control (RBAC) MUST be provided to Apex IT staff with read-only visibility of network topology, link health, traffic statistics, and active alerts across all 300 sites. No additional licensing cost for portal access. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-009 | SD-WAN \u2014 Project Mgmt | Vendor MUST provide a detailed 300-site migration project plan conforming to either PRINCE2 or PMBOK methodology. A dedicated Project Manager (minimum PMP or PRINCE2 Practitioner certified) must be named in the proposal and committed to the programme through completion. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-010 | Cloud Interconnect \u2014 Azure | Vendor MUST hold an active Microsoft Azure ExpressRoute Partner designation and provide two (2) x 10 Gbps circuits in active-active configuration to the Azure Central India region. Evidence of Microsoft partner designation MUST be attached as Appendix B. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-011 | Cloud Interconnect \u2014 AWS | Vendor MUST hold an active AWS Direct Connect Delivery Partner designation and provide one (1) x 10 Gbps Dedicated Connection to the AWS ap-south-1 Mumbai region. Evidence of AWS partner designation MUST be attached as Appendix B. | Mandatory | [C / PC / NC] [Vendor to fill]",
+    "page_start": 13,
+    "page_end": 13
+  },
+  "sc-0174": {
+    "chunk_id": "sc-0174",
+    "chunk_index": 174,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nTR-ID | Requirement | Description | Compliance Status | Vendor Response\nTR-012 | Cloud Interconnect \u2014 Latency | The Azure ExpressRoute interconnect MUST achieve a maximum round-trip latency of 8 ms between the Apex Mumbai DC and the Azure Central India region under steady-state traffic conditions. Vendor must provide benchmark test evidence from equivalent deployments. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-013 | SOC \u2014 Availability | The Managed SOC service MUST operate 24 hours per day, 7 days per week, 365 days per year (including Indian public holidays) with no scheduled maintenance windows that reduce monitoring coverage below Tier-1 analyst staffing levels. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-014 | SOC \u2014 SIEM Platform | The SIEM platform used by the SOC MUST ingest logs from all 300 SD-WAN edge devices, the Mumbai DC, and cloud interconnects. The vendor must name the SIEM product proposed (e.g., Microsoft Sentinel, Splunk Enterprise Security, IBM QRadar, or equivalent). SIEM data MUST be stored in India. | Mandatory | [C / PC / NC] [Vendor to fill \u2014 Name SIEM]\nTR-015 | SOC \u2014 Incident Response SLAs | P1 incidents MUST be acknowledged within 15 minutes and contained within 4 hours. P2 incidents MUST be acknowledged within 30 minutes and resolved within 8 hours. P3 incidents within 2 hours acknowledgement and 24 hours resolution. All timings measured 24x7. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-016 | SOC \u2014 ITIL Alignment | The SOC MUST operate Incident Management, Problem Management, and Change Management processes conforming to ITIL v4. Root Cause Analysis (RCA) reports for P1 and P2 incidents MUST be delivered within 72 hours of incident containment. Vendor must provide sample RCA template with proposal. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-017 | SOC \u2014 Threat Intelligence | Vendor MUST demonstrate active subscriptions to a minimum of two (2) commercial Threat Intelligence platforms and provide evidence of integration with the proposed SIEM, including IOC ingestion frequency and automated blocking workflow. | Mandatory | [C / PC / NC] [Vendor to fill]\nTR-018 | Compliance \u2014 DPDP Act 2023 | Vendor MUST provide a written Data Privacy Impact Assessment (DPIA) framework for the proposed solution, demonstrating how personal data of Apex employees and customers processed across the network is handled in compliance with the Digital Personal Data Protection | Mandatory | [C / PC / NC] [Vendor to fill]",
+    "page_start": 14,
+    "page_end": 14
+  },
+  "sc-0175": {
+    "chunk_id": "sc-0175",
+    "chunk_index": 175,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nRequirement ID | Requirement Description | Compliance Status | Vendor Response\nTR-019 | IoT \u2014 Private APN | Mandatory | [C / PC / NC]\nTR-020 | IoT \u2014 eSIM | Mandatory | [C / PC / NC]\nTR-021 | IoT \u2014 National Coverage | Mandatory | [C / PC / NC]\nTR-022 | IoT \u2014 API Integration | Mandatory | [C / PC / NC]\nTR-023 | General \u2014 Disaster Recovery | Mandatory | [C / PC / NC]\nTR-024 | General \u2014 ServiceNow Integration | Mandatory | [C / PC / NC]\nTR-025 | General \u2014 Reporting | Mandatory | [C / PC / NC]",
+    "page_start": 15,
+    "page_end": 15
+  },
+  "sc-0176": {
+    "chunk_id": "sc-0176",
+    "chunk_index": 176,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nProcurement Milestone | Target Date | Notes\nRFP Issue & Publication | 10 October 2025 | Issued via Apex procurement portal to pre-qualified vendors\nVendor Registration Deadline | 17 October 2025 | Registration via procurement portal only. Email registration not accepted.\nPre-Bid Conference (Virtual) | 22 October 2025, 11:00 IST | Microsoft Teams. Invitation issued to all registered vendors. Attendance mandatory for pre-qualification.\nVendor Written Q&A Submission Deadline | 31 October 2025 | Via procurement portal Q&A module only. Email queries not accepted.\nApex Q&A Response Publication | 10 November 2025 | Published simultaneously to all registered vendors. Responses form binding amendments to this RFP.\nFinal Proposal Submission Deadline | 21 November 2025, 17:00 IST | Via procurement portal. Late submissions automatically disqualified.\nTechnical Evaluation & Scoring | 21 Nov \u2014 05 Dec 2025 | Internal evaluation by Apex Technical Evaluation Committee\nShortlist Notification (Top 3 Vendors) | 08 December 2025 | Written notification via procurement portal\nVendor Technical Demonstrations / PoC | 15\u201319 December 2025 | Apex HQ, Bhiwandi. Scenario brief issued 5 business days prior.\nBest and Final Offer (BAFO) | 09 January 2026 | Invited shortlisted vendors only\nContract Award Notification | 23 January 2026 | Formal written notification. Unsuccessful vendors notified simultaneously.\nContract Execution and Programme Kick-Off | 03 February 2026 | Programme kick-off meeting at Apex HQ, Bhiwandi",
+    "page_start": 17,
+    "page_end": 17
+  },
+  "sc-0177": {
+    "chunk_id": "sc-0177",
+    "chunk_index": 177,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nPhase | Title | Scope | Site Count | Target Duration\nPh-1 | Foundation & Pilot | SD-WAN CPE design lock; Mumbai DC cloud interconnect build; 5 pilot hub sites; SOC onboarding and SIEM integration | 5 pilot sites + DC | Months 1\u20133\nPh-2 | Hub Rollout | All 12 Tier-1 hub sites migrated; active-active dual-link SD-WAN live; NGFW policy baseline deployed | 12 sites | Months 4\u20136",
+    "page_start": 17,
+    "page_end": 17
+  },
+  "sc-0178": {
+    "chunk_id": "sc-0178",
+    "chunk_index": 178,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nPhase | Description | Activities | Sites | Timeline\nPh-3 | Branch Rollout \u2014 North & West | First 100 Tier-2/Tier-3 branch sites (North and West India zones) | 100 sites | Months 7\u201311\nPh-4 | Branch Rollout \u2014 South & East | Remaining 128 Tier-2/Tier-3 branch sites (South and East India zones) | 128 sites | Months 12\u201316\nPh-5 | Steady-State & Handover | MPLS decommissioning confirmation; IoT SIM migration completion; SOC BAU handover; acceptance testing; documentation finalisation | All sites | Months 17\u201318",
+    "page_start": 18,
+    "page_end": 18
+  },
+  "sc-0179": {
+    "chunk_id": "sc-0179",
+    "chunk_index": 179,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nRequirement | Specification\nFormat | Single consolidated PDF/A (ISO 19005 compliant) containing the complete proposal, including all appendices and supporting documents.\nLanguage | English only. All technical specifications, SLA commitments, and commercial terms must be in English.\nPage Limit | Main body (Sections 1\u201312): Maximum 120 pages (A4, minimum 11pt Arial, 25mm margins). Appendices are not subject to a page limit.\nSection Order | Proposals must follow the identical section numbering as this RFP. Reordering of sections is not permitted.\nRequirements Table | The requirements matrix (Section 5.2) must be reproduced in its entirety with Vendor Response and Vendor Remarks columns completed. Requirement IDs must not be altered.\nPricing | Pricing must be included within the same consolidated document in a clearly marked section titled \"COMMERCIAL PROPOSAL \u2014 STRICTLY CONFIDENTIAL\", placed at the end of the document.\nDeviations | Any deviations from this RFP\u2019s requirements or proposed contractual terms must be compiled in a single 'Deviations Register' table as Appendix G. Deviations embedded in the main proposal text without corresponding Appendix G entry will be disregarded.",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0180": {
+    "chunk_id": "sc-0180",
+    "chunk_index": 180,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAppendix | Content Required\nAppendix A | Vendor Financials \u2014 Audited annual financial statements for FY2022\u201323, FY2023\u201324, and FY2024\u201325\nAppendix B | Certifications \u2014 ISO 27001:2022, ISO 20000-1:2018, SOC 2 Type II report, PCI-DSS AoC (if applicable), Microsoft Azure ExpressRoute Partner certificate, AWS Direct Connect Partner certificate\nAppendix C | Case Studies \u2014 Minimum 2 detailed Tier-1 enterprise case studies in logistics or manufacturing (format per Section 8.3)",
+    "page_start": 19,
+    "page_end": 19
+  },
+  "sc-0181": {
+    "chunk_id": "sc-0181",
+    "chunk_index": 181,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\n# | Criterion | Description | Evidence Required\n1 | Annual Revenue | Vendor's consolidated annual revenue must exceed INR 500 Crore (or USD 60M equivalent) in each of the last three completed financial years. | Audited financial statements FY22\u201323, FY23\u201324, FY24\u201325\n2 | ISO 27001:2022 Certification | Vendor and all subcontractors with >20% of delivery scope must hold a current, in-scope ISO/IEC 27001:2022 certification from an accredited body. | Current certificates \u2014 Appendix B\n3 | ISO 20000-1:2018 Certification | Vendor must hold ISO/IEC 20000-1:2018 (IT Service Management) certification demonstrating ITIL-aligned service delivery capability. | Current certificates \u2014 Appendix B\n4 | SOC 2 Type II Report | Vendor must provide a SOC 2 Type II report (not older than 12 months) covering Security, Availability, and Confidentiality Trust Service Criteria for all cloud-managed service components. | SOC 2 Type II Report \u2014 Appendix B\n5 | India Operations | Vendor must maintain a wholly owned or majority-controlled legal entity registered in India, with a minimum 24x7 NOC and SOC staffed by a minimum of 50 India-based FTEs. | CIN certificate + India staffing declaration\n6 | Cloud Partner Designations | Vendor must hold active Microsoft Azure ExpressRoute Partner AND AWS Direct Connect Delivery Partner designations at the time of proposal submission. | Partner designation certificates \u2014 Appendix B\n7 | Comparable Deployments | Vendor must demonstrate a minimum of two (2) completed Managed SD-WAN deployments covering 100+ sites each in India, within the last four years, in the logistics, manufacturing, or BFSI sector. | Case Studies \u2014 Appendix C (format per Section 8.3)\n8 | No Material Sanctions | Vendor, its subsidiaries, and key subcontractors must not be subject to any material economic sanction, debartment from Government of India procurement, or CBI/ED enforcement action. | Self-certification by authorised signatory",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0182": {
+    "chunk_id": "sc-0182",
+    "chunk_index": 182,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nRole | Minimum Qualifications | Key Responsibilities\nProgramme Director | 15+ years' experience; minimum 3 as Programme Director for network | Overall delivery governance; executive escalation; contractual accountability;",
+    "page_start": 21,
+    "page_end": 21
+  },
+  "sc-0183": {
+    "chunk_id": "sc-0183",
+    "chunk_index": 183,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nRole | Requirements | Responsibilities\nChief Network Architect | 10+ years in SD-WAN / MPLS / cloud networking; Cisco CCIE or equivalent; verifiable Azure/AWS networking certifications. | End-to-end SD-WAN and cloud interconnect architecture design, compliance verification, and integration governance.\nHead of Delivery (Project Manager) | PMP or PRINCE2 Practitioner certification mandatory; 7+ years managing large multi-site network rollouts. | Day-to-day delivery management; site migration scheduling; milestone tracking; RAID log management.\nSOC Operations Lead | CISSP or CISM mandatory; 5+ years SOC operations management; demonstrable SIEM administration experience. | SOC operations governance; threat detection tuning; incident response escalation; monthly reporting.\nIoT / Mobility Lead | 5+ years IoT/EMM platform management; GSMA eSIM certification preferred; telco SIM management background. | IoT SIM platform migration; EMM policy design; private APN architecture; API integration.",
+    "page_start": 22,
+    "page_end": 22
+  },
+  "sc-0184": {
+    "chunk_id": "sc-0184",
+    "chunk_index": 184,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nEvaluation Dimension | Weight | Sub-Criteria\nTechnical Capability & Solution Quality | 40% | \u2022 Requirements matrix compliance (TR-001 to TR-025) \u2014 20%\n\u2022 SD-WAN solution architecture quality & OEM credentials \u2014 8%\n\u2022 Cloud interconnect design & partner credentials \u2014 6%\n\u2022 Migration plan quality (phasing, ZTP, risk management) \u2014 6%\nCommercial Competitiveness | 30% | \u2022 Total Cost of Ownership (TCO) over 36-month contract term \u2014 18%\n\u2022 OpEx hardware-as-a-service pricing model quality \u2014 6%\n\u2022 Commercial flexibility (payment milestones, volume discounts) \u2014 6%\nSecurity, Compliance & SOC Quality | 20% | \u2022 ISO 27001, ISO 20000-1, SOC 2 Type II currency and scope \u2014 8%\n\u2022 SOC maturity: SIEM capability, analyst headcount, MT TD / MTTR evidence \u2014 8%\n\u2022 DPDP Act compliance framework & data localisation architecture \u2014 4%\nReferences & Track Record | 10% | \u2022 Quality and relevance of case studies (Section 8.3) \u2014 6%\n\u2022 Verified client reference calls (shortlisted vendors only) \u2014 4%\nTOTAL | 100% | Minimum qualifying score to proceed to BAFO: 65 out of 100",
+    "page_start": 23,
+    "page_end": 23
+  },
+  "sc-0185": {
+    "chunk_id": "sc-0185",
+    "chunk_index": 185,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nScore | Rating | Interpretation\n5 | Excellent | Exceeds requirement with demonstrated evidence and innovation\n4 | Good | Fully meets requirement with strong evidence",
+    "page_start": 23,
+    "page_end": 23
+  },
+  "sc-0186": {
+    "chunk_id": "sc-0186",
+    "chunk_index": 186,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nScore | Compliance Level | Description\n3 | Adequate | Meets requirement with acceptable evidence\n2 | Marginal | Partially meets requirement; material gaps identified\n1 | Poor | Significant deficiencies; does not meaningfully satisfy requirement\n0 | Non-Compliant | No response provided or requirement explicitly not met",
+    "page_start": 24,
+    "page_end": 24
+  },
+  "sc-0187": {
+    "chunk_id": "sc-0187",
+    "chunk_index": 187,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nLine # | Item Description | Category | Unit Type | NRC (One-Time) INR | MRC / Annual INR\n1.01 | SD-WAN CPE Hardware (Tier-1 Hub Site) \u2014 HaaS OpEx | SD-WAN | Per device / month | \u2014 | [Vendor to fill]\n1.02 | SD-WAN CPE Hardware (Tier-2 Branch Site) \u2014 HaaS OpEx | SD-WAN | Per device / month | \u2014 | [Vendor to fill]\n1.03 | SD-WAN CPE Hardware (Tier-3 Remote Site) \u2014 HaaS OpEx | SD-WAN | Per device / month | \u2014 | [Vendor to fill]\n1.04 | SD-WAN Managed Service (NOC monitoring, config management, reporting) \u2014 All 300 sites | SD-WAN | Per site / month | \u2014 | [Vendor to fill]\n1.05 | Primary Broadband / Fibre Link Provisioning \u2014 Tier-1 (100 Mbps) | Connectivity | Per site / month | [Vendor to fill] | [Vendor to fill]\n1.06 | Primary Broadband / Fibre Link Provisioning \u2014 Tier-2 (50 Mbps) | Connectivity | Per site / month | [Vendor to fill] | [Vendor to fill]\n1.07 | 4G/5G LTE Backup / Primary Link (per site) | Connectivity | Per SIM / month | \u2014 | [Vendor to fill]\n1.08 | SD-WAN Platform Installation & Commissioning (per site) | Professional Services | Per site | [Vendor to fill] | \u2014\n2.01 | Azure ExpressRoute \u2014 10 Gbps x 2 circuits (active-active, Mumbai DC) | Cloud Interconnect | Per month | [Vendor to fill] | [Vendor to fill]",
+    "page_start": 25,
+    "page_end": 25
+  },
+  "sc-0188": {
+    "chunk_id": "sc-0188",
+    "chunk_index": 188,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nItem | Description | Service Type | Billing | Vendor to fill | Vendor to fill\n2.02 | AWS Direct Connect \u2014 10 Gbps x 1 Dedicated Connection (ap-south-1) | Cloud Interconnect | Per month | [Vendor to fill] | [Vendor to fill]\n2.03 | Last-mile fibre and cross-connect (Mumbai DC to carrier-neutral facility) | Cloud Interconnect | Per month | [Vendor to fill] | [Vendor to fill]\n2.04 | Cloud Interconnect Design, Build & Commissioning (one-time) | Professional Services | Fixed | [Vendor to fill] | \u2014\n3.01 | Managed SOC Service \u2014 24x7x365 (all 300 branch edge devices + DC) | Managed SOC | Per month | \u2014 | [Vendor to fill]\n3.02 | SIEM Platform (cloud-hosted, India DC) \u2014 per log source | Managed SOC | Per source / month | [Vendor to fill] | [Vendor to fill]\n3.03 | Threat Intelligence Feeds (min. 2 commercial subscriptions) | Managed SOC | Per annum | \u2014 | [Vendor to fill]\n3.04 | Quarterly Penetration Testing (network perimeter) | Managed SOC | Per assessment | \u2014 | [Vendor to fill]\n3.05 | SOC Onboarding, SIEM Integration & Policy Baseline (one-time) | Professional Services | Fixed | [Vendor to fill] | \u2014\n4.01 | IoT SIM \u2014 Pooled Data Plan (per SIM / month, 2.5M SIM pool) | IoT Mobility | Per SIM / month | \u2014 | [Vendor to fill]\n4.02 | Enterprise Mobility Management (EMM) Platform License | IoT Mobility | Per SIM / month | \u2014 | [Vendor to fill]\n4.03 | Private APN Setup and Monthly Management | IoT Mobility | Fixed / month | [Vendor to fill] | [Vendor to fill]\n4.04 | eSIM Remote Provisioning Platform (per SIM, one-time migration) | IoT Mobility | Per SIM | [Vendor to fill] | \u2014\n5.01 | Programme Management Office (PMO) \u2014 Full programme duration | Professional Services | Per day | \u2014 | [Vendor to fill]\n5.02 | Training \u2014 Apex IT and NOC Staff (per cohort of 10) | Training | Per cohort | [Vendor to fill] | \u2014\n5.03 | 24x7 Managed Service Support (post-go-live, BAU) | Support | Per annum | \u2014 | [Vendor to fill]",
+    "page_start": 26,
+    "page_end": 26
+  },
+  "sc-0189": {
+    "chunk_id": "sc-0189",
+    "chunk_index": 189,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nPriority | Incident Type | Definition | Penalty\nP1 | Critical Network Outage | Complete loss of SD-WAN connectivity affecting more than 5 Tier-1 or 10 Tier-2 sites simultaneously, or complete loss of both cloud interconnects simultaneously, for any period exceeding 30 minutes. | 5% of total monthly invoice value per each 15-minute period (or part thereof) of outage duration, applied against Total Contract Value.\nP2 | Significant Degradation | Network performance degradation (latency >200ms, packet loss >2%) affecting more than 10 sites for a period exceeding 60 minutes, or SOC P1 incident acknowledgement breaching the 15-minute SLA. | 2% of total monthly invoice value per each 30-minute period of sustained degradation.\nP3 | Non-Critical Incident | Single site outage exceeding 4-hour MTTR, or SLA reporting delay exceeding 30 minutes from incident detection. | 0.5% of total monthly invoice value per incident.",
+    "page_start": 28,
+    "page_end": 28
+  },
+  "sc-0190": {
+    "chunk_id": "sc-0190",
+    "chunk_index": 190,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nRegion | States Covered | Total Sites | Tier-1 Hubs | Tier-2 Branch | Tier-3 Remote\nNorth India | Delhi, UP, Haryana, Punjab, Rajasthan, J&K, Himachal | 82 | 3 | 63 | 16\nWest India | Maharashtra, Gujarat, Goa, MP | 74 | 3 | 56 | 15\nSouth India | Karnataka, Tamil Nadu, Kerala, Andhra, Telangana | 68 | 3 | 52 | 13\nEast India | West Bengal, Odisha, Bihar, Jharkhand, NE States | 49 | 2 | 37 | 10\nCentral India | Chhattisgarh, Telangana (Central), Vidarba | 27 | 1 | 20 | 6\nTOTAL | 28 States / UTs | 300 | 12 | 228 | 60",
+    "page_start": 29,
+    "page_end": 29
+  },
+  "sc-0191": {
+    "chunk_id": "sc-0191",
+    "chunk_index": 191,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nRef. | Requirement | Status (C/PC/NC) | Evidence Reference | Vendor Comments\nCM-01 | ISO/IEC 27001:2022 \u2014 Vendor organisation | [C/PC/NC] | [Appendix B] | [Vendor to fill]\nCM-02 | ISO/IEC 20000-1:2018 \u2014 Vendor organisation | [C/PC/NC] | [Appendix B] | [Vendor to fill]\nCM-03 | SOC 2 Type II \u2014 Cloud-managed service components | [C/PC/NC] | [Appendix B] | [Vendor to fill]\nCM-04 | Microsoft Azure ExpressRoute Partner Designation | [C/PC/NC] | [Appendix B] | [Vendor to fill]",
+    "page_start": 29,
+    "page_end": 29
+  },
+  "sc-0192": {
+    "chunk_id": "sc-0192",
+    "chunk_index": 192,
+    "content_type": "table",
+    "table_type": "data_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nLine # | Item Description | Workstream | Unit Type | NRC (INR) | MRC (INR) | Annual (INR)\n[Line #] | [Item description \u2014 see Section 10.2] | [SD-WAN / Cloud / SOC / IoT / PS] | [Per site / per device / per SIM / fixed] | [INR] | [INR] | [INR]\n... | ... | ... | ... | ... | ... | ...\nTOTAL | TOTAL PROGRAMME TCO (36-month contract value) | All | Fixed | [Total NRC] | [Total MRC x 36] | [Total p.a.]\n\n[Referenced Section 10.2]: [Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table]\n\n10.2  Pricing Response Table \n\nVENDOR INSTRUCTION: Complete the 'Vendor Unit Price (INR)' and 'Monthly Recurring / Annual' \ncolumns for all line items. Do not modify pre-populated fields. Add additional rows for any items \nnot listed below that form part of the proposed solution.\n\nLine #\nItem Description\nCategory\nUnit Type\nNRC (One-\nTime) INR\n\nMRC / \nAnnual \nINR\n\n1.01\nSD-WAN CPE Hardware (Tier-1 \nHub Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.02\nSD-WAN CPE Hardware (Tier-2 \nBranch Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.03\nSD-WAN CPE Hardware (Tier-3 \nRemote Site) \u2014 HaaS OpEx\nSD-WAN\nPer device / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.04\n\nSD-WAN Managed Service (NOC \nmonitoring, config management, \nreporting) \u2014 All 300 sites\n\nSD-WAN\nPer site / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.05\nPrimary Broadband / Fibre Link \nProvisioning \u2014 Tier-1 (100 Mbps)\nConnectivity\nPer site / \nmonth\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n1.06\nPrimary Broadband / Fibre Link \nProvisioning \u2014 Tier-2 (50 Mbps)\nConnectivity\nPer site / \nmonth\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n1.07\n4G/5G LTE Backup / Primary Link \n(per site)\nConnectivity\nPer SIM / \nmonth\n\n\u2014\n[Vendor to \nfill]\n\n1.08\nSD-WAN Platform Installation & \nCommissioning (per site)\n\nProfessional \nServices\nPer site\n[Vendor to \nfill]\n\n\u2014\n\n2.01\n\nAzure ExpressRoute \u2014 10 Gbps x \n2 circuits (active-active, Mumbai \nDC)\n\nCloud \nInterconnect\nPer month\n\n[Vendor to \nfill]\n\n[Vendor to \nfill]\n\n[Section: SECTION 10 \u2014 Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nAPEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY \n\nCONFIDENTIAL\n\nManaged Network Services & Cybersecurity RFP\nPage  \nAPEX INDUSTRIAL LOGISTICS LIMITED\n\n2.02\n\nAWS Direct Connect \u2014 10 Gbps x \n1 Dedicated Connection (ap-\nsouth-1)\n\nClou [...]",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0193": {
+    "chunk_id": "sc-0193",
+    "chunk_index": 193,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nClient Name | Industry | Sites Deployed | Go-Live Date | Services Provided | Outcome Metrics | Reference Contact\n[Vendor to fill] | [Vendor to fill] | [Vendor to fill] | [Vendor to fill] | [SD-WAN / Cloud IC / SOC / IoT] | [Vendor to fill] | [Name, Title, Email]\n[Vendor to fill] | [Vendor to fill] | [Vendor to fill] | [Vendor to fill] | [SD-WAN / Cloud IC / SOC / IoT] | [Vendor to fill] | [Name, Title, Email]",
+    "page_start": 30,
+    "page_end": 30
+  },
+  "sc-0194": {
+    "chunk_id": "sc-0194",
+    "chunk_index": 194,
+    "content_type": "table",
+    "table_type": "fill_in_table",
+    "section_hint": "APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY",
+    "text": "[Section: APEX INDUSTRIAL LOGISTICS LIMITED\nRFP Ref: AILL-PROC-2025-0078  |  STRICTLY]\n\nCM-ID | Requirement | Compliance | Reference | Vendor Response\nCM-05 | AWS Direct Connect Delivery Partner Designation | [C/PC/NC] | [Appendix B] | [Vendor to fill]\nCM-06 | India Legal Entity (CIN registration) | [C/PC/NC] | [Appendix B] | [Vendor to fill]\nCM-07 | DPDP Act 2023 \u2014 Data localisation within India | [C/PC/NC] | [Section 5 / Appendix] | [Vendor to fill]\nCM-08 | SD-WAN OEM Hardware Partner named | [C/PC/NC] | [Section 5, TR-005] | [Name OEM]\nCM-09 | Firewall OEM named for SD-WAN edge NGFW | [C/PC/NC] | [Section 5, TR-007] | [Name OEM]\nCM-10 | SIEM platform named for Managed SOC | [C/PC/NC] | [Section 5, TR-014] | [Name SIEM]\nCM-11 | GSMA eSIM RSP compliance certificate | [C/PC/NC] | [Appendix B] | [Vendor to fill]\nCM-12 | ITIL v4 \u2014 SOC Incident and Problem Management | [C/PC/NC] | [Section 5, TR-016] | [Vendor to fill]\nCM-13 | PRINCE2 or PMP certified Project Manager named | [C/PC/NC] | [Appendix D] | [Name of PM]\nCM-14 | Deviations Register submitted as Appendix G | [C/PC/NC] | [Appendix G] | [Vendor to fill]",
+    "page_start": 30,
+    "page_end": 30
+  }
+}

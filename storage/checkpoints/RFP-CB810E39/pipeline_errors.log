@@ -1,0 +1,190 @@
+
+======================================================================
+Pipeline Run — 2026-03-26T14:30:40.548003 — RFP: RFP-CB810E39
+Total records: 47
+======================================================================
+
+2026-03-26 14:07:37 | WARNING | huggingface_hub.utils._http | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-03-26 14:10:22 | WARNING | rfp_automation.services.vision_service | [VLM] Request failed (attempt 1/3): 402 Client Error: Payment Required for url: https://router.huggingface.co/v1/chat/completions
+2026-03-26 14:11:53 | WARNING | rfp_automation.services.vision_service | [VLM] Request failed (attempt 1/3): 402 Client Error: Payment Required for url: https://router.huggingface.co/v1/chat/completions
+2026-03-26 14:12:17 | WARNING | rfp_automation.services.vision_service | [VLM] Request failed (attempt 1/3): 402 Client Error: Payment Required for url: https://router.huggingface.co/v1/chat/completions
+2026-03-26 14:12:38 | WARNING | rfp_automation.services.vision_service | [VLM] Request failed (attempt 1/3): 402 Client Error: Payment Required for url: https://router.huggingface.co/v1/chat/completions
+2026-03-26 14:13:56 | ERROR   | rfp_automation.mcp.vector_store.rfp_store | [RFP-CD576390] Failed to delete: (404)
+Reason: Not Found
+HTTP response headers: HTTPHeaderDict({'Date': 'Thu, 26 Mar 2026 08:43:56 GMT', 'Content-Type': 'application/json', 'Content-Length': '55', 'Connection': 'keep-alive', 'x-pinecone-request-latency-ms': '28', 'x-envoy-upstream-service-time': '29', 'x-pinecone-response-duration-ms': '30', 'server': 'envoy'})
+HTTP response body: {"code":5,"message":"Namespace not found","details":[]}
+
+2026-03-26 14:19:30 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Recovered partial JSON array with 9 items
+2026-03-26 14:20:27 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 4.66% is suspiciously low. Falling back to full text extraction for section 'Legal Disclaimer and Confidentiality Notice'.
+2026-03-26 14:20:31 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 13.32% is suspiciously low. Falling back to full text extraction for section 'SECTION 1 — Executive Summary and Introduction > 1.2  Current Infrastructure Challenges and Business Drivers > Chronic Network 
+Outages'.
+2026-03-26 14:20:45 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 7.76% is suspiciously low. Falling back to full text extraction for section 'SECTION 2 — Company Background and Organisation Details > 2.1  Corporate Profile > Stock Exchange Listing
+National Stock Exchange (NSE: APEXIL); BSE Limited (BSE: 539876) > 2.2  Technology Environment'.
+2026-03-26 14:20:54 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 11.30% is suspiciously low. Falling back to full text extraction for section 'SECTION 3 — Project Overview and Objectives > 3.1  Programme Description'.
+2026-03-26 14:21:25 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Skipping non-dict item in JSON array: 5
+2026-03-26 14:21:45 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Skipping non-dict item in JSON array: 5
+2026-03-26 14:21:45 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 1.58% is suspiciously low. Falling back to full text extraction for section 'SECTION 5 — Technical and Functional Requirements > 5.2  Requirements Matrix > Vendor 
+Remarks'.
+2026-03-26 14:22:08 | WARNING | rfp_automation.services.llm_service | [LLM-DET] Rate limit hit (attempt 1/2). Waiting 10s...
+2026-03-26 14:22:21 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 1.99% is suspiciously low. Falling back to full text extraction for section 'SECTION 6 — Project Timeline and Milestones > 6.1  Procurement Timeline'.
+2026-03-26 14:23:05 | WARNING | rfp_automation.services.llm_service | [LLM-DET] Rate limit hit (attempt 1/2). Waiting 10s...
+2026-03-26 14:23:19 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 6.29% is suspiciously low. Falling back to full text extraction for section 'SECTION 7 — Proposal Submission Instructions > 7.2  Proposal Structure and Format Requirements > Requirements Table'.
+2026-03-26 14:23:44 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Skipping non-dict item in JSON array: 14
+2026-03-26 14:23:57 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Skipping non-dict item in JSON array: 14
+2026-03-26 14:24:09 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 13.82% is suspiciously low. Falling back to full text extraction for section 'SECTION 8 — Vendor Qualifications and Requirements > 5
+India Operations'.
+2026-03-26 14:24:14 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 11.92% is suspiciously low. Falling back to full text extraction for section 'SECTION 8 — Vendor Qualifications and Requirements > 8
+No Material Sanctions'.
+2026-03-26 14:24:24 | WARNING | rfp_automation.services.llm_service | [LLM-DET] Rate limit hit (attempt 1/2). Waiting 10s...
+2026-03-26 14:24:35 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 9.62% is suspiciously low. Falling back to full text extraction for section 'SECTION 8 — Vendor Qualifications and Requirements > 8
+No Material Sanctions > 8.2  Key Personnel Requirements > Chief Network Architect'.
+2026-03-26 14:24:38 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 8.07% is suspiciously low. Falling back to full text extraction for section 'SECTION 8 — Vendor Qualifications and Requirements > 8
+No Material Sanctions > 8.2  Key Personnel Requirements > Head of Delivery (Project 
+Manager)'.
+2026-03-26 14:24:46 | WARNING | rfp_automation.services.llm_service | [LLM-DET] Rate limit hit (attempt 1/2). Waiting 10s...
+2026-03-26 14:24:57 | ERROR   | rfp_automation.services.llm_service | [LLM-DET] Rate limit exceeded on final attempt: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kj2eafvmehq9zwsed0a3p7wv` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 6786, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-03-26 14:24:57 | ERROR   | rfp_automation.agents.requirement_extraction_agent | [B1] LLM batch call failed unexpectedly: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kj2eafvmehq9zwsed0a3p7wv` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 6786, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-03-26 14:25:30 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Skipping non-dict item in JSON array: 7
+2026-03-26 14:25:36 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 8.48% is suspiciously low. Falling back to full text extraction for section 'SECTION 10 — Pricing and Cost Proposal Requirements > 10.2  Pricing Response Table > APEX INDUSTRIAL LOGISTICS LIMITED
+RFP Ref: AILL-PROC-2025-0078  |  STRICTLY'.
+2026-03-26 14:25:48 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 8.91% is suspiciously low. Falling back to full text extraction for section 'SECTION 11 — Terms and Conditions / Contractual Requirements > 11.1  Contract Term'.
+2026-03-26 14:25:52 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 8.22% is suspiciously low. Falling back to full text extraction for section 'SECTION 11 — Terms and Conditions / Contractual Requirements > 11.2  Payment Terms'.
+2026-03-26 14:25:58 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 13.67% is suspiciously low. Falling back to full text extraction for section 'SECTION 11 — Terms and Conditions / Contractual Requirements > 11.3  Liability'.
+2026-03-26 14:26:23 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Skipping non-dict item in JSON array: 19
+2026-03-26 14:26:34 | WARNING | rfp_automation.services.llm_service | [LLM-DET] Rate limit hit (attempt 1/2). Waiting 10s...
+2026-03-26 14:26:44 | ERROR   | rfp_automation.services.llm_service | [LLM-DET] Rate limit exceeded on final attempt: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kj2eafvmehq9zwsed0a3p7wv` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 6895, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-03-26 14:26:44 | ERROR   | rfp_automation.agents.requirement_extraction_agent | [B1] LLM batch call failed unexpectedly: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kj2eafvmehq9zwsed0a3p7wv` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 6895, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-03-26 14:26:44 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 7.41% is suspiciously low. Falling back to full text extraction for section 'Appendix C — Pricing Rate Card Layout'.
+2026-03-26 14:26:51 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] Candidate density 5.70% is suspiciously low. Falling back to full text extraction for section 'Reference 
+Contact'.
+2026-03-26 14:27:23 | WARNING | rfp_automation.agents.requirement_extraction_agent | [B1] ⚠ LOW COVERAGE: Only 177 requirements extracted from 727 obligation indicators (ratio=0.24, threshold=0.6). Review may be needed.
+2026-03-26 14:27:48 | WARNING | rfp_automation.agents.requirement_validation_agent | [B2] 6 factual error(s) detected — extracted values don't match RFP source text
+2026-03-26 14:30:09 | WARNING | rfp_automation.services.llm_service | [LLM-TEXT-DET] Rate limit hit (attempt 1/3). Waiting 10s for TPM window to reset...
+2026-03-26 14:30:19 | WARNING | rfp_automation.services.llm_service | [LLM-TEXT-DET] Rate limit hit (attempt 2/3). Waiting 20s for TPM window to reset...
+2026-03-26 14:30:40 | ERROR   | rfp_automation.services.llm_service | [LLM-TEXT-DET] Rate limit exceeded on final attempt: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kh32tpwtfd0b7q7xrg133zjt` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 8027, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-03-26 14:30:40 | ERROR   | rfp_automation.agents.base_agent | ✘ [C1_ARCHITECTURE_PLANNING] FAILED after 172.112s: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kh32tpwtfd0b7q7xrg133zjt` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 8027, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+Traceback (most recent call last):
+  File "D:\My Codes\RFP-Responder\RFP-Responder\rfp_automation\agents\base_agent.py", line 69, in process
+    updated = self._real_process(graph_state)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\rfp_automation\agents\architecture_agent.py", line 143, in _real_process
+    raw_response = llm_text_call(prompt, deterministic=True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\rfp_automation\services\llm_service.py", line 305, in llm_text_call
+    response = llm.invoke(prompt)
+               ^^^^^^^^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\.venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 402, in invoke
+    self.generate_prompt(
+  File "D:\My Codes\RFP-Responder\RFP-Responder\.venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 1121, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\.venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 931, in generate
+    self._generate_with_cache(
+  File "D:\My Codes\RFP-Responder\RFP-Responder\.venv\Lib\site-packages\langchain_core\language_models\chat_models.py", line 1233, in _generate_with_cache
+    result = self._generate(
+             ^^^^^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\.venv\Lib\site-packages\langchain_groq\chat_models.py", line 621, in _generate
+    response = self.client.create(messages=message_dicts, **params)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\.venv\Lib\site-packages\groq\resources\chat\completions.py", line 461, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\.venv\Lib\site-packages\groq\_base_client.py", line 1242, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\.venv\Lib\site-packages\groq\_base_client.py", line 1044, in request
+    raise self._make_status_error_from_response(err.response) from None
+groq.APIStatusError: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kh32tpwtfd0b7q7xrg133zjt` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 8027, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-03-26 14:30:40 | ERROR   | rfp_automation.api.websocket | ✗  [RFP-CB810E39] Error in C1_ARCHITECTURE_PLANNING: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kh32tpwtfd0b7q7xrg133zjt` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 8027, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-03-26 14:30:40 | ERROR   | rfp_automation.orchestration.graph | Pipeline failed at stream step: Error code: 413 - {'error': {'message': 'Request too large for model `qwen/qwen3-32b` in organization `org_01kh32tpwtfd0b7q7xrg133zjt` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 8027, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+
+======================================================================
+Pipeline Run — 2026-03-26T15:34:47.471267 — RFP: RFP-CB810E39
+Total records: 12
+======================================================================
+
+2026-03-26 15:25:43 | WARNING | rfp_automation.agents.writing_agent | [C2] Could not parse JSON for section SEC-16_part0 — using raw text as content (recovering REQ-IDs from text)
+2026-03-26 15:25:46 | WARNING | rfp_automation.agents.writing_agent | [C2] Could not parse JSON for section SEC-16_part1 — using raw text as content (recovering REQ-IDs from text)
+2026-03-26 15:25:48 | WARNING | rfp_automation.agents.writing_agent | [C2] 1 placeholder(s) in SEC-16: ['[insert TCO]']
+2026-03-26 15:28:25 | WARNING | rfp_automation.agents.writing_agent | [C2] Could not parse JSON for section SEC-17_part0 — using raw text as content (recovering REQ-IDs from text)
+2026-03-26 15:29:24 | WARNING | rfp_automation.agents.writing_agent | [C2] ⚠ LOW WORD COUNT: Section SEC-11 (Case Studies & Client References) has only 296 words (minimum for knowledge_driven: 400)
+2026-03-26 15:31:17 | WARNING | rfp_automation.agents.writing_agent | [C2] 7 placeholder(s) in SEC-06: ['[Name of PM]', '[Vendor to fill]', '[Vendor to fill]', '[Vendor to fill]', '[Vendor to fill]', '[Vendor to fill]', '[Name, Title, Email]']
+2026-03-26 15:33:04 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Max validation retries reached. Auto-passing to next agent for testing purposes.
+2026-03-26 15:33:47 | WARNING | rfp_automation.agents.commercial_agent | [E1] Validation flags: ['Per-subscriber rate for Billing Module not found in KB', 'Implementation cost for data migration not available']
+2026-03-26 15:34:41 | WARNING | rfp_automation.agents.legal_agent | [E2] Block reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 15:34:41 | WARNING | rfp_automation.orchestration.graph | [GATE] E2 Legal BLOCKED — reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 15:34:41 | WARNING | rfp_automation.orchestration.graph | [GATE] E1 Commercial FLAGGED — flags: ['Per-subscriber rate for Billing Module not found in KB', 'Implementation cost for data migration not available']
+2026-03-26 15:34:41 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Commercial/Legal returned BLOCK — bypassing termination, continuing pipeline to Human Validation for testing.
+
+======================================================================
+Pipeline Run — 2026-03-26T21:42:52.246552 — RFP: RFP-CB810E39
+Total records: 4
+======================================================================
+
+2026-03-26 21:41:25 | WARNING | rfp_automation.agents.technical_validation_agent | [D1] Max validation retries (0) reached. Overriding decision to PASS for frontend bypass.
+2026-03-26 21:42:42 | WARNING | rfp_automation.agents.legal_agent | [E2] Block reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 21:42:42 | WARNING | rfp_automation.orchestration.graph | [GATE] E2 Legal BLOCKED — reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 21:42:42 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Commercial/Legal returned BLOCK — bypassing termination, continuing pipeline to Human Validation for testing.
+
+======================================================================
+Pipeline Run — 2026-03-26T22:12:38.781559 — RFP: RFP-CB810E39
+Total records: 4
+======================================================================
+
+2026-03-26 22:11:19 | WARNING | rfp_automation.agents.technical_validation_agent | [D1] Max validation retries (0) reached. Overriding decision to PASS for frontend bypass.
+2026-03-26 22:12:33 | WARNING | rfp_automation.agents.legal_agent | [E2] Block reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 22:12:33 | WARNING | rfp_automation.orchestration.graph | [GATE] E2 Legal BLOCKED — reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 22:12:33 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Commercial/Legal returned BLOCK — bypassing termination, continuing pipeline to Human Validation for testing.
+
+======================================================================
+Pipeline Run — 2026-03-26T22:14:56.857094 — RFP: RFP-CB810E39
+Total records: 4
+======================================================================
+
+2026-03-26 22:13:38 | WARNING | rfp_automation.agents.technical_validation_agent | [D1] Max validation retries (0) reached. Overriding decision to PASS for frontend bypass.
+2026-03-26 22:14:50 | WARNING | rfp_automation.agents.legal_agent | [E2] Block reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 22:14:50 | WARNING | rfp_automation.orchestration.graph | [GATE] E2 Legal BLOCKED — reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 22:14:50 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Commercial/Legal returned BLOCK — bypassing termination, continuing pipeline to Human Validation for testing.
+
+======================================================================
+Pipeline Run — 2026-03-26T22:51:10.446678 — RFP: RFP-CB810E39
+Total records: 6
+======================================================================
+
+2026-03-26 22:48:08 | WARNING | rfp_automation.agents.commercial_agent | [E1] Validation flags: ['Per-subscriber rate for Billing Module not found in KB', 'Implementation cost for data migration not available']
+2026-03-26 22:50:35 | WARNING | rfp_automation.mcp.embeddings.embedding_model | [Embedding] Throttled/Timeout (Server error '504 Gateway Time-out' for url 'https://router.huggingface.co/hf-inference/models/BAAI/bge-m3/pipeline/feature-extraction' (Amz CF ID: R0g2LYYE1JJtUaw5Qu-GGR23misvzijcnsrUH8L4spQhugdZl2WeZw==)
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504). Rotating API key...
+2026-03-26 22:51:04 | WARNING | rfp_automation.agents.legal_agent | [E2] Block reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 22:51:04 | WARNING | rfp_automation.orchestration.graph | [GATE] E2 Legal BLOCKED — reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 22:51:04 | WARNING | rfp_automation.orchestration.graph | [GATE] E1 Commercial FLAGGED — flags: ['Per-subscriber rate for Billing Module not found in KB', 'Implementation cost for data migration not available']
+2026-03-26 22:51:04 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Commercial/Legal returned BLOCK — bypassing termination, continuing pipeline to Human Validation for testing.
+
+======================================================================
+Pipeline Run — 2026-03-26T22:55:37.126267 — RFP: RFP-CB810E39
+Total records: 3
+======================================================================
+
+2026-03-26 22:55:30 | WARNING | rfp_automation.agents.legal_agent | [E2] Block reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 22:55:30 | WARNING | rfp_automation.orchestration.graph | [GATE] E2 Legal BLOCKED — reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 22:55:30 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Commercial/Legal returned BLOCK — bypassing termination, continuing pipeline to Human Validation for testing.
+
+======================================================================
+Pipeline Run — 2026-03-26T23:02:16.798968 — RFP: RFP-CB810E39
+Total records: 3
+======================================================================
+
+2026-03-26 23:02:11 | WARNING | rfp_automation.agents.legal_agent | [E2] Block reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 23:02:11 | WARNING | rfp_automation.orchestration.graph | [GATE] E2 Legal BLOCKED — reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-26 23:02:11 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Commercial/Legal returned BLOCK — bypassing termination, continuing pipeline to Human Validation for testing.
+
+======================================================================
+Pipeline Run — 2026-03-27T00:27:08.487407 — RFP: RFP-CB810E39
+Total records: 6
+======================================================================
+
+2026-03-27 00:25:52 | WARNING | rfp_automation.agents.technical_validation_agent | [D1] Max validation retries (0) reached. Overriding decision to PASS for frontend bypass.
+2026-03-27 00:26:26 | WARNING | rfp_automation.agents.commercial_agent | [E1] Validation flags: ['Per-subscriber rate for Billing Module not found in KB', 'Implementation cost for data migration not available']
+2026-03-27 00:27:03 | WARNING | rfp_automation.agents.legal_agent | [E2] Block reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-27 00:27:03 | WARNING | rfp_automation.orchestration.graph | [GATE] E2 Legal BLOCKED — reasons: ['AUTO-BLOCK: unlimited liability']
+2026-03-27 00:27:03 | WARNING | rfp_automation.orchestration.graph | [GATE] E1 Commercial FLAGGED — flags: ['Per-subscriber rate for Billing Module not found in KB', 'Implementation cost for data migration not available']
+2026-03-27 00:27:03 | WARNING | rfp_automation.orchestration.transitions | [ROUTING] Commercial/Legal returned BLOCK — bypassing termination, continuing pipeline to Human Validation for testing.

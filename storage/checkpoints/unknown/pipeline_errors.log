@@ -1,0 +1,16 @@
+
+======================================================================
+Pipeline Run — 2026-03-26T21:31:19.249896 — RFP: unknown
+Total records: 3
+======================================================================
+
+2026-03-26 21:31:19 | ERROR   | rfp_automation.agents.base_agent | ✘ [A1_INTAKE] FAILED after 0.000s: Uploaded file not found: /test/sample.pdf
+Traceback (most recent call last):
+  File "D:\My Codes\RFP-Responder\RFP-Responder\rfp_automation\agents\base_agent.py", line 69, in process
+    updated = self._real_process(graph_state)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\My Codes\RFP-Responder\RFP-Responder\rfp_automation\agents\intake_agent.py", line 41, in _real_process
+    raise FileNotFoundError(f"Uploaded file not found: {file_path}")
+FileNotFoundError: Uploaded file not found: /test/sample.pdf
+2026-03-26 21:31:19 | ERROR   | rfp_automation.api.websocket | ✗  [] Error in A1_INTAKE: Uploaded file not found: /test/sample.pdf
+2026-03-26 21:31:19 | ERROR   | rfp_automation.orchestration.graph | Pipeline failed at stream step: Uploaded file not found: /test/sample.pdf

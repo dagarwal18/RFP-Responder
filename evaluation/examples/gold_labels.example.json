@@ -1,0 +1,7 @@
+{
+  "legal_ground_truth_decision": "BLOCKED",
+  "human_first_pass_sections_approved": 9,
+  "numeric_benchmark": {
+    "expected_total_price": 1250000.0
+  }
+}
